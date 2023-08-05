@@ -1,0 +1,44 @@
+{% extends "djask-admin/base.html" %}
+{% from "djask-admin/macros.html" import render_model, render_top_panel %}
+{% block title %}Admin{% endblock %}
+{% block content %}
+    {% include "djask-admin/aside.html" %}
+    <main>
+        {{ render_top_panel("Dashboard") }}
+        <div class="page-content">
+            <div class="grid-container">
+                <div class="grid-item built-in-models">
+                    <div class="board-header">
+                        Auth Model
+                    </div>
+                    {{ render_model(User) }}
+                </div>
+                {% if models | length > 1 %}
+                    <div class="grid-item defined-models">
+                        <div class="board-header">
+                            Models Not Defined in Blueprints
+                        </div>
+                        {% for model in models %}
+                            {% if model != User %}
+                                {{ render_model(model) }}
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                {% for bp in blueprints %}
+                    {% if bp.models | length > 0 and bp.name != "admin" %}
+                        <div class="grid-item bp-models">
+                            <div class="board-header">
+                                Models Defined In {{ bp.name }}
+                            </div>
+                            {% for model in bp.models %}
+                                {{ render_model(model) }}
+                            {% endfor %}
+                        </div>
+
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </main>
+{% endblock %}
