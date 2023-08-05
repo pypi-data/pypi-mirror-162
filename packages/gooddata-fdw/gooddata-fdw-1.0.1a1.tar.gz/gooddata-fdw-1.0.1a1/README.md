@@ -1,0 +1,30 @@
+# GoodData Foreign Data Wrapper
+
+This project delivers PostgreSQL foreign data wrapper extension built on top of [multicorn](https://multicorn.org/).
+The extension makes [GoodData.CN](https://www.gooddata.com/developers/cloud-native/) insights, computations and ad-hoc report data available in PostgreSQL as tables.
+It can be selected like any other table using SQL language.
+
+See [DOCUMENTATION](https://gooddata-fdw.readthedocs.io/en/latest/) for more details.
+
+## Requirements
+
+-  [GoodData.CN](https://www.gooddata.com/developers/cloud-native/) installation; either running on your cloud
+   infrastructure or the free Community Edition running on your workstation
+
+-  Python 3.7 or newer
+
+-  The GoodData.CN Foreign Data Wrapper is tested with the latest version of multicorn (1.4.0) and PostgreSQL 12
+
+## Installation
+
+Refer to the [documentation](https://gooddata-fdw.readthedocs.io/en/latest/).
+
+## Bugs & Requests
+
+Please use the [GitHub issue tracker](https://github.com/gooddata/gooddata-python-sdk/issues) to submit bugs
+or request features.
+
+## Changelog
+
+Consult [Github releases](https://github.com/gooddata/gooddata-python-sdk/releases) for a released versions
+and list of changes.
