@@ -1,0 +1,92 @@
+site_name: SAYN
+
+repo_name: 173TECH/sayn
+repo_url: https://github.com/173TECH/sayn
+edit_uri: ""
+site_url: https://173tech.github.io/sayn/
+
+theme:
+  name: material
+  palette:
+    # scheme: slate
+    primary: cyan
+    accent: blue
+
+google_analytics:
+  - UA-149287493-2
+  - auto
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+  - pymdownx.superfences
+  - toc:
+      permalink: true
+      separator: "_"
+
+plugins:
+  - search
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          rendering:
+            show_source: False
+      watch:
+        - sayn
+
+extra_css:
+  - css/mkdocstrings.css
+  - css/admonitions.css
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/173TECH
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Installation: installation.md
+    - Tutorial (Part 1): tutorials/tutorial_part1.md
+    - Tutorial (Part 2): tutorials/tutorial_part2.md
+    - Tutorial (Part 3): tutorials/tutorial_part3.md
+  - Core Concepts:
+    - CLI: cli.md
+    - Project Structure: project_structure.md
+    - project.yaml: settings/project_yaml.md
+    - settings.yaml: settings/settings_yaml.md
+    - Tasks: tasks/overview.md
+    - Presets: presets.md
+    - Parameters: parameters.md
+    - Database objects: database_objects.md
+  - Tasks:
+    - Overview: tasks/overview.md
+    - AutoSQL[SUNSETTED]: tasks/autosql.md
+    - Python: tasks/python.md
+    - SQL: tasks/sql.md
+    - Copy: tasks/copy.md
+    - Dummy: tasks/dummy.md
+  - Data Tests:
+    - Overview: tests/overview.md
+    - Standard: tests/standard.md
+    - Custom: tests/custom.md
+  - Databases:
+    - Overview: databases/overview.md
+    - BigQuery: databases/bigquery.md
+    - MySQL: databases/mysql.md
+    - PostgreSQL: databases/postgresql.md
+    - Redshift: databases/redshift.md
+    - Snowflake: databases/snowflake.md
+    - SQLite: databases/sqlite.md
+  - API Reference:
+    - Database: api/database.md
+    - PythonTask: api/python_task.md
+  - Project Examples:
+    - A Simple ETL: project_examples/simple_etl.md
+    - Reddit News NLP: project_examples/reddit_news_nlp.md
+    - Facebook Data Project: project_examples/facebook_data_project.md
