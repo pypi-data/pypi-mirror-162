@@ -1,0 +1,47 @@
+#!python
+
+# System
+import argparse
+import yaml
+
+# Local
+import hyppo
+
+def parse_args():
+    """
+    Parse command line arguments.
+    """
+    parser = argparse.ArgumentParser('hyppo',description="A novel UQ-informed surrogate-based hyperparameter optimization tool.",
+                                     epilog="Copyright (c) 2022, The Regents of the University of California. All rights reserved.")
+    add_arg = parser.add_argument
+    add_arg('operation', choices=['sampling','sbatch','evaluation','surrogate'],
+            help='Operation to be executed')
+    add_arg('config_file',
+            help='Input configuration file')
+    add_arg('-d','--debug', metavar='', type=int, default=0,
+            help='Show model summary, for debugging purposes')
+    add_arg('--no-submit', action='store_true',
+            help='For sbatch operation, only create batch, do no submit job')
+    add_arg('-v', '--verbose', action='store_true', help='Enable verbose logging')
+    return parser.parse_args()
+
+def main():
+    print("  ____________________________________   ")
+    print(" |    _                               |  ")
+    print(" |   | | https://hpo-uq.gitlab.io/    |  ")
+    print(" |   | |__ _   _ _ __  _ __   ___     |  ")
+    print(" |   | '_ \ \ / | '_ \| '_ \ / _ \    |  ")
+    print(" |   | | | \ ' /| |_) | |_) | (_) |   |  ")
+    print(" |   |_| |_|/ / | .__/| .__/ \___/    |  ")
+    print(" |         / /  | |   | |             |  ")
+    print(" |        /_/   |_|   |_|             |  ")
+    print(" |____________________________________|\n")
+    # Extract user arguments
+    args = parse_args()
+    # Load configuration file
+    config = hyppo.load_config(**vars(args))
+    # Execute relevant action
+    eval('hyppo.'+args.operation)(config)
+
+if __name__ == '__main__':
+    main()
