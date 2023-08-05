@@ -1,0 +1,207 @@
+Metadata-Version: 2.1
+Name: spark-sdk
+Version: 0.3.29
+Summary: Function to help Data Scientist work more effectively with DWH
+Home-page: http://git.bigdata.local/data-engineers/sdk/utilities/-/tree/duyvnc
+Author: duyvnc
+Author-email: duyvnc@fpt.com.vn
+License: duyvnc
+Project-URL: Bug Tracker, https://github.com/pypa/sampleproject/issues
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+Requires-Dist: pyspark (>=3.0.0)
+Requires-Dist: pyarrow (>=8.0.0)
+Requires-Dist: pycryptodome
+Requires-Dist: pandas
+Requires-Dist: thrift
+Requires-Dist: hmsclient
+Requires-Dist: sqlglot
+Requires-Dist: findspark
+
+# Install package
+```bash
+pip install spark-sdk --upgrade
+```
+
+# Store data to dwh
+```python
+
+# step 1 read data
+ELT_DATE = '2021-12-01'
+ELT_STR = ELT_DATE[:7]
+import pandas as pd
+df1 = pd.read_csv('./data.csv', sep='\t')
+
+
+import spark_sdk as ss
+
+# function to store to dwh
+df1.to_dwh(    
+    hdfs_path="path/to/data/test1.parquet/", # path hdfs
+    partition_by="m", # column time want to partition
+    partition_date=ELT_DATE, # partition date
+    database="database_name", # database name
+    table_name="test1" # table name
+)
+
+
+# function to read from dwh
+# method 1: using pandas
+import spark_sdk as ss
+import pandas as pd
+
+pandas_df = pd.read_dwh('database.table_name', filters="""m='2022-04-01'""")
+
+# method 2: sql
+sparkDF = ss.sql("""
+SELECT *
+FROM database_name.table1
+WHERE m='2022-04-01'
+""")
+
+df = sparkDF.toPandas()
+
+
+# method 3: read_table
+sparkDF = ss.read_table('database_name.table')
+sparkDF = sparkDF.filter("m == '2022-04-01'")
+
+df = sparkDF.toPandas()
+
+
+# IF YOU WANT TO DELETE DATA
+# Link hdfs_file to table
+# When to drop it also delete data
+ss.drop_table_and_delete_data('database_name.test1')
+
+# IF JUST WANT TO DELETE TABLE NOT DELETE DATA
+ss.drop_table('database_name.test1')
+
+```
+
+
+
+# Decrypt Data
+
+## method 1: sql
+Using Spark SQL
+```python
+import spark_sdk as ps
+
+key = '1234' # contact Data Owner to get key
+
+df = ps.sql(f"""
+select fdecrypt(column_name, "{key}") column_name
+from database_name.table_name
+limit 50000
+""").toPandas()
+```
+
+
+## method 2: using pandas
+Using pandas
+```python
+import spark_sdk as ss
+df['new_column'] = df['column'].decrypt_column(key)
+
+# function will return dataframe with column_decrypted
+```
+
+# method 3
+Using pandas apply function
+```python
+from spark_sdk import decrypt
+df['decrypted'] = df['encrypted'].apply(decrypt,args=("YOUR_KEY",))
+```
+
+# Encrypt data
+```python
+import spark_sdk as ss
+
+
+# function to store to dwh
+df.to_dwh(    
+    hdfs_path="path/to/data/test1.parquet/", # path hdfs
+    partition_by="m", # column time want to partition
+    partition_date=ELT_DATE, # partition date
+    database="database_name", # database name
+    table_name="test1", # table name
+    encrypt_columns=['column1','column2'], # list column name need to encrypt
+    keys_path = '/path/to/store/keys.json' # if you add encrypt_columns, you need to have keys_path to store keys
+)
+
+ss.PySpark().stop()
+```
+
+# Create Yaml File Mapping data from CSV to DWH
+```python
+from spark_sdk import CreateYamlDWH
+create_yaml = CreateYamlDWH(
+csv_file = 'data.csv',
+hdfs_path = '/path/to/data/table_name.parquet',
+sep = '\t',
+database_name = 'database_name',
+table_name = 'table_name',
+yaml_path = '/path/to/yaml/file/'
+)
+
+create_yaml.generate_yaml_file()
+```
+
+# Store spark.sql.DataFrame
+```python
+from spark_sdk.src import spark_sdk as ss
+sparkDF = ss.sql("""select * from database.table_name limit 1000""")
+
+ELT_DATE = '2022-06-10'
+sparkDF.to_dwh(
+    hdfs_path="path/to/data/test6.parquet/", # path hdfs
+    partition_by="m", # column time want to partition
+    partition_date=ELT_DATE, # partition date
+    database="database_name", # database name
+    table_name="test6", # table name
+    driver_memory='4G', executor_memory='4g', num_executors='1', port='4090', yarn=True
+)
+```
+
+# Working with hdfs
+```python
+mkdir, cat, exists, info, open
+
+# list file
+ss.ls('/path/data')
+
+# create new path 
+ss.mkdir('/path/create/')
+
+# create new path 
+ss.exists('/check/path/exists') # return True if exists
+
+# print info
+ss.info('/path/info/')
+
+# open file like normal file
+import json
+with ss.open('/path/to/file.json', mode='rb') as file:
+    data = json.load(file)
+
+import json
+from spark_sdk import Utf8Encoder
+data = {'user': 1, 'code': '456'}
+with ss.open('/path/to/file.json', mode='wb') as file:
+    json.dump(data, Utf8Encoder(file), indent=4)
+
+
+ss.read_json('/path/to/file.json')
+ss.write_json(data, '/path/to_file.json')
+
+sparkDF = ss.read_csv("file:///path/to/data.csv", sep='\t') # with local file
+sparkDF = ss.read_csv("/path/to/data.csv", sep='\t') # with hdfs file
+
+# mode in ['rb', 'wb', 'ab']
+
+
