@@ -1,0 +1,91 @@
+Metadata-Version: 2.1
+Name: alert360
+Version: 0.0.1
+Summary: The ultimate solution for observability by Meena Erian.
+Home-page: https://github.com/meena-erian/alert360
+Author: Meena (Menas) Erian
+Author-email: hi@menas.pro
+License: Apache V2 License
+Platform: UNKNOWN
+Classifier: Environment :: Web Environment
+Classifier: Framework :: Django
+Classifier: Framework :: Django :: 3.1
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Topic :: Internet :: WWW/HTTP
+Classifier: Topic :: Internet :: WWW/HTTP :: Dynamic Content
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
+# Summary
+
+Alert 360 can be used to trigger any specific action on any specific data changes. The actions can involve any sort of variables required to complete the action and the trigger can be any sort of change in state in an SQL database
+
+# Compatible RDBMS
+- PostgreSQL
+- Microsoft SQL
+- MySQL/MariaDB
+- SQLite
+- FireBird
+
+
+# Setup Instructions
+
+- Install the package
+
+```sh
+pip install alert360
+```
+
+- Start a Django project
+
+```sh
+django-admin startproject djangoproject
+```
+
+- Add the app to INSTALLED_APPS
+
+```python
+INSTALLED_APPS = [
+    ...
+    'django_ace',
+    'alert360',
+    ...
+]
+```
+
+- Create a python file in which you can write your own actions that will be triggered when the state changes
+
+**actions.py**
+```python
+from alert360.actions import ActionsManager
+
+
+@ActionsManager.add_handler
+def print_changes(changes):
+    print("Some changes occured")
+    print(changes)
+```
+
+In the above code we declared our own custom function ```print_changes``` which will be called whenever the state changes and it will print the summary of changes.
+However, there's one more step left to connect this function to the ```ActionsManager```
+- In the **\_\_init\_\_.py** file in the folder in which we created **actions.py** add the following line
+```python
+from . import actions
+```
+
+- Now run database migrations and create a superuser so you can access the admin website
+```sh
+python manage.py migrate
+python manage.py createsuperuser
+```
+- Now Login to the adminwebsite, connect a database, and create a new StateWatcher
+
