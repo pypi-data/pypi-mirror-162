@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta viewport="width=device-width, initial-scale=1.0">
+    {{ bootstrap.load_css() }}
+    <link href="{{ url_for('djask.static', filename='css/style.css') }}" rel="stylesheet">
+    <link href="{{ url_for('djask.static', filename='icon/djask.ico') }}" rel="icon">
+    <link href="{{ djask_bootstrap_icons() }}" rel="stylesheet">
+    <title>{% block title %}{% endblock %}</title>
+</head>
+
+<body>
+    {% block flashed_messages %}
+        {% for message in get_flashed_messages(with_categories=True) %}
+        {% if message[0] != 'message' and message[0] %}
+            {% set category = message[0] %}
+        {% else %}
+            {% set category = 'info' %}
+        {% endif %}
+        {% set message_content = message[1] %}
+        <div class="alert alert-{{ category }}" class="close">
+            <button type="button" class="close" data-dismiss="alert">&times;
+            </button>
+            {{ message_content }}
+        </div>
+        {% endfor %}
+    {% endblock %}
+    {% block content %}{% endblock %}
+    {{ bootstrap.load_js() }}
+    <script src="{{ url_for('djask.static', filename='js/script.js') }}"></script>
+    {% block extra_scripts %}
+    {% endblock %}
+</body>
+
+</html>

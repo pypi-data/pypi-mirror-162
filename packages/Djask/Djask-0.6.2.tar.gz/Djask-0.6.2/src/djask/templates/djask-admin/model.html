@@ -1,0 +1,50 @@
+{% extends "djask-admin/base.html" %}
+{% from "djask-admin/macros.html" import render_top_panel, render_schema with context %}
+{% block title %}Djask - Model {{ model_name }}{% endblock %}
+{% block content %}
+    {% include "djask-admin/aside.html" %}
+    <main>
+        {{ render_top_panel("Model "+model_name, "") }}
+        <div class="page-content">
+            <div class="grid-container max-height">
+                <div class="model-schema grid-item">
+                    {{ render_schema(schema) }}
+                </div>
+                <div class="model-instances grid-item d-flex flex-column">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Created At</th>
+                                <th>Updated At</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for instance in instances %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('admin.edit_model', model_id=instance.id, model_name=model_name) }}"
+                                           alt="edit {{ model_name~' '~instance.id }}" style="text-decoration: none">
+                                            {{ model_name~" "~instance.id }}
+                                        </a>
+                                    </td>
+                                    <td class="time" data-time="{{ instance.created_at }}"></td>
+                                    <td class="time" data-time="{{ instance.updated_at }}"></td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <div class="blank"></div>
+                    <button class="btn btn-block btn-primary"
+                            onclick="window.location.href='{{ url_for('admin.add_model', model_name=model_name) }}'">
+                        Add
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+{% endblock %}
+{% block extra_scripts %}
+    <script src="{{ url_for('djask.static', filename='js/model.js') }}">
+    </script>
+{% endblock %}
