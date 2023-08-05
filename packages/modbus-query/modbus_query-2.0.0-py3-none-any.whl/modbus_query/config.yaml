@@ -1,0 +1,178 @@
+# The package version
+version: "2.0.0"
+# Stores register values to a CSV file
+csv_file: True
+# Prints values to the terminal
+print_terminal: True
+# Prints values to a log file
+print_log: True
+# Adds a timestamp before all printed values
+print_timestamp: True
+# Number of data handler threads
+handler_threads: 5
+# The interval of each data handler thread (ms)
+handler_interval: 30
+
+# interval is in ms, intervals is how many interval per register query
+queries: [{
+    serial_port: "COM1",
+    serial_baud: 9600,
+    interval: 200,
+    slaves: [{
+        address: 0x1F,
+        registers: [{
+            address: 0x0021,
+            offset: 2,
+            intervals: 32,
+            timeout: 50,
+            values: [{
+                prefix: "Motor Overload (oL1)",
+                mask: 0x0200,
+                function: null,
+                reset_thld: 0,
+                decimals: 0
+            },
+            {
+                prefix: "Drive Overload (oL2)",
+                address: 0x0021,
+                mask: 0x0004,
+                function: null,
+                reset_thld: 0,
+                decimals: 0
+            }]
+        },
+        {
+            address: 0x0026,
+            offset: 0,
+            intervals: 16,
+            timeout: 50,
+            values: [{
+                prefix: "Output Current",
+                mask: 0xFFFF,
+                function: null,
+                reset_thld: 0,
+                decimals: 2
+            }]
+        },
+        {
+            address: 0x07CF,
+            offset: 1,
+            intervals: 16,
+            timeout: 50,
+            values: [{
+                prefix: "Peak Hold Current",
+                mask: 0xFFFF,
+                function: null,
+                reset_thld: 0,
+                decimals: 2
+            }]
+        },
+        {
+            address: 0x07D8,
+            offset: 0,
+            intervals: 2,
+            timeout: 50,
+            values: [{
+                prefix: "Motor Overload Estimate (oL1%)",
+                mask: 0xFFFF,
+                function: null,
+                reset_thld: 0,
+                decimals: 0
+            }]
+        },
+        {
+            address: 0x07D9,
+            offset: 1,
+            intervals: 2,
+            timeout: 50,
+            values: [{
+                prefix: "Drive Overload Estimate (oL2%)",
+                mask: 0xFFFF,
+                function: null,
+                reset_thld: 0,
+                decimals: 0
+            }]
+        }]
+    }]
+},
+{
+    serial_port: "COM2",
+    serial_baud: 9600,
+    interval: 200,
+    slaves: [{
+        address: 0x1F,
+        registers: [{
+            address: 0x0021,
+            offset: 2,
+            intervals: 32,
+            timeout: 50,
+            values: [{
+                prefix: "Motor Overload (oL1)",
+                mask: 0x0200,
+                function: null,
+                reset_thld: 0,
+                decimals: 0
+            },
+            {
+                prefix: "Drive Overload (oL2)",
+                address: 0x0021,
+                mask: 0x0004,
+                function: null,
+                reset_thld: 0,
+                decimals: 0
+            }]
+        },
+        {
+            address: 0x0026,
+            offset: 0,
+            intervals: 16,
+            timeout: 50,
+            values: [{
+                prefix: "Output Current",
+                mask: 0xFFFF,
+                function: null,
+                reset_thld: 0,
+                decimals: 2
+            }]
+        },
+        {
+            address: 0x07CF,
+            offset: 1,
+            intervals: 16,
+            timeout: 50,
+            values: [{
+                prefix: "Peak Hold Current",
+                mask: 0xFFFF,
+                function: null,
+                reset_thld: 0,
+                decimals: 2
+            }]
+        },
+        {
+            address: 0x07D8,
+            offset: 0,
+            intervals: 2,
+            timeout: 50,
+            values: [{
+                prefix: "Motor Overload Estimate (oL1%)",
+                mask: 0xFFFF,
+                function: null,
+                reset_thld: 0,
+                decimals: 0
+            }]
+        },
+        {
+            address: 0x07D9,
+            offset: 1,
+            intervals: 2,
+            timeout: 50,
+            values: [{
+                prefix: "Drive Overload Estimate (oL2%)",
+                mask: 0xFFFF,
+                function: null,
+                reset_thld: 0,
+                decimals: 0
+            }]
+        }]
+    }]
+}]
