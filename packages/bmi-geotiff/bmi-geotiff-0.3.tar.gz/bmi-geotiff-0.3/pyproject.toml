@@ -1,0 +1,93 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bmi-geotiff"
+description = "Access data and metadata in a GeoTIFF file through an API or a BMI"
+authors = [
+  {name = "Mark Piper", email = "mark.piper@colorado.edu"},
+]
+keywords = [
+  "bmi",
+  "geotiff",
+  "raster",
+  "data",
+]
+license = {text = "MIT License"}
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
+  "Intended Audience :: Education",
+  "Topic :: Scientific/Engineering",
+]
+requires-python = ">=3.7"
+dependencies = [
+  "numpy",
+  "pyyaml",
+  "xarray",
+  "rasterio",
+  "rioxarray",
+  "bmipy",
+]
+dynamic = ["readme", "version"]
+
+[project.urls]
+Homepage = "https://github.com/csdms/bmi-geotiff"
+Documentation = "https://bmi-geotiff.readthedocs.io/"
+Repository = "https://github.com/csdms/bmi-geotiff"
+Changelog = "https://github.com/csdms/bmi-geotiff/blob/main/CHANGES.md"
+
+[project.optional-dependencies]
+testing = [
+  "black",
+  "flake8",
+  "isort >=5",
+  "pytest",
+  "pytest-cov",
+  "pytest-datadir",
+  "coveralls",
+]
+examples = [
+  "cartopy",
+  "matplotlib",
+]
+
+[project.scripts]
+bmi-geotiff = "bmi_geotiff.cli:main"
+
+[tool.setuptools.dynamic]
+readme = {file = ["README.md", "CREDITS.md", "LICENSE.md"], content-type = "text/markdown"}
+version = {attr = "bmi_geotiff._version.__version__"}
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["bmi_geotiff*"]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+testpaths = ["bmi_geotiff", "tests"]
+norecursedirs = [".*", "*.egg*", "build", "dist"]
+addopts = """
+  --ignore setup.py
+  --tb native
+  --strict
+  --durations 16
+  --doctest-modules
+  -vvv
+"""
+doctest_optionflags = [
+  "NORMALIZE_WHITESPACE",
+  "IGNORE_EXCEPTION_DETAIL",
+  "ALLOW_UNICODE"
+]
+
+[tool.isort]
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+combine_as_imports = true
+line_length = 88
