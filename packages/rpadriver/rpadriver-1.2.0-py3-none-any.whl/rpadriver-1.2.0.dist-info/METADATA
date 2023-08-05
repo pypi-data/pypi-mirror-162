@@ -1,0 +1,434 @@
+Metadata-Version: 2.1
+Name: rpadriver
+Version: 1.2.0
+Summary: RPADriver package.
+Home-page: UNKNOWN
+Author: SKALER / Siili Solutions
+Author-email: skaler-support@siili.com
+License: Apache License 2.0
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Classifier: Operating System :: OS Independent
+Classifier: Development Status :: 3 - Alpha
+License-File: LICENSE
+Requires-Dist: task-object-storage (~=1.2.0)
+Requires-Dist: packaging
+Requires-Dist: Pillow (>=9.0.1)
+
+RPADriver
+=========
+
+The goal of RPADriver is to make Robot Framework a true RPA tool. This is a RPA helper library built on
+the TOS model using ``task-object-storage`` package.
+
+Requirements
+------------
+
+* MongoDB
+* Python >3.7
+* robotframework >3 (>=3.2 for RPAListener)
+* task-object-storage
+
+
+Overview
+--------
+
+RPADriver relies on the concept of stages: Every RPA process can usually be divided to at least two stages:
+
+* Producer
+* Consumer
+
+There is always one producer, but there might be many consumers (1... *n*). The naming convention is as follows:
+
++--------------+----------+
+| Type         | Name     |
++==============+==========+
+| Producer     | stage_0  |
++--------------+----------+
+| Consumer 1   | stage_1  |
++--------------+----------+
+| Consumer 2   | stage_2  |
++--------------+----------+
+| Consumer *n* | stage_n  |
++--------------+----------+
+
+Producer creates task objects, and consumers fetch them from the database for processing.
+Splitting the work into stages gives more control over the process execution enables stages to be run (and retried) in isolation.
+
+RPADriver consists of two packages:
+
+`RPALibrary`_
+    Used to implement RPA processes largely as Python code, in stage definitions that inherit from ``Producer`` and ``Consumer`` superclasses. Robot Framework acts only as a thin wrapper.
+`RPAListener`_
+    Enables RPA process stages to be defined in Robot Framework test data, while still leveraging ``TOSLibrary``.
+
+RPALibrary
+----------
+
+``RPALibrary`` is the classic library originally included as a helper with ``TOSLibrary``.
+With this you create robot stage definition in Python code, but still have support for
+Robot Framework keywords.
+
+
+Conventional project structure
+++++++++++++++++++++++++++++++
+
+Conventional project structure looks like this
+
+::
+
+    .
+    ├── keywords
+    ├── libraries
+    ├── pipelines
+    │   ├── Jenkinsfile
+    │   ├── consumer.groovy
+    │   └── producer.groovy
+    ├── resources
+    │   └── settings.py
+    ├── stages
+    ├── tasks
+    │   └── main.robot
+    └── run.py
+
+where
+
+* ``keywords``: Robot Framework keyword files.
+* ``libraries``: module for all the Python library code.
+* ``pipelines``: Jenkins pipelines.
+* ``resources``: place to store all miscellaneous files: settings, configs, templates.
+* ``stages``: module for the stage definitions (in Python code).
+* ``tasks``: Robot Framework suites.
+* ``run.py``: startup script for the robot.
+
+The robot control flow is ``run.py`` -> ``tasks/main.robot`` -> ``stages.StageN``.
+
+
+Producer
+--------
+
+To build a Producer stage, you need to create a new file ``stages/Stage0.py`` with a class
+called ``Stage0`` inside. This class should inherit from ``Producer``.
+The class needs at least one method: ``process_data(self)``.
+This method is the main action to do for every data item that will become task object payload.
+Optionally, if you need to first prefetch the data into memory (e.g., into a list), you will need
+to define a method called ``preloop_action``. This will then feed ``process_data`` with data items
+one at a time. When prelooping, you will need to define ``process_data`` like this: ``process_data(self, item)``,
+where ``item`` is one of the pre-prepared data items.
+
+Call ``Stage0.Main Loop`` from Robot Framework to start the loop action (your defined Python methods will be
+called automatically inside the library).
+
+
+By inheriting from ``Producer`` you get:
+
+* Automatic task object creation.
+* Automatic looping of the data.
+* Automatic error handling.
+* Every software robot you and your team builds will follow the same conventions.
+
+
+Consumer
+--------
+
+To build a Consumer stage, you need to create a new file ``stages/Stage1.py`` with a class
+called ``Stage1`` inside (the number depending on your stage number).
+This class should inherit from ``Consumer``.
+The class needs at least one method: ``main_action(self, to)``, where ``to`` is a task object
+fetched by the library from your MongoDB database. All you need to do is to define what to do
+for every task object.
+
+Call ``Stage1.Main Loop`` from Robot Framework to start the loop action (your defined Python methods will be
+called automatically inside the library).
+
+
+By inheriting from ``Consumer`` you get:
+
+* Automatic task object fetching.
+* Automatic error handling.
+* Every software robot you and your team builds will follow the same conventions.
+
+
+Example usage
++++++++++++++
+
+Note that the examples here are overly simplified.
+
+
+Startup script (``run.py``):
+
+.. code-block:: python
+
+    def main():
+        return robot.run("tasks")
+
+    if __name__ == '__main__':
+        sys.exit(main())
+
+
+Main Robot file definition (``tasks/main.robot``):
+
+.. code-block:: python
+
+    *** Settings ***
+    Library             TOSLibrary    ${db_server}:${db_port}  ${db_name}
+    Library             ../stages/Stage0.py
+    Library             ../stages/Stage1.py
+
+    *** Tasks ***
+    Create task objects from raw data
+        [Tags]                      stage_0
+        Stage0.Main Loop            no_screenshots=True
+
+    Do action on the task objects
+        [Tags]                      stage_1
+        Stage1.Main Loop
+
+
+
+Producer stage definition (``stages/Stage0.py``):
+
+.. code-block:: python
+
+    from RPALibrary import Producer
+
+
+    class Stage0(Producer):
+
+        def preloop_action(self):
+            """Read and preprocess an Excel worksheet."""
+            data = self.read_excel()
+            data = self.filter_rows(data)
+            return data
+
+        def process_data(self, item):
+            """
+            Do some some operations for every data item (e.g.
+            Excel row). This should return a dictionary.
+            The return value will be used as the payload for the task object.
+            The task objects are created automatically in ``Producer`` object.
+
+            Having ``item`` parameter in the method signature is important.
+            """
+            item = self.reader.clean_item(item)
+            return item
+
+
+
+Consumer stage definition  (``stages/Stage1.py``)
+
+.. code-block:: python
+
+    from RPALibrary import Consumer
+
+    from .errors import SYSTEM_OFFLINE
+
+
+    class Stage1(Consumer):
+        def main_action(self, to):
+            """The library will pass created task objects to this method."""
+            self.do_some_complex_action_on_the_task_object(to)
+
+        def action_on_fail(self, to):
+            if to["last_error"] == SYSTEM_OFFLINE:
+                self.handle_system_offline()
+            self.return_to_main_screen()
+
+
+
+You can also call your stage methods as Robot Framework keywords with ``run_keyword``:
+
+.. code-block:: python
+
+    from robot.libraries.BuiltIn import BuiltIn
+
+    run = BuiltIn().run_keyword
+
+
+    class Stage1(Consumer):
+        def main_action(self, to):
+            run("Do Some Complex Action On The Task Object", to)
+
+        def action_on_fail(self, to):
+            if to["last_error"] == SYSTEM_OFFLINE:
+                run("Handle System Offline")
+            run("Return To Main Screen")
+
+
+RPAListener
+-----------
+
+RPAListener is a tool that adds transaction management for RPA automations, where the top-level workflow
+has been defined natively in Robot Framework script. The library has been implemented as a
+`listener library <https://robotframework.org/robotframework/latest/RobotFrameworkUserGuide.html#listener-interface>`_.
+
+In the backend, the RPAListener uses Task Object Storage (TOS), meaning that it relies on MongoDB
+for work item persistence.
+
+For more information about TOS, see https://skaler.gitlab-siili.io/skaler-core/task-object-storage
+For more information about Robot Framework, see http://robotframework.org.
+
+
+Background
+----------
+
+RPA processes usually consist of sequential stages. Some stages are to be executed only once (batch).
+Others are transactional, where identical steps are performed to a number of work items in a
+repetitive manner. RPAListener automates the management of task iterations and work items during
+transactional stages.
+
+
+Usage
+-----
+
+After installation, RPAListener can be imported in the Settings-table.
+
+::
+
+    *** Settings ***
+    Library    RPAListener    ${db_server}:${db_port}    ${db_name}
+
+Database connection details (address, credentials) are passed to the library using
+the `TOS convention <https://intelligent_automation.gitlab-siili.io/tos/#usage>`_.
+
+
+Task Tags
+---------
+
+RPAListener requires special tags to be set on the robot tasks in order to use them as RPA process stages.
+Each task should be assigned a tag prefixed with ``stage_`` depending on its sequence in the process,
+
+Transactional stages, whose steps are to be repeated for each applicable work item,
+are marked with ``repeat`` tag.
+
+Example process consisting of one batch stage followed by one transactional stage:
+
+::
+
+    *** Tasks ***
+    Initial Stage
+        [Tags]    stage_0
+        Log    This is performed only once
+
+    Process transactions A
+        [Tags]    stage_1    repeat
+        Log    Processing item '${ITEM_ID}'
+
+
+Working with items
+------------------
+
+In transactional stages, RPAListener sets the workable items to the robot scope for each task iteration.
+The work item's payload contents can be accessed in a dictionary named ``${ITEM}``.
+The MongoDB ObjectId of the work item can be accessed as ``{ITEM_ID}`` (str).
+The name of the dictionary variable can be overriden using the ``item_variable_name`` upon library import.
+For example, if you want to refer to the work item as ``&{PERSON}`` in your script:
+
+::
+
+    Library     RPAListener    db_server=localhost    db_name=newtos    item_variable_name=PERSON
+
+
+RPAListener exposes ``Update Current Item`` keyword, that can be used in a transactional stage
+to update the payload contents of the currently worked item, e.g. adding a key-value pair.
+The keyword is used similarly to ``Set To Dictionary`` from the standard library ``Collections``,
+except that the targeted dictionary is omitted:
+
+::
+
+    | Update Current Item | my_new_key=my_new_value | another_key=another_value |
+    | Update Current Item | my_new_key | my_new_value | another_key | another_value |
+
+
+Setups and Teardowns
+--------------------
+
+Default test setups and teardowns, (i.e. those set in ``*** Settings ***``) are run for each stage.
+Any setups/teardowns set on the robot task with ``[Setup]`` and ``[Teardown]`` override their
+default counterparts.
+
+``Suite Setup/Teardown`` set in ``*** Settings ***`` are run as per normal,
+i.e. only at the beginning and end of the robot execution.
+
+
+Task Naming
+-----------
+
+Task iterations are named according to the worked item. The name determines appears
+in the robot log file. By default, RPAListener uses the MongoDB Object-id as task name,
+but any field from the payload can be used by specifying ``item_identifier_field``
+upon library import. For example, in order to use the values from field ``payload.myField``,
+RPAListener should be imported as follows:
+
+::
+
+    Library     RPAListener    db_server=localhost    db_name=newtos    item_identifier_field=myField
+
+
+Skipping Tasks
+--------------
+
+Besides passing or failing, processing of a work item can result in the item being skipped.
+This is done when the item violates a predefined business rule, and hence should not be processed further.
+When skipped, keyword and task execution ends for that work item, and its status is changed to `skip`.
+
+Skipping is perfomed with the keyword `Run Keyword And Skip On Failure`, used in conjunction with a
+keyword whose failure indicates an invalid work item. For example:
+
+::
+
+    | Run Keyword And Skip On Failure | Should Be True | ${invoice_amount} > 0 |
+    | ...    msg=Invoice is for a zero amount, no action required |
+
+
+Error Handling (experimental)
+-----------------------------
+
+When processing of a work item fails, robot behaviour depends on the type of error raised.
+RPAListener exposes keywords ``raise_business_exception`` and ``raise_application_exception``.
+The first argument for both keywords is the error message. By default, execution continues
+despite of a failing work item. If an application exception is raised with argument ``fatal``
+set to ``True``, robot execution is stopped, for example:
+
+::
+
+    | Raise Application Exception | Something went terribly wrong | fatal=${TRUE} |
+
+It is possible to assign a stage-specific error handling keyword, to be run upon failure.
+This is done by tagging the robot task with ``error_handler=[Keyword Name]``, for example:
+
+::
+
+    *** Tasks ***
+    My RPA Stage
+        [Tags]    stage_1    repeat    error_handler=Handle My Error
+            # ...
+
+Task timeouts can be used as per normal robot convention. The timeout specified on a stage
+is the maximum time allowed for working one item in said stage. If the timeout is exceeded,
+the item is failed and error handler is called.
+
+
+Available keywords/methods
+--------------------------
+
+See the full `API documentation <https://skaler.gitlab-siili.io/skaler-core/rpadriver/api.html>`_.
+
+
+For developers
+--------------
+
+Release a new version by running:
+
+.. code-block:: bash
+
+  scripts/build.sh release
+
+
+You can also install the `whl` package found in the `dist` directory with
+
+.. code-block:: bash
+
+  pip install <package-name>.whl
+
+
