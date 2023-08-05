@@ -1,0 +1,174 @@
+Metadata-Version: 2.1
+Name: conformity-migration-tool
+Version: 0.11.0
+Summary: Migrates your visiblity information in cloudconformity.com to cloudone.trendmicro.com
+Home-page: https://github.com/atiradocc/conformity-migration-tool
+Author: Ronald Bautista
+License: MIT
+Project-URL: Source Code, https://github.com/atiradocc/conformity-migration-tool
+Classifier: Development Status :: 3 - Alpha
+Classifier: Environment :: Console
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Information Technology
+Classifier: Intended Audience :: System Administrators
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Requires-Python: >=3.7
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: typing-extensions (>=4.0.0)
+Requires-Dist: requests (<3.0.0,>=2.0.0)
+Requires-Dist: PyYAML (<7.0,>=6.0)
+Requires-Dist: deepdiff (<6.0.0,>=5.7.0)
+Requires-Dist: backoff (>=1.11.1)
+Requires-Dist: vcrpy (<5.0.0,>=4.0.0)
+Requires-Dist: PyInquirer (<2.0.0,>=1.0.3)
+Requires-Dist: click (<9.0.0,>=8.0.0)
+Requires-Dist: boto3 (<2.0.0,>=1.0.0)
+Requires-Dist: boto3-stubs[cloudformation]
+Requires-Dist: importlib-metadata ; python_version < "3.8"
+
+# conformity-migration-tool
+Migrates your visiblity information in cloudconformity.com to cloudone.trendmicro.com
+
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/atiradocc/conformity-migration-tool?color=red&label=Last%20Release&logo=trend-micro&logoColor=red)
+![GitHub issues](https://img.shields.io/github/issues/atiradocc/conformity-migration-tool?label=Issues)
+![GitHub pull requests](https://img.shields.io/github/issues-pr/atiradocc/conformity-migration-tool?label=Pull%20Requests)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/conformity-migration-tool?logo=python&label=Python%20Version%20Support)
+
+## **⚠ WARNING: This tool will overwrite your Cloud One Conformity**
+
+## Requirements
+1. Python versions 3.7, 3.8, or 3.9
+2. Both accounts must have a valid license (Not expired)
+3. API Keys for both Legacy Conformity and CloudOne Conformity
+   - **Note:** Both API Keys must have admin privileges
+
+## How to use this tool
+
+1) Create or choose an empty folder where you would like to install and run the tool.
+
+2) Start a shell/terminal on the folder you just created or chosen.
+
+3) Create a python3 virtual environment
+    ```
+    python3 -m venv .venv
+    ```
+
+4) Activate the virtual environment
+   ```
+   source .venv/bin/activate
+   ```
+
+5) Install the tool
+    ```
+    pip install conformity-migration-tool
+    ```
+
+6) Configure the tool
+    ```
+    conformity-migration configure
+    ```
+    **Note:** Once you finish the tool configuration once, a file called **user-config.yml** with the settings you configured will be generated in the same folder, in case you need to re-run the tool.
+
+7) If you have AWS accounts to migrate, you can either manually update your Conformity Stack's `ExternalID` parameter during migration on the next step or you can run this command `conformity-migration-aws` first before migration.
+
+   Run this command to see all the available options:
+   ```
+   conformity-migration-aws update-stack --help
+   ```
+   Example command:
+   ```
+   conformity-migration-aws update-stack --access-key <aws-access-key-here> --secret-key <aws-secret-key-here>
+   ```
+   Using AWS_PROFILE:
+   ```
+   conformity-migration-aws update-stack --profile <aws-profile-here>
+   ```
+   
+   For multiple accounts which you have cross-account role to use, you can add the option `--cross-account-role-name`.
+
+   For multiple accounts which you don't have cross-account role to use or for a more granular control on each accounts' credentials, do the following steps:
+
+   a. Generate a CSV file containing all your AWS accounts and default stack information from Legacy conformity:
+   ```
+   conformity-migration-aws generate-csv <CSV_FILE>
+   ```
+   b. Update the CSV file with your AWS credentials or stack information when necessary.
+   
+   c. Run the update-stack command with CLI option "--csv-file". You can use other options together with this option. Whatever non-empty values you put in the CSV file will override the values used in the CLI options.
+   ```
+   conformity-migration-aws update-stack --csv-file <CSV_FILE>
+   ```
+
+
+8)  Run the migration
+    ```
+    conformity-migration run
+    ```
+    If you already updated your AWS accounts' `ExternalId` beforehand as in step 8, then you can add this
+    option below so it will stop prompting you to update your ExternalId manually:
+    ```
+    conformity-migration run --skip-aws-prompt
+    ```
+
+
+## Migration support
+### Cloud Types
+- [X] AWS account
+  - **Note:** To grant access to CloudOne Conformity, user has to update the `ExternalId` parameter of CloudConformity stack of his/her AWS account. This can be done either manually or using the CLI `conformity-migration-aws` which is part of the conformity-migration-tool package.
+
+- [X] Azure account
+  - **Note:** User needs to specify App Registration Key so the tool can add the Active Directory to Conformity
+- [ ] GCP account
+
+### Organisation-Level Configurations
+- [X] Users
+  - **Note**: The tool will display other users that needs to be invited by the admin to CloudOne Conformity.
+- [X] Groups
+- [X] Communication channel settings
+- [X] Profiles
+- [X] Report Configs
+
+### Group-Level Configurations
+- [X] Report Configs
+
+### Account-Level Configurations
+- [X] Account tags
+- [X] Conformity Bot settings
+- [X] Account Rule settings
+  - **Limitation:** The API only allows writing a single note to the rule so the tool won't be able to preserve the history of notes. The tool will instead combine history of notes into a single note before writing it.
+- [X] Communication channel settings
+- [X] Checks
+  - **Limitation:** The API only allows writing a single note to the check so the tool won't be able to preserve the history of notes. In addition to that, API only allows a maximum of 200 characters of note. The tool will only get the most recent note and truncate it to 200 characters before writing it.
+- [X] Report Configs
+
+## Troubleshooting
+If you encounter any errors in the execution, please [Create a New Issue](https://github.com/atiradocc/conformity-migration-tool/issues/new) describing the steps that you went through, the results expected, and the actual results that you got.
+
+### Support logs
+The tool automatically generates log files when an error is found. In the same folder that you ran the tool, you will find these files:
+
+- ```conformity-migration-error.log``` -> Specific logs about errors encountered from the last runtime.
+
+- ```conformity-migration.log``` -> General log information about the tool the last runtime.
+
+**Note:** Please don't share these files publicly, they might contain sensitive information about your environment. In case you need to share for support purposes, mask sensitive information before sending it.
+
+
+## Contributing
+
+If you encounter a bug, think of a useful feature, or find something confusing
+in the docs, please
+[Create a New Issue](https://github.com/atiradocc/conformity-migration-tool/issues/new)!
+
+We :heart: pull requests. If you'd like to fix a bug, contribute to a feature or
+just correct a typo, please feel free to do so.
+
+If you're thinking of adding a new feature, consider opening an issue first to
+discuss it to ensure it aligns with the direction of the project (and potentially
+save yourself some time!).
