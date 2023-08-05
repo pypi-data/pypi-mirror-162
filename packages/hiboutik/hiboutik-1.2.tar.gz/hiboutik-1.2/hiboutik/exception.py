@@ -1,0 +1,2 @@
+class HiboutikException(Exception):
+    pass
