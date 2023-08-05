@@ -1,0 +1,78 @@
+Metadata-Version: 2.1
+Name: gns3-gui
+Version: 3.0.0a1
+Summary: GNS3 graphical interface for the GNS3 server.
+Home-page: http://github.com/GNS3/gns3-gui
+Author: Jeremy Grossmann
+Author-email: package-maintainer@gns3.net
+License: GNU General Public License v3 (GPLv3)
+Platform: any
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Environment :: X11 Applications :: Qt
+Classifier: Intended Audience :: Information Technology
+Classifier: Topic :: System :: Networking
+Classifier: License :: OSI Approved :: GNU General Public License v3 (GPLv3)
+Classifier: Natural Language :: English
+Classifier: Operating System :: POSIX
+Classifier: Operating System :: MacOS :: MacOS X
+Classifier: Operating System :: Microsoft :: Windows
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: Implementation :: CPython
+Requires-Python: >=3.4
+License-File: LICENSE
+License-File: COPYING
+License-File: AUTHORS
+
+# GNS3-gui
+
+[![GitHub Actions tests](https://github.com/GNS3/gns3-gui/workflows/testing/badge.svg)](https://github.com/GNS3/gns3-gui/actions?query=workflow%3Atesting)
+[![Latest PyPi version](https://img.shields.io/pypi/v/gns3-gui.svg)](https://pypi.python.org/pypi/gns3-gui)
+[![Snyk scanning](https://snyk.io/test/github/GNS3/gns3-gui/badge.svg)](https://snyk.io/test/github/GNS3/gns3-gui)
+
+## Installation
+
+Please see the documentation on our [website](https://docs.gns3.com)
+
+## Software dependencies
+
+PyQt5 which is either part of the Linux distribution or installable from PyPi. The other Python dependencies are automatically installed during the GNS3 GUI installation and are listed in [requirements.txt](https://github.com/GNS3/gns3-gui/blob/3.0/requirements.txt>)
+
+For connecting to nodes using Telnet, a Telnet client is required. On Linux that's a terminal emulator like xterm, gnome-terminal, konsole plus the telnet program. For connecting to nodes with a GUI, a VNC client is required, optionally a SPICE client can be used for Qemu nodes.
+
+For using packet captures within GNS3, Wireshark should be installed. It's recommended, but if you don't need that functionality you can go without it.
+
+## Development
+
+If you want to update the interface, modify the .ui files using QT tools. And:
+
+```shell
+cd scripts 
+python build_pyqt.py
+```
+
+### Debugging
+
+If you want to see the full logs in the internal shell you can type:
+
+```shell
+debug 2
+```
+    
+
+Or start the app with --debug flag.
+
+Due to the fact PyQT intercept you can use a web debugger for inspecting stuff:
+https://github.com/Kozea/wdb
+
+## Security issues
+
+Please contact us at security@gns3.net
+
+
+
+
