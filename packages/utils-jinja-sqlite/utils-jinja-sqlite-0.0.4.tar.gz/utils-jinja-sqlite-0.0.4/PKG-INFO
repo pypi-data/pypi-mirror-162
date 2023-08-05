@@ -1,0 +1,86 @@
+Metadata-Version: 2.1
+Name: utils-jinja-sqlite
+Version: 0.0.4
+Summary: Common helper utility functions used when connecting to sqlite databases and binding SQL values from python variables.
+Author: Marcelino G. Veloso III
+Author-email: mars@veloso.one
+Requires-Python: >=3.10,<4.0
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.10
+Requires-Dist: Jinja2 (>=3.1.2,<4.0.0)
+Requires-Dist: python-dotenv (>=0.19,<0.20)
+Requires-Dist: rich (>=12.2,<13.0)
+Description-Content-Type: text/markdown
+
+# Utils for Jinja & sqlite
+
+Must setup an .env pointing to the database folder, e.g.:
+
+`LOCAL_PATH="code/corpus-db/ph.db"`
+
+This will enable creating a connection via `setup_connection()`:
+
+```python
+from utils_jinja_sqlite import setup_connection
+conn = setup_connection()
+```
+
+## Setup Jinja Environment to fetch via .sql file
+
+Create a basic Jinja environment with `setup_env()`:
+
+```python
+from utils_jinja_sqlite import setup_env, get_rows, get_row
+env = setup_env("corpus_db") # will utilize templates found in corpus_db
+params = dict(a="'hello world'")
+sql_stmt = env.get_template("test.sql").render(params)
+get_rows(sql_stmt=sql_stmt) # will open a connection, yield results of the query
+get_row(sql_stmt=sql_stmt) # gets only the first row
+```
+
+Note that this will not work:
+
+```python
+for first_stmt_row in get_rows(sql_stmt=sql_stmt1):
+    for second_stmt_row in get_rows(sql_stmt=sql_stmt2):
+        ... # the first sql_stmt has not yet terminated
+```
+
+## SQL string literal binder funcs
+
+Instead of quoting a string literal can use a helper function
+
+```python
+from utils_jinja_sqlite import quote_sql_string
+params = dict(a=quote_sql_string(hello world))
+```
+
+## Cleaner syntax
+
+sqlparse is not included but the following can be used as a template for debugging statements:
+
+```python
+import sqlparse
+from jinja2 import Environment
+from rich.syntax import Syntax
+
+
+def format_sql(sql_stmt: str) -> Syntax:
+    """Helper debug function to display the SQL properly; often used in Jupyter
+    notebooks."""
+    parsed = sqlparse.format(
+        sql_stmt,
+        comma_first=True,
+        reindent=True,
+        wrap_after=60,
+    )
+    return Syntax(code=parsed, lexer="sql")
+
+
+def nb_stmt(env: Environment, path: str, params={}):
+    """Display Jinja-configured and SQLParse-prettified query statement via
+    Rich in Jupyter notebooks."""
+    return format_sql(env.get_template(path).render(params))
+
+```
+

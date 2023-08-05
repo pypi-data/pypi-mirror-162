@@ -1,0 +1,64 @@
+[tool.poetry]
+name = "utils-jinja-sqlite"
+version = "0.0.4"
+description = "Common helper utility functions used when connecting to sqlite databases and binding SQL values from python variables."
+authors = ["Marcelino G. Veloso III <mars@veloso.one>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+python-dotenv = "^0.19"
+rich = "^12.2"
+Jinja2 = "^3.1.2"
+#aiosqlite = "^0.17.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.1"
+pytest-instafail = "^0.4.2"
+pytest-sugar = "^0.9.4"
+pytest-icdiff = "^0.5"
+pytest-cov = "^2.12.1"
+mypy = "^0.971"
+black = "^22.6.0"
+isort = "^5.10"
+pre-commit = "^2.19"
+ipykernel = "^6.12"
+types-Markdown = "^3.4.0"
+types-PyYAML = "^6.0.7"
+types-python-slugify = "^5.0.4"
+notebook = "^6.4.11"
+jupyter = "^1.0.0"
+
+
+[tool.pytest]
+minversion = "76.0"
+addopts = "-ra -q --cov=start_code tests/"
+testpaths = ["tests"]
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 79
+include_trailing_comma = 'True'
+
+[tool.black]
+line-length = 79
+include = '.pyi?$'
+exclude = '''
+/(
+    .git
+    | .hg
+    | .mypy_cache
+    | .tox
+    | .venv
+    | _build
+    | buck-out
+    | build
+    | dist
+)/
+'''
+
+
+[build-system]
+requires = ["poetry-core>=1.1.12"]
+build-backend = "poetry.core.masonry.api"
