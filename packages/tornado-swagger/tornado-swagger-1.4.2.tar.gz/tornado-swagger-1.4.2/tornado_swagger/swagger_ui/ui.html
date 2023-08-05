@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Swagger UI</title>
+</head>
+<body class="swagger-section">
+<div id="swagger-ui-container" class="swagger-ui-wrap"></div>
+<style>
+    html {
+        box-sizing: border-box;
+        overflow: -moz-scrollbars-vertical;
+        overflow-y: scroll;
+    }
+
+    *,
+    *:before,
+    *:after {
+        box-sizing: inherit;
+    }
+
+    body {
+        margin: 0;
+        background: #fafafa;
+    }
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/3.37.2/swagger-ui.min.css"
+      integrity="sha512-c9Fmh2rJWb5kaFhvVlPcBLrFdzrVXkdTofQAozw6MfOsC3DwN6pHrpqk9gm8qwJh9wURiK1Hv57/GxmzJzew8g=="
+      crossorigin="anonymous"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/3.37.2/swagger-ui-bundle.min.js"
+        integrity="sha512-SRuebWqYcm2ITWgLa9iVSMjNJELVm/QebgNN1oRH75wTM+xIfXJFJWkUPwtDIsV81ae8zGIAXt6+LoGrbBfjDQ=="
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/3.37.2/swagger-ui-standalone-preset.min.js"
+        integrity="sha512-ZUCBiUmCK1/IkMDPuv1XiTEx60crsiZenBCtumb3OVgNrTFFtkGQeWXy6qHTR1RoLr4FTS+GrTWLKnyiT5uyAg=="
+        crossorigin="anonymous"></script>
+<script type="text/javascript">
+    (function () {
+        addEventListener('load', function () {
+            window.APP = new SwaggerUIBundle({
+                url: "{{ SWAGGER_URL }}",
+                defaultModelsExpandDepth: {{ DISPLAY_MODELS }},
+                dom_id: "#swagger-ui-container",
+                deepLinking: true,
+                presets: [
+                    SwaggerUIBundle.presets.apis,
+                    SwaggerUIStandalonePreset
+                ],
+                plugins: [
+                    SwaggerUIBundle.plugins.DownloadUrl
+                ],
+                layout: "StandaloneLayout",
+                validatorUrl: "https://validator.swagger.io/validator",
+            });
+        });
+    })();
+</script>
+</body>
+</html>
