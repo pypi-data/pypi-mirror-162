@@ -1,0 +1,179 @@
+image: python:3.8-slim
+
+stages:
+  - setup
+  - static-analysis
+  - tests
+  - package
+  - publish
+
+variables:
+  FLIT_ROOT_INSTALL: 1
+
+  PYPI_API_USER: __token__
+
+  # Don't forget to update the coverage threshold in .pre-commit-config.yaml
+  UNITTEST_COVERAGE_THRESHOLD: 90
+
+  VENV_BIN: .venv/bin
+
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS'
+      when: never
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - .cache/pip
+    - .venv/
+
+
+.declare-artifacts: &declare-artifacts
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - dist/
+
+
+.build-harness-base:
+  before_script:
+    - 'apt-get update
+    && apt-get install -y
+         git'
+    - git config --global user.email "you@example.com"
+    - git config --global user.name "Your Name"
+
+
+.build-harness-target:
+  script:
+    - ${VENV_BIN}/pip install .
+    - |
+      ${VENV_BIN}/build-harness \
+        --log-enable-console \
+        --log-level debug \
+        ${TARGET}
+
+  extends:
+    - .build-harness-base
+
+
+install-dependencies:
+  stage: setup
+  script:
+    - python3 -m venv .venv
+    - ${VENV_BIN}/pip install build_harness
+    - ${VENV_BIN}/build-harness install
+
+  extends:
+    - .build-harness-base
+
+
+formatting-check:
+  stage: static-analysis
+  variables:
+    TARGET: formatting --check
+
+  extends:
+    - .build-harness-target
+
+
+flake8-check:
+  stage: static-analysis
+  variables:
+    TARGET: static-analysis --analysis flake8
+
+  extends:
+    - .build-harness-target
+
+
+mypy-check:
+  stage: static-analysis
+  variables:
+    TARGET: static-analysis --analysis mypy
+
+  extends:
+    - .build-harness-target
+
+
+pydocstyle-check:
+  stage: static-analysis
+  variables:
+    TARGET: static-analysis --analysis pydocstyle
+
+  extends:
+    - .build-harness-target
+
+
+unit-tests:
+  stage: tests
+  variables:
+    TARGET: unit-test
+
+  extends:
+    - .build-harness-target
+
+
+unit-tests-coverage:
+  stage: tests
+  variables:
+    TARGET: unit-test --check ${UNITTEST_COVERAGE_THRESHOLD}
+
+  extends:
+    - .build-harness-target
+
+  <<: *declare-artifacts
+
+
+install-check:
+  stage: tests
+  variables:
+    TARGET: install
+
+  extends:
+    - .build-harness-target
+
+
+build-packages:
+  extends:
+    - .build-harness-base
+  stage: package
+  script:
+    - export THIS_VERSION=$(${VENV_BIN}/release-flow --default-branch main)
+    # log THIS_VERSION to pipeline log for debugging
+    - echo ${THIS_VERSION}
+    - ${VENV_BIN}/build-harness package --release-id ${THIS_VERSION}
+
+  <<: *declare-artifacts
+
+
+publish-packages:
+  extends:
+    - .build-harness-base
+  needs:
+    - job: build-packages
+      artifacts: true
+  stage: publish
+  script:
+    - |
+      export PUBLISH_THIS=$( \
+        ${VENV_BIN}/publish-flow \
+          --disable-pr-publish "${CI_PIPELINE_SOURCE}" \
+          --publish-nonrelease \
+          --publish-prerelease \
+      )
+    # log PUBLISH_THIS to pipeline log for debugging
+    - echo ${PUBLISH_THIS}
+    # NOTE: using the `--password` option to read from environment variable as this is
+    # the most likely to be available in a CI system (but not necessarily the most
+    # secure).
+    - |
+      ${VENV_BIN}/build-harness \
+        --log-enable-console \
+        --log-level debug \
+        publish \
+          --user $PYPI_API_USER \
+          --password $PYPI_API_TOKEN \
+          --publish ${PUBLISH_THIS}

@@ -1,0 +1,76 @@
+[build-system]
+build-backend = "flit_core.buildapi"
+requires = ["flit_core >=2,<3"]
+
+
+[tool.flit.metadata]
+author = "Russell Smiley"
+author-email = "russell@blueskyjunkie.ca"
+description-file = "README.rst"
+home-page = "https://gitlab.com/ci-cd-devops/pygitsync"
+module = "pygitsync"
+
+requires-python = ">=3.8"
+
+requires = [
+    "aiofiles >=0.8.0, <1",
+    "gitpython >=3.1.27, <4",
+    "parver >=0.3.1, <1",
+    "pydantic >=1.9.1, <2",
+    "python-daemon >=2.3.0, <3",
+    "ruamel.yaml >=0.17.21, <1",
+]
+
+[tool.flit.scripts]
+git-sync="pygitsync.entrypoint:flit_entry"
+
+[tool.flit.metadata.requires-extra]
+dev = [
+    "build_harness >=1.0.2, <2",
+    "pre_commit >=2.13.0, <3",
+    "types-aiofiles >=0.8.10, <1",
+]
+doc = [
+    "sphinx >=4.0.2, <5",
+    "sphinx_rtd_theme >=1.0, <2",
+]
+test = [
+    "pytest >=7.1.1, <8",
+    "pytest-asyncio >=0.18.3, <1",
+    "pytest-cov >=3.0, <4",
+    "pytest-mock >=3.6.1, <4",
+]
+
+
+[tool.black]
+# Don't forget to sync this with isort, .flake8
+line-length = 80
+
+
+[tool.isort]
+# Don't forget to sync this with black, .flake8
+line_length = 80
+profile = "black"
+
+
+[tool.coverage.run]
+# branch and concurrency settings seem to be needed due to this problem:
+# pytest-cov internal error "Can't combine line data with arc data"
+# https://github.com/pytest-dev/pytest-cov/issues/243
+branch = true
+concurrency = ["multiprocessing"]
+omit = ["pygitsync/.venv/*"]
+source = ["pygitsync"]
+
+
+[tool.coverage.report]
+exclude_lines = [
+    "except ImportError",
+    "raise NotImplementedError",
+    "pass",
+    "ABCmeta",
+    "abstractmethod",
+    "warnings.warn",
+]
+precision = 0
+show_missing = true
