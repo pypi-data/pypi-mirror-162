@@ -1,0 +1,87 @@
+Metadata-Version: 2.1
+Name: systran-align
+Version: 3.4.0
+Summary: Alignment tool based on fast_align
+Author: SYSTRAN
+Author-email: guillaume.klein@systrangroup.com
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Science/Research
+Classifier: Programming Language :: Python
+Classifier: Topic :: Text Processing :: Linguistic
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Description-Content-Type: text/markdown
+
+# systran-align
+
+**systran-align** is a small alignment tool that is based on https://github.com/clab/fast_align.
+
+## Installation
+
+```bash
+pip install systran-align
+```
+
+## Usage
+
+```python
+import systran_align
+```
+
+### Generating alignment probabilities
+
+```python
+systran_align.generate_alignment_probabilities(
+    input_path: str,
+    forward_probs_path: str,
+    backward_probs_path: str,
+    verbose: bool = False,
+    iterations: int = 5,
+    favor_diagonal: bool = False,
+    beam_threshold: float = -4,
+    diagonal_tension: float = 4,
+    optimize_tension: bool = False,
+    variational_bayes: bool = False,
+    alpha: float = 0.01,
+    no_null_word: bool = False,
+    prob_align_null: float = 0.08,
+    thread_buffer_size: int = 10000,
+)
+```
+
+**Inputs:**
+
+* `input_path`: text file where each line is a source-target example with format:
+
+```text
+<source> ||| <target>
+```
+
+**Outputs:**
+
+* `forward_probs_path`: binary file containing forward probabilities
+* `backward_probs_path`: binary file containing backward probabilities
+
+### Computing alignments
+
+```python
+aligner = systran_align.Aligner(
+    forward_probs_path: str,
+    backward_probs_path: str,
+)
+
+# result is a dict with fields:
+# * alignments
+# * forward_log_prob
+# * backward_log_prob
+result = aligner.align(
+    source: List[str],
+    target: List[str],
+)
+
+# Batch alternative:
+results = aligner.align_batch(
+    source: List[List[str]],
+    target: List[List[str]],
+)
+```
