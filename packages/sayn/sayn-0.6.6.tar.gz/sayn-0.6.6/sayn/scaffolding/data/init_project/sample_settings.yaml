@@ -1,0 +1,28 @@
+# Sample settings file. Exclude from version control as it contains secrets.
+# For more information follow the tutorial:
+# https://173tech.github.io/sayn/tutorials/tutorial_part1
+
+# You can define as many profiles as you want.
+# This tutorial only defines one profile for simplicity.
+profiles:
+  dev:
+    credentials:
+      # All required credentials defined in the project.yaml need to be linked
+      # to specific credential in the final section of this file
+      warehouse: dev_db
+
+  prod:
+    credentials:
+      warehouse: prod_db
+
+# This sets your default profile.
+default_profile: dev
+
+# These are the credential details for the credentials used in your profile(s).
+credentials:
+  dev_db:
+    type: sqlite
+    database: dev.db
+  prod_db:
+    type: sqlite
+    database: prod.db

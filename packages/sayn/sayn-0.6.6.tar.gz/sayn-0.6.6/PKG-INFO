@@ -1,0 +1,150 @@
+Metadata-Version: 2.1
+Name: sayn
+Version: 0.6.6
+Summary: Data-modelling and processing framework for automating Python and SQL tasks
+Home-page: https://173tech.github.io/sayn
+License: Apache-2.0
+Author: Robin Watteaux
+Author-email: robin@173tech.com
+Requires-Python: >=3.7,<3.11
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Provides-Extra: all
+Provides-Extra: bigquery
+Provides-Extra: graphviz
+Provides-Extra: mysql
+Provides-Extra: postgresql
+Provides-Extra: snowflake
+Requires-Dist: Click (==8.0.4)
+Requires-Dist: Jinja2 (==3.0.3)
+Requires-Dist: MarkupSafe (==2.1.0)
+Requires-Dist: PyJWT (==2.4.0); extra == "snowflake"
+Requires-Dist: PyMySQL (==1.0.2); extra == "all" or extra == "mysql"
+Requires-Dist: SQLAlchemy (==1.4.25)
+Requires-Dist: asn1crypto (==1.4.0); extra == "snowflake"
+Requires-Dist: cachetools (==5.0.0); extra == "bigquery"
+Requires-Dist: certifi (==2021.10.8); extra == "snowflake" or extra == "bigquery"
+Requires-Dist: cffi (==1.15.0); extra == "snowflake"
+Requires-Dist: charset-normalizer (==2.0.12); extra == "snowflake" or extra == "bigquery"
+Requires-Dist: colorama (==0.4.4)
+Requires-Dist: cryptography (==36.0.1); extra == "snowflake"
+Requires-Dist: future (==0.18.2); extra == "bigquery"
+Requires-Dist: google-api-core (==2.5.0); extra == "bigquery"
+Requires-Dist: google-auth (==2.6.0); extra == "bigquery"
+Requires-Dist: google-cloud-bigquery (==2.34.0); extra == "bigquery"
+Requires-Dist: google-cloud-bigquery-storage (==2.11.0); extra == "bigquery"
+Requires-Dist: google-cloud-core (==2.2.2); extra == "bigquery"
+Requires-Dist: google-crc32c (==1.3.0); extra == "bigquery"
+Requires-Dist: google-resumable-media (==2.2.1); extra == "bigquery"
+Requires-Dist: googleapis-common-protos (==1.54.0); extra == "bigquery"
+Requires-Dist: graphviz (==0.19.1); extra == "all" or extra == "graphviz"
+Requires-Dist: grpcio (==1.44.0); extra == "bigquery"
+Requires-Dist: grpcio-status (==1.44.0); extra == "bigquery"
+Requires-Dist: halo (==0.0.31)
+Requires-Dist: idna (==3.3); extra == "snowflake" or extra == "bigquery"
+Requires-Dist: libcst (==0.4.1); extra == "bigquery"
+Requires-Dist: log-symbols (==0.0.14)
+Requires-Dist: mypy-extensions (==0.4.3); extra == "bigquery"
+Requires-Dist: numpy (==1.21.4); extra == "snowflake" or extra == "bigquery"
+Requires-Dist: orjson (==3.7.7)
+Requires-Dist: oscrypto (==1.2.1); extra == "snowflake"
+Requires-Dist: packaging (==21.3); extra == "bigquery"
+Requires-Dist: proto-plus (==1.20.3); extra == "bigquery"
+Requires-Dist: protobuf (==3.19.4); extra == "bigquery"
+Requires-Dist: psycopg2 (==2.9.3); extra == "all" or extra == "postgresql"
+Requires-Dist: pyOpenSSL (==21.0.0); extra == "snowflake"
+Requires-Dist: pyarrow (==6.0.0); extra == "snowflake" or extra == "bigquery"
+Requires-Dist: pyasn1 (==0.4.8); extra == "bigquery"
+Requires-Dist: pyasn1-modules (==0.2.8); extra == "bigquery"
+Requires-Dist: pycparser (==2.21); extra == "snowflake"
+Requires-Dist: pycryptodomex (==3.14.1); extra == "snowflake"
+Requires-Dist: pydantic (==1.9.0)
+Requires-Dist: pyparsing (==3.0.7); extra == "bigquery"
+Requires-Dist: python-dateutil (==2.8.2); extra == "bigquery"
+Requires-Dist: pytz (==2021.3); extra == "snowflake"
+Requires-Dist: requests (==2.27.1); extra == "snowflake" or extra == "bigquery"
+Requires-Dist: rsa (==4.8); extra == "bigquery"
+Requires-Dist: ruamel.yaml (==0.17.21)
+Requires-Dist: ruamel.yaml.clib (==0.2.6)
+Requires-Dist: six (==1.16.0)
+Requires-Dist: snowflake-connector-python (==2.7.4); extra == "all" or extra == "snowflake"
+Requires-Dist: snowflake-sqlalchemy (==1.3.3); extra == "all" or extra == "snowflake"
+Requires-Dist: spinners (==0.0.24)
+Requires-Dist: sqlalchemy-bigquery (==1.3.0); extra == "bigquery"
+Requires-Dist: termcolor (==1.1.0)
+Requires-Dist: typing-inspect (==0.7.1); extra == "bigquery"
+Requires-Dist: typing_extensions (==4.1.1)
+Requires-Dist: urllib3 (==1.26.8); extra == "snowflake" or extra == "bigquery"
+Project-URL: Repository, https://github.com/173TECH/sayn
+Description-Content-Type: text/markdown
+
+<img
+  src="https://173-static-files.s3.eu-west-2.amazonaws.com/sayn_docs/logos/sayn_logo.png"
+  alt="SAYN logo"
+  style="width: 50%; height: 50%;"
+/>
+
+#
+
+SAYN is a modern data processing and modelling framework. Users define tasks (incl. Python, automated SQL transformations and more) and their relationships, SAYN takes care of the rest. It is designed for simplicity, flexibility and centralisation in order to bring significant efficiency gains to the data engineering workflow.
+
+## Use Cases
+
+SAYN can be used for multiple purposes across the data engineering and analytics workflows:
+
+* Data extraction: complement tools such as Fivetran or Stitch with customised extraction processes.
+* Data modelling: transform raw data in your data warehouse (e.g. aggregate activity or sessions, calculate marketing campaign ROI, etc.).
+* Data science: integrate and execute data science models.
+
+## Key Features
+
+SAYN has the following key features:
+
+* YAML based DAG (Direct Acyclic Graph) creation. This means all analysts, including non Python proficient ones, can easily add tasks to ETL processes with SAYN.
+* [Automated SQL transformations](https://173tech.github.io/sayn/tasks/autosql/): write your SELECT statement. SAYN turns it into a table/view and manages everything for you.
+* [Jinja parameters](https://173tech.github.io/sayn/parameters/): switch easily between development and product environment and other tricks with Jinja templating.
+* [Python tasks](https://173tech.github.io/sayn/tasks/python/): use Python scripts to complement your extraction and loading layer and build data science models.
+* Multiple [databases](https://173tech.github.io/sayn/databases/overview/) supported.
+* and much more... See the [Documentation](https://173tech.github.io/sayn/).
+
+## Design Principles
+
+SAYN aims to empower data engineers and analysts through its  three core design principles:
+
+* **Simplicity**: data processes should be easy to create, scale and maintain. So your team can focus on data transformation instead of writing processes. SAYN orchestrates all your tasks systematically and provides a lot of automation features.
+* **Flexibility**: the power of data is unlimited and so should your tooling. SAYN supports both SQL and Python so your analysts can choose the most optimal solution for each process.
+* **Centralisation**: all analytics code should live in one place, making your life easier and allowing dependencies throughout the whole analytics process.
+
+## Quick Start
+
+SAYN supports Python 3.7 to 3.10.
+
+```bash
+$ pip install sayn
+$ sayn init test_sayn
+$ cd test_sayn
+$ sayn run
+```
+
+This is it! You completed your first SAYN run on the example project. Continue with the [Tutorial: Part 1](https://173tech.github.io/sayn/tutorials/tutorial_part1/) which will give you a good overview of SAYN's true power!
+
+## Release Updates
+
+If you want to receive update emails about SAYN releases, you can sign up [here](http://eepurl.com/hnfJIr).
+
+## Support
+
+If you need any help with SAYN, or simply want to know more, please contact the team at <sayn@173tech.com>.
+
+## License
+
+SAYN is open source under the [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) license.
+
+---
+
+Made with :heart: by [173tech](https://www.173tech.com).
+
