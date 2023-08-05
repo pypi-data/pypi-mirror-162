@@ -1,0 +1,1 @@
+from smartcapture.client import SmartCaptureClient
