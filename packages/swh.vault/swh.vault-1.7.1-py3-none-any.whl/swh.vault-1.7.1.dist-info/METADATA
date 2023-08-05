@@ -1,0 +1,61 @@
+Metadata-Version: 2.1
+Name: swh.vault
+Version: 1.7.1
+Summary: Software Heritage vault
+Home-page: https://forge.softwareheritage.org/diffusion/DVAU/
+Author: Software Heritage developers
+Author-email: swh-devel@inria.fr
+Project-URL: Bug Reports, https://forge.softwareheritage.org/maniphest
+Project-URL: Funding, https://www.softwareheritage.org/donate
+Project-URL: Source, https://forge.softwareheritage.org/source/swh-vault
+Project-URL: Documentation, https://docs.softwareheritage.org/devel/swh-vault/
+Classifier: Programming Language :: Python :: 3
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: GNU General Public License v3 (GPLv3)
+Classifier: Operating System :: OS Independent
+Classifier: Development Status :: 5 - Production/Stable
+Requires-Python: >=3.7
+Description-Content-Type: text/x-rst
+License-File: LICENSE
+License-File: AUTHORS
+Requires-Dist: click
+Requires-Dist: fastimport
+Requires-Dist: flask
+Requires-Dist: psycopg2
+Requires-Dist: python-dateutil
+Requires-Dist: sentry-sdk
+Requires-Dist: typing-extensions
+Requires-Dist: swh.core[db,http] (>=2)
+Requires-Dist: swh.model (>=3.0.0)
+Requires-Dist: swh.objstorage (>=0.0.17)
+Requires-Dist: swh.scheduler (>=0.7.0)
+Requires-Dist: swh.storage (>=0.43.1)
+Provides-Extra: graph
+Requires-Dist: swh.graph (>=0.3.2) ; extra == 'graph'
+Provides-Extra: testing
+Requires-Dist: pytest ; extra == 'testing'
+Requires-Dist: dulwich (>=0.18.7) ; extra == 'testing'
+Requires-Dist: swh.loader.core ; extra == 'testing'
+Requires-Dist: swh.loader.git (>=0.8) ; extra == 'testing'
+Requires-Dist: swh.storage[testing] ; extra == 'testing'
+Requires-Dist: pytest-mock ; extra == 'testing'
+Requires-Dist: types-click ; extra == 'testing'
+Requires-Dist: types-python-dateutil ; extra == 'testing'
+Requires-Dist: types-pyyaml ; extra == 'testing'
+Requires-Dist: types-requests ; extra == 'testing'
+
+Software Heritage - Vault
+=========================
+
+User-facing service that allows to retrieve parts of the archive as
+self-contained bundles (e.g., individual releases, entire repository snapshots,
+etc.)
+The creation of a bundle is called "cooking" a bundle.
+
+Architecture
+------------
+
+The vault is made of two main parts:
+
+1. a stateful RPC server called the **backend**
+2. Celery tasks, called **cookers**
