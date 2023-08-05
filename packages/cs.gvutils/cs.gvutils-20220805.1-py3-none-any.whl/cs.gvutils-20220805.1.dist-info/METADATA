@@ -1,0 +1,62 @@
+Metadata-Version: 2.1
+Name: cs.gvutils
+Version: 20220805.1
+Summary: Graphviz utility functions.
+Home-page: https://bitbucket.org/cameron_simpson/css/commits/all
+Author: Cameron Simpson
+Author-email: Cameron Simpson <cs@cskk.id.au>
+License: GNU General Public License v3 or later (GPLv3+)
+Project-URL: URL, https://bitbucket.org/cameron_simpson/css/commits/all
+Keywords: python3
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: Operating System :: OS Independent
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Classifier: License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)
+Description-Content-Type: text/markdown
+Requires-Dist: cs.lex (>=20220626)
+
+Graphviz utility functions.
+
+*Latest release 20220805.1*:
+New DOTNodeMixin, a mixin for classes which can be rendered as a DOT node.
+
+See also the [https://www.graphviz.org/documentation/](graphviz documentation)
+and particularly the [https://graphviz.org/doc/info/lang.html](DOT language specification)
+and the [https://www.graphviz.org/doc/info/command.html](`dot` command line tool).
+
+## Class `DOTNodeMixin`
+
+A mixin providing methods for things which can be drawn as
+nodes in a DOT graph description.
+
+## Function `gvprint(dot_s, file=None, fmt=None, layout=None, **dot_kw)`
+
+Print the graph specified by `dot_s`, a graph in graphViz DOT syntax,
+to `file` (default `sys.stdout`)
+in format `fmt` using the engine specified by `layout` (default `'dot'`).
+
+If `fmt` is unspecified it defaults to `'png'` unless `file`
+is a terminal in which case it defaults to `'sixel'`.
+
+This uses the graphviz utility `dot` to draw graphs.
+If printing in SIXEL format the `img2sixel` utility is required,
+see [https://saitoha.github.io/libsixel/](libsixel).
+
+## Function `quote(s)`
+
+Quote a string for use in DOT syntax.
+This implementation passes identifiers and sequences of decimal numerals
+through unchanged and double quotes other strings.
+
+# Release Log
+
+
+
+*Release 20220805.1*:
+New DOTNodeMixin, a mixin for classes which can be rendered as a DOT node.
+
+*Release 20220805*:
+Initial PyPI release.
