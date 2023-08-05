@@ -1,0 +1,48 @@
+{% load render_table from django_tables2 %}
+{% block content %}
+  <div class="row mb-3">
+    <div class="col col-md-6">
+          {% if cdevice %}
+          {% if cdevice.contract.status == "active" %}
+            <div class="card">
+            {% else %}
+            <div class="card" style="background-color: #ffeeee;">
+            {% endif %}
+            <h5 class="card-header">Maintenance</h5>    
+          <div class="card-body">
+          <table class="table table-hover attr-table">
+          <tr>
+          <th scope="row">Contract</th>
+            <td>{{ cdevice.contract|linkify }}</td>
+          </tr>
+          <tr>
+            <th scope="row">From</th>
+            <td>{{ cdevice.contract.start_of_contract }}</td>
+          </tr>
+          <tr>
+            <th scope="row">Till</th>
+            <td>{{ cdevice.contract.end_of_contract }}</td>
+          </tr>
+          <tr>
+            <th scope="row">Status</th>
+            <td>{{ cdevice.contract.status }}</td>
+          </tr>
+          </table>
+          </div>
+        </div>
+          {% else %}
+          <div class="card" style="background-color: red ;">
+            <h5 class="card-header">Maintenance</h5>    
+          <div class="card-body">
+            <span style="color:white;">No Contract found!</span>
+          </div>
+          </div>
+          {% endif %}
+    
+    </div>
+    <div class="col col-md-6">
+      {% include 'inc/panels/comments.html' %}
+    </div>
+  </div>
+
+{% endblock content %}
