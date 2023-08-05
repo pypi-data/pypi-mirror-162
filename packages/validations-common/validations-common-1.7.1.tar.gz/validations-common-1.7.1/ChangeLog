@@ -1,0 +1,251 @@
+CHANGES
+=======
+
+1.7.1
+-----
+
+* Update py36 to py38 tox jobs
+* Explaining stable branches in CONTRIBUTING.rst
+* Normalizing VF metadata
+* Setting default inventory to 0 length string
+* Removing references to Babel
+* Bugfix: Add missing become: true to 2 tasks
+* Determine if there is any known good tripleo inventory
+* Removing leftover coverchange reference
+* Setting default branch of devstack repositories for functional tests
+
+1.7.0
+-----
+
+* Removing coverchange job
+* Centos 9 jobs for validations common
+* removing callbacks from validations-common
+* Update master for stable/1.6
+* setup.cfg: Replace dashes by underscores
+* Modifying catalogue execution test to resolve component pipeline issue
+
+1.6.0
+-----
+
+* New validation for checking presence of running rsyslog service
+* Migrate jobs from CentOS 8 to CentOS 8 Stream
+* feat(removal): tox-ansible support
+* fix(molecule): Add ability to run molecule on Fedora
+* fix(ci): Install python3 package first
+* Molecule test restoration
+* Bumping the ansible-lint version to 5.3.2 in order to resolve CI failure
+* add pre-update and pre-upgrade groups to ntp playbook
+* Create security component for CI Validations component jobs
+
+1.5.0
+-----
+
+* Create clients component for CI Validations Jobs
+* Add baremetal Component for component CI tests
+* Run all validations and fail after for CI role
+* CI task for execution of all packaged validations
+* Validation Framework functional test expansion
+* Adding more validations in the tripleo component test
+* Elevating priviledges for the check\_package\_update
+* Use py3 as the default runtime for tox
+
+1.4.0
+-----
+
+* Add new metadata keys to the validation playbooks
+* Update validations for Ansible 2.11
+* Dependency reorganization
+* validations\_read\_ini refactoring
+* Fix ntp validation to check chronyd service status on all nodes
+* callback adjustment for no hosts matched
+* Setting language for the python3.6 tox environment
+* Test validations for false positives
+* Removing validations-libs from test-requirements
+
+1.3.0
+-----
+
+* Add missing font for PDF generation
+* reqcheck job is now voting
+* fix var name in logging statement
+* Removing lookup\_plugins data file directive
+* Expanded docstrings for library subpackage
+* Coverage change job
+* Callback logging unification
+* Remove content-provider to decrease CI time
+* [advanced\_format\_512e\_support] Add role documentation in sphinx
+* [xfs\_check\_ftype] Add role documentation in sphinx
+* Enforce some better rights on temporary files
+* [validate\_selinux] Add role documentation in sphinx
+* [service\_status] Add role documentation in sphinx
+* [ntp] Add role documentation in sphinx
+* [no\_op] Add role documentation in sphinx
+* [dns] Add role documentation in sphinx
+* [check\_selinux\_mode] Add role documentation in sphinx
+* [check\_ram] Remove README.md file
+* [check\_latest\_packages\_version] Add role documentation in sphinx
+* [check\_disk\_space] Add role documentation in sphinx
+* [check\_cpu] Remove README.md file
+* Fix the way we handle validation cli command in CI role
+* Allow comments in variable files to be rendered in docs
+* Reorganize CONTRIBUTING information
+* Remove messages very specific to CI
+* Loop variable name conflict resolution
+* Correct the tox option for skipping sdist generation
+* Removing superfluous imports from tests
+* Removing the 'PIP\_+' string from tox.ini
+* Enabling indentation rule for yamllint
+
+1.2.0
+-----
+
+* New location of the default log directory
+* functools provide reduce instead of the ansible
+* Update Validations Framework IRC channels
+* Remove haproxy validation from validations-common
+* Renamed variable to something more illuminating
+* Bump molecule to 3.3.1
+* Trigger molecule jobs when modifying the following files
+* Rename local variable component to validation\_component for Upstream CI
+* Remove Jinja2 constraint
+* Licences are now listed for all requirements
+* Unblocking the openstack-tox-docs job
+* Adds dockerignore to the repo
+* Reqcheck job for upstream validations-common
+* Temporary fetch logs adjustement to detect log folder
+* File validation extended to callback\_plugins, main loop optimized
+* Added the 'CALLBACK\_NEEDS\_WHITELIST' attribute
+* Remove workaround for tox-ansible and global molecule config
+* Fix callback\_type for validation\_json.py
+* Add testing for custom callback feature
+* Fix targeting hosts to 'localhost' instead of 'all'
+* Sync is no longer loopy
+* Artifacts directory path is now set in a variable
+* Simple tests for validation\_json callback
+* Test for callback initiation
+* Bump pre-commit repositories
+* Add shared configuration for all molecule test
+* Fetch all Validations, json and log files with CI role
+* Superfluous imports are now mocked
+* Remove RoleNames ansible-lint custom rule
+* Update validations role to be used by tripleo CI and devstack tests
+* Update of validate-files script
+* Use new CLI for functionnal tests and remove validation.py script
+* Disabling strict mode for ConfigParser in read\_ini
+* ConfigParser exeption message should be returned
+* Version bumps to prepare for rhel9 transition
+* Fixed exception handling of the print\_tuple\_table method
+* Adding backup-and-restore validation group
+* Except block now covers specific errors
+* Make check\_latest\_packages\_version roles more generic
+* add basic standalone job w/ validate-services true
+* Tests for validation.py module and helper classes
+* Fallback on PWD for the Validation json log instead of getcwd
+* Improved test coverage for library/advanced\_format.py
+* Improved test coverage for library/warn.py
+* Cover report omits test files
+* [Testing Infra] Apply here the improvements done to tripleo-validations
+* Re-add documentation for http\_json callback
+* .gitignore now excludes JSON molecule logs
+* packages var renamed to packages\_list
+* Introduce tox-ansible to validations-common
+* Test class for http\_json callback
+* Make callback write to default if /var/log/validations does not exist
+* Branching is now considered, line numbers are printed
+* Puts DISABLE\_PIP\_VERSION\_CHECK on a separate line
+* Docs are now built in pdf
+* Python 2.7 environment, mimicking the one used by RDO
+* Fixes issues caused by dict unpacking in (90e6133)
+* cli help rework and cleanup
+* Validations now gather only the subset of facts they need
+* explanation why plugins don't respect normal naming coventions
+* Test infrastructure for library scripts along with few samples
+* Add validation-common documentation structure
+* Restrict execution to localhost only
+* Make the measuring code coverage test working
+* Simple tests for validation\_output callback
+* Simple tests for validation\_stdout callback
+* Simple tests for fail\_if\_no\_hosts callback
+* Infrastructure for callback unit tests
+* Add external http logging callback
+* Fix list index out of range
+* Update TOX\_CONSTRAINTS\_FILE
+* Remove useless python import
+* Restrict Ansible dependency
+* Remove workaround for broken dogpile.cache and lower-constraints file
+* Exit with zero status when denials are not found in audit log
+* Add default value for validation.py inventory
+* make selinux check only for rhel distribution
+* Add dedicated stdout callback for VF library
+* Correct the validate\_selinux working\_dir
+* Fix validation and group arguments to accept comma lists
+* Exclude non failing gathering facts action in simplified result
+* Install CI roles into share/ansible/roles
+* Remove ensure-docker role execution
+* Use the UBI8 image for testing
+* Convert docker molecule usage to podman
+* Updated/corrected service\_status
+* Add missing exec bit
+* Add molecule tests runs back in the CI
+* Fix lower-constraints errors for validations-common
+
+1.1.1
+-----
+
+* Change path for validation Ansible files
+* Switch legacy Zuul jobs to native Zuul v3 jobs
+* Get validation log path if exist
+* Revert "Make mock import python 2.7 compatible"
+* Add validation.py as script in setup.cfg
+
+1.1.0
+-----
+
+* Revert "Add TripleO Jobs back"
+* Output duration not only on failed and skipped states
+* Log output results instead of print on the console
+* Add validation cli script
+* Fix pygments style
+* drop mock from lower-constraints
+* Stop to use the \_\_future\_\_ module
+* Avoid broken dogpile.cache
+* Remove the pytest import
+* Update the tox minversion parameter
+* Move unit tests execution to stestr
+* Bump default tox env from py37 to py38
+* Add py38 package metadata
+* Add check-disk-space-pre-upgrade playbooks
+* Add Python3 victoria unit tests
+* Update master for stable/ussuri
+* Make mock import python 2.7 compatible
+
+1.0.0
+-----
+
+* Switch to ensure-docker role
+* Cleanup py27 support
+* Convert all of the fedora28 container usage to CentOS8
+* Update to hacking 3.0
+* Update hacking for Python3
+* Add TripleO Jobs back
+* Make file permission uniform and remove python shebangs
+* Don't write playbook stats in binary mode
+* Use ansible runner uuid as playbook id if exist
+* Use Zuul template for lower-constraints
+* Add reportentry.py custom module
+* Remove mock as a test requirement and add PyYAML as requirement
+* Use uuid if exists as env variable in the callback\_plugin
+* Migrate molecule jobs from centos 7 to 8
+* Add License File
+* Add playbooks
+* Remove zuul.d temporarily
+* Add RoleNames ansible-lint rule
+* Remove unused vars directory in roles
+* Make some roles more generic
+* Move Ansible components to validations\_common directory
+* Fix pbr installation issues
+* Add zuul and molecule tests structure
+* Add common Ansible roles and libraries
+* Add validations\_common lib structure
+* Add callback\_plugins
+* Initialization of validations-common
