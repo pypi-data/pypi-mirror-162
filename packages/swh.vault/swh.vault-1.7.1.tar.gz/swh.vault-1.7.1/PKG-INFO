@@ -1,0 +1,38 @@
+Metadata-Version: 2.1
+Name: swh.vault
+Version: 1.7.1
+Summary: Software Heritage vault
+Home-page: https://forge.softwareheritage.org/diffusion/DVAU/
+Author: Software Heritage developers
+Author-email: swh-devel@inria.fr
+Project-URL: Bug Reports, https://forge.softwareheritage.org/maniphest
+Project-URL: Funding, https://www.softwareheritage.org/donate
+Project-URL: Source, https://forge.softwareheritage.org/source/swh-vault
+Project-URL: Documentation, https://docs.softwareheritage.org/devel/swh-vault/
+Classifier: Programming Language :: Python :: 3
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: GNU General Public License v3 (GPLv3)
+Classifier: Operating System :: OS Independent
+Classifier: Development Status :: 5 - Production/Stable
+Requires-Python: >=3.7
+Description-Content-Type: text/x-rst
+Provides-Extra: testing
+Provides-Extra: graph
+License-File: LICENSE
+License-File: AUTHORS
+
+Software Heritage - Vault
+=========================
+
+User-facing service that allows to retrieve parts of the archive as
+self-contained bundles (e.g., individual releases, entire repository snapshots,
+etc.)
+The creation of a bundle is called "cooking" a bundle.
+
+Architecture
+------------
+
+The vault is made of two main parts:
+
+1. a stateful RPC server called the **backend**
+2. Celery tasks, called **cookers**
