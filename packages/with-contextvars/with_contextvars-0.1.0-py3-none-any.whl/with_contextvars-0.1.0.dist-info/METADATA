@@ -1,0 +1,50 @@
+Metadata-Version: 2.1
+Name: with-contextvars
+Version: 0.1.0
+Summary: Context manager for setting contextvars variables
+Home-page: https://github.com/bob1de/with_contextvars
+License: MIT
+Author: Robert Schindler
+Author-email: dev@bob1.de
+Requires-Python: >=3.7,<4.0
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Description-Content-Type: text/x-rst
+
+with_contextvars
+================
+
+This module provides ``Set``, a context manager which sets one or more ``contextvars``
+variables upon activation and resets them to their previous values at exit.
+
+Usage::
+
+    import contextvars, with_contextvars
+    A = contextvars.ContextVar("A")
+    B = contextvars.ContextVar("B")
+    A.set("Hello,")
+    B.set("world!")
+    print(A.get(), B.get())
+    # prints: Hello, world!
+    with with_contextvars.Set((A, "other"), (B, "value")):
+        print(A.get(), B.get())
+        # prints: other value
+    print(A.get(), B.get())
+    # prints: Hello, world!
+
+Even the entirety of variable assignments of a ``contextvars.Context`` object
+(as obtained from ``contextvars.copy_context()``) can be activated by initializing
+``Set`` with its items::
+
+    with with_contextvars.Set(*context.items()):
+        ...
+
+However, using ``contextvars.Context.run()`` is more efficient and should be preferred
+where possible.
+
+More information can be found in the documentation of ``Set``.
+
