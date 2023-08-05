@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block head %}
+<style type="text/css">
+  .voila-logo:hover {
+    background-color: transparent !important;
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+  </div>
+    <header>
+      <div class="navbar-fixed">
+        <nav class="top-nav">
+          <div class="nav-wrapper">
+          </div>
+        </nav>
+      </div>
+
+      <ul class="sidenav sidenav-fixed grey lighten-5">
+        <li class=brand-logo-container>
+          <a class="voila-logo">
+            <object class="brand-logo" type="image/svg+xml" data="{{base_url}}voila/static/gw_logo_green.svg"></object>
+          </a>
+        </li>
+        <li><div class="divider"></div></li>
+
+        {% if breadcrumbs|length > 1: %}
+          <li><a class="sidenav-link" href="{{breadcrumbs[-2][0]}}"><i class="material-icons">folder</i>..</a></li>
+        {% endif %}
+
+        {% for content in contents.content %}
+          {% if content.type == 'notebook' %}
+            <li class="bold">
+              <a class="sidenav-link" href="{{base_url}}voila/render/{{content.path}}"><i class="material-icons">book</i>{{content.name}}</a>
+            </li>
+          {% endif %}
+          {% if content.type == 'directory' %}
+            <li class="bold">
+              <a class="sidenav-link" href="{{base_url}}voila/tree/{{content.path}}"><i class="material-icons">folder</i>{{content.name}}</a>
+            </li>
+          {% endif %}
+        {% endfor %}
+      </ul>
+    </header>
+    <div style="padding-left: 30rem;">
+      <p>Welcome to the Greenwood backtests.</p>
+      <p>To get started, feel free to check out some of our notebooks:</p>
+      <div style="padding-left: 3rem;">
+          <ul>
+            <li><b>monte_carlo.ipynb:</b> How the mechanism behaves on future price data.</li>
+            <li><b>premium_data.ipynb:</b> The cumulative rolling options premium costs of the protocol</li>
+            <li><b>protoco_fee_vs_gas_cost.ipynb:</b> Comparison between the cumulative protocol fees generated and the cumulative cost of gas to rollover</li>
+            <li><b>smart_hodl_vs_regular_hodl.ipynb:</b> The cumulative returns via Smart Hodl and the cumulative returns from just holding ETH</li>
+          </ul>
+      </div>
+    </div>
+  </div>
+{% endblock %}
