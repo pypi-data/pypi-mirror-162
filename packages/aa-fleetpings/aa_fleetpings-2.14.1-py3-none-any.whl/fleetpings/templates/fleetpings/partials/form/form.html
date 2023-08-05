@@ -1,0 +1,71 @@
+{% load bootstrap %}
+{% load i18n %}
+
+<form id="aa-fleetping-form" class="form-horizontal">
+    {% csrf_token %}
+    <fieldset class="aa-fleetpings-form">
+        <!-- ping_target -->
+        {{ form.ping_target|bootstrap_horizontal }}
+
+        <!-- ping_channel -->
+        {% if webhooks_configured %}
+            {{ form.ping_channel|bootstrap_horizontal }}
+        {% endif %}
+
+        <!-- fleet_type -->
+        {{ form.fleet_type|bootstrap_horizontal }}
+        {{ form.webhook_embed_color }}
+
+        <!-- fleet_commander -->
+        {{ form.fleet_commander|bootstrap_horizontal }}
+
+        <!-- fleet_name -->
+        {{ form.fleet_name|bootstrap_horizontal }}
+
+        <!-- formup_location -->
+        {{ form.formup_location|bootstrap_horizontal }}
+
+        <!-- pre_ping -->
+        {{ form.pre_ping|bootstrap_horizontal }}
+
+        <!-- formup_time -->
+        {{ form.formup_time|bootstrap_horizontal }}
+        {{ form.formup_timestamp }}
+
+        <!-- optimer -->
+        {% if optimer_installed %}
+            <div class="fleetpings-create-optimer clearfix" style="display: none;">
+                {{ form.optimer|bootstrap_horizontal }}
+            </div>
+        {% endif %}
+
+        {{ form.formup_now|bootstrap_horizontal }}
+
+        <!-- fleet_comms -->
+        {{ form.fleet_comms|bootstrap_horizontal }}
+
+        <!-- fleet_doctrine -->
+        {{ form.fleet_doctrine|bootstrap_horizontal }}
+        {{ form.fleet_doctrine_url }}
+
+        <!-- srp -->
+        {{ form.srp|bootstrap_horizontal }}
+
+        <!-- srp_link -->
+        {% if srp_module_available_to_user %}
+            <div class="fleetpings-create-srp-link clearfix" style="display: none;">
+                {{ form.srp_link|bootstrap_horizontal }}
+            </div>
+        {% endif %}
+
+        <!-- additional_information -->
+        {{ form.additional_information|bootstrap_horizontal }}
+
+        <div class="form-group clearfix">
+            <div class=" col-sm-offset-2 col-sm-10 col-lg-offset-2 col-lg-10">
+                <div class="fleetpings-form-message"></div>
+                <button id="createPingText" name="createPingText" class="btn btn-primary">{% translate "Create Ping" %}</button>
+            </div>
+        </div>
+    </fieldset>
+</form>
