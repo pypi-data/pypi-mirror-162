@@ -1,0 +1,153 @@
+Metadata-Version: 2.1
+Name: z3c.testing
+Version: 1.0.0
+Summary: High-level Testing Support
+Home-page: http://pypi.python.org/pypi/z3c.testing
+Author: Zope Corporation and Contributors
+Author-email: zope-dev@zope.org
+License: ZPL 2.1
+Keywords: zope3 testing layer zodb
+Platform: UNKNOWN
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Environment :: Web Environment
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: Zope Public License
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: Implementation :: CPython
+Classifier: Programming Language :: Python :: Implementation :: PyPy
+Classifier: Natural Language :: English
+Classifier: Operating System :: OS Independent
+Classifier: Topic :: Internet :: WWW/HTTP
+Classifier: Framework :: Zope :: 3
+Requires-Dist: setuptools
+Requires-Dist: zope.container
+Requires-Dist: zope.site
+Requires-Dist: zope.security
+Requires-Dist: zope.component
+Requires-Dist: zope.configuration
+Requires-Dist: zope.interface (>=4.0.5)
+Requires-Dist: zope.testing
+Provides-Extra: functional
+Requires-Dist: ZODB3 ; extra == 'functional'
+Requires-Dist: zope.app.rotterdam ; extra == 'functional'
+Requires-Dist: zope.app.appsetup ; extra == 'functional'
+Requires-Dist: zope.app.publication ; extra == 'functional'
+Requires-Dist: zope.app.testing ; extra == 'functional'
+Requires-Dist: zope.testbrowser (<5) ; extra == 'functional'
+Provides-Extra: test
+Requires-Dist: zope.browserpage ; extra == 'test'
+Requires-Dist: zope.browserresource ; extra == 'test'
+Requires-Dist: zope.principalregistry ; extra == 'test'
+Requires-Dist: zope.publisher ; extra == 'test'
+Requires-Dist: zope.securitypolicy ; extra == 'test'
+Requires-Dist: zope.testrunner ; extra == 'test'
+
+This package provides a collection of high-level test setups for unit and
+functional testing. In particular, it provides a testing layer that can use an
+existing, pre-populated database as a starting point, which speeds up the test
+setup phase for large testing data sets.
+
+
+=======
+CHANGES
+=======
+
+1.0.0 (2022-08-05)
+------------------
+
+- Add support for Python 3.7, 3.8, 3.9, 3.10.
+
+- Drop support for Python 3.4.
+
+
+1.0.0a4 (2017-06-19)
+--------------------
+
+- Standardize namespace __init__
+
+- Add support for Python 3.4 up to 3.6, PyPy2 and PyPy3.
+
+- Drop support for Python 2.6 and 3.3.
+
+
+1.0.0a3 (2013-02-28)
+--------------------
+
+- Bugfix: container test bad keys for Python 3.
+
+
+1.0.0a2 (2013-02-28)
+--------------------
+
+- Migrate to the newest ``zope.interface`` version and remove the
+  forked code in ``verify.py``.
+
+
+1.0.0a1 (2013-02-28)
+--------------------
+
+- Dropped Python 2.4 and 2.5 support, added Python 3.3 support.
+
+- Made functional test tools into the `functional` extra, so no
+  zope.app packages are required.
+
+
+0.3.2 (2010-08-23)
+------------------
+
+- Do some ``InterfaceBaseTest`` attributes to be able to write less code:
+
+  - ``iface`` provide the interface here
+
+  - ``klass`` provide the class here
+
+  - ``pos`` provide the positional arguments here
+
+  - ``kws`` provide the keyword arguments here
+
+- Avoid depreacted `zope.testing.doctest` by using python's `doctest`.
+
+
+0.3.1 (2009-12-26)
+------------------
+
+- Removed install dependency on ``zope.app.security``.
+
+- Removed test dependency on ``zope.app.securitypolicy``.
+
+- Removed test dependency on ``zope.app.zcmlfiles``.
+
+
+0.3.0 (2009-02-01)
+------------------
+
+- Using ``zope.container`` instead of ``zope.app.container``
+
+- Using ``zope.site`` instead of ``zope.app.component``
+
+0.2.0 (2007-10-31)
+------------------
+
+- Fixed package data.
+
+- Moved functional tests to tests.
+
+- Removed deprecation warning.
+
+0.1.1b1 (2007-06-21)
+--------------------
+
+- Make ``z3c`` a namespace.
+
+- Prevent ``ConnectionStateError`` in layer after ``appsetup`` is run
+  in layer.
+
+
