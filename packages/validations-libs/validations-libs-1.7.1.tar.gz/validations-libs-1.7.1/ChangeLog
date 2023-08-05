@@ -1,0 +1,286 @@
+CHANGES
+=======
+
+1.7.1
+-----
+
+* Bumping flake8-typing-imports to version 1.12.0
+* Remove six
+* Update py36 to py38 tox jobs
+* Add validation container entry point
+* Man pages compatibility
+* Clarifying project branching model in CONTRIBUTING.rst
+* Fixing CLI formatter import test
+* Validation help improvement
+* Normalizing VF metadata
+* Removing references to Babel
+* Tests verifying functionality ansible runtime infrastructure
+* Dockerfile updated to eliminate dependency conflicts
+* get\_status property simplification and optimization
+* Remove yaml check for inventory in run/cli
+
+1.7.0
+-----
+
+* Removing leftover coverchange reference
+* Exceptions for Validations Framework
+* Setting default branch of devstack repositories for functional tests
+* Checking inventory file presence and format
+* Removing coverchange job
+* Moving callbacks to validations-libs
+* Centos 9 jobs for validations libs
+* Update master for stable/1.6
+* Validation actions refactor
+* Fix community init to respect cfg paths
+
+1.6.0
+-----
+
+* For stable/train compatibility ansible-runner needs to move to 1.4.0
+* Migrate jobs from CentOS 8 to CentOS 8 Stream
+* Move Cliff requirements to 2.16.0
+
+1.5.0
+-----
+
+* Add backward compatibility for python pathlib module
+* Convert fstrings to .format to facilitate porting
+* Expand validations\_logs table with reason of failure
+* Mocking 'open' to improve test isolation
+* Disable spinner when running validation in non quiet mode
+* Add the community validation paths
+* Refactor set\_argument\_parser to fix shell regression
+* Enforce existing roles and playbooks checks
+* fix symlink for ansible base dir
+* Add new CLI sub command to create community validations
+* Use py3 as the default runtime for tox
+* Default value of the constructor parameter
+
+1.4.0
+-----
+
+* Expose skip list mechanism via the CLI
+* Add validation config file mechanism
+* Setting language for the python3.6 tox environment
+* Validations show group filtering
+
+1.3.0
+-----
+
+* Triggering the 'tripleo-ci-centos-8-undercloud-containers'
+* Unit test refactor
+* Add CLI auto generated documentation using Cliff
+* Add Products metadata key management
+* Add Categories metadata key management
+* Add missing font for PDF generation
+* Build containers in gate  - to match check
+* Remove convert\_data function
+* add spinner to highlight progress
+* improve vagrant functionality
+* Test cross contamination prevention
+* reqcheck job is now voting
+* fix var name in logging statement
+* Fix history list sub command when not using the default log dir
+* Simplification of the log path handling by the ValidationLog class
+* Handle backward compatibility for Cliff 2.16.0 (stable/train)
+* Coverage change job
+* Remove content-provider to decrease CI time
+* Fix a regression in the ShowGroup sub-command
+* Fix VALIDATIONS\_LOG\_BASEDIR constant when $HOME is undefined
+* Correct the tox option for skipping sdist generation
+* get\_formatted\_data optimization
+* Literal substituted with DEFAULT\_VALIDATIONS\_BASEDIR
+* Module docstring for validation\_libs.constants
+* Filling license info for Ansible and Pyflakes
+
+1.2.0
+-----
+
+* New optional param for log path
+* Fixing the recursive path handling
+* Constants path formatting unification
+* Improved log path handling
+* Override cliff command parser to handle argparser conflict\_handler
+* Update Validations Framework IRC channels
+* Expansion of logging for the list action
+* Remove VALIDATION\_GROUPS constant
+* Refactoring of the cli lister module
+* Deprecated assertEquals replaced
+* Refactoring of the cli run module
+* Paths no longer contain double '/'
+* Expansion of logging for the show action
+* Refactoring of the cli parseractions module
+* Refactoring of the cli history module
+* Refactoring of the cli show module
+* Refactoring of the cli app module
+* Use validation\_component for Standalone CI jobs
+* Reqcheck job for upstream validations-libs
+* Bumping the ansible-runner version to 1.4.4
+* Removing ansible-autodoc
+* Fix Python 2.7 compatibility for test\_ansible.py
+* Make Python Interpreter option for Ansible Validation Run
+* Elevate the verbosity level when running validation(s)
+* Move fetch\_validations role from validations-libs-functional to post playbook
+* Disable quiet mode run when using an Ansible Custom Callback
+* setup.cfg: Replace dashes with underscores
+* Retrieve n latest validation results
+* Cover now  prints line numbers
+* Bump pre-commit repositories
+* Add support for JUnitXML output (optional)
+* Version bumps for rhel9 transition
+* CLI colors refactored
+* group info test mocks and asserts
+* Raise exception if result is empty
+
+1.1.0
+-----
+
+* Invalid char '\xe2' replaced with double dash
+* PDF docs are now available
+* Create dedicated CLI for the Validation Framework
+* Exceptions now indicate cause where applicable
+* Expose ansible ssh\_user variable to the run action
+* Add vars to tripleo-ci-centos-8-standalone-validation-libs job
+* Add basic standalone job w/ validate-services true
+* Zuul runs tests in py36 only
+* Expanded and increased strictness of the ansible.py tests
+* Expose callback\_whitelist option to Run action
+* Fixes string formatting of the error msg log
+* Default to current user dir for log creation and management
+* Remove the condition to check the groups
+* Refactor the groups property in Validation class
+* Fix the syntax for groups in documentation
+* Moving doc structure closer to that in validations-commons
+* Return absolute path for inventory
+* Add skip list option in order to provide a black list for validation
+* Modifies README.rst to reference podman
+* show command now properly uses list of validations
+* Docker image refinement and preparation for future development
+* Improved Dockefile and simplified use instructions
+* Add new test for the parse\_all\_validations\_on\_disk
+* Add an error message when groups is not found in the playbook
+* One of the two nested calls of os.path.join was redundant
+* Secondary loop removed. params\_only dict now uses update method
+* Removed explicit inheritance from object
+* OrderedDict can be constructed directly from dict instance
+* Style adjustment of a constant
+* Removed unnecessary second check
+* Allow to provide different stdout callback to the libs
+* Local vars were redefining builtins
+* Dockerfile for installing Validation Framework in a CentOS container
+* Fix typo in validations\_libs/ansible.py
+* Move ansible-runner version to 1.4.0
+* Handle dynamically the ansible artifacts dir path
+* Make the measuring code coverage test working
+* The lower constraint file has been removed
+* Bump pre-commit-hooks to v3.3.0
+* Handle unreachable case in the log statistics
+* Update TOX\_CONSTRAINTS\_FILE
+* Add Docstrings to validations\_libs/ansible.py file
+* Add Docstrings to validations\_libs/validations\_logs.py file
+* Add Docstrings to validations\_libs/validation\_action.py file
+* Add Docstrings to validations\_libs/group.py file
+* Enforce the way we encapsulate a Validation
+* Add docstrings to utils.py
+* Remove output format test in utils.get\_validations\_parameters
+* Add better conversion of string parameters into a list
+* Don't rely on parameter file extension for downloading
+* Ensure we're using proper types for validation\_name and \_id
+* Fix parameters management
+* add Vagrantfile for Validation Framework dev work
+* [Validator Run] Detect unknown validations from the command-line
+* Remove CI roles from validations-libs
+* Add parameters values to the validation show command
+* Fix show validation stats with correct number
+* Add ansible dependency
+* Install CI roles into ansible roles dir
+* Add the documentation build back in the CI
+* Remove install unnecessary packages
+* Fix lower-constraints errors
+
+1.0.4
+-----
+
+* Allow to set python interper for ansible execution
+
+1.0.3
+-----
+
+* Add lower ansible-runner version as requirements for train
+* Update validation path with the share/ansible one
+* Add a way to override the default validation log path
+* Switch legacy Zuul jobs to native Zuul v3 jobs
+
+1.0.2
+-----
+
+* Show history by play and add get status action
+* Change zuul config for functional CI execution
+* Update openstackdocstheme
+* Remove playbook param from run\_validation
+* Add base\_dir param to override the constants value easily
+* Filter get\_all\_log\_file by extension
+* Catch value error when extract log info from log name
+* Switch to newer openstackdocstheme and reno versions
+* Handle multiple validation logs results
+* Add API Documentation structure
+* Avoid None value when missing data in ansible log
+* Fix title
+* Raise exception if no validation is found
+* Update the minversion parameter
+* Add asynchronous option to validation libs
+* Move unit tests execution to stestr
+* Bump default tox env from py37 to py38
+* Add py38 package metadata
+* Add Python3 victoria unit tests
+
+1.0.0
+-----
+
+* Format output in json or yaml for validations show param
+* Use validation\_path attribut instead of variables
+* Declare playbooks for groups execution
+* Expose limit hosts option to the validation run actions
+* Ensure we get a sorted list for validation groups
+* Add unit tests coverage for validation, group and logs classes
+* Make mock import python 2.7 compatible
+* Add backward compatibility for old ansible\_runner releases
+* Update to hacking 3.0
+* Update hacking for Python3
+* Fix behavior for Show command to stick to tripleoclient
+* Add get validation playbook function and cleanup
+* Implement validation show history command
+* Add validation log object representation
+* Add TripleO Jobs back
+* Use Zuul template for lower-constraints
+* Implement Validation Show Parameters
+* Add validation\_actions class and group info implementation
+* Move validation data as object
+* Fix typo in unit test fakes data
+* Remove unused classes for PushD and Tempdir
+* Add validations show functions
+* Remove mock as a test requirement and add PyYAML as requirement
+* Change ansible artifacts dir to /var/log
+* Improve the way we log on the file system
+* Handle playbook as a list or simple str
+* Make playbooks as a list by default
+* remove untested get\_result functions from this PR
+* Fix pep8 lint for unit tests
+* Add unit tests for ansible runner library
+* Remove zuul.d temporarily
+* Add unit tests for validations\_run class
+* add validations logs path cache
+* fix import issue and add config opt to the run object
+* fix nits
+* Improve testing infrastructure
+* Remove extra-vars logic from run.py
+* fix pep8 lint
+* Add run and ansible\_runner execution
+* fix pep8 lint
+* Add run and ansible\_runner execution
+* fix module import
+* Add utils functions and validations List object
+* Add missing stuffs for pytesting with tox
+* Adding the foundation files
+* Init python project structure
+* Initial commit
