@@ -1,0 +1,2 @@
+class UcidError(Exception):
+    pass
