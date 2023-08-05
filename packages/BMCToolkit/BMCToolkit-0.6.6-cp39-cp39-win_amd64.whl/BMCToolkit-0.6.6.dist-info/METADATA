@@ -1,0 +1,69 @@
+Metadata-Version: 2.1
+Name: BMCToolkit
+Version: 0.6.6
+Summary: Simulate and analyze trajectories of Block Markov Chains.
+Home-page: https://www.jaronsanders.nl
+Author: Jaron Sanders
+Author-email: jaron.sanders@tue.nl
+License: UNKNOWN
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)
+Classifier: Operating System :: Microsoft :: Windows
+Classifier: Programming Language :: C++
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Topic :: Scientific/Engineering :: Mathematics
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: numpy (>=1.23.1)
+
+This Python package provides tools to simulate and analyze trajectories of Block Markov Chains (BMCs).
+
+## Contents
+
+A compiled C++ library is distributed, together with stubs. 
+
+## Usage 
+
+Here is an example on how to use the library:
+
+```python
+import random
+import numpy as np
+import BMCToolkit as BMCToolkit
+
+if __name__ == "__main__":
+
+    num_states = 10*30
+    num_clusters = 2
+    path_length = 1500
+
+    current_state = 0
+    frequency_matrix = np.zeros((num_states,num_states))
+    trajectory = []
+    for t in range(path_length):
+        past_state = current_state
+        if t % 2 == 0:
+            if current_state <= num_states / 3:
+                current_state = random.randint(num_states/3,num_states-1)
+            else:
+                current_state = random.randint(0,num_states/3-1)
+        else:
+            current_state = random.randint(0,num_states-1)    
+        trajectory.append(current_state)
+        frequency_matrix[past_state,current_state] += 1
+    
+    print("Testing compute_clusters_from_trajectory...")
+    clustering = BMCToolkit.compute_clusters_from_trajectory( trajectory, num_states, num_clusters )
+    
+    print(clustering)
+```
+
+## Related projects
+
+The compiled C++ library utilizes the following other C++ libraries unmodified:
+
+- the Eigen library, available at https://eigen.tuxfamily.org/;
+- the Sparse Eigenvalue Computation Toolkit as a Redesigned ARPACK (SPECTRA) library, available at https://spectralib.org/.
+
