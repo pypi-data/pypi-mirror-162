@@ -1,0 +1,114 @@
+[tool.poetry]
+authors = ["Joao Da Silva <joao.silva1@avast.com>", "Michal Mrazek <michal.mrazek@avast.com>"]
+description = "CLI tool for managing ML projects on Vertex AI"
+name = "wanna-ml-test"
+version = "v0.0.15"
+packages = [
+    { include = "wanna", from = "src" },
+]
+include = ["CHANGELOG.md"]
+
+[tool.poetry.extras]
+test = ["pytest"]
+
+[tool.poetry.dependencies]
+Jinja2 = "^3.1.2"
+PyGithub = "^1.55"
+PyYAML = "^5.4.0"
+case-converter = "^1.0.2"
+cookiecutter = "^1.7.3"
+cron-validator = "^1.0.6"
+email-validator = "^1.2.1"
+emoji = "^1.7.0"
+gitpython = "^3.1.27"
+halo = "^0.0.31"
+importlib-metadata = "^4.0"
+kfp = "^1.8.12"
+packaging = "^21.3"
+pathvalidate = "^2.5.0"
+pydantic = "^1.9.0"
+python = ">=3.7.1,<3.11" # google-cloud-bigquery requires this mess
+python-on-whales = "^0.43.0"
+pyyaml-include = "^1.3"
+smart-open = {extras = ["gcs"], version = "^6.0"}
+treelib = "^1.6.1"
+typer = "^0.4.1"
+waiting = "^1.4.1"
+merge-args = "^0.1.4"
+checksumdir = "^1.2.0"
+pandas = "^1.3.3"
+
+[tool.poetry.dev-dependencies]
+black = "^22.3.0"
+flake8 = "^3.8.4"
+isort = "^5.10.1"
+mkdocs-click = "^0.7.0"
+mkdocs-graphviz = "^1.4.4"
+mkdocs-material = "^8.3.3"
+mkdocs-typer = "^0.0.2"
+mkdocstrings = "^0.19.0"
+mock = "^4.0.3"
+mypy = "^0.941"
+pre-commit = "^2.10.1"
+pylint = "^2.12.2"
+pylint-pydantic = "^0.1.4"
+pytest = "^6.2.5"
+pytest-docker = "^0.10.3"
+pytest-mock = "^3.6.1"
+sklearn = "^0.0"
+taskipy = "^1.9.0"
+tensorboardx = "^2.5"
+types-mock = "^4.0.12"
+types-pyyaml = "^6.0.5"
+types-requests = "^2.27.14"
+xgboost = "^1.5.2"
+
+[tool.mypy]
+exclude = "src/wanna/components/templates"
+follow_imports = "silent"
+strict = true
+strict_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+disallow_any_generics = true
+implicit_reexport = true
+ignore_missing_imports = true
+
+[tool.'mypy-google.*']
+ignore_missing_imports = true
+
+[tool.pylint]
+ignore-patterns="src/**/templates/**"
+
+[tool.pylint.'MESSAGES CONTROL']
+extension-pkg-whitelist = "pydantic"
+
+[tool.poetry.scripts]
+wanna = "wanna.cli.__main__:app"
+
+[tool.pytest.ini_options]
+addopts = "--verbose -s --durations=0 --ignore=src/wanna/components/templates"
+filterwarnings = [
+    "error",
+    "ignore::UserWarning", # note the use of single quote below to denote "raw" strings in TOML
+    'ignore::DeprecationWarning',
+    'ignore::SyntaxWarning',
+    'ignore::ResourceWarning',
+]
+
+[tool.taskipy.tasks]
+docs-deploy = "mkdocs gh-deploy --force"
+docs-serve = "mkdocs serve"
+build = "pre-commit run --all-files"
+pre_build = "pre-commit install"
+mypy = "mypy ./src"
+lint = "pylint ./src"
+
+[tool.black]
+extend-ignore = "E203"
+max-line-length = 120
+
+[build-system]
+build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core>=1.0.0"]
+
