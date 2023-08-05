@@ -1,0 +1,25 @@
+version: "3"
+
+services:
+  seqrepo-rest-service:    
+    # Test: curl http://localhost:2002/seqrepo/1/sequence/refseq:NM_000551.3
+    image: biocommons/seqrepo-rest-service:latest
+    volumes:
+      - seqrepo_vol:/usr/local/share/seqrepo
+    network_mode: host
+    
+  uta:
+    # Test:
+    # psql -XAt postgres://anonymous@localhost/uta -c 'select count(*) from transcript'
+    # 249909
+    image: biocommons/uta:uta_20180821
+    volumes:
+      - uta_vol:/var/lib/postgresql/data
+    network_mode: host
+
+
+volumes:
+  seqrepo_vol:
+    external: true
+  uta_vol:
+    external: true
