@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "calculate-my-score"
+version = "0.1.0"
+description = "Calculate your score by one simple command!"
+authors = ["Bar Hochman"]
+include = ["calculate_my_score/**"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+typer = "^0.6.1"
+rich = "^12.5.1"
+pytest = "^7.1.2"
+
+[tool.poetry.dev-dependencies]
+flake8 = "^5.0.4"
+mypy = "^0.971"
+bandit = "^1.7.4"
+black = {version = "^22.6.0", allow-prereleases = true}
+
+[tool.poetry.scripts]
+calculate-my-score = 'calculate_my_score.main:app'
+
+[console]
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
