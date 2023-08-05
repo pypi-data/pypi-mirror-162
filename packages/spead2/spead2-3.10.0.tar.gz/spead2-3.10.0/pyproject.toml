@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools", "wheel", "pybind11==2.9.1", "setuptools_scm==6.4.2"]
+
+[tool.cibuildwheel]
+build-frontend = "build"
+before-all = "manylinux/before_all.sh {package}"
+before-build = "manylinux/before_build.sh"
+manylinux-x86_64-image="manylinux2014"
+manylinux-i686-image="manylinux2014"
+manylinux-aarch64-image="manylinux2014"
+build = ["cp37-manylinux*", "cp38-manylinux*", "cp39-manylinux*", "cp310-manylinux*"]
+
+[tool.cibuildwheel.linux]
+archs = ["x86_64"]
+
+[tool.cibuildwheel.linux.environment]
+CC = "ccache gcc"
