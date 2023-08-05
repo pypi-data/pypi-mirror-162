@@ -1,0 +1,10 @@
+from iqs_client.api.acquisition_api import AcquisitionApi
+from iqs_client.api.persistent_index_api import PersistentIndexApi
+from iqs_client_patch.api.acquisition_api import monkey_patch_acquire_linked_data
+from iqs_client_patch.api.persistent_index_api import monkey_patch_download_transformed_compartment
+
+
+def do_monkey_patching():
+    AcquisitionApi.acquire_linked_data = monkey_patch_acquire_linked_data
+    PersistentIndexApi.download_transformed_model_compartment = monkey_patch_download_transformed_compartment
+
