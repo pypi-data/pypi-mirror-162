@@ -1,0 +1,54 @@
+include:
+  - project: "gemseo/dev/ci-includes"
+    file: "base.yml"
+
+variables:
+  TEST_ALL_ENVS:
+    value: "false"
+    description: "Whether to run the tox tests for all python versions and all platforms."
+  MATLAB_PYTHON_WRAPPER_WINDOWS:
+    value: ""
+    description: Enable with git+file:////C:\python-matlab@windows ; python_version<'3.9'
+  PYTEST_ADD_OPTS:
+    value: ""
+    description: "Additional CLI arguments passed to pytest."
+
+# Base test job, common to all the tests jobs.
+test:
+  extends:
+    - .test-base
+  variables:
+    PYTEST_ADDOPTS: --junitxml=report.xml --cov-report=term:skip-covered $PYTEST_ADD_OPTS
+  parallel:
+    matrix:
+      - TAG:
+          - docker
+          - windows-server-2012
+        TOX_ENV_NAME:
+          - py39-coverage
+  tags:
+    - irt
+    - $TAG
+
+
+# Define jobs for minor python env with this extended parent.
+extended-test:
+  extends:
+    - test
+  rules:
+    # Always run for MR or commits pushed to the master branch.
+    - if: '$CI_COMMIT_BRANCH == "master" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"'
+      when: always
+    # For selecting from gitlab UI.
+    - if: '$TEST_ALL_ENVS == "false"'
+      when: never
+    - !reference [test, rules]
+  parallel:
+    matrix:
+      - TAG:
+          - docker
+          - windows-server-2012
+        TOX_ENV_NAME:
+          - py37-coverage
+          - py38-coverage
+          - py310-coverage
