@@ -1,0 +1,134 @@
+---
+- hosts: all
+  any_errors_fatal: true
+  vars:
+    logs_dir: "/tmp/logs"
+  roles:
+    - bindep
+    - multi-node-firewall
+    - role: multi-node-vxlan-overlay
+      vars:
+        vxlan_interface_name: "{{ api_interface_name }}"
+        vxlan_vni: 10000
+    - role: multi-node-managed-addressing
+      vars:
+        managed_interface_name: "{{ api_interface_name }}"
+        managed_network_prefix: "{{ api_network_prefix }}"
+        managed_network_prefix_length: "{{ api_network_prefix_length }}"
+        managed_network_address_family: "{{ address_family }}"
+    # NOTE(yoctozepto): no addressing for neutron_external_interface in here
+    # because it is enslaved by a bridge
+    - role: multi-node-vxlan-overlay
+      vars:
+        vxlan_interface_name: "{{ neutron_external_vxlan_interface_name }}"
+        vxlan_vni: 10001
+    - role: bridge
+      vars:
+        bridge_name: "{{ neutron_external_bridge_name }}"
+        bridge_member_name: "{{ neutron_external_vxlan_interface_name }}"
+    # TODO(mnasiadka): Update ipv6 jobs to test ipv6 in Neutron
+    - role: multi-node-managed-addressing
+      vars:
+        managed_interface_name: "{{ neutron_external_bridge_name }}"
+        managed_network_prefix: "{{ neutron_external_network_prefix }}"
+        managed_network_prefix_length: "{{ neutron_external_network_prefix_length }}"
+        managed_network_address_family: "ipv4"
+    - role: veth
+      vars:
+        veth_pair:
+          - "veth-{{ neutron_external_bridge_name }}"
+          - "veth-{{ neutron_external_bridge_name }}-ext"
+        bridge_name: "{{ neutron_external_bridge_name }}"
+  tasks:
+    # NOTE(yoctozepto): we use gawk to add time to each logged line
+    # outside of Ansible (e.g. for init-runonce)
+    - name: Install gawk and Python modules
+      package:
+        name:
+          - gawk
+          - python3-pip
+          - python3-setuptools
+          - python3-wheel
+      become: true
+
+    - name: Ensure /tmp/logs/ dir
+      file:
+        path: "{{ logs_dir }}"
+        state: "directory"
+
+    - name: Ensure node directories
+      file:
+        path: "{{ logs_dir }}/{{ item }}"
+        state: "directory"
+        mode: 0777
+      with_items:
+        - "docker_logs"
+        - "kolla_configs"
+        - "system_logs"
+        - "kolla"
+        - "ansible"
+
+    # NOTE(yoctozepto): let's observe forwarding behavior
+    - name: iptables - LOG FORWARD
+      become: true
+      iptables:
+        state: present
+        action: append
+        chain: FORWARD
+        jump: LOG
+        log_prefix: 'iptables FORWARD: '
+
+    # NOTE(yoctozepto): This is to undo Docker's default policy of DROP which
+    # breaks l3 forwarding and also linuxbridge deploys due to bridge-nf-call-iptables.
+    # FIXME(yoctozepto): really handle this for users - somehow my local multinode
+    # deploy fixed it for itself by setting it to ACCEPT on network nodes without
+    # my intervention but so far we have no idea what did that. It certainly does
+    # not happen in CI where all nodes are aio.
+    - name: iptables - ACCEPT FORWARD
+      become: True
+      iptables:
+        state: present
+        action: append
+        chain: FORWARD
+        jump: ACCEPT
+
+    - name: set new hostname based on ansible inventory file
+      hostname:
+        name: "{{ inventory_hostname }}"
+      become: true
+
+    - name: Wait for ntp time sync
+      command: timedatectl status
+      register: timedatectl_status
+      changed_when: false
+      until: "'synchronized: yes' in timedatectl_status.stdout"
+      retries: 90
+      delay: 10
+
+    # TODO(mgoddard): Remove this task in the Y cycle after chrony has been
+    # dropped for a cycle.
+    # NOTE(mgoddard): For upgrades, test the case where we are running
+    # a chrony container, but keep the default of disabled after the
+    # upgrade.
+    - block:
+        - name: Remove host NTP packages
+          become: true
+          package:
+            name:
+              - chrony
+              - ntp
+            state: absent
+
+        # NOTE(mgoddard): removing the systemd-timesyncd package fails, so stop
+        # and disable it instead.
+        - name: Stop systemd-timesyncd service
+          become: true
+          service:
+            name: systemd-timesyncd
+            enabled: no
+            state: stopped
+          when: ansible_os_family == 'Debian'
+      when:
+        - is_upgrade
+        # cephadm gets grumpy without a host-level chrony.
+        - scenario != 'cephadm'
