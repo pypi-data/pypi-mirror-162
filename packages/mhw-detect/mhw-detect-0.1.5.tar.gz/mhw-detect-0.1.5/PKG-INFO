@@ -1,0 +1,43 @@
+Metadata-Version: 2.1
+Name: mhw-detect
+Version: 0.1.5
+Summary: Fast marine heatwaves and extrem events detector based on https://github.com/ecjoliver/marineHeatWaves
+Author: John Brouillet
+Requires-Python: >=3.8,<3.12
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Requires-Dist: click (>=8.1.3,<9.0.0)
+Requires-Dist: dask (>=2021.10.0)
+Requires-Dist: netCDF4 (>=1.5.7)
+Requires-Dist: numba (>=0.54.1)
+Requires-Dist: numpy (>=1.20.3)
+Requires-Dist: pandas (>=1.3.5)
+Requires-Dist: scipy (>=1.7.3)
+Requires-Dist: xarray (>=2022.6.0,<2023.0.0)
+Description-Content-Type: text/markdown
+
+# MHW Detector
+
+Marine heatwaves detector based on https://github.com/ecjoliver/marineHeatWaves.  
+
+This package integrates a numba optimised version of ecjoliver's implementation for MHW detection with multiprocessing capabilities to compute detection over every coordinates of the dataset.  
+
+This code is not only for detecting MHW. It can also be used to detect extrem events of any variables like chla, pH, O2, etc...
+
+## Installation
+> pip install mhw-detect
+
+
+## Usage
+### Diagramme
+![architecture](mhw_archi.png)
+
+### Command
+#### Detection
+> mhw-detect -c config.yml  
+
+#### Geospatial cut
+> mhw-cut -c config.yml
+
