@@ -1,0 +1,153 @@
+---
+- name: Make sure Validations Log dir exists
+  become: true
+  file:
+    path: "{{ vf_log_dir }}"
+    state: directory
+    mode: "0755"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    recurse: true
+
+- name: check if virtualenv is used
+  register: is_virtualenv
+  stat:
+    path: "{{ zuul_work_virtualenv }}"
+
+- name: Set commmand if virtualenv exists
+  set_fact:
+    validation_command: "source {{ zuul_work_virtualenv }}/bin/activate; {{ cli_command }}"
+  when:
+    - is_virtualenv.stat.exists
+    - validation_command is not defined
+
+- name: Set Validation directory if virtualenv exists
+  set_fact:
+    validation_dir: "--validation-dir {{ zuul_work_virtualenv }}/share/ansible/validation-playbooks"
+  when: is_virtualenv.stat.exists
+
+- name: Set Ansible base directory if virtualenv exists
+  set_fact:
+    ansible_dir: "--ansible-base-dir {{ zuul_work_virtualenv }}/share/ansible/"
+  when: is_virtualenv.stat.exists
+
+- name: Set commmand without virtualenv
+  set_fact:
+    validation_command: "{{ cli_command }}"
+  when:
+    - not is_virtualenv.stat.exists
+    - validation_command is not defined
+
+- name: Set validation dir without virtualenv
+  set_fact:
+    validation_dir: "--validation-dir /usr/share/ansible/validation-playbooks"
+  when: not is_virtualenv.stat.exists
+
+- name: Set a valid inventory
+  block:
+    - name: Stat all possible inventory location
+      register: stat_results
+      stat:
+        path: '{{ inv_path }}'
+      loop: '{{ inventory_list }}'
+      loop_control:
+        loop_var: inv_path
+
+    - name: Set inventory path or fallback to default localhost
+      set_fact:
+        inventory_path: '{{ stat_result.inv_path }}'
+      when:
+        - '{{ stat_result.stat.exists }}'
+      loop: '{{ stat_results.results }}'
+      loop_control:
+        loop_var: stat_result
+
+    - name: Set inventory variable
+      set_fact:
+        inventory: '{{ inventory_path|default("localhost") }}'
+  when: inventory == ""
+
+- name: Run positive validation tests
+  include_tasks: run.yaml
+  vars:
+    name: "{{ item }}"
+    expected_rc: 0
+  when:
+    - run_validation|default(false)|bool
+    - validation_component | length > 0
+  with_dict: "{{ validations_list[validation_component] }}"
+
+- name: Fail if something went wrong
+  fail:
+    msg: "One or more Validations has failed, check the log results for more information."
+  when: result_failed | default(False) | bool
+
+- name: Run negative validation tests
+  include_tasks: run.yaml
+  vars:
+    name: "{{ item }}"
+    expected_rc: 1
+    negative: true
+  when:
+    - run_validation|default(false)|bool
+    - validation_component | length > 0
+  with_dict: "{{ validations_list[validation_component] }}"
+
+- name: Fail if something went wrong
+  fail:
+    msg: "One or more Validations has failed, check the log results for more information."
+  when: result_failed | default(False) | bool
+
+- name: List validations
+  include_tasks: list.yaml
+  vars:
+    val_format: "{{ tested_format }}"
+  loop: "{{ validation_list_formats }}"
+  loop_control:
+    loop_var: tested_format
+
+- name: Show validation run results
+  include_tasks: show_results.yaml
+  vars:
+    name: "{{ item }}"
+  when:
+    - run_validation|default(false)|bool
+    - validation_component | length > 0
+  with_dict: "{{ validations_list[validation_component] }}"
+
+- name: Show validation
+  include_tasks: show_validation_info.yaml
+  vars:
+    name: "{{ item }}"
+  when:
+    - run_validation|default(false)|bool
+    - validation_component | length > 0
+  with_dict: "{{ validations_list[validation_component] }}"
+
+- name: List history
+  include_tasks: list_validation_history.yaml
+  vars:
+    history_command: "{{'show history' if validation_command == 'openstack tripleo validator' else 'history list'}}"
+
+- name: Run validations with extra vars file
+  include_tasks: run_extra_vars_file.yaml
+  vars:
+    name: "{{ item }}"
+    extra_vars_uuid: "{{ 'extra vars for tests' | to_uuid }}"
+  when:
+    - run_validation|default(false)|bool
+    - validation_component | length > 0
+  with_dict: "{{ validations_list[validation_component] }}"
+
+- name: Import variable overrides
+  become: true
+  copy:
+    src: files/catalog_vars_override.yaml
+    dest: "{{ vf_catalogue_overrides }}"
+    mode: "0644"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+
+- name: Execute entire validations catalogue
+  include_tasks: execute_full_catalogue.yaml
+  when: execute_full_vf_catalogue
