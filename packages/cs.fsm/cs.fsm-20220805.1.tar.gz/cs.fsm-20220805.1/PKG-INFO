@@ -1,0 +1,121 @@
+Metadata-Version: 2.1
+Name: cs.fsm
+Version: 20220805.1
+Summary: Basic Finite State Machine (FSM) tools.
+Home-page: https://bitbucket.org/cameron_simpson/css/commits/all
+Author: Cameron Simpson
+Author-email: Cameron Simpson <cs@cskk.id.au>
+License: GNU General Public License v3 or later (GPLv3+)
+Project-URL: URL, https://bitbucket.org/cameron_simpson/css/commits/all
+Keywords: python3
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: Operating System :: OS Independent
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Classifier: License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)
+Description-Content-Type: text/markdown
+
+Basic Finite State Machine (FSM) tools.
+
+*Latest release 20220805.1*:
+* FSM: subclass DOTNodeMixin and provide a hook for a colour palette for node fillcolors.
+* Other minor changes.
+
+## Class `FSM(cs.gvutils.DOTNodeMixin)`
+
+Base class for a finite state machine (FSM).
+
+The allowed states and transitions are defined by the class
+attribute `FSM_TRANSITIONS`, a mapping of
+*state*->*event*->*new_state*.
+
+Each instance has the following attributes:
+* `fsm_state`: the current state value.
+* `fsm_history`: an optional iterable of `FSMTransitionEvent`
+  state transitions recorded by the `fsm_event` method.
+  Usually this would be `None` (the default) or a `list`.
+
+*Method `FSM.__init__(self, state, *, history=None, lock=None, transitions=None)`*:
+Initialise the `FSM` from:
+* `state`: the initial state
+* `history`: an optional object to record state transition
+  history, default `None`; if not `None` this should be an
+  iterable object with a `.append(entry)` method such as a
+  `list`.
+* `lock`: an optional mutex to control access;
+  if presupplied and shared with the caller
+  it should probably be an `RLock`;
+  the default is a `Lock`, which is enough for `FSM` private use
+* `transitions`: optional *state*->*event*->*state* mapping;
+  if provided, this will override the class `FSM_TRANSITIONS` mapping
+
+## Class `FSMError(builtins.Exception, builtins.BaseException)`
+
+An exception associated with an `FSM`.
+
+These have a `.fsm` attribute storing an (optional) `FSM`
+reference supplied at initialisation.
+
+## `FSMSubType = ~FSMSubType`
+
+Type variable.
+
+Usage::
+
+  T = TypeVar('T')  # Can be anything
+  A = TypeVar('A', str, bytes)  # Must be str or bytes
+
+Type variables exist primarily for the benefit of static type
+checkers.  They serve as the parameters for generic types as well
+as for generic function definitions.  See class Generic for more
+information on generic types.  Generic functions work as follows:
+
+  def repeat(x: T, n: int) -> List[T]:
+      '''Return a list containing n references to x.'''
+      return [x]*n
+
+  def longest(x: A, y: A) -> A:
+      '''Return the longest of two strings.'''
+      return x if len(x) >= len(y) else y
+
+The latter example's signature is essentially the overloading
+of (str, str) -> str and (bytes, bytes) -> bytes.  Also note
+that if the arguments are instances of some subclass of str,
+the return type is still plain str.
+
+At runtime, isinstance(x, T) and issubclass(C, T) will raise TypeError.
+
+Type variables defined with covariant=True or contravariant=True
+can be used to declare covariant or contravariant generic types.
+See PEP 484 for more details. By default generic types are invariant
+in all type variables.
+
+Type variables can be introspected. e.g.:
+
+  T.__name__ == 'T'
+  T.__constraints__ == ()
+  T.__covariant__ == False
+  T.__contravariant__ = False
+  A.__constraints__ == (str, bytes)
+
+Note that only type variables defined in global scope can be pickled.
+
+## Class `FSMTransitionEvent(builtins.tuple)`
+
+FSMTransitionEvent(old_state, new_state, event, when, extra)
+
+*Method `FSMTransitionEvent.__new__(_cls, old_state, new_state, event, when, extra)`*:
+Create new instance of FSMTransitionEvent(old_state, new_state, event, when, extra)
+
+# Release Log
+
+
+
+*Release 20220805.1*:
+* FSM: subclass DOTNodeMixin and provide a hook for a colour palette for node fillcolors.
+* Other minor changes.
+
+*Release 20220805*:
+Initial PyPI release.
