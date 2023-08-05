@@ -1,0 +1,71 @@
+Metadata-Version: 2.1
+Name: istockphoto
+Version: 0.0.1
+Summary: Gracefully download dataset from istockphoto
+Home-page: https://github.com/QIN2DIM/istock_downloader
+Author: QIN2DIM
+Author-email: qinse.top@foxmail.com
+License: GNU General Public License v3.0
+Keywords: istockphoto,downloader,spider,istock
+Platform: UNKNOWN
+Classifier: Topic :: Scientific/Engineering
+Classifier: Topic :: Scientific/Engineering :: Artificial Intelligence
+Classifier: Topic :: Software Development
+Classifier: Topic :: Software Development :: Libraries
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Programming Language :: Python :: 3
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: gevent (~=21.12.0)
+Requires-Dist: requests (~=2.27.1)
+Requires-Dist: pyyaml (~=6.0)
+Requires-Dist: bs4 (~=0.0.1)
+Requires-Dist: beautifulsoup4 (~=4.11.1)
+Requires-Dist: loguru (~=0.6.0)
+
+# iStockPhoto Downloader
+
+## Introduction
+
+Gracefully download dataset from iStockPhoto.
+
+## Documentation
+
+[Home · QIN2DIM/istock_downloader Wiki (github.com)](https://github.com/QIN2DIM/istock_downloader/wiki)
+
+## Example
+
+1. **Download PyPi package**
+
+   ```bash
+   pip install istockphoto
+   ```
+
+2. **Quickstart**
+
+   Retrieve the lizard and use the default parameters to download the image on page 1.
+
+   ```python
+   from istockphoto import IstockPhotoDownloader
+   
+   if __name__ == '__main__':
+       IstockPhotoDownloader("lizard").mining()
+   
+   ```
+
+   Search by image based on istockphoto.
+
+   ```python
+   from istockphoto import IstockPhotoDownloader
+   
+   if __name__ == '__main__':
+       IstockPhotoDownloader("lizard").more_like_this(istock_id=1097354054).mining()
+   
+   ```
+
+   
+
+
+
