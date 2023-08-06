@@ -1,0 +1,14 @@
+from {0} import {1}
+
+from pyqt_autotest.cli.options import Options
+from pyqt_autotest.core.auto_test import _AutoTest
+from pyqt_autotest.core.exceptions import InheritanceError
+
+
+options = Options({2}, {3}, {4}, "{5}")
+instance = {1}(options)
+
+if isinstance(instance, _AutoTest):
+    instance._run()
+else:
+    raise InheritanceError()
