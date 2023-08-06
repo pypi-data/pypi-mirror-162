@@ -1,0 +1,1 @@
+from prime-faster.prime-faster import *
