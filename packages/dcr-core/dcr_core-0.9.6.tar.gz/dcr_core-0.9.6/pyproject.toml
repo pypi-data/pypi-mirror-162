@@ -1,0 +1,84 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+authors = [
+    { name = "Team Konnexions", email = "info@konnexions.ch" },
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: Other/Proprietary License",
+    "Natural Language :: English",
+    "Operating System :: Microsoft :: Windows :: Windows 10",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Text Processing",
+    "Typing :: Typed",
+]
+description = "Document Content Recognition API"
+keywords = [
+    "Document Content Recognition",
+    "NLP",
+    "OCR",
+]
+maintainers = [
+    { name = "Teanm Konnexions", email = "info@konnexions.ch" },
+]
+name = "dcr_core"
+readme = "README.md"
+requires-python = ">=3.10"
+version = "0.9.6"
+
+[project.urls]
+"Bug Tracker" = "https://github.com/KonnexionsGmbH/dcr-core/issues"
+#"Documentation" = "https://konnexionsgmbh.github.io/dcr-core/"
+"Homepage" = "https://github.com/KonnexionsGmbH/dcr-core"
+#"Release History" = "TBD"
+#"Release Notes" = "TBD"
+
+[tool.bandit]
+
+[tool.black]
+line-length = 140
+
+[tool.isort]
+float_to_top = true
+force_single_line = true
+overwrite_in_place = true
+profile = "black"
+
+[tool.mypy]
+check_untyped_defs = true
+disallow_any_decorated = true
+disallow_any_explicit = true
+disallow_any_expr = false
+disallow_any_generics = true
+# due to SpaCy ...
+disallow_any_unimported = false
+disallow_incomplete_defs = true
+disallow_subclassing_any = true
+disallow_untyped_calls = true
+disallow_untyped_decorators = true
+disallow_untyped_defs = true
+follow_imports = "skip"
+namespace_packages = false
+no_implicit_optional = true
+pretty = true
+show_column_numbers = true
+show_error_codes = true
+strict = true
+strict_equality = true
+warn_no_return = true
+warn_redundant_casts = true
+warn_return_any = true
+warn_unreachable = false
+warn_unused_configs = true
+warn_unused_ignores = true
+
+[tool.setuptools]
+packages = ["dcr_core"]
+
+[tool.setuptools.package-data]
+dcr_core = ["*.pyi"]
