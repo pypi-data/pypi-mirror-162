@@ -1,0 +1,164 @@
+# Changelog
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [0.8.4]
+
+### Added
+ - Management socket + status command
+ - TCP Monitor socket
+ - Log messages from anonymous users
+ - max_persist_ttl option to prevent long lived COTs
+ - P12 bundles now have a "Friendly Name" set
+
+### Changed
+ - Overhaul of config object to be a global variable
+ - Refactor of client objects for code reuse
+
+### Fixed
+ - Allowing for a proper shutdown from SIGTERM
+ - Clients receiving malformed XML doesn't crash the server
+ - Switched to nonblocking sockets to prevent rare lockup
+ - Removed the server's private key from the server.p12 file
+ - Don't crash after PDB exit
+
+### Contributors
+ - Thanks to @AdakaR for helping find both the XML and blocking socket bugs!
+ - Thanks to Tom for finding the private key issue!
+ - Thanks to Alex and Doug for helping with development!
+ - Thanks to @jazap for the logo!
+
+## [0.8.3] - 2022-04-10
+
+### Added
+ - Generation of iTAK compatible client certificates
+
+### Fixed
+ - Internal client certificate files are now unique by UUID (#39)
+
+### Contributors
+ - Thanks to @fordepowers for contributing the iTAK certificate generation!
+ - Thanks to @pclifaz for assisting testing of the new features!
+ - Thanks to @skadakar for offering heaps of help to new users in Discord!
+ - Thanks to @mighkel for a comprehensive writeup to improve documentation!
+
+## [0.8.2] - 2021-09-03
+
+### Fixed
+ - Routing GeoChats should work now
+
+### Contributors
+ - Thanks to @skadakar for his work finding this, and testing the fix!
+
+## [0.8.1] - 2021-06-06
+
+### Fixed
+ - Routing packets with multiple sockets sharing an identifier (callsign, UID)
+ - Added a none check on user object
+
+## [0.8] - 2021-05-24
+
+### Added
+ - COT messages that fail to parse are logged
+
+### Changed
+ - Data packages marked private do not show up in search listings
+ - New data packages are assumed private until the client specifies public
+
+### Fixed
+ - Improvements for Windows compatibility
+ - Send the detail as received from the user
+ - Use restart for systemd scripts
+ - Correct the path for the DPS outside of systemd
+ - Stale SSL sockets and the persistence dare are occasionally pruned
+
+### Contributors
+ - Thanks to @doug-fitzmaurice-rowden for submitting the client certificate
+   support for the data package server, and helping test the release!
+
+## [0.7.1] - 2021-03-07
+
+### Changed
+ - Removed dependency on dataclasses (to keep python 3.6 support)
+
+## [0.7] - 2021-03-05
+The system administrator's release, aimed at easing deployment of taky, and
+improving CI. Officially moving from alpha to beta!
+
+### Added
+ - takyctl can now generate systemd scripts
+ - dps now supports video URL endpoints
+ - Object persistence with optional redis backend!
+ - Preliminary unit testing
+
+### Changed
+ - Greater resillience to malformed COT messages
+ - Added some unit tests and GitHub automation
+ - Code structure and documentation improvements
+
+### Fixed
+ - Corrected the DPS url for client->client transfers
+
+## [0.6] - 2021-02-26
+The single threaded release! Huge fix for the SSL deadlock! The first really
+usable release.
+
+### Added
+ - Optional flag to allows pdb to attach to the COT server
+ - takyctl can optionally export the .crt/.key files for key generation
+
+### Changed
+ - Code is now single threaded
+
+### Fixed
+ - SSL handshake deadlock
+
+## [0.5.3] - 2021-02-18
+### Added
+ - COT server can optionally log COT messages from the client
+
+### Fixed
+ - Correct the dps path when in a virtualenv
+ - Fix the followup URL for a client->client upload
+
+## [0.5.2] - 2021-02-17
+### Added
+ - `takyctl setup` builds configurations for deployments
+
+### Fixed
+ - The configuration parser left the port undefined in some scenarios
+
+## [0.5.1] - 2021-02-15
+### Fixed
+ - Uploaded an sdist file to PyPi, oops
+
+## [0.5] - 2021-02-15
+The Data Package Server was introduced with this release, in a very preliminary
+state!
+
+### Added
+ - Preliminary Data Package Server
+ - Taky now operates on a config file
+
+## [0.4] - 2021-01-23
+### Added
+ - First release on PyPi
+
+## [0.3] - 2021-01-23
+### Added
+ - COT server can now run with SSL
+ - Using Marti to route packets
+
+## [0.2] - 2021-01-23
+### Added
+ - GeoChat handling
+ - Added rudimentary persistence for TAKClients
+
+### Security
+ - XML is no longer parsed with `resolve_entities`
+
+## [0.1] - 2021-01-18
+### Added
+ - Initial release
