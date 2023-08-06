@@ -1,0 +1,24 @@
+{% extends "obpages/base.html" %}
+{% load sections %}
+
+{% block meta_description %}View curated and user-created sequences.{% endblock %}
+
+{% block content %}
+    {% sequence_section "curated" max_results=max_results %}
+    {% sequence_section "user" max_results=max_results %}
+    <section>
+        <header>
+            <h3>About</h3>
+        </header>
+        <p>A sequence is an ordered collection of related content.</p>
+        <p>Try using them for:</p>
+        <ul>
+            <li>Reading lists: keep track of what you have read (or watched, or heard)</li>
+            <li>Favourites: keep track of what you found interesting / useful</li>
+            <li>Compilations: collect and publish the best content on some topic</li>
+        </ul>
+        <p>Once you have created a sequence, you can export it to epub, pdf or markdown formats (more formats available on request!).</p>
+        <p>If you think your sequence is good enough for this page, leave some <a href={% url "feedback" %}>feedback</a> and I may curate it.</p>
+        <p><a href="{% url "sequence_create" %}">Create a sequence...</a></p>
+    </section>
+{% endblock %}

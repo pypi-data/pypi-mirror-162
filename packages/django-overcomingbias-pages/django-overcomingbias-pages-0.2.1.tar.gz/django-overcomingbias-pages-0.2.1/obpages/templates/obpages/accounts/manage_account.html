@@ -1,0 +1,26 @@
+{% extends "obpages/accounts/auth_base.html" %}
+
+{% block meta_description %}Manage your account.{% endblock %}
+
+{% block content %}
+    <section>
+        <header>
+            <h2>User Actions</h2>
+        </header>
+        <menu>
+            <li><a href="{% url "sequence_create" %}">Create a sequence</a></li>
+            <li><a href="{% url "sequence_user_list" user_slug=user.slug %}">View your sequences</a></li>
+        </menu>
+    </section>
+    <section>
+        <header>
+            <h2>Account Actions</h2>
+        </header>
+        <menu>
+            <li><a href="{% url "logout" %}">Log out</a></li>
+            <li><a href="{% url "password_change" %}">Change your password</a></li>
+            <li><a href="{% url "password_reset" %}">Reset your password</a></li>
+            {% if user.is_staff %}<li><a href="{% url "admin:index" %}">Go to admin site</a></li>{% endif %}
+        </menu>
+    </section>
+{% endblock content %}

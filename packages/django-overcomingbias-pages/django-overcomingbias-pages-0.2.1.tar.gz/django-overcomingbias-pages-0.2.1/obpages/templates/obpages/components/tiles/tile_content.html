@@ -1,0 +1,10 @@
+{% load static icons widgets links %}
+
+<li class="tile tile-content">
+    <h5>{% content_link item %}</h5>
+    <p>{% author_list item.authors.all %}</p>
+    <p>{{ item.publish_date|date:"F jS, Y" }}</p>
+    <a href="{{ item.site_url }}">
+        <img src="{% static item|icon %}" alt="{{ item.site_name }} icon">
+    </a>
+</li>

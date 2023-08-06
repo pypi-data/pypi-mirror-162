@@ -1,0 +1,34 @@
+{% extends "obpages/base.html" %}
+{% load sections %}
+
+{% block meta_description %}A collection of Robin Hanson's content.{% endblock %}
+
+{% block content %}
+    <section>
+        <header>
+            <h2>Introduction</h2>
+        </header>
+        <p>Welcome to OvercomingBias Collection, a collection of <a href="https://mason.gmu.edu/~rhanson/home.html#AboutMe">Robin Hanson</a>'s content.</p>
+        <p>It aims to make his work more accessible by:</p>
+        <ul>
+                <li>Centralizing content from different sources</li>
+                <li>Providing curated introductions to his main ideas</li>
+                <li>Letting you search, sort and filter content</li>
+                <li>Making content available in a variety of formats</li>
+        </ul>
+        <p>If you're new, check out one of the essays, blog posts or interviews below.</p>
+        <p>
+            Click the icon with the arrow
+            (<svg height="1em" class="external-link-icon" viewBox="0 0 82 82" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M64 49v18c0 7-6 13-13 13H15C8 80 2 74 2 67V31c0-7 6-13 13-13h18"/>
+                <path d="M34 48 79 3m0 37V0M42 3h40"/>
+            </svg>)
+            to see the content on its original site.
+        </p>
+        <p><i>Work in progress!</i></p>
+    </section>
+    {% query_results query_results=curated_essaycontentitems title="Curated Essays" max_results=max_results row=True %}
+    {% query_results query_results=curated_obcontentitems title="Curated Posts" max_results=max_results row=True %}
+    {% query_results query_results=curated_youtubecontentitems title="Curated Youtube Videos" max_results=max_results row=True %}
+    {% query_results query_results=curated_spotifycontentitems title="Curated Spotify Episodes" max_results=max_results row=True %}
+{% endblock content %}

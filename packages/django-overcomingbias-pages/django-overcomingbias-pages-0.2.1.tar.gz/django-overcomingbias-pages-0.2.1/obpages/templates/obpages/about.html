@@ -1,0 +1,38 @@
+{% extends "obpages/base.html" %}
+
+{% block meta_description %}About overcomingbias-collection. Contact me or view the source code.{% endblock %}
+
+{% block content %}
+    <section>
+        <header>
+            <h2>Contact</h2>
+        </header>
+        <p>If you have feedback about the site, feel free to use this <a href="{% url "feedback" %}">feedback form</a>.</p>
+        <p>Alternatively, you can contact me at chrismcdonald (at) purelymail.com.</p>
+    </section>
+    <section>
+        <header>
+            <h2>Code</h2>
+        </header>
+        <p>The site is built on Django, a Python web framework. It runs in Docker.</p>
+        <p>The source code for the project is split over a few repositories:</p>
+        <ul>
+            <li>
+                <a href="https://github.com/chris-mcdo/obscraper">obscraper</a>:
+                an automated web scraper for the overcomingbias site.
+            </li>
+            <li>
+                <a href="https://github.com/chris-mcdo/django-overcomingbias-api">django-overcomingbias-api</a>:
+                the site backend. A standalone Django app which exposes an API to Robin Hanson's content.
+            </li>
+            <li>
+                <a href="https://github.com/chris-mcdo/django-overcomingbias-pages">django-overcomingbias-pages</a>:
+                the site frontend. A standalone Django app which provides a web interface to Robin Hanson's content.
+            </li>
+            <li>
+                <a href="https://github.com/chris-mcdo/django-overcomingbias-collection">django-overcomingbias-collection</a>:
+                production environment (including Docker builds) for the site.
+            </li>
+        </ul>
+    </section>
+{% endblock content %}
