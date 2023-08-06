@@ -1,0 +1,55 @@
+{
+  "name": "django-s3-file-field",
+  "version": "0.0.0",
+  "description": "A Javascript client library for django-s3-file-field.",
+  "author": "Kitware, Inc. <kitware@kitware.com>",
+  "license": "Apache-2.0",
+  "main": "dist/client.js",
+  "types": "dist/client.d.ts",
+  "files": [
+    "/src/",
+    "/dist/"
+  ],
+  "scripts": {
+    "lint:eslint": "eslint ./src/**.ts",
+    "lint:tsc": "tsc --noEmit",
+    "lint": "npm-run-all lint:*",
+    "watch": "tsc --watch",
+    "build:clean": "rimraf ./dist",
+    "build:compile": "tsc",
+    "build": "npm-run-all build:clean build:compile",
+    "prepack": "npm-run-all build"
+  },
+  "dependencies": {
+    "axios": "^0.27.2"
+  },
+  "devDependencies": {
+    "@tsconfig/recommended": "^1.0.1",
+    "@typescript-eslint/eslint-plugin": "^5.30.6",
+    "@typescript-eslint/parser": "^5.30.6",
+    "eslint": "^8",
+    "eslint-config-airbnb-typescript": "^17.0.0",
+    "npm-run-all": "^4.1.5",
+    "rimraf": "^3.0.2",
+    "typescript": "^4.7.4"
+  },
+  "eslintConfig": {
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+      "project": "./tsconfig.json"
+    },
+    "plugins": [
+      "@typescript-eslint"
+    ],
+    "extends": [
+      "eslint:recommended",
+      "plugin:@typescript-eslint/eslint-recommended",
+      "plugin:@typescript-eslint/recommended",
+      "airbnb-base",
+      "airbnb-typescript/base"
+    ],
+    "rules": {
+      "no-restricted-syntax": 0
+    }
+  }
+}
