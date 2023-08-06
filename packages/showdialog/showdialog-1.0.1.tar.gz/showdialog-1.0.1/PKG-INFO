@@ -1,0 +1,40 @@
+Metadata-Version: 2.1
+Name: showdialog
+Version: 1.0.1
+Summary: Simple module for showing GTK dialog
+Author: Chechkenev Andrey (@DarkCat09)
+Author-email: aacd0709@mail.ru
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Environment :: X11 Applications :: GTK
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
+# showdialog
+Simple module for showing GTK dialog.
+
+## Install
+```bash
+pip install showdialog
+```
+
+## Usage
+
+### showdialog.show_msg(title, text, sectext, btns, msgtype)
+Opens GTK MessageDialog
+
+#### Args
+- title (`str`): Dialog caption
+- text (`Union[Tuple[Optional[str], bool], Optional[str]]`): Dialog primary text, str or tuple `(text, use_markup)`
+- sectext (`Union[Tuple[Optional[str], bool], Optional[str]]`, optional): Dialog secondary text, str or tuple. Defaults to `None`.
+- btns (`Gtk.ButtonsType`, optional): Dialog buttons. Defaults to `Gtk.ButtonsType.OK`.
+- msgtype (`Gtk.MessageType`, optional): Dialog message type. Defaults to `Gtk.MessageType.INFO`.
+
+#### Example:
+```python
+from showdialog import show_msg
+show_msg(title='', text='Hello world!')
+```
