@@ -1,0 +1,161 @@
+[tool.poetry]
+name = "temporalio"
+version = "0.1b1"
+description = "Temporal.io Python SDK"
+license = "MIT"
+authors = ["Temporal Technologies Inc <sdk@temporal.io>"]
+readme = "README.md"
+homepage = "https://github.com/temporalio/sdk-python"
+repository = "https://github.com/temporalio/sdk-python"
+documentation = "https://docs.temporal.io/docs/python"
+keywords = ["temporal", "workflow"]
+# We need to include proto source that is otherwise excluded via .gitignore.
+# We have chosen to keep all source including Rust source in precompiled wheels
+# for easy viewing. It is also complicated to exclude certain pieces for wheels
+# with Poetry (see https://github.com/python-poetry/poetry/issues/3380).
+include = ["temporalio/api/**/*", "temporalio/bridge/proto/**/*"]
+exclude = ["temporalio/bridge/**/target"]
+
+# Known undocumented API for hooking into setup. Unfortunately Poetry does not
+# support this script in a subdirectory like scripts/.
+[tool.poetry.build]
+script = "build.py"
+
+[tool.poetry.urls]
+"Bug Tracker" = "https://github.com/temporalio/sdk-python/issues"
+
+[tool.poetry.dependencies]
+dacite = "^1.6.0"
+grpcio = "^1.47.0"
+opentelemetry-api = { version = "^1.11.1", optional = true }
+opentelemetry-sdk = { version = "^1.11.1", optional = true }
+protobuf = "^3.20.1"
+python = "^3.7"
+types-protobuf = "^3.19.21"
+typing-extensions = "^4.2.0"
+
+[tool.poetry.dev-dependencies]
+black = "^22.3.0"
+cibuildwheel = "^2.7.0"
+grpcio-tools = "^1.47.0"
+isort = "^5.10.1"
+mypy = "^0.961"
+mypy-protobuf = "^3.2.0"
+pydocstyle = "^6.1.1"
+# TODO(cretz): Update when https://github.com/twisted/pydoctor/pull/595 released
+# pydoctor = "^22.5.1"
+pydoctor = { git = "https://github.com/cretz/pydoctor.git", branch = "overloads" }
+pytest = "^7.1.2"
+pytest-asyncio = "^0.18.3"
+pytest-timeout = "^2.1.0"
+setuptools = "^62.3.3"
+setuptools-rust = "^1.3.0"
+toml = "^0.10.2"
+twine = "^4.0.1"
+
+[tool.poetry.extras]
+opentelemetry = ["opentelemetry-api", "opentelemetry-sdk"]
+
+[tool.poe.tasks]
+build-develop = ["build-bridge-develop"]
+build-bridge-develop = "python scripts/setup_bridge.py develop"
+fix-wheel = "python scripts/fix_wheel.py"
+format = [{cmd = "black ."}, {cmd = "isort ."}]
+gen-docs = "pydoctor"
+gen-protos = "python scripts/gen_protos.py"
+lint = [
+  {cmd = "black --check ."},
+  {cmd = "isort --check-only ."},
+  {ref = "lint-types"},
+  {ref = "lint-docs"},
+]
+# TODO(cretz): Why does pydocstyle complain about @overload missing docs after
+# https://github.com/PyCQA/pydocstyle/pull/511?
+lint-docs = "pydocstyle --ignore-decorators=overload"
+lint-types = "mypy --namespace-packages ."
+test = "pytest"
+
+# Install local, run single pytest with env var, uninstall local
+[tool.poe.tasks.test-dist-single]
+ignore_fail = "return_non_zero"
+# Has to be a child table due to the Python TOML decoder in many default pips
+# failing on inline table with "Invalid inline table value encountered" because
+# there's a comma (see https://github.com/uiri/toml/issues/348).
+[[tool.poe.tasks.test-dist-single.sequence]]
+cmd = "pip install --no-index --find-links=./dist temporalio"
+[[tool.poe.tasks.test-dist-single.sequence]]
+cmd = "pytest -k test_activity_hello"
+env = { TEMPORAL_INTEGRATION_TEST = "1" }
+[[tool.poe.tasks.test-dist-single.sequence]]
+cmd = "pip uninstall temporalio -y"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+log_cli = true
+log_cli_level = "INFO"
+log_cli_format = "%(asctime)s [%(levelname)8s] %(message)s (%(filename)s:%(lineno)s)"
+timeout = 600
+timeout_func_only = true
+
+[tool.cibuildwheel]
+# We only want the 3.7 64-bit build of each type. There is no 3.7 build of macOS
+# arm, so we have to use 3.8+ there.
+build = "cp37-win_amd64 cp37-manylinux_x86_64 cp37-manylinux_aarch64 cp37-macosx_x86_64 cp38-macosx_arm64"
+build-verbosity = "1"
+
+[tool.cibuildwheel.linux]
+before-all = "curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain stable -y && yum install -y openssl-devel"
+environment = { PATH = "$PATH:$HOME/.cargo/bin", CARGO_NET_GIT_FETCH_WITH_CLI = "true" }
+
+[[tool.cibuildwheel.overrides]]
+# We need the aarch64 target for Rust
+before-all = "curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain stable --target aarch64-unknown-linux-gnu -y && yum install -y openssl-devel"
+select = "*_aarch64"
+
+[tool.isort]
+profile = "black"
+skip_gitignore = true
+
+[tool.mypy]
+ignore_missing_imports = true
+exclude = [
+  # Ignore generated code
+  'temporalio/api',
+  'temporalio/bridge/proto',
+]
+
+[tool.pydocstyle]
+convention = "google"
+# https://github.com/PyCQA/pydocstyle/issues/363#issuecomment-625563088
+match_dir = "^(?!(docs|scripts|tests|api|proto|\\.)).*"
+add_ignore = [
+  # We like to wrap at a certain number of chars, even long summary sentences.
+  # https://github.com/PyCQA/pydocstyle/issues/184
+  "D205", "D415"
+]
+
+[tool.pydoctor]
+add-package = ["temporalio"]
+docformat = "google"
+html-output = "build/apidocs"
+intersphinx = [
+  "https://docs.python.org/3/objects.inv",
+  "https://googleapis.dev/python/protobuf/latest/objects.inv",
+  "https://opentelemetry-python.readthedocs.io/en/latest/objects.inv",
+]
+privacy = [
+  "PRIVATE:temporalio.bridge",
+  "PRIVATE:temporalio.types",
+  "HIDDEN:temporalio.worker.activity",
+  "HIDDEN:temporalio.worker.interceptor",
+  "HIDDEN:temporalio.worker.worker",
+  "HIDDEN:temporalio.worker.workflow",
+  "HIDDEN:temporalio.worker.workflow_instance",
+  "HIDDEN:**.*_pb2*",
+]
+project-name = "Temporal"
+sidebar-expand-depth = 2
+
+[build-system]
+build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core>=1.0.0", "setuptools", "wheel", "setuptools-rust"]
