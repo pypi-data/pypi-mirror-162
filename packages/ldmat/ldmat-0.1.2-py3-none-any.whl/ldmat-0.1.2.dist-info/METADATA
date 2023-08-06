@@ -1,0 +1,50 @@
+Metadata-Version: 2.1
+Name: ldmat
+Version: 0.1.2
+Summary: Efficient Storage and Querying of Linkage Disequilibrium Matrices
+Home-page: https://github.com/G2Lab/ldmat
+Author: Rockwell Weiner
+Author-email: rockwellw@gmail.com
+License: MIT
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: click (>=8.1.3)
+Requires-Dist: h5py (>=3.7.0)
+Requires-Dist: matplotlib (>=3.4.3)
+Requires-Dist: numpy (>=1.21.3)
+Requires-Dist: pandas (>=1.3.4)
+Requires-Dist: scipy (>=1.8.1)
+Requires-Dist: seaborn (>=0.11.2)
+
+# Efficient Storage and Querying of Linkage Disequilibrium Matrices
+
+## Setup
+Install the package with:
+
+```
+pip install ldmat
+```
+
+## Getting Started
+The package includes some [example files](https://github.com/G2Lab/ldmat/tree/main/examples), 
+which can be found in your venv directory under `ldmat/examples`.
+
+The unprocessed LD matrices are too large to include here, but there is a sample 
+processed matrix, `chr21_partial.h5`, which includes LD values for chromosome 21
+from positions 13000001 to 22000001 (although there is no data between positions 13000001 and 14000001).
+This file contains all LD values greater than 0.1, rounded to 2 decimals.
+
+For a sample query, we can extract the square submatrix of positions 14300001 through 14400001 with the following command:
+```
+ldmat submatrix YOUR_VENV_DIRECTORY/ldmat/examples/chr21_partial.h5 \
+--i-start 14300001 --i-end 14400001
+```
+This will simply print the results as a Pandas DataFrame, so you'll probably want
+to save the results by adding an output file, like: `ldmat submatrix ... -o YOUR_OUTPUT.csv`
+
+To see all the commands available, run `ldmat`.
+
+For any specific command, you can get more information with the `--help` flag, like: `ldmat submatrix --help`.
