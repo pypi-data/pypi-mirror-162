@@ -1,0 +1,118 @@
+Metadata-Version: 2.1
+Name: cfgenvy
+Version: 1.4.1
+Summary: Configuration from Environment embedded in yaml.
+Author-email: Jason Lubken <jlubken@users.noreply.github.com>, Graydon Neill <grayeye@users.noreply.github.com>, Penn Signals <pennsignals@pennmedicine.upenn.edu>
+License: MIT License        
+        Copyright (c) 2021 Penn Signals        
+        Permission is hereby granted, free of charge, to any person obtaining a copy
+        of this software and associated documentation files (the "Software"), to deal
+        in the Software without restriction, including without limitation the rights
+        to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+        copies of the Software, and to permit persons to whom the Software is
+        furnished to do so, subject to the following conditions:        
+        The above copyright notice and this permission notice shall be included in all
+        copies or substantial portions of the Software.        
+        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+        IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+        FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+        AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+        LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+        OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+        SOFTWARE.        
+Project-URL: Homepage, https://github.com/pennsignals/cfgenvy
+Project-URL: Source, https://github.com/pennsignals/cfgenvy
+Project-URL: Tracker, https://github.com/pennsignals/cfgenvy/issues
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: Unix
+Classifier: Operating System :: POSIX
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: Implementation :: CPython
+Classifier: Topic :: Utilities
+Requires-Python: >=3.7
+Description-Content-Type: text/markdown
+Requires-Dist: pyyaml (>=6.0)
+Provides-Extra: dev
+Requires-Dist: astroid ; extra == 'dev'
+Requires-Dist: black ; extra == 'dev'
+Requires-Dist: coverage[toml] ; extra == 'dev'
+Requires-Dist: flake8 ; extra == 'dev'
+Requires-Dist: flake8-bugbear ; extra == 'dev'
+Requires-Dist: flake8-commas ; extra == 'dev'
+Requires-Dist: flake8-comprehensions ; extra == 'dev'
+Requires-Dist: flake8-docstrings ; extra == 'dev'
+Requires-Dist: flake8-mutable ; extra == 'dev'
+Requires-Dist: flake8-sorted-keys ; extra == 'dev'
+Requires-Dist: isort ; extra == 'dev'
+Requires-Dist: mypy ; extra == 'dev'
+Requires-Dist: pep8-naming ; extra == 'dev'
+Requires-Dist: pre-commit ; extra == 'dev'
+Requires-Dist: pylint ; extra == 'dev'
+Requires-Dist: pytest ; extra == 'dev'
+Requires-Dist: pytest-cov ; extra == 'dev'
+Requires-Dist: types-pkg-resources ; extra == 'dev'
+Requires-Dist: types-pyyaml ; extra == 'dev'
+
+## Overview
+
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
+[![Release](https://github.com/pennsignals/cfgenvy/workflows/release/badge.svg)](https://github.com/pennsignals/cfgenvy/actions?query=workflow%3Arelease)
+
+[![Test](https://github.com/pennsignals/cfgenvy/workflows/test/badge.svg)](https://github.com/pennsignals/cfgenvy/actions?query=workflow%3Atest)
+
+Keep secrets out of env variables in production by using env files. Merge env files into configuration dynamically. Keep env file and env variable handling out of the application by making application dependent only on the configuration file. Prefer deserilization from yaml over configuration of partially initialized objects.
+
+An argument parser that accepts:
+
+- A required yaml file for configuration/deserialization.
+- An optional env file for secrets.
+
+Features:
+
+- MIT license
+- Interpolate environment variables directly into yaml configuration.
+- Optional replacement of environment variables with an environment variable file.
+- Use C Yaml safe load/dump or yaml safe load/dump.
+- Pass in env to parser with os.environ as a default.
+- Pass in argv to parser with sys.argv[1:] as a default.
+- Yaml type registration functions.
+
+Relative configargparse, python-dotenv, envyaml, and yamlenv:
+
+- Dependency injection through depth-first deserialization of yaml is better than two-pass, breadth-first initialization followed by a configuration.
+- Contract for env variables is between configuration file and env xor the env file, the app no longer cares much about env or secrets as it uses the interpolated configuration file.
+- No ${MY_VAR:my-default} --unexpected env var syntax for default values, an expensive pattern match, and allows typos of MY_VAR to pass silently--.
+- No "N/A" or null default when environment variable does not exist --allows configuration errors to pass silently to become runtime errors--.
+- Env file is optional, but when provided it does not merge with existing environment variables --better tracability in production deployment--.
+- Yaml type registration retains the registered yaml tag in a closure.
+- Env yaml type registration retains the registered env variable set in a closure.
+
+## Install
+
+    pip install "."
+
+## Develop, Lint & Test
+
+Setup:
+
+    python3.10 -m venv .venv
+    . .venv/bin/activate
+    pip install ".[dev]"
+    pre-commit install
+    pre-commit run --all-files
+
+    ...
+
+    deactivate
+
+## Docker, Lint & Test
+
+    docker compose up test
+    docker compose up pre-commit
+    docker compose up build-wheel && docker compose up install-wheel
