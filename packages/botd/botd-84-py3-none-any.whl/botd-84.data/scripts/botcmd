@@ -1,0 +1,73 @@
+#!python
+# This file is placed in the Public Domain.
+
+
+"bot command"
+
+
+import os
+import sys
+import termios
+import time
+
+
+import op.all
+
+
+op.obj.workdir = "/var/lib/botd/"
+
+
+from op.run import Config
+
+
+Config.name = "bot"
+Config.threaded = False
+Config.version = "83"
+
+
+from op.bus import Bus
+from op.run import Commands, dispatch
+from op.hdl import Callbacks, Handler
+from op.obj import format, keys
+from op.run import CLI, Console, Table, parse_cli
+from op.utl import cdir
+
+
+from bot import bsc, fnd, irc, log, rss, sts, tdo
+
+
+Table.add(bsc)
+Table.add(fnd)
+Table.add(irc)
+Table.add(log)
+Table.add(rss)
+Table.add(sts)
+Table.add(tdo)
+
+
+from bot import bsc, irc, rss, sts
+
+
+Table.add(bsc)
+Table.add(irc)
+Table.add(rss)
+Table.add(sts)
+
+allmod =  ",".join(keys(Table.mod))
+
+
+class CLI(CLI):
+
+    def raw(self, txt):
+        print(txt)
+        sys.stdout.flush()
+
+
+def main():
+    parse_cli(" ".join(sys.argv[1:]))
+    Table.scan()
+    c = CLI()
+    return c.cmd(" ".join(sys.argv[1:]))
+
+
+main()
