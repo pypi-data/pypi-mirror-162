@@ -1,0 +1,43 @@
+[package]
+name = "qiniu-isahc"
+version = "0.1.3"
+authors = ["Rong Zhou <zhourong@qiniu.com>", "Shanghai Qiniu Information Technologies Co., Ltd."]
+edition = "2021"
+rust-version = "1.60.0"
+readme = "README.md"
+license = "MIT"
+repository = "https://github.com/qiniu/rust-sdk.git"
+homepage = "https://www.qiniu.com"
+description = "Qiniu Isahc based HTTP Interface Implementation for Rust"
+keywords = ["qiniu", "storage"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1.0.41"
+isahc = { version = "1.4.0" }
+qiniu-http = { version = "0.1.3", path = "../qiniu-http" }
+futures = { version = "0.3.16", optional = true }
+
+[features]
+async = ["qiniu-http/async", "futures"]
+http2 = ["isahc/http2"]
+psl = ["isahc/psl"]
+spnego = ["isahc/spnego"]
+static-curl = ["isahc/static-curl"]
+static-ssl = ["isahc/static-ssl"]
+text-decoding = ["isahc/text-decoding"]
+docs = []
+
+[dev-dependencies]
+bytes = "1.0.1"
+env_logger = "0.8.4"
+md-5 = "0.9.1"
+rand = "0.8.4"
+tokio = { version = "1", features = ["full"] }
+warp = "0.3.1"
+futures = "0.3.16"
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "feature=\"docs\""]
