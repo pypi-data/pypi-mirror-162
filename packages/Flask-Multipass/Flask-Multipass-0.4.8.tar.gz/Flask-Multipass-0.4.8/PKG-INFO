@@ -1,0 +1,53 @@
+Metadata-Version: 2.1
+Name: Flask-Multipass
+Version: 0.4.8
+Summary: A pluggable solution for multi-backend authentication with Flask
+Home-page: https://github.com/indico/flask-multipass
+Author: Indico Team
+Author-email: indico-team@cern.ch
+License: BSD
+Classifier: Environment :: Web Environment
+Classifier: Framework :: Flask
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Requires-Python: ~=3.6
+Description-Content-Type: text/x-rst
+Provides-Extra: dev
+Provides-Extra: authlib
+Provides-Extra: ldap
+Provides-Extra: saml
+Provides-Extra: sqlalchemy
+License-File: LICENSE
+
+Flask-Multipass
+===============
+
+.. image:: https://raw.githubusercontent.com/indico/flask-multipass/master/artwork/flask-multipass.png
+
+.. image:: https://readthedocs.org/projects/flask-multipass/badge/?version=latest
+    :target: https://flask-multipass.readthedocs.org/
+.. image:: https://github.com/indico/flask-multipass/workflows/Tests/badge.svg
+    :target: https://github.com/indico/flask-multipass/actions
+
+Flask-Multipass provides Flask with a user authentication/identity
+system which can use different backends (such as local users,
+LDAP and OAuth) simultaneously.
+
+It was developed at CERN and is currently used in production by `Indico <https://github.com/indico/indico>`_.
+
+There are bult-in authentication and identity providers for:
+
+ * `Static (hardcoded) credentials <https://github.com/indico/flask-multipass/blob/master/flask_multipass/providers/static.py>`_
+ * `Local (SQLAlchemy DB) authentication <https://github.com/indico/flask-multipass/blob/master/flask_multipass/providers/sqlalchemy.py>`_
+ * `Authlib (OAuth/OIDC) <https://github.com/indico/flask-multipass/blob/master/flask_multipass/providers/authlib.py>`_
+ * `SAML <https://github.com/indico/flask-multipass/blob/master/flask_multipass/providers/saml.py>`_
+ * `Shibboleth <https://github.com/indico/flask-multipass/blob/master/flask_multipass/providers/shibboleth.py>`_
+ * `LDAP <https://github.com/indico/flask-multipass/blob/master/flask_multipass/providers/ldap/providers.py>`_
+
+Those can be used simultaneously and interchangeably (e.g. authenticate with OAuth and search users with LDAP).
+
+Documentation is available at https://flask-multipass.readthedocs.org
