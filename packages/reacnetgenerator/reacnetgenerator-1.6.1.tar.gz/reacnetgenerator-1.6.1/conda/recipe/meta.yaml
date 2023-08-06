@@ -1,0 +1,58 @@
+{% set name = "reacnetgenerator" %}
+{% set data = load_setup_py_data() %}
+package:
+  name: {{ name|lower }}
+  version: {{ data.get("version") }}
+
+source:
+  path: ../..
+
+build:
+  number: 0
+  entry_points:
+    - reacnetgenerator = reacnetgenerator.commandline:_commandline
+    - reacnetgeneratorgui = reacnetgenerator.gui:gui
+  script: "{{ PYTHON }} -m pip install . --no-deps -vv"
+
+requirements:
+  host:
+    - python {{ PY_VER }}*,>=3.6,<3.9
+    - pip
+    - cython >=0.24.1
+    - setuptools_scm
+    - pytest-runner
+    - numpy >=1.15
+  build:
+    - {{ compiler('cxx') }}
+    - yarn
+  run:
+    - python >=3.6,<3.9
+    - openbabel
+    - rdkit >=2018.09
+    - {{ pin_compatible('numpy') }}
+    - scipy >=0.20.1
+    - pandas
+    - networkx
+    - matplotlib
+    - hmmlearn >=0.2.1
+    - ase
+    - scour
+    - tqdm
+    - coloredlogs
+    - lz4
+    - pybase64
+    - requests
+
+test:
+  imports:
+    - reacnetgenerator
+
+about:
+  home: http://github.com/njzjz/reacnetgenerator
+  summary: 'An automatic generator of reaction network for reactive molecular dynamics simulation.'
+  doc_url: https://reacnetgenerator.njzjz.win/
+  dev_url: https://github.com/njzjz/reacnetgenerator
+
+extra:
+  recipe-maintainers:
+    - njzjz
