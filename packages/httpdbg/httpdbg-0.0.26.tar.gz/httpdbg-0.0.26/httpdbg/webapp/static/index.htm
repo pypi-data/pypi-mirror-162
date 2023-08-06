@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>httpdbg</title>
+
+    <link rel="shortcut icon" href="static/favicon.ico">
+
+    <link rel="stylesheet" href="static/tooltip.css">
+    <link rel="stylesheet" href="static/style.css">
+    <link rel="stylesheet" href="static/table.css">
+    <link rel="stylesheet" href="static/column.css">
+    <link rel="stylesheet" href="static/detail.css">
+    <style type="text/css" id="filter"></style>
+    <script src="static/mustache.min.js"></script>
+    <script src="static/utils.js"></script>
+    <script src="static/api.js"></script>
+    <script src="static/render.js"></script>
+    <script src="static/filter.js"></script>
+</head>
+
+<body>
+    <div id="refresh">
+        &#9888 disconnected - <button onclick="enable_refresh()">try reconnect</button>
+    </div>
+
+    <div class="grid-container">
+
+        <div class="grid-column grid-column-left">
+
+            <table class="requests-table" id="requests-list">
+                <colgroup>
+                    <col span="1" class="status">
+                    <col span="1" class="method">
+                    <col span="1">
+                </colgroup>
+
+                <thead>
+                    <tr>
+                        <th class="status" title="status"></th>
+                        <th class="method" title="method"></th>
+                        <th>url
+                            <span id="filter-url-btn" onclick="show_filter_url()">&#10729;</span>
+                            <input type="text" value="" id="filter-url" onkeyup="update_filter_url()"
+                                oncut="update_filter_url()" onpaste="update_filter_url()" onchange="update_filter_url()"
+                                style="display: none;">
+                        </th>
+                    </tr>
+                </thead>
+
+
+
+                <tbody>
+                </tbody>
+
+                <script id="template_source" type="x-tmpl-mustache">
+                    <tr id="source-{{id}}" data-source="{{id}}" class="src">
+                        <td colspan="3">{{label}}</td>
+                    </tr>
+                </script>
+
+                <script id="template_request" type="x-tmpl-mustache">
+                    <tr id="request-{{id}}" 
+                        data-source="{{src.id}}" 
+                        data-filter-url="{{url}}"
+                        onclick="show_request('{{id}}')"
+                        class="request">
+                        <td class="status"><span data-tooltip="{{reason}}" class="tooltip tooltip-status">{{{status_code_view}}}</span></td>
+                        <td class="method"><span>{{verb}}</span></td>
+                        <td class="url"><span>{{url}}</span></td>
+                    </tr>
+                </script>
+            </table>
+
+        </div>
+
+        <div class="grid-column">
+
+
+            <div class="req-detail">
+
+                <div class="tab">
+                    <button id="btn-tab-headers" class="tablinks"
+                        onclick="opentab(event.currentTarget, 'tabHeaders')">headers</button>
+                    <button id="btn-tab-cookies" class="tablinks"
+                        onclick="opentab(event.currentTarget, 'tabCookies')">cookies</button>
+                    <button id="btn-tab-request" class="tablinks"
+                        onclick="opentab(event.currentTarget, 'tabRequest')">request</button>
+                    <button id="btn-tab-response" class="tablinks"
+                        onclick="opentab(event.currentTarget, 'tabResponse')">response</button>
+                    <button id="btn-tab-exception" class="tablinks"
+                        onclick="opentab(event.currentTarget, 'tabException')">exception</button>
+                </div>
+
+
+                <div id="tabHeaders" class="tabcontent">
+                    <div id="headers">select a request to view details</div>
+                    <script id="template_headers" type="x-tmpl-mustache">
+                           <b>{{ method }}</b> <a href="{{ url }}">{{ url }}</a>
+                           <hr>
+                           <table class="headers">
+                            <tr>
+                                <th> status </th>
+                                <td> {{ status_code }} {{ reason }}</td>
+                            </tr>
+                           </table>
+                           <hr>
+                           <h4>response headers</h4>
+                           {{#response}}
+                               {{#response.headers}}
+                               <span class="header">{{name}}:</span> {{value}}
+                               <br>
+                               {{/response.headers}}
+                           {{/response}}
+                           <hr>
+                           <h4>request headers</h4>
+                           {{#request.headers}}
+                           <span class="header">{{name}}:</span> {{value}}
+                           <br>
+                           {{/request.headers}}
+                        </script>
+                </div>
+
+                <div id="tabCookies" class="tabcontent">
+                    <div id="cookies">select a request to view details</div>
+                    <script id="template_cookies" type="x-tmpl-mustache">
+                           <h4>response cookies</h4>
+                           {{#response}}
+                               {{#response.cookies}}
+                               <span class="cookie">{{name}}:</span> {{value}}
+                                 <ul>
+                                   {{#attributes}}
+                                   <li>
+                                       <span class="attribute">{{name}}:</span> {{value}}
+                                   </li>
+                                   {{/attributes}}
+                                 </ul>
+                               <br>
+                               {{/response.cookies}}
+                           {{/response}}
+                           <hr>
+                           <h4>request cookies</h4>
+                           {{#request.cookies}}
+                           <span class="cookie">{{name}}:</span> {{value}}
+                           <br>
+                           {{/request.cookies}}
+                        </script>
+                </div>
+
+                <div id="tabRequest" class="tabcontent">
+                    <div id="body_sent">select a request to view details</div>
+                    <script id="template_body" type="x-tmpl-mustache">
+                            {{^body}}
+                            -- no content --
+                            {{/body}}
+                            {{#body}}
+                                {{#body.path}}
+                                <a href="{{body.path}}" download="{{body.filename}}">download</a>
+                                <br>
+                                {{/body.path}}
+
+                                {{#body.text}}
+                                <pre>{{body.text}}</pre>
+                                <br>
+                                {{/body.text}}
+
+                                {{#body.image}}
+                                <img src="{{body.path}}">
+                                {{/body.image}}
+                            {{/body}}
+                        </script>
+                </div>
+
+                <div id="tabResponse" class="tabcontent">
+                    <div id="body_received">select a request to view details</div>
+                </div>
+            </div>
+
+            <div id="tabException" class="tabcontent">
+                <div id="exception">select a request to view details</div>
+                <script id="template_exception" type="x-tmpl-mustache">
+                        {{^exception}}
+                        -- no exception --
+                        {{/exception}}
+                        {{#exception}}
+                            <span>{{exception.type}}</span>
+                            <pre>{{exception.message}}</pre>
+                        {{/exception}}
+                    </script>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <script>
+        update_filter_url();
+        pol_new_data();
+        enable_refresh();
+        opentab(document.getElementById("btn-tab-headers"), "tabHeaders");
+    </script>
+</body>
+
+</html>

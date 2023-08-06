@@ -1,0 +1,65 @@
+Metadata-Version: 2.1
+Name: httpdbg
+Version: 0.0.26
+Summary: A very simple tool to debug HTTP client requests
+Home-page: https://github.com/cle-b/httpdbg
+Author: cle-b
+Author-email: cle@tictac.pm
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Operating System :: OS Independent
+Classifier: Development Status :: 4 - Beta
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
+# httpdbg
+
+A very simple tool to debug HTTP client requests
+
+## installation 
+
+```
+pip install httpdbg
+```
+
+## usage
+
+### interactive console
+
+Open an interactive console with the following command
+
+```
+pyhttpdbg
+```
+```
+(venv) dev@host:~/dir$ pyhttpdbg
+-- -- -- httpdbg - recorded requests available at http://localhost:5000/ 
+Python 3.8.2 (default, Jul 16 2020, 14:00:26) 
+[GCC 9.3.0] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+(InteractiveConsole)
+>>> 
+```
+
+Perform HTTP requests.
+
+You can inspect the HTTP requests directly in your web browser at http://localhost:5000.
+
+*note: we only intercept the requests done using `requests`*.
+
+### script
+
+You can trace all the HTTP requests performed by a script
+
+```
+pyhttpdbg filename.py [arg1 --arg2 ...]
+```
+
+### pytest
+
+You can trace all the HTTP requests performed during your tests
+
+```
+pyhttpdbg pytest [arg1 --arg2 ...]
+```
