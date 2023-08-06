@@ -1,0 +1,142 @@
+Metadata-Version: 2.1
+Name: mofh
+Version: 1.0.1
+Summary: API wrapper for https://myownfreehost.net
+Home-page: https://github.com/Wallvon/mofh
+Author: Robert S.
+Author-email: admin@robert-s.dev
+License: GPLv3
+Keywords: mofh,myownfreehost,vistapanel,vpanel,byet,ifastnet,byethost,freehosting,free-hosting,api-wrapper,api,wrapper
+Platform: unix
+Platform: linux
+Platform: osx
+Platform: cygwin
+Platform: win32
+Platform: win64
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+License-File: LICENSE.MD
+Requires-Dist: aiohttp[speedups] (>=3.8.1)
+Requires-Dist: asyncio (>=3.4.3)
+Requires-Dist: uvloop (>=0.16.0)
+Requires-Dist: requests (>=2.28.1)
+Requires-Dist: defusedxml (>=0.7.1)
+Provides-Extra: testing
+Requires-Dist: flake8 (==5.0.4) ; extra == 'testing'
+Requires-Dist: tox (==3.25.1) ; extra == 'testing'
+Requires-Dist: pytest (==7.1.2) ; extra == 'testing'
+Requires-Dist: pytest-cov (==3.0.0) ; extra == 'testing'
+Requires-Dist: pytest-asyncio (==0.19.0) ; extra == 'testing'
+Requires-Dist: mypy (==0.971) ; extra == 'testing'
+Requires-Dist: sphinx (==5.1.1) ; extra == 'testing'
+
+![License](https://img.shields.io/github/license/Wallvon/mofh?color=A42E2B&logo=gnu&logoColor=white&style=for-the-badge)
+![Compatible Python versions](https://img.shields.io/pypi/pyversions/mofh?logo=python&logoColor=ffd242&style=for-the-badge)
+![PyPi monthly downloads](https://img.shields.io/pypi/dm/mofh?color=ffd242&label=PyPi%20Downloads&logo=pypi&style=for-the-badge)
+![PyPi version](https://img.shields.io/pypi/v/mofh?label=PyPi%20Version&logo=pypi&logoColor=ffd242&style=for-the-badge)
+
+![Tests](https://github.com/Wallvon/mofh/actions/workflows/tests.yml/badge.svg)
+
+# mofh by Robert S.
+An API wrapper for [MyOwnFreeHost](https://myownfreehost.net).
+
+## Installation
+To install from PyPi run
+```bash
+pip install mofh
+```
+
+## Documentation
+https://mofh.readthedocs.io
+
+## Versioning
+mofh uses the following versioning pattern:
+
+**major.minor.patch**
+- **Major**: Breaking changes, the bot is no longer compatible with previous versions.
+- **Minor**: New features, no breaking changes.
+- **Patch**: Bug fixes and small improvements.
+
+## Usage
+
+### Basic usage (creating an account)
+Sync:
+
+```python
+import mofh
+
+# With a context manager
+with mofh.Client(username="example", password="password") as client:
+    response = client.create(username='example', password='password', contactemail='example@example.com',
+                         domain='subdomain.example.com', plan='MyAwesomePlan')
+    print(response)
+
+# ---
+
+# Without a context manager
+client = mofh.Client(username="example", password="password")
+
+response = client.create(username='example', password='password', contactemail='example@example.com',
+                         domain='subdomain.example.com', plan='MyAwesomePlan')
+print(response)
+
+client.close()
+```
+
+Async:
+
+```python
+import mofh
+
+# With a context manager
+async with mofh.AsyncClient(username="example", password="password") as client:
+    response = await client.create(username='example', password='password', contactemail='example@example.com',
+                         domain='subdomain.example.com', plan='MyAwesomePlan')
+    print(response)
+
+# ---
+
+# Without a context manager
+client = mofh.AsyncClient(username="example", password="password")
+
+response = await client.create(username='example', password='password', contactemail='example@example.com',
+                         domain='subdomain.example.com', plan='MyAwesomePlan')
+print(response)
+
+await client.close()
+```
+
+### Custom session
+It is possible to use custom requests or aiohttp session with configured timeouts and other settings.
+
+Sync:
+
+```python
+import mofh
+from requests import Session
+
+client = mofh.Client(username="example", password="password", session=Session())
+```
+
+Async:
+
+```python
+import mofh
+from aiohttp import ClientSession, ClientTimeout
+
+client = mofh.AsyncClient(username="example", password="password", session=ClientSession(timeout=ClientTimeout))
+```
+
+### Custom API URL
+In case URL gets changed for some reason it is possible to overwrite the API URL:
+
+```python
+import mofh
+
+client = mofh.Client(username="example", password="password", api_url="https://panel.myownfreehost.net/xml-api/")
+```
