@@ -1,0 +1,157 @@
+Metadata-Version: 2.1
+Name: assetic-esri
+Version: 1.2.1.1
+Summary: Assetic ESRI Integration API
+Home-page: http://www.assetic.com
+Author-email: developer@assetic.com
+License: UNKNOWN
+Keywords: Assetic ESRI Integration APIs
+Platform: UNKNOWN
+License-File: LICENSE.txt
+Requires-Dist: assetic (>=2021.5.1.5)
+Requires-Dist: arcgis2geojson
+Requires-Dist: pandas (>=0.12.0)
+Requires-Dist: six
+Requires-Dist: typing
+
+Assetic ESRI integration SDK
+============================
+This package provides tools that can be used to assist with integration between Assetic and ESRI.  The tools may be included in the ArcMap python add-in, or in scripts run outside of the ArcMap desktop environment
+
+
+
+**Changelog**
+
+**Release 1.2.1.1**
+        *   Resolve release issue
+
+**Release 1.2.1.0**
+        *   Fixed an issue when creating assets where domain lookups for Subtype Field were not resolved, resulting in the create applying the "CodedValue" for domain attributes
+
+**Release 1.2.0.10**
+        *   Fixed an issue when writing the asset Id value back to the layer attributes when using a "CodedValue" domain and resolving lookups
+        *   Fixed an issue when updating assets where domain lookups were not resolved, resulting in the update applying the "CodedValue" for domain attributes
+        *   Fixed an issue where the component type was set to an incorrect value if the type was defined by an attribute field, rather than a default
+
+**Release 1.2.0.9**
+        *   Support subtypes where the domain is of type "CodedValue" and the description value is needed rather than
+            the code value which is the default.
+            To use set <resolve_lookups>True</resolve_lookups> in config for the layer
+        *   Cater for data with M dimension (strip null M from upload to Assetic)
+
+**Release 1.2.0.8**
+        *   Standardise functional location creation
+
+**Release 1.2.0.7**
+        *   Correct error with support for table only layers
+
+**Release 1.2.0.6**
+        *   Improve unhandled exception logging by ensuring exception still
+            output to stderr as well as logger
+        *   Support legacy use of deprecated CommonTools.force_use_arcpy_addmessage
+        *   Improve messaging around testing of Functional Location existence
+            prior to creation
+
+**Release 1.2.0.5**
+        *   Moved create/update methods from python-sdk in to this package
+
+**Release 1.2.0.4**
+        *   Fixed logging issues
+        *   Moved bulk_update_spatial method from python-sdk to assetic-esri-sdk
+
+**Release 1.2.0.3**
+        *   Moved common GIS functionality to shared Assetic Python SDK (pypi: assetic)
+
+**Release 1.2.0.2**
+        *   Fix issue where functional location not created if type defined by
+            an attribute field rather than a default
+
+**Release 1.2.0.1**
+        *   Fix issue where spatial upload was skipped in some circumstances
+
+**Release 1.2.0.0**
+        *   Introduced support for layers with no spatial data, i.e. tables
+        *   Allow for updating components of the same type by including
+            component name when obtaining the component to update
+        *   Ensure log level is correctly set
+
+**Release 1.1.3.2**
+        *   Improve messaging if missing configuration
+
+**Release 1.1.3.1**
+        *   Cater for partial asset creation whereby the asset is created
+            but a component, dimension, or functional location association
+            fails.  Reported as a partial success, and the GIS is updated
+            with the asset Id and optionally the component ID if created
+        *   Requires the assetic python package 2020.6.1.1 as a minimum
+
+**Release 1.1.2.1**
+        *   Support configuration where id not a functional location field
+        *   Improve messaging around missing configurations
+
+**Release 1.1.2.0**
+        *   Add option to apply custom calculation script that allows
+            fields from layer to be used to derive new fields to be used for
+            input to Assetic.  The derived field does not need to be in the layer
+
+**Release 1.1.1.1**
+        *   Add XML configuration option to set threshold at which bulk
+            update occurs via Data Exchange rather than per asset
+
+**Release 1.1.1.0**
+        *   Introduced support for creating and updating Functional Location for a Functional Location layer
+        *   Introduced support for associating an asset with a Functional Location on asset creation or update
+        *   Introduced bulk update process where feature count exceeds 250.
+            Data Exchange is used to apply the updates as it is a more
+            efficient process for large volume updates.
+
+**Release 1.0.1.14**
+        *   Fix issue caused by missing bracket in version check
+
+**Release 1.0.1.13**
+        *   Check the Assetic folder exists in %APPDATA% and if not create it
+        *   Fix issue reading XML configuration setting for upload_spatial
+
+**Release 1.0.1.12**
+        *   When initiating the settings in the xml configuration file will be
+            used in preference to the passed in logfile name and level
+
+        *   Prior to initialisation of the logging, unhandled errors will be
+            written to %APPDATA%/assetic/addin.log
+
+**Release 1.0.1.10**
+        *   Cater for multiple network measure addition records against a
+            single component provided the shape differs for each
+
+**Release 1.0.1.9**
+        *   Cater for arcs/circles in polygon and polyline definitions
+        *   Add arcpy Progressor option for progress messages when using
+            model builder
+
+**Release 1.0.1.8**
+        *   On asset creation the status did not match the layer configuration
+
+**Release 1.0.1.7**
+        *   Add support for creating and updating Component, Dimension and Address, standardise spatial upload.
+        *   Improve error logging to catch unhandled exceptions
+        *   Minimum required Assetic package is 2019.2.3.0
+
+**Release 1.0.1.6**
+		*	Correct potential issue with unsupported spatial data upload
+		
+**Release 1.0.1.5**
+		*	Add property config.force_use_arcpy_addmessage as boolean.  
+			If using Model Builder in ArcMap it ensures messages are written to the	Model Builder run dialog rather than a separate
+			pop-up dialog that can get lost behind the Model Builder dialog.  Default = False
+**Release 1.0.1.4**
+        *	Allow a filter to be provided on asset creation
+		
+		*	Correct issue with setting log file
+**Release 1.0.1.1**
+        *	Publish to pypi
+**Release 1.0.1.0**
+        *	Include default field configuration option
+**Release 1.0.0.0**
+        *	Initial Build
+
+
