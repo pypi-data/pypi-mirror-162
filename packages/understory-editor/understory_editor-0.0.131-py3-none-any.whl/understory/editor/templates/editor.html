@@ -1,0 +1,330 @@
+$def with (guests, visibility, permalink)
+$# $var title: Editor
+$# $var show_title = False
+
+<form method=post>
+<div>
+    <div id=in_reply_to>
+        <label><small>In reply to</small><br>
+        <label class=bounding><input type=text name=in_reply_to></label></label>
+    </div>
+    <div id=name>
+        <label><small>Name</small><br>
+        <label class=bounding><input type=text name=name></label></label>
+    </div>
+    <div id=content>
+        <div id=editor></div>
+        <div id=editorStatus></div>
+    </div>
+    <fieldset id=coauthors>
+    <legend><label><input type=checkbox> Coauthors</label></legend>
+    <div id=connection></div>
+    <div id=version></div>
+    <ul>
+    <p><small>Guests currently signed in:</small></p>
+    $for guest in guests:
+        <li><label><input type=checkbox name=coauthor value=$guest["url"]>
+        $guest["name"]</label> <small><a href=$guest["url"]>$guest["url"]</a></small></li>
+    </ul>
+    </fieldset>
+    <fieldset id=visibility>
+    <legend>Visibility</legend>
+    $for vis in visibility:
+        <label><input type=radio name=visibility value=$vis
+        required
+        $if vis == "public":
+            checked
+        $else:
+            disabled
+        > $vis.capitalize()</label>
+    </fieldset>
+    <div id=permalink>
+        <label><small>Permalink</small><br>
+        <label class=bounding><input readonly value=http://ragt.ag/
+        type=text name=permalink></label></label>
+    </div>
+    <div class=buttons>
+        <label><input type=checkbox> Draft Live</label>
+        <button>Publish</button>
+    </div>
+</div>
+
+<div id=preview>
+    <div id=replyContext></div>
+    <div id=previewName></div>
+    <div id=previewContent></div>
+</div>
+
+$# <div>
+$# <label for=published>Publication date</label><br>
+$# <input type=date name=published_date>
+$# <input type=time name=published_time>
+$# <select name=published_tz>
+$# $for tz in pendulum.timezones:
+$#     $if "/" not in tz:
+$#         $continue
+$#     <option
+$#     $if tz == "America/Los_Angeles":
+$#         selected
+$#     >$tz</option>
+$# </select>
+$# </div>
+
+$# <fieldset id=categories>
+$#   <legend>Categories</legend>
+$#   <!-- XXX todo populate with call to mp?q=config as with channels -->
+$#   <input type=text><button>Add</button>
+$#   <ul>
+$#   $# $for category in c
+$#   $#     <li><input type=checkbox id=coding name=category value=coding>
+$#   $#     <label for=coding>Coding</label></li>
+$#   </ul>
+$# </fieldset>
+
+</form>
+
+<style>
+form {
+  column-gap: 2em;
+  display: grid;
+  grid-template-columns: 50% 50%; }
+input[type=text], textarea {
+  background-color: #ddd;
+  border: 0;
+  padding: 0;
+  width: 100%; }
+input[type=text] {
+  height: 1.5em; }
+#categories ul {
+  list-style: none;
+  padding-left: 0; }
+.bounding {
+  background-color: #ddd;
+  border: .1em solid #333;
+  display: block;
+  padding: .5em; }
+label small, legend {
+  font-size: .8em;
+  font-weight: bold; }
+fieldset {
+  border: .1em solid #333;
+  margin: 0; }
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0; }
+.buttons {
+  margin-top: 1em;
+  text-align: right; }
+#in_reply_to, #name, #content, #coauthors, #visibility, #permalink {
+  margin-bottom: 1em; }
+#in_reply_to input[type=checkbox], #name input[type=checkbox] {
+  font-size: .9em; }
+#in_reply_to input[type=text], #name input[type=text], #permalink input[type=text] {
+  outline: none; }
+#in_reply_to input[type=text], #permalink input[type=text] {
+  font-size: .9em; }
+#name input {
+  font-size: 1.5em;
+  height: 1.2em; }
+#editor {
+  height: 35em; }
+</style>
+
+<script type=module>
+import { load, diamondMonaco, MicropubClient } from '/static/web.js'
+
+const pub = new MicropubClient('/posts')
+
+load(() => {
+  const enlivenOptionalProperty = property => {
+    const textbox = document.querySelector(`#$${property} .bounding`)
+    textbox.style.display = 'none'
+    const checkbox = document.createElement('input')
+    checkbox.type = 'checkbox'
+    checkbox.addEventListener('click', e => {
+      textbox.style.display = e.target.checked ? 'block' : 'none'
+      textbox.focus()
+    })
+    document.querySelector(`#$${property} small`).prepend(checkbox)
+  }
+  enlivenOptionalProperty('in_reply_to')
+  enlivenOptionalProperty('name')
+
+  var frequency = 1.5;  // seconds
+  var count = 0;
+  var clean = true;
+  const tick = () => {
+    setTimeout(() => {
+      if (count++ > frequency * 10 && !clean)
+        updatePreview();
+      tick();
+    }, 100);
+  }
+  tick();
+  const updatePreview = () => {
+    clean = false;
+    if (count > frequency * 10) {
+      previewMarkdown(monaco.getValue());
+      clean = true;
+      count = 0;
+    }
+  }
+  updatePreview()
+
+  pub.getConfig().then(data => console.log(data))
+  // pub.getCategories().then(data => {
+  //   data.categories.forEach(cat => {
+  //     addCategory(cat)
+  //   })
+  // })
+
+  // TODO on form control change create a permalink and save a draft
+  let monaco
+  const properties = {'content': '', 'post-status': 'draft'}
+  pub.create('entry', properties).then(permalink => {
+    $if permalink:
+        permalink = '$permalink'
+    document.querySelector('#permalink input[type=text]').value = `http://ragt.ag$${permalink}`
+    monaco = diamondMonaco(
+      permalink, editor, editorStatus, connection, version,
+      {
+        language: 'markdown'
+      },
+      '$(tx.user.session["uid"][0] if tx.user.session else tx.user.ip)',
+      true
+    )
+    monaco.onKeyUp(updatePreview)
+  })
+
+  document.querySelector('#in_reply_to input[type=text]').addEventListener('blur', e => {
+    previewReplyContext(e.target.value)
+  })
+
+  addEventListener('beforeunload', e => {
+    e.stopPropagation()
+    e.preventDefault()
+    return false
+  }, true)
+})
+
+const previewMarkdown = content => {
+  name = document.querySelector('#name input[type=text]').value
+  previewName.innerHTML = `<h1>$${name}</h1>`
+  if (content == '') {
+    previewContent.innerHTML = ''
+    return
+  }
+  let body = new FormData()
+  body.append('content', content)
+  fetch(
+    '/editor/preview/markdown',
+    {
+      method: 'POST',
+      body: body
+    }
+  ).then(response => {
+    if (response.status === 200) {
+      return response.json().then(data => {
+        previewContent.innerHTML = data['content']
+      })
+    }
+  })
+}
+
+const previewReplyContext = url => {
+  if (url == '') {
+    replyContext.innerHTML = '';
+    return
+  }
+  fetch(
+    '/editor/preview/resource?url=' + encodeURIComponent(url),
+  ).then(response => {
+    if (response.status === 200) {
+      return response.json().then(data => {
+        replyContext.innerHTML = `<big><strong>$${data['name']}</strong></big><p>$${data['summary']}</p>`
+      })
+    }
+  })
+}
+
+$# const addCategory = (cat) => {
+$#   const ul = document.querySelector('#categories ul')
+$#   const li = document.createElement('li')
+$#   const checkbox = document.createElement('input')
+$#   const tagname = document.createElement('span')
+$#   checkbox.type = 'checkbox'
+$#   checkbox.value = cat
+$#   li.appendChild(checkbox)
+$#   tagname.innerText = cat
+$#   li.appendChild(tagname)
+$#   ul.appendChild(li)
+$# }
+
+$# const { MicropubClient } = web
+$# const pub = new MicropubClient('/posts')
+$# document.addEventListener('DOMContentLoaded', () => {
+$#   pub.getConfig().then(data => console.log(data))
+$#   pub.getCategories().then(data => {
+$#     data.categories.forEach(cat => {
+$#       addCategory(cat)
+$#     })
+$#   })
+
+$#   document.querySelector('#categories button').addEventListener('click', event => {
+$#     event.preventDefault()
+$#     const textbox = document.querySelector('#categories input')
+$#     addCategory(textbox.value)
+$#     textbox.value = ''
+$#   })
+
+$#   document.querySelector('form#editor').addEventListener('submit', event => {
+$#     event.preventDefault()
+$#     // let myForm = document.getElementById('editor')
+$#     // let formData = new FormData(myForm)
+$#     // for (let p of formData) {
+$#     //   console.log(p)
+$#     // }
+$#     const properties = {}
+$#   
+$#     const name = document.querySelector('input[name=name]').value
+$#     if (name) {
+$#       properties.name = [name]
+$#     }
+$#   
+$#     const content = editor.value
+$#     if (content) {
+$#       properties.content = [content]
+$#     }
+$#   
+$#     const published_date = document.querySelector('input[name=published_date]').value
+$#     const published_time = document.querySelector('input[name=published_time]').value
+$#     const published_tz = document.querySelector('select[name=published_tz]').value
+$#     console.log(published_date)
+$#     console.log(published_time)
+$#     console.log(published_tz)
+$#     if (published_date) {
+$#       let published = published_date
+$#       if (published_time) {
+$#         published = `$${published_date}T$${published_time}:00+00:00`
+$#       }
+$#       properties.published = [{datetime: published, timezone: published_tz}]
+$#     }
+$#   
+$#     const categories = []
+$#     document.querySelectorAll('#categories input[type=checkbox]').forEach(el => {
+$#       if (el.checked) {
+$#         categories.push(el.value)
+$#       }
+$#     })
+$#     if (categories.length) {
+$#       properties['category'] = categories
+$#     }
+$#   
+$#     console.log(properties)
+$#     pub.create('entry', properties, 'public').then(permalink => {
+$#       window.location.href = permalink
+$#     })
+$#   })
+$# })
+</script>
