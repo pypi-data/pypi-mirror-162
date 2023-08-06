@@ -1,0 +1,48 @@
+# signal-application-python-sdk
+
+# Setup
+
+### Add Signal-Application-SDK as a dependency to requirements.txt
+```
+signal-application-python-sdk==<latest>
+```
+
+### Install dependencies
+```
+python setup.py install
+```
+
+Entry point for Signal Application SDK
+* Creates a bi-directional communication between device shadow and application
+
+### Initialize SDK
+```
+self.app = SignalApp()
+self.app.initialize(self.onConfigChange, self.onEvent)
+```
+
+### Provide a callback method to get notified when a configuration change is requested
+```
+def onConfigChange(self, config):
+```
+* Will be triggered when a new configuration change requested from the cloud
+
+
+### Provide a callback method to get notified when an event is received from event bus
+```
+def onEvent(self, event):
+```
+* Will be triggered when a new event received from application's subscribed topic
+
+
+### Call next to forward the event to the next node
+```
+self.app.next(event: object)
+```
+
+### Call reportConfigurationChange to report when configuration change is applied
+```
+self.app.reportConfigurationChange(config: object)
+```
+
+ 
