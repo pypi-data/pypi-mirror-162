@@ -1,0 +1,58 @@
+# Install
+
+```
+pip3 install ccprocesspool --upgrade --user
+```
+
+
+# Process Pool Usage
+
+```
+#!/usr/bin/env python3
+# _*_ coding:utf-8 _*_
+import time
+from ccprocesspool import CCProcessPool
+
+
+class CCProcessPoolTestJob(object):
+
+    @staticmethod
+    def count_instant_to_10():
+        for i in range(0, 10):
+            print('instant', i)
+
+    @staticmethod
+    def count_quick_to(param: int):
+        for i in range(0, param):
+            print('quick', i)
+
+    @staticmethod
+    def count_slow_to(param: int):
+        for i in range(0, param):
+            print('slow', i)
+            time.sleep(1)
+
+
+if __name__ == '__main__':
+    p_m = CCProcessPool('test_pool')
+    p_m.add_job(CCProcessPoolTestJob.count_instant_to_10, None)
+    p_m.add_job(CCProcessPoolTestJob.count_quick_to, (10, ))
+    p_m.add_job(CCProcessPoolTestJob.count_slow_to, (10, ))
+    p_m.add_job(CCProcessPoolTestJob.count_slow_to, (10, ))
+    p_m.check_job()
+    while True:
+        time.sleep(2)
+        p_m.check_job()
+        pass
+```
+
+# Restartable Process Usage
+
+```
+p_m = CCRestartableProcess('test_process', CCRestartableProcessTestJob.count_slow_to_10)
+p_m.start()
+while True:
+    time.sleep(5)
+    p_m.restart()
+    pass
+```
