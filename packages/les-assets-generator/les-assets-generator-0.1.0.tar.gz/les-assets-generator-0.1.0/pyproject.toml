@@ -1,0 +1,44 @@
+[tool.poetry]
+name = "les-assets-generator"
+version = "0"
+description = ""
+authors = ["Ludovic Ortega <ludovic.ortega@lyon-esport.fr>"]
+license = "CeCILL"
+readme = "README.md"
+homepage = "https://github.com/lyon-esport/assets-generator"
+repository = "https://github.com/lyon-esport/assets-generator"
+keywords = ["django", "esport", "assets"]
+classifiers = [
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Operating System :: OS Independent",
+    "License :: OSI Approved :: CEA CNRS Inria Logiciel Libre License, version 2.1 (CeCILL-2.1)",
+    "Topic :: Utilities",
+]
+include = [
+    "LICENSE",
+    "LICENSE.fr",
+]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+Django = "^4.0.6"
+django-colorfield = "^0.7.2"
+django-allauth = "^0.51.0"
+Pillow = "^9.2.0"
+dj-database-url = "^1.0.0"
+python-dotenv = "^0.20.0"
+gunicorn = "^20.1.0"
+
+
+[tool.poetry.group.dev.dependencies]
+pre-commit = "^2.20.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry-version-plugin]
+source = "git-tag"
