@@ -1,0 +1,20 @@
+The pysyte.config.xdg module
+=============================
+
+    >>> from pysyte.config import xdg
+    >>> assert 'XDG config files' in xdg.__doc__
+
+More imports for testing
+------------------------
+    >>> from pysyte.types import paths
+
+User configs
+------------
+    >>> xdg_home_config = paths.path('~/.config')
+    >>> expanded = xdg_home_config.expand()
+
+~/.config should be in xdg.user if it exists 
+    >>> if paths.path(xdg_home_config).isdir():
+    ...     assert expanded in xdg.user
+    ... else:
+    ...     assert expanded not in xdg.user

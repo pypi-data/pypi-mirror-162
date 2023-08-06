@@ -1,0 +1,76 @@
+The colour_numbers module
+=========================
+
+    >>> from pysyte.colours import colour_numbers as cn
+    >>> assert 'numbers known to represent colours' in  cn.__doc__
+
+Convert html strings to integers
+--------------------------------
+
+A "web colour" is represented by a string with 3 hex values for R, G, B
+    For example
+    >>> html = '#00FF00'
+
+Converting that to an integer and back gives itself
+    >>> assert html == cn.integer_to_html(cn.html_to_int(html))
+
+Same result if we start with slight variations on the string
+    >>> assert html == cn.integer_to_html(cn.html_to_int(html.lower()))
+    >>> assert html == cn.integer_to_html(cn.html_to_int(html.replace('#','0x')))
+
+We can also use 3 single chars
+    >>> assert html == cn.integer_to_html(cn.html_to_int('0x0F0'))
+
+Any 3-char hex string is same as the 6-char version by just doubling the characters
+    (http://en.wikipedia.org/wiki/Web_colors#Shorthand_hexadecimal_form)
+    >>> assert cn.html_to_int('0x09C') == cn.html_to_int('#0099cc')
+
+Fixing HTML strings
+-------------------
+
+    >>> assert cn.html_to_html('f00') == 'FF0000'
+    >>> assert cn.hashed_html('f00') == '#FF0000'
+
+Converting html colours to ANSI colours
+---------------------------------------
+
+Convert an HTML colour string to an ANSI code (which is a number)
+    (Test values here come from https://github.com/twoerner/xterm-256colour/blob/master/xtermcolours.sh)
+
+    >>> html, ansi = '#875F5F', 95
+    >>> assert cn.html_to_ansi(html) == ansi
+
+And back again
+    >>> # assert cn.ansi_to_html(ansi) == html
+
+VGA colours
+-----------
+
+"Pure" colours have ANSI values less than 16 and come in "dark" and "light" shades
+    These colours were used on very old terminals, back when I was a lad
+    For example, blue:
+
+Dark blue
+    >>> assert cn.ansi_to_html(4) == '#000080'
+
+Lighter blue:
+    >>> assert cn.ansi_to_html(12) == '#0000FF'
+
+Names to numbers
+----------------
+
+Recognises colour names from English, case-insensitively
+    >>> assert cn.name_to_id('green') == 2 == cn.name_to_id('GREEN')
+
+And other languages
+    >>> assert cn.name_to_id('light red') == cn.name_to_id('f00')
+
+Colour names are case-insensitive
+    >>> assert cn.name_to_id('FF0000') == cn.name_to_id('f00')
+
+Numbers to names
+----------------
+
+    >>> assert cn.id_to_name(cn.name_to_id('green')) == 'green'
+    >>> assert cn.id_to_name(cn.name_to_id('light red')) == 'light red'
+    >>> assert cn.id_to_name(56) == '#6351D7'

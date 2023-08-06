@@ -1,0 +1,325 @@
+The paths module
+================
+
+    >>> from pysyte.types import paths
+    >>> assert 'extended path classes' in paths.__doc__
+
+We'll need the os module for some of the tests below
+
+    >>> import os
+    >>> import sys
+
+Shortcuts
+---------
+    >>> path = paths.path
+
+Some known paths
+----------------
+
+Root of the filesystem
+    >>> assert paths.root().isroot()
+
+The tmp directory
+    >>> assert paths.tmp() == '/tmp'
+
+The pwd() method is a synonym for os.getcwd()
+
+    >>> start_here = paths.pwd()
+    >>> assert start_here == os.getcwd()
+
+cd()
+----
+
+The cd() method (at least) calls os.chdir()
+It returns True if the change of directory is successful
+
+    >>> assert not paths.cd('/no/such/path')
+    >>> assert paths.pwd() == start_here
+    >>> assert paths.cd('/usr/lib')
+    >>> assert paths.pwd() == '/usr/lib'
+
+cd() recognises the special value '-' to go back to the previous directory
+
+    >>> assert paths.cd('-')
+    >>> assert paths.pwd() == start_here
+
+If a cd() fails the value used gets ignored for going back
+    >>> paths.cd('/no/such/path') and paths.pwd() or 'fail'
+    'fail'
+    >>> paths.cd('-') and paths.pwd() or 'fail'
+    <DirectPath '/usr/lib'>
+
+Calling using '-' repeatedly will toggle between two directories:
+
+    >>> assert paths.cd('/usr')
+    >>> assert paths.cd('/opt')
+    >>> for i in range(0,4):
+    ...    _ = paths.cd('-')
+    ...    print(paths.pwd())
+    /usr
+    /opt
+    /usr
+    /opt
+
+If the path to a file is given, cd() will change to that file's parent directory
+    /bin/cp is present on nearly all systems
+        (but it might be a link to /usr/bin/cp)
+    >>> assert paths.cd('/bin/cp')
+    >>> assert paths.pwd() in ('/bin', '/usr/bin')
+
+DirectPath
+----------
+
+A class called DirectPath is also supplied, which extends the path class, slightly.
+You can construct an instance of DirectPath directly:
+
+    >>> p = paths.DirectPath('.')
+
+Or by using the method makepath
+
+    >>> p = paths.makepath('.')
+
+The difference is that makepath expands the string given
+    >>> os_home = os.path.expanduser('~')
+    >>> assert paths.DirectPath('~') != os_home
+    >>> assert paths.makepath('~') == os_home
+    >>> if 'HOME' in os.environ:
+    ...     assert paths.DirectPath('$HOME') != os_home
+    ...     assert paths.makepath('$HOME') == os_home
+
+DirectPath is ako string, which shows the string in %s and %r
+
+    >>> bin_ = paths.DirectPath('/bin')
+    >>> print('%s' % bin_)
+    /bin
+    >>> print('%r' % bin_)
+    <DirectPath '/bin'>
+
+makepath() handles many types of things
+nothings:
+    >>> assert not paths.makepath(None)
+    >>> assert not paths.makepath('')
+
+other paths:
+    >>> assert paths.makepath(p) is p
+
+strings, and things than can change to strings, e.g. an int
+    >>> assert paths.makepath('/some/words/here').name == 'here'
+    >>> assert paths.makepath('.').isdir()
+    >>> assert paths.makepath(37).name == '37'
+
+including python things, like modules, classes, functions
+    >>> path_to_paths = paths.makepath(paths)
+    >>> assert path_to_paths.name in ('paths.py', 'paths.pyc')
+    >>> assert path_to_paths == paths.makepath(paths.DotPath)
+    >>> assert path_to_paths == paths.makepath(paths.makepath)
+
+and other things that have paths
+    >>> class Fred:
+    ...     path = paths.makepath('/usr/local')
+    >>> fred = Fred()
+    >>> assert paths.makepath(fred) is fred.path
+
+A specialised version for strings
+    >>> assert not paths.makestr('')
+    >>> assert paths.makestr(paths.__file__).isfile()
+    >>> assert not paths.makestr('/path/to/nowehere').isfile()
+
+Path expansion at creation
+--------------------------
+
+    >>> os_home = os.path.expanduser('~')
+
+The makepath method expands paths "normally"
+    So both of these end up with the same (string) value:
+    >>> direct_home = paths.DirectPath(os_home)
+    >>> path_to_home = paths.makepath('~')
+    >>> assert direct_home == path_to_home
+
+And that is an expanded path
+    >>> assert path_to_home.startswith('/') and '~' not in path_to_home
+
+Using DirectPath (not makepath()), does not expand paths
+    so this has a different string value
+    >>> squiggle = paths.DirectPath('~')
+
+The unexpanded version is not equal to the expanded
+    >>> assert squiggle != path_to_home
+
+But it is the same path
+    >>> assert squiggle.same_path(path_to_home)
+
+
+Method to give a path with a trailing "slash" on directories
+    >>> assert path_to_home.slashpath().endswith('/')
+    >>> assert not path_to_home.endswith('/')
+
+cd
+--
+
+DirectPath adds the cd() method, which cd's to the path it represents
+It calls the module level cd() method with its own value, so it works as above.
+
+Newer Linuxen link /bin to /usr/bin
+    So for next tests, we will check both
+    >>> expected = ('/bin', '/usr/bin')
+
+Can cd to a direcory
+    >>> os.chdir('/')
+    >>> f = paths.DirectPath('/bin')
+    >>> assert f.cd()
+    >>> assert paths.pwd() in expected
+
+Can also cd to (the directory of) a file
+    >>> os.chdir('/')
+    >>> p = paths.makepath('/bin/cp')
+    >>> assert p.cd()
+    >>> assert paths.pwd() in expected
+
+DirectPath vs path
+------------------
+
+Using the / operator on a path gives an instance of the same class
+    >>> from path import path
+    >>> home = path('~')
+    >>> bashrc = home / '.bashrc'
+    >>> assert isinstance(bashrc, path)
+
+Using it on a DirectPath can give a DirectPath, or a FilePath
+    >>> home = paths.home()
+    >>> bashrc = home / '.bashrc'
+    >>> expected = paths.FilePath if bashrc.isfile() else paths.NonePath
+    >>> assert isinstance(bashrc, expected)
+
+Attributes of may also be DirectPaths or FilePaths
+    >>> parent = bashrc.parent
+    >>> expected = paths.DirectPath if bashrc.isfile() else paths.NonePath
+    >>> assert isinstance(parent, expected)
+
+
+Various checks on paths
+-----------------------
+
+Whether paths exist, are files, are dirs, are hidden, ...
+
+    >>> path_to_paths = paths.path(paths.__file__)
+    >>> assert path_to_paths.isfile()
+    >>> assert path_to_paths.parent.isdir()
+    >>> assert not path_to_paths.isroot()
+    >>> assert bashrc.ishidden()
+    >>> assert paths.path(sys.executable).isexec()
+    >>> assert not paths.path(sys.executable).parent.isexec()
+
+Whether sub_paths exist
+-----------------------
+
+This test assumes you have a ~/bin directory
+    Also assumes you have a ~/.bashrc file, which is more likely
+    >>> sub_paths = [ '.bashrc', 'bin', 'not a real path' ]
+    >>> real_paths = paths.home().existing_sub_paths(sub_paths)
+    >>> assert paths.home() / '.bashrc' in real_paths
+    >>> assert paths.home() / 'bin' in real_paths
+    >>> assert paths.home() / 'not a real path' not in real_paths
+
+Iteration of paths
+------------------
+
+Iterating a directory gives directory entries (sub-directories and files)
+
+Iterating a file gives lines
+    >>> path_to_types = path_to_paths.parent
+    >>> path_to_this_test = path_to_types / 'test/paths.test'
+    >>> iteratings = [l for l in path_to_this_test if 'Iterating' in l]
+    >>> assert 'Iterating a file gives lines' in iteratings
+
+Sets of paths
+-------------
+
+    >>> assert '/usr/lib' in paths.list_sub_directories('/usr','l*')
+    >>> assert '/usr/lib' not in paths.list_sub_directories('/usr','a*')
+    >>> assert '/bin/ls' in paths.set_files('/bin','l*')
+    >>> assert '/bin/ls' not in paths.set_files('/bin','a*')
+
+Search directories
+----------------
+
+    >>> assert paths.contains_glob('/usr','*oca*')
+    >>> assert paths.contains_directory('/usr','*oca*')
+    >>> assert not paths.contains_file('/usr','*oca*')
+
+    >>> assert not paths.contains_glob('/usr','*oca')
+    >>> assert not paths.contains_file('/usr','*oca')
+    >>> assert not paths.contains_directory('/usr','*oca')
+
+Tab completion
+--------------
+
+    >>> assert paths.add_star('fred') == 'fred*'
+    >>> assert paths.add_star('fred.') == 'fred.*'
+    >>> assert paths.add_star('fred.p') == 'fred.p*'
+
+    >>> assert paths.add_stars(['fred', 'fred.', 'fred.py']) == ['fred*', 'fred.*', 'fred.py*']
+
+Try tab completion on some pysyte modules
+    >>> incomplete_text = str(path_to_types / 'li')
+    >>> completions = paths.tab_complete(incomplete_text)
+
+We expect modules called "lines" and "lists" in same dir as "paths"
+    And a package called "literals"
+    >>> assert path_to_types / 'lines.py' in completions
+    >>> assert path_to_types / 'lists.py' in completions
+    >>> assert path_to_types / 'literals' in completions
+
+Parts and parents
+-----------------
+
+    >>> assert paths.home()
+    >>> assert paths.pwd()
+
+Get the parent directory
+
+    >>> assert paths.path('/one/two/three').parent == '/one/two'
+
+    >>> local_bin = paths.path('/usr/local/bin')
+    >>> assert local_bin.parent == '/usr/local'
+
+There is also a more fully spelled-out function to get the parent
+    >>> assert local_bin.parent == local_bin.parent_directory()
+
+.parent and .parent_directory() are same for all paths except filesystem root
+    For the root it's "parent" is itself
+    But it does not have a "parent_directpry"
+    >>> root = paths.path('/')
+    >>> assert root.parent == root
+    >>> assert root.parent_directory() is None
+
+Use the plural to get all parents up to the root (in "ascending" order)
+    >>> parents = local_bin.parent_directories()
+    >>> assert parents[0] == '/usr/local'
+    >>> assert parents[1] == '/usr'
+    >>> assert parents[-1].isroot()
+
+Splitting off extensions
+------------------------
+
+    >>> path_to_paths = paths.path(paths.__file__)
+    >>> assert path_to_paths.ext in {'.py', '.pyc'}
+    >>> stem, ext = path_to_paths.splitext()
+    >>> assert ext[0] == '.'
+    >>> assert f'{stem}{ext}' == paths.__file__
+
+Splitting out parts
+-------------------
+
+    >>> parts = local_bin.split()
+    >>> assert parts[0].isroot()
+    >>> assert parts[1:] == ['usr', 'local', 'bin']
+
+The splitexts method
+---------------------
+
+    >>> p = paths.FilePath('/alan/was/here.tar.gz')
+    >>> p.splitext()
+    (<FilePath '/alan/was/here.tar'>, '.gz')
+    >>> p.splitexts()
+    (<FilePath '/alan/was/here'>, '.tar.gz')

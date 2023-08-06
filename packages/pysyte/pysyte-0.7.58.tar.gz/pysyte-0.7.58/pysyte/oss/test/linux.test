@@ -1,0 +1,27 @@
+The pysyte.oss.linux module
+=============================
+
+    >>> from pysyte.oss import linux
+    >>> assert 'Linux-specific' in linux.__doc__
+
+More imports for testing
+------------------------
+
+    >>> import os
+    >>> from pysyte.types import paths
+
+XDG
+---
+
+The normal path to XDG configs for user
+    >>> home_config = paths.home() / '.config'
+    >>> assert linux.xdg_home() == home_config
+
+That can change depending on what is set in environment
+    >>> expected = '/etc'
+    >>> os.environ['XDG_CONFIG_HOME'] = expected
+    >>> assert linux.xdg_home() == expected
+    >>> del os.environ['XDG_CONFIG_HOME']
+
+Particular config files
+    >>> assert linux.xdg_home_config('fred') == home_config / 'fred'

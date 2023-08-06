@@ -1,0 +1,16 @@
+The platforms module
+====================
+
+    >>> from pysyte.oss import platforms
+    >>> assert 'different OS platforms' in platforms.__doc__
+
+Clipboard
+=========
+
+    >>> expected = 'fred was here'
+
+This one does not work for Travis
+    >>> if platforms.name == 'darwin':
+    ...     platforms.put_clipboard_data(expected)
+    ...     actual = platforms.get_clipboard_data()
+    ...     assert actual == expected

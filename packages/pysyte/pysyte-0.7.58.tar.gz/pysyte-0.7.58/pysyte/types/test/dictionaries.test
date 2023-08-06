@@ -1,0 +1,70 @@
+The dictionaries module
+=======================
+
+    >>> from pysyte.types import dictionaries
+    >>> assert 'help with the handling of dictionaries' in dictionaries.__doc__
+
+Default Dictionaries
+--------------------
+
+Better representation
+
+    >>> dd = dictionaries.DefaultDict(list)
+    >>> dd[1].append('one')
+    >>> dd[3].append('three')
+    >>> dd
+    <DefaultDict
+        {1: ['one'], 3: ['three']}
+    >
+
+A LazyDefaultDict initialises with a method (not a type), which takes a key
+    and that method provides the default value
+
+    >>> def method(key):
+    ...     return key < 10 and 'small' or 'big'
+
+    >>> stuff = dictionaries.LazyDefaultDict(method)
+
+    >>> assert stuff[5] == 'small'
+    >>> assert stuff[198798] == 'big'
+
+Also has the better representation of DefaultDict
+    >>> stuff
+    <LazyDefaultDict
+        {5: 'small', 198798: 'big'}
+    >
+
+Reading a dictionary into attributes
+------------------------------------
+
+A class is provided, which is initialised with a dictionary
+    and offers those keys as attributes
+
+    >>> dictionary = {'stuff': 1, 'non sense': 2}
+    >>> shallow = dictionaries.DictionaryAttributes(dictionary)
+    >>> assert shallow.stuff == 1
+
+It still acts as a dictionary
+    >>> assert shallow['stuff'] == 1
+
+Any names which can't be converted aren't
+    >>> try:
+    ...     shallow.getattr('non sense')
+    ...     assert False
+    ... except AttributeError:
+    ...     assert shallow['non sense'] == 2
+
+It adds only only level of attributes
+    >>> dictionary = {'stuff': 1, 'names': {'alan': 1, 'fred': 2}}
+    >>> shallow = dictionaries.DictionaryAttributes(dictionary)
+    >>> assert shallow.names
+    >>> try:
+    ...     shallow.names.fred
+    ...     assert False
+    ... except AttributeError:
+    ...     pass
+
+A second class goes deeper
+    >>> deep = dictionaries.RecursiveDictionaryAttributes(dictionary)
+    >>> assert deep['names']['fred'] == deep.names.fred
+
