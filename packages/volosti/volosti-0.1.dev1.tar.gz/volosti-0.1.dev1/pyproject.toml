@@ -1,0 +1,47 @@
+
+[tool.poetry]
+name = "volosti"
+version = "0.1.dev1"
+description = "Метапакет разрабатываемого проекта"
+license = "MIT"
+
+authors = [
+    "Ruslan Ilyasovich Gilfanov <ri.gilfanov@yandex.ru>",
+]
+maintainers = [
+    "Ruslan Ilyasovich Gilfanov <ri.gilfanov@yandex.ru>",
+]
+
+readme = "README.rst"
+homepage = "https://pypi.org/project/volosti"
+repository = "https://github.com/volosti/volosti"
+
+keywords = []
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: Russian",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+gunicorn = { version = "^20.1.0", optional = true }
+uvicorn = { version = ">=0.18.2", optional = true }
+volosti-server-sanic = { version = "^0", optional = true, allow-prereleases = true }
+volosti-server-starlette = { version = "^0", optional = true, allow-prereleases = true }
+
+[tool.poetry.extras]
+all = [
+    "gunicorn",
+    "uvicorn",
+    "volosti-server-sanic",
+    "volosti-server-starlette",
+]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
