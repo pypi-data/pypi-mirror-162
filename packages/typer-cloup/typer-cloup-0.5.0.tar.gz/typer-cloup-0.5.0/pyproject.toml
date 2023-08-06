@@ -1,0 +1,87 @@
+[build-system]
+requires = ["flit_core ~= 3.7.1"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "typer-cloup"
+readme = "README.md"
+requires-python = ">= 3.7"
+license = {file = "LICENSE"}
+authors = [
+    { name = "Sebastián Ramírez", email = "tiangolo@gmail.com" },
+    { name = "Alexander Regueiro", email = "alex@noldorin.com" },
+]
+maintainers = [
+    { name = "Alexander Regueiro", email = "alex@noldorin.com" },
+]
+keywords = ["shell", "cli", "terminal", "click", "cloup", "typer", "typehints"]
+classifiers = [
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: System Administrators",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Software Development",
+    "Typing :: Typed",
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "License :: OSI Approved :: MIT License",
+]
+dependencies = [
+    "cloup ~= 0.15.0",
+]
+dynamic = ["version", "description"]
+
+[project.urls]
+homepage = "https://github.com/alexreg/typer"
+documentation = "https://alexreg-typer.netlify.app"
+repository = "https://github.com/alexreg/typer"
+
+[project.optional-dependencies]
+test = [
+    "black ~= 22.3.0",
+    "coverage ~= 5.2",
+    "isort ~= 5.10.1",
+    "mypy == 0.950",
+    "pytest ~= 7.1.2",
+    "pytest-cov ~= 3.0.0",
+    "pytest-sugar ~= 0.9.4",
+    "pytest-xdist ~= 1.32.0",
+    "shellingham ~= 1.4.0",
+    "types-docutils ~= 0.18.3",
+]
+doc = [
+    "mdx-include ~= 1.4.1",
+    "mkdocs ~= 1.2.4",
+    "mkdocs-material ~= 8.1.11",
+]
+dev = [
+    "autoflake ~= 1.4",
+    "flake8 ~= 4.0.1",
+    "pre-commit ~= 2.19.0",
+]
+all = [
+    "colorama ~= 0.4.4",
+    "docutils ~= 0.18.1",
+    "shellingham ~= 1.4.0",
+]
+
+[tool.flit.module]
+name = "typer"
+
+[tool.isort]
+profile = "black"
+known_third_party = ["typer", "click", "cloup"]
+skip_glob = [
+    "docs_src/subcommands/tutorial001/main.py",
+    "docs_src/subcommands/tutorial003/lands.py",
+    "docs_src/subcommands/tutorial003/main.py",
+]
