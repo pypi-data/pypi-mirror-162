@@ -1,0 +1,13 @@
+{% comment %}
+Displays an image for a page like publication_detail or event_detail.
+
+Expects:
+* obj - The object whose thumbnail we're showing.
+* alt_text - The text to use as the image's `alt` text.
+{% endcomment %}
+
+{% with link_url=url|default:obj.thumbnail.url %}
+  <a href="{{ link_url }}">
+    <img src="{{ obj.detail_thumbnail.url }}" srcset="{{ obj.detail_thumbnail.url }} 1x, {{ obj.detail_thumbnail_2x.url }} 2x" width="{{ obj.detail_thumbnail.width }}" height="{{ obj.detail_thumbnail.height }}" alt="{{ alt_text }}" class="float-md-left border mr-5 mb-4">
+  </a>
+{% endwith %}

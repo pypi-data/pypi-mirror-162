@@ -1,0 +1,46 @@
+{% extends 'spectator_events/base.html' %}
+{% load spectator_core spectator_events %}
+
+{% block head_page_title %}{{ event }}{% if event.venue %} at {{ event.venue_name }}{% endif %} on {% display_date event.date as event_date %}{{ event_date|striptags }}{% endblock %}
+{% block content_title %}{{ event.title_html }}{% endblock %}
+
+{% block breadcrumbs %}
+  {{ block.super }}
+  <li class="breadcrumb-item active">{{ event.title_html }}</li>
+{% endblock %}
+
+{% block content %}
+
+  {% if event.thumbnail %}
+    {% include 'spectator_core/includes/thumbnail_detail.html' with url=event.thumbnail.url obj=event alt_text="Ticket" only %}
+  {% endif %}
+
+  <p>
+    {% if event.venue %}At <a href="{{ event.venue.get_absolute_url }}">{{ event.venue_name }}</a>
+    on{% else %}On{% endif %} {% display_date event.date %}.
+  </p>
+
+  {% if event.note %}
+    {{ event.note|safe|linebreaks }}
+  {% endif %}
+
+  {% include 'spectator_events/includes/selections.html' with selection_list=event.get_movies heading="Movies" only %}
+
+  {% include 'spectator_events/includes/selections.html' with selection_list=event.get_plays heading="Plays" only %}
+
+  {% include 'spectator_events/includes/selections.html' with selection_list=event.get_classical_works heading="Classical works" only %}
+
+  {% include 'spectator_events/includes/selections.html' with selection_list=event.get_dance_pieces heading="Dance pieces" only %}
+
+  {% include 'spectator_events/includes/selections.html' with selection_list=event.get_exhibitions heading="Exhibitions" only %}
+
+  {% include 'spectator_core/includes/roles_list.html' with roles=event.roles.all heading='Featuring' only %}
+
+{% endblock content %}
+
+
+{% block sidebar_nav %}
+  {% change_object_link_card object perms %}
+
+  {{ block.super }}
+{% endblock sidebar_nav %}
