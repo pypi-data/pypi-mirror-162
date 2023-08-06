@@ -1,0 +1,1 @@
+from sparknlp_jsl.extensions.finance.sequence_classification.finance_bert_for_sequence_classification import FinanceBertForSequenceClassification

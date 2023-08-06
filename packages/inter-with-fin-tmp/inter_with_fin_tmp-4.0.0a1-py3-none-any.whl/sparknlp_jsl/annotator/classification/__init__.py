@@ -1,0 +1,4 @@
+from sparknlp_jsl.annotator.classification.document_log_classifier import *
+from sparknlp_jsl.annotator.classification.medical_bert_for_sequence_classification import *
+from sparknlp_jsl.annotator.classification.medical_bert_for_token_classifier import *
+from sparknlp_jsl.annotator.classification.medical_distilbert_for_sequence_classification import *

@@ -1,0 +1,3 @@
+from sparknlp_jsl.extensions.finance.graph.relation_extraction.relation_extraction_dl import RelationExtractionDLModel
+from sparknlp_jsl.extensions.finance.graph.relation_extraction.zero_shot_relation_extraction import \
+    ZeroShotRelationExtractionModel
