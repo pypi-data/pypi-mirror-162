@@ -1,0 +1,50 @@
+Metadata-Version: 2.1
+Name: ltempy
+Version: 1.3.1
+Summary: Utilities for Lorentz TEM data analysis and simulation.
+Home-page: https://github.com/McMorranLab/ltempy
+Author: William S. Parker
+Author-email: will.parker0@gmail.com
+Project-URL: Documentation, https://mcmorranlab.github.io/ltempy/
+Project-URL: Bug Tracker, https://github.com/McMorranLab/ltempy/issues
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: GNU General Public License v3 (GPLv3)
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: numpy
+Requires-Dist: matplotlib
+
+# ltempy
+ltempy is a set of tools for Lorentz TEM data analysis, simulation, and presentation.
+
+# Features
+
+* Single Image Transport of Intensity Equation (SITIE) reconstruction
+* simulations - calculations of phase, B, A, image
+* basic image processing - high_pass, low_pass, clipping
+* a matplotlib.pyplot wrapper tailored to presenting induction maps and Lorentz data
+* an implementation of the CIELAB colorspace
+* module-wide unit scaling (i.e., working in nm rather than m)
+
+## Installation
+
+```Bash
+python -m pip install ltempy
+```
+
+## Documentation
+
+Documentation is available at [https://mcmorranlab.github.io/ltempy/](https://mcmorranlab.github.io/ltempy/).
+
+## Tests
+
+Tests are split into two subdirectories:
+
+1. `tests`
+	These are typical unit tests, that assert that functions return the right shape, beam parameters return the right values, etc. Run with `pytest`.
+2. `devtests`
+	These are tests of the actual functionality, that require a trained eye to evaluate. Run as normal `.py` scripts.
+
+The rationale for `devtests` is that this package is math-heavy, so it's highly possible for the code to run fine, but be wrong. The easiest way to test for this is to check base cases where the developer knows what to look for.
