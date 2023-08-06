@@ -1,0 +1,104 @@
+Metadata-Version: 2.1
+Name: pass-export
+Version: 1.0.0
+Summary: This is a command line tool to export and import passwords from/to pass (https://www.passwordstore.org/).
+Author-email: erzo <erzo@posteo.de>
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+Classifier: Operating System :: POSIX
+Classifier: Operating System :: Unix
+Classifier: Environment :: Console
+Classifier: License :: OSI Approved :: BSD License
+Requires-Dist: tox ; extra == "test"
+Project-URL: Home, https://gitlab.com/erzo/pass-export
+Provides-Extra: test
+
+# pass-export
+This is a command line tool to export and import passwords from/to [pass](https://www.passwordstore.org/).
+The passwords are exported to symmetrically encrypted files so they are independent of your private key.
+You can use these exported files for making backups or to copy them to another computer.
+
+```bash
+$ pass
+Password Store
+├── bar
+└── foo
+$ pass-export
+Please insert a password to encrypt the exported files: 
+Please reenter the password: 
+exported-passwords_2022-08-05/bar.gpg
+exported-passwords_2022-08-05/foo.gpg
+```
+
+You can decrypt a password with
+
+```bash
+$ gpg -d exported-passwords_2022-08-05/foo.gpg
+```
+
+You can copy the exported passwords to a new computer and import them into a new password store
+
+```bash
+$ gpg --quick-gen-key pass default encrypt never
+$ pass init pass
+$ pass-import exported-passwords_2022-08-05
+Please insert password to decrypt exported-passwords_2022-08-05/bar.gpg: 
+imported exported-passwords_2022-08-05/bar.gpg
+imported exported-passwords_2022-08-05/foo.gpg
+```
+
+# Installation
+You can install pass-export and pass-import via pip/pipx
+
+```bash
+$ pipx install pass-export
+```
+
+But since this is just one module you do not need to install it.
+You can just download and execute it.
+In that case you need to specify "export" or "import" as an additional first argument:
+
+```bash
+$ wget -O pass-export-import.py 'https://gitlab.com/erzo/pass-export/-/raw/master/src/pass_export/main.py'
+$ python pass-export-import.py export
+```
+
+# Requirements
+This program relies on the following other programs which are called via subprocess:
+
+- gpg to decrypt and encrypt the passwords
+- gpgconf to restart the gpg-agent
+  (I am temporarily changing `~/.gnupg/gpg-agent.conf` so that even if you have configured gpg securely you do not need to reinsert your password for every single password.)
+- shred to remove a temporary file in which I shortly kept the password for the exported files so that you do not need to reenter it for every single password.
+  The assumptions that shred is based upon are not valid for SSDs.
+  Therefore I am writing the file to the path indicated by `XDG_RUNTIME_DIR`, hoping that it will stay in RAM instead of getting written to an SSD.
+
+# Running the tests
+tox is configured to *not* download packages every time you run it so you can use it wen you have no internet connection, too.
+Instead it takes it's dependencies from the directory .package-store.
+This can be initialized with
+
+```bash
+$ ./release.sh --test
+```
+
+Afterwards you can continue to use that command or run tox directly:
+
+```bash
+tox
+```
+
+tox, however, is very slow.
+So you may prefer to run mypy and pytest manually.
+(The venv has been setup by `release.sh`.)
+
+```
+. venv/bin/activate
+$ mypy src/pass_export/ tests/
+$ pytest
+```
+
+# License
+This work is free. You can use, copy, modify, and/or distribute it
+under the terms of the BSD Zero Clause License, see [LICENSE](LICENSE).
+
