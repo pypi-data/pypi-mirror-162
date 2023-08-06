@@ -1,0 +1,6 @@
+class ClosedSocket(Exception):
+    ...
+
+
+class BadMessage(Exception):
+    ...
