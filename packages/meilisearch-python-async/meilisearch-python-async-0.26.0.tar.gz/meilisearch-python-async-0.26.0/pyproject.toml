@@ -1,0 +1,87 @@
+[tool.poetry]
+name = "meilisearch-python-async"
+version = "0.26.0"
+description = "A Python async client for the Meilisearch API"
+authors = ["Paul Sanders <psanders1@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/sanders41/meilisearch-python-async"
+homepage = "https://github.com/sanders41/meilisearch-python-async"
+documentation = "https://meilisearch-python-async.paulsanders.dev"
+keywords = ["meilisearch", "async", "python"]
+classifiers=[
+  "Programming Language :: Python :: 3.7",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+]
+include = ["meilisearch_python_async/py.typed"]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+httpx = ">=0.17,<0.24"
+pydantic = "^1.8"
+aiofiles = ">=0.7,<0.9"
+camel-converter = "^1.0.0"
+PyJWT = "^2.3.0"
+
+[tool.poetry.dev-dependencies]
+black = "^22.6.0"
+flake8 = "^5.0.4"
+isort = "^5.10.1"
+mypy = "^0.971"
+pre-commit = "^2.20.0"
+pytest = "^7.1.2"
+pytest-cov = "^3.0.0"
+tox = "^3.25.1"
+pytest-asyncio = "^0.19.0"
+types-aiofiles = "^0.8.10"
+flake8-docstrings = "^1.6.0"
+mkdocs = "^1.2.4"
+mkdocs-material = "^8.2.7"
+mkautodoc = "^0.2.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 100
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.egg
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.nox
+  | \.tox
+  | \.venv
+  | \venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | setup.py
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 100
+src_paths = ["meilisearch_python_async", "tests"]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "--cov=meilisearch_python_async --cov-report term-missing"
+asyncio_mode = "auto"
+
+[tool.mypy]
+check_untyped_defs = true
+disallow_untyped_defs = true
+
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+disallow_untyped_defs = false
