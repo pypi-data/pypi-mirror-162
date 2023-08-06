@@ -1,0 +1,51 @@
+2022-07-21 Version: 1.1.8
+- Add instanceSoftConcurrency field for function meta.
+
+2022-07-18 Version: 1.1.7
+- Fix InvokeFunction serilization.
+
+2022-07-05 Version: 1.1.6
+- Support java http trigger invocation.
+- Fix marshal byte array.
+
+2022-06-29 Version: 1.1.5
+- Add EventBridgeTriggerConfig struct.
+
+2022-06-15 Version: 1.1.4
+- Fix missing ListInstances.
+- Fix some missing TriggerConfig structures.
+- Fix HTTP invocations respond 403 with empty path.
+
+2022-06-10 Version: 1.1.2
+- Add http trigger url.
+
+2022-04-14 Version: 1.0.10
+- Fix auth bug.
+
+2022-04-13 Version: 1.0.9
+- Support HTTP Trigger invocation.
+
+2022-04-01 Version: 1.0.8
+- Change qualifier to query.
+
+2022-04-01 Version: 1.0.7
+- Update fc pop sdk.
+
+2022-04-01 Version: 1.0.6
+- Update fc pop sdk.
+
+2021-12-10 Version: 1.0.5
+- Update fc pop sdk.
+
+2021-12-03 Version: 1.0.4
+- Update fc pop sdk.
+
+2021-12-03 Version: 1.0.3
+- Update fc pop sdk.
+
+2021-12-02 Version: 1.0.2
+- Add CustomDNS, CustomRuntimeConfig field for createFunction, updateFunction and getFunction.
+
+2021-10-26 Version: 1.0.0
+- Update fc pop sdk.
+
