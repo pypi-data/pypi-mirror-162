@@ -1,0 +1,109 @@
+{% extends theme("layouts/1-column.html") %}
+{% from theme('macros/paginator.html') import paginator with context %}
+{% from theme('macros/sort_search.html') import sort_search %}
+{% from theme('macros/banner_info.html') import banner_info %}
+
+{% set toolbar_class='search-toolbar' %}
+
+{% block message %}
+<div class="bg-contrast-info fr-hidden fr-unhidden-sm text-default-info fr-p-3v fr-mb-1w">
+    <div class="fr-container fr-grid-row justify-between fr-text--bold">
+        <div>
+            <span class="fr-icon-info-fill fr-mr-1w" aria-hidden="true"></span>
+            {{_("Discover the new metadata quality score.")}}
+        </div>
+        <div>
+            {{_("<a class='text-default-info fr-mr-2w' href='{eval_url}'>Give us your feedback.</a>
+            <a class='text-default-info' href='{guide_url}'>Learn more.</a>").format(
+                eval_url='https://app.evalandgo.com/form/372035/s/?id=JTk5cSU5NWwlOUMlQTk%3D&a=JTk3cCU5M2glOTklQUU%3D',
+                guide_url='https://www.data.gouv.fr/fr/posts/un-nouveau-score-de-qualite-des-metadonnees-sur-les-jeux-de-donnees/'
+                )}}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block breadcrumb %}
+<li class="active" aria-current="page">
+    {{ _('Datasets') }}
+</li>
+{% endblock %}
+
+{% set meta = {
+    'title': _('Datasets'),
+    'description': _("%(site)s dataset search", site=config['SITE_TITLE']),
+    'keywords': [_('search'), _('datasets')],
+    'robots': 'noindex',
+} %}
+
+{% set bundle = 'search' %}
+
+{% set sorts = [
+    {"label": _('Newest'),"value": "created", "order": "desc"},
+    {"label": _('Oldest'),"value": "created", "order": "asc"},
+    {"label": _('Followers'),"value": "followers", "order": "desc"},
+    {"label": _('Reuses'), "value": "reuses", "order": "desc"}
+] %}
+
+{% block main_content %}
+<section
+    class="fr-container fr-container--search fr-py-2w vuejs"
+>
+    <h1 class="fr-mb-1w">{{_('Datasets')}}</h1>
+    <div class="fr-grid-row fr-grid-row--middle justify-between">
+        <div>{{_('Search among %(count)s datasets on %(site)s',count=current_site.metrics['datasets']|format_number, site=current_site.title)}}</div>
+        <a
+            href="{{ url_for('reuses.list', q=datasets.query._query) }}"
+            data-q
+            class="fr-link fr-text--sm fr-m-0"
+        >
+            {{ _('Search reuses') }}
+        </a>
+    </div>    
+    <Search
+        :disable-first-search="true"
+        data-total-results="{{datasets.total}}"
+        data-results="{{datasets|to_api_format|to_json}}"
+        :sorts="{{sorts|to_json}}"
+    >
+    </Search>
+    <noscript>
+        <div class="fr-pt-3v">
+            <form method="GET" class="fr-grid-row">
+                <div class="fr-search-bar w-100" role="search" aria-label="{{  _('Search for dataset') }}">
+                    <label class="fr-label" for="search-datasets">
+                        {{ _('Search...') }}
+                    </label>
+                    <input
+                        name="q"
+                        class="fr-input"
+                        placeholder="{{ _('Search...') }}"
+                        type="search"
+                        id="search-datasets"
+                        value="{{datasets.query._query}}"
+                    />
+                    <button class="fr-btn" title="{{_('Search')}}" type="submit">
+                        {{ _('Search') }}
+                    </button>
+                </div>
+                <div class="w-100 fr-grid-row fr-grid-row--middle fr-pt-5v justify-between">
+                    <p class="fr-col-auto fr-my-0" role="status">{{ _('%(result)s results', result=datasets.total) }}</p>
+                    {{sort_search(datasets, sorts)}}
+                </div>
+            </form>
+        </div>
+        {% if datasets %}
+        <ul class="search-results fr-mt-3v">
+            {% for dataset in datasets %}
+            <li>
+                {% with z_index = "z-index: {index:d}".format(index=(datasets.page_size - loop.index0)) %}
+                {% include theme('dataset/search-result.html') %}
+                {% endwith %}
+            </li>
+            {% endfor %}
+        </ul>
+        {{ paginator(datasets) }}
+        {% endif %}
+    </noscript>
+</section>
+{% endblock %}
