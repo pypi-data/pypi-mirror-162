@@ -1,0 +1,28 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+      - name: Install Requirements
+        run: pip install -r requirements.txt
+      - name: Lint, Format and Types
+        run: pylint duneapi/ && black --check ./ && mypy duneapi --strict
+      - name: Unit Tests
+        run: python -m pytest tests/unit
+      - name: End to End Tests
+        env:
+          DUNE_USER: ${{ secrets.DUNE_USER }}
+          DUNE_PASSWORD: ${{ secrets.DUNE_PASSWORD }}
+          DUNE_QUERY_ID: ${{ secrets.DUNE_QUERY_ID }}
+        run:
+          python -m pytest tests/e2e
+
