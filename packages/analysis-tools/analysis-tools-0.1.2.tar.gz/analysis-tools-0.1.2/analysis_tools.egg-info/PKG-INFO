@@ -1,0 +1,50 @@
+Metadata-Version: 2.1
+Name: analysis-tools
+Version: 0.1.2
+Summary: Analysis tools for machine learning projects
+Home-page: https://github.com/djy-git/analysis-tools
+Author: Dongjin Yoon
+Author-email: djyoon0223@gmail.com
+License: UNKNOWN
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Classifier: Operating System :: OS Independent
+Description-Content-Type: text/markdown
+
+# Analysis tools for Machine learning projects
+
+## 1. Usage
+```bash
+# Load repository manually
+$ git clone https://github.com/djy-git/analysis-tools.git 
+
+# Install with Pypi
+$ pip install analysis-tools
+```
+
+## 2. Tutorial
+[examples/titanic/eda.ipynb](https://github.com/djy-git/analysis-tools/blob/main/examples/titanic/eda.ipynb)를 참고
+
+```python
+from analysis_tools.eda import *
+
+data   = pd.DataFrame(..)
+target = 'survived'
+
+num_features       = ['age', 'sibsp', 'parch', 'fare']
+cat_features       = data.columns.drop(num_features)
+data[num_features] = data[num_features].astype('float32')
+data[cat_features] = data[cat_features].astype('string')
+
+plot_missing_value(data)
+plot_features(data)
+plot_features_target(data, target)
+plot_corr(data.corr())
+```
+
+![](https://github.com/djy-git/analysis-tools/blob/main/examples/titanic/visualization/Missing%20value_1.png?raw=true)
+![](https://github.com/djy-git/analysis-tools/blob/main/examples/titanic/visualization/Features_1.png?raw=true)
+![](https://github.com/djy-git/analysis-tools/blob/main/examples/titanic/visualization/Features%20vs%20Target_1.png?raw=true)
+![](https://github.com/djy-git/analysis-tools/blob/main/examples/titanic/visualization/Correlation%20matrix_1.png?raw=true)
+
+
