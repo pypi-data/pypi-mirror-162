@@ -1,0 +1,38 @@
+Metadata-Version: 2.1
+Name: poa
+Version: 0.0.1
+Summary: A simple partial order alignment implement.
+Home-page: https://github.com/dwpeng/poa
+Author: dwpeng
+Author-email: 1732889554@qq.com
+License: UNKNOWN
+Platform: UNKNOWN
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+Requires-Dist: numpy
+
+# POA
+
+```python
+from poa import Graph, read_file
+
+match = 2
+mismatch = -1
+gap = -2
+g = Graph()
+
+sequence, alignment = read_file('test.fa', 'fasta')
+g.init_graph_by_seq(sequence[0])
+for seq in sequence[1:]:
+    g.add_seq_to_align(alignment(
+        g, 
+        seq, 
+        match=match, 
+        mismatch=mismatch, 
+        gap=gap
+    ))
+
+g.to_msa(open('msa.txt', 'w'))
+```
+
+
