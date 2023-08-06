@@ -1,0 +1,32 @@
+Metadata-Version: 2.1
+Name: chd-rs-py
+Version: 0.1.2
+Classifier: Programming Language :: Rust
+Classifier: Operating System :: POSIX :: Linux
+Classifier: Operating System :: Microsoft :: Windows
+Summary: Python bindings to chd-rs
+Requires-Python: >=3.7
+Description-Content-Type: text/markdown; charset=UTF-8; variant=GFM
+
+# chd-rs-py
+
+Extremly basic Python bindings to [chd-rs](https://github.com/SnowflakePowered/chd-rs).
+
+```
+pip install chd-rs-py
+```
+
+## Usage
+```python
+from chd import chd_open
+
+chd_file = chd_open("Test.chd")
+metadata = chd_file.metadata()
+
+for m in metadata:
+    print(m.tag(), m.data())
+
+for h in range(len(chd_file)):
+    # read the hunk (as bytes)
+    hunk = chd_file.hunk(h)
+```

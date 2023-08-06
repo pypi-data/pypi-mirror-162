@@ -1,0 +1,24 @@
+
+[package]
+name = "chd-rs-py"
+version = "0.1.2"
+edition = "2021"
+description = "Python bindings to chd-rs"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+chd = { version = "0.1.6", features = ["verify_block_crc"] }
+pyo3 = { version = "0.16", features = ["extension-module"] }
+
+[package.metadata.maturin]
+classifier = [
+    "Programming Language :: Rust",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: Microsoft :: Windows",
+]
+requires-python = ">=3.7"
+
+[lib]
+name = "chd"
+crate-type = ["cdylib"]
