@@ -1,0 +1,91 @@
+
+# Ticket Cross Checker
+
+Take gitlab issues and find them in code and vice versa.
+Create a mapping table to see what's covered, missing or wrong.
+
+An example are the [Gitlab Pages](https://exb.gitlab.io/engineering/ticket-cross-check/) for this project.
+
+
+## Usage
+
+start the cross checker in your CI pipeline
+
+```gitlab
+
+pages:
+  stage: test
+  script:
+    - pdm run discover ticket_cross_check spec
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+
+```
+
+### Add to existing gitlab pages
+
+- caches existing `public` directories and creates a sub-dir `tcc`
+
+```yaml
+cache:
+  paths:
+    - public
+
+discover_issues:
+  image: python:latest
+  stage: build
+  script:
+    - python -m pip install --upgrade pip
+    - pip install ticket_cross_check
+    - discover code doc spec test -o public/tcc
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+```
+
+### Avoid logging
+
+- we use [loguru](https://loguru.readthedocs.io/en/stable/api/logger.html), 
+you can disable loguru auto init by setting `LOGURU_AUTOINIT` to `False` in your environment
+
+## Development
+
+### Requirements
+
+* We use `pdm` for packaging (not pip, poetry or alinke) 
+* `pdm install` shall be run before you do anything (esp. in PyCharm), after that you find a `.venv` in the project root
+
+* `pdm add [-d] <package>` to add more deps (fount in [pyproject.toml](pyproject.toml))
+
+### How to install pdm
+
+- See [pdm homepage](https://pdm.fming.dev/latest/#recommended-installation-method)
+- Usually you run `curl -sSL https://raw.githubusercontent.com/pdm-project/pdm/main/install-pdm.py | python3 -`
+
+### Run gitlab-runner locally for single target
+
+* download/install [the gitlab-runner](https://docs.gitlab.com/runner/install/linux-manually.html) for your system
+* install docker
+* run `gitlab-runner exec docker <target>` `target` comes from [.gitlab-ci.yml](.gitlab-ci.yml)
+* done :)
+* btw caching only works with an S3 backend, see [docs](https://docs.gitlab.com/runner/configuration/advanced-configuration.html#the-runnerscache-section)
+
+### Testing with pytest
+
+* we use [pytest](https://docs.pytest.org/en/7.1.x/)
+
+
+### Code style with flake8
+
+* config is in [.flake8](.flake8)
+* details can be found in the [flake8 docs](https://flake8.pycqa.org/en/latest/user/configuration.html)
+
+### Local installation and experiements
+
+* `pdm install` also installs the cli scripts, defined in [ticket_cross_check/__init__.py](ticket_cross_check/__init__.py) or [pyproject.toml](pyproject.toml)
+* you can run `discover <dir> [<dir> [<dir>]]` to cross-check the given directories
