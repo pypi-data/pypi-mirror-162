@@ -1,0 +1,45 @@
+<div class="filter-implode filter-body">
+  {% import 'includes/filters/filter-variables.j2' as vars %}
+
+  <p class="doc">
+    {% with key='Implode-data-filter' %}{% include "includes/help.html" %}{% endwith %}
+    Denormalise data from "narrow" to "wide".
+  </p>
+
+  {% include 'includes/filters/label-field.html' %}
+
+  {% set name='implode-label-pattern%02d' % n %}
+  <div class="form-group required">
+    <label for="{{ name }}">
+      Labels column:
+    </label>
+    <input
+        id="{{ name }}"
+        class="form-control"
+        name="{{ name }}"
+        value="{{ recipe.args[name] }}"
+        pattern="^{{ vars.filters_pattern }}$"
+        title="{{ vars.filters_help }}"
+        required="required"
+        placeholder="{{ vars.filters_placeholder }}"
+        />
+  </div>
+
+  {% set name='implode-value-pattern%02d' % n %}
+  <div class="form-group required">
+    <label for="{{ name }}">
+      Values column:
+    </label>
+    <input
+        id="{{ name }}"
+        class="form-control"
+        name="{{ name }}"
+        value="{{ recipe.args[name] }}"
+        pattern="^{{ vars.filters_pattern }}$"
+        title="{{ vars.filters_help }}"
+        required="required"
+        placeholder="{{ vars.filters_placeholder }}"
+        />
+  </div>
+
+</div>
