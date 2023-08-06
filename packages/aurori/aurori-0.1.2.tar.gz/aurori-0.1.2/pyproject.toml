@@ -1,0 +1,61 @@
+[build-system]
+requires = ["setuptools>=61.0", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aurori"
+description = "A flexible web framework combining Python with Vue and Vuetify."
+requires-python = ">=3.8"
+keywords = ["aurori"]
+readme = "README.md"
+license = {text = "AGPLv3+"}
+classifiers = [
+    "Framework :: Flask",
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",]
+dependencies = [
+    "alembic",
+    "APScheduler",
+    "arrow",
+    "bcrypt",
+    "cron-descriptor",
+    "Flask==1.1.2",
+    "Flask-Bcrypt",
+    "Flask-Cors",
+    "Flask-JWT-Extended==3.25.0",
+    "Flask-Migrate",
+    "Flask-SQLAlchemy>2.5.0",
+    "itsdangerous==1.1.0",
+    "Jinja2==2.11.2",
+    "MarkupSafe==1.1.1",
+    "sqlalchemy_utils",
+    "Werkzeug==1.0.1"]
+dynamic = ["version"]
+
+[project.urls]
+"Homepage" = "https://gitlab.com/aurori/aurori"
+"Bug Tracker" = "https://gitlab.com/aurori/aurori/-/issues"
+
+[tool.setuptools]
+packages = ["aurori"]
+
+[tool.setuptools.dynamic]
+version = {attr = "aurori.version.version"}
+
+
+[tool.pylint.MASTER]
+load-plugins = ["pylint_flask_sqlalchemy", "pylint_flask"]
+
+[tool.pylint.MAIN]
+load-plugins = ["pylint_flask_sqlalchemy", "pylint_flask"]
+
+
+[tool.pylint.FORMAT]
+max-line-length=120
+
+[tool.pylint.similarities]
+ignore-comments = true
+ignore-docstrings = true
+ignore-imports = true
+ignore-signatures = true
+min-similarity-lines = 4
