@@ -1,0 +1,42 @@
+[tool.poetry]
+name = "scistag"
+version = "0.0.1"
+description = "A stack of helpful libraries & applications for the rapid development of data driven solutions."
+authors = ["Michael Ikemann"]
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/scistag/scistag"
+homepage = "https://github.com/scistag/scistag"
+include = ['scistag/data/scistag_essentials.zip']
+
+[tool.poetry.dependencies]
+python = "^3.9"
+matplotlib = "^3.5.2"
+requests = "^2.27.1"
+pandas = "^1.4.2"
+gunicorn = { version = "^20.1.0", optional = true }
+Flask = { version = "^2.1.2", optional = true }
+imageio = { version = "^2.19.3", optional = false }
+opencv-contrib-python = { version = "^4.5.4.60", optional = false }
+moviepy = { version = "^1.0.3", optional = false }
+Kivy = { version = "^2.1.0", optional = true }
+imgkit = { version = "1.2.2", optional = false }
+pretty-html-table = "^0.9.16"
+abstract = "^2022.7.10"
+CairoSVG = "^2.5.2"
+gdown = "^4.5.1"
+
+[tool.poetry.dev-dependencies]
+pylint = "^2.14.0"
+coverage = "^6.4.1"
+pytest = "^7.1.2"
+pytest-mock = "^3.7.0"
+
+[tool.poetry.extras]
+flask = ["Flask", "gunicorn"]
+kivy = ["Kivy"]
+
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

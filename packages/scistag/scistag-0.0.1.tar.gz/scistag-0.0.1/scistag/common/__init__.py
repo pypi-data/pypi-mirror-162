@@ -1,0 +1,3 @@
+from .essential_data import *
+
+__all__ = [ESSENTIAL_DATA_ARCHIVE_NAME, ESSENTIAL_DATA_IDENTIFIER, ESSENTIAL_DATA_PATH]
