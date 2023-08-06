@@ -1,0 +1,131 @@
+{% if layout == 'full' %}
+    {% extends 'layout_full.html' %}
+{% elif layout == 'short' %}
+    {% extends 'layout_short.html' %}
+{% endif -%}
+
+{% macro render_plugin_li(plugin) -%}
+    <li class="list-group-item info-source p-1 pt-2 pl-2" data-name="{{ plugin['name'] }}" id="{{ plugin['name'] }}_li">
+        <div class="pretty p-switch">
+            <input type="checkbox" class="plugin-checkbox" data-name="{{ plugin['name'] }}" data-type="plugin"/>
+            <div class="state"><label></label></div>
+        </div>
+        <label>{{ plugin['name'] }}</label>
+    </li>
+{%- endmacro %}
+
+{% block content %}
+    <input type="hidden" class=".plugin_data_input" value="{{ plugin_data }}">
+    <div class="row">
+        <div class="col m-0">
+            <div class="card mb-2 shadow-sm">
+                <div class="card-body p-1">
+                    <p class="card-text pl-3"><strong>IO plugins:</strong></p>
+                    <!-- add class p-switch -->
+                    <ul class="list-group list-group-flush" role="tablist">
+                        {% for plugin in plugins if plugin['type']=='reader' %}
+                            {{ render_plugin_li(plugin) }}
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col m-0">
+            <div class="card mb-2 shadow-sm">
+                <div class="card-body p-1">
+                    <p class="card-text pl-3"><strong>Process & Analysis:</strong></p>
+                    <!-- add class p-switch -->
+                    <ul class="list-group list-group-flush" role="tablist">
+                        {% for plugin in plugins if plugin['type']!='reader' %}
+                            {{ render_plugin_li(plugin) }}
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col m-0">
+            <div class="card mb-2 shadow-sm ">
+                {% for plugin in plugins %}
+                    <ul class="plugin-config-set list-group list-group-flush" id="{{ plugin['name'] }}-config-set" style="display: none">
+                        {% for pconfig in plugin['config'] %}
+                        <li class="plugin-config list-group-item config-info-source p-1 pt-2 pl-2" data-name="{{ plugin['name'] }}---{{ pconfig['name'] }}" id="{{ pconfig['name'] }}_config">
+                            <div class="row">
+                                <div class="input-group input-group-sm mb-3 col-sm-6">
+                                    <div class="input-group-prepend">
+                                       <div class="input-group-text">
+                                          <input type="checkbox" aria-label="Checkbox for following text input"
+                                                 class="plugin-param-checkbox input-sm"
+                                                 data-name="{{ plugin['name'] }}:{{ pconfig['name'] }}"
+                                                 data-parname="{{ pconfig['name'] }}"
+                                                 data-plugin="{{ plugin['name'] }}"
+                                                 data-type="param-switch">
+                                       </div>
+                                    </div>
+                                    <input type="text"
+                                           class="form-control plugin-param-input input-sm"
+                                           value="{{ pconfig['value'] }}"
+                                           data-name="{{ plugin['name'] }}:{{ pconfig['name'] }}"
+                                           data-parname="{{ pconfig['name'] }}"
+                                           data-plugin="{{ plugin['name'] }}"
+                                           data-plugintype="{{ pconfig['type'] }}"
+                                           data-type="param">
+                                </div>
+                                <div class="col-sm-6">
+                                     {{ pconfig['name'] }} ({{ pconfig['type'] }})
+                                </div>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                {% endfor %}
+            </div>
+        </div>
+    </div>{# initial content #}
+    <div class="row">
+        <div class="col-12">
+            {% for plugin in plugins%}
+                <div class="help-view" style="display: none" data-name="{{ plugin['name'] }}" id="{{ plugin['name'] }}-help">Plugin <strong>{{ plugin['name'] }}: &nbsp;</strong>{{ plugin['help'] }}</div>
+                {% for pconfig in plugin['config'] %}
+                    <div class="help-view" style="display: none" data-name="{{ plugin['name'] }}" id="{{ plugin['name'] }}---{{ pconfig['name'] }}-help">Config <strong>{{ plugin['name'] }}:{{ pconfig['name'] }}</strong>: &nbsp;{{ pconfig['help'] }}</div>
+                {% endfor %}
+            {% endfor %}
+        </div>
+    </div>
+    <hr>
+
+    <div id="" class="row">
+        <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+          <a class="nav-link active" id="v-pills-python-tab" data-toggle="pill" href="#v-pills-python" role="tab" aria-controls="v-pills-python" aria-selected="true">Python</a>
+          <a class="nav-link" id="v-pills-shell-tab" data-toggle="pill" href="#v-pills-shell" role="tab" aria-controls="v-pills-shell" aria-selected="false">Shell</a>
+        </div>
+        <div class="tab-content" id="v-pills-tabContent" style="padding-left: 50px">
+          <div class="tab-pane fade show active v-pills-python" id="v-pills-python" role="tabpanel" aria-labelledby="v-pills-python-tab">
+              <code>
+
+              </code>
+          </div>
+          <div class="tab-pane fade v-pills-shell" id="v-pills-profile" role="tabpanel" aria-labelledby="v-pills-shell-tab"> </div>
+        </div>
+    </div>
+
+
+{% endblock %}
+
+{% block end_script %}
+<script src="static/plugins.js"></script>
+<script>
+
+
+    if(typeof jQuery=='undefined') {
+        var headTag = document.getElementsByTagName("head")[0];
+        var jqTag = document.createElement('script');
+        jqTag.type = 'text/javascript';
+        jqTag.src = '/static/jsroot/libs/jquery.js';
+        jqTag.onload = activatePluginsGui;
+        headTag.appendChild(jqTag);
+    } else {
+         activatePluginsGui();
+    }
+
+</script>
+{% endblock %}
