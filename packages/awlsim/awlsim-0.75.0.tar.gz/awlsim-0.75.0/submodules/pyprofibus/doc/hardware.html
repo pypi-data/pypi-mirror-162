@@ -1,0 +1,50 @@
+<div id="pyprofibus-hardware-documentation">
+<h2>pyprofibus hardware documentation</h2>
+<p>pyprofibus can run on about anything that has a serial port.</p>
+<p>However some hardware is superior to other. See the documentation below for the various hardware alternatives and its characteristics.</p>
+</div>
+<div id="pyprofibus-on-linux-with-dev-ttys0-or-dev-ttyama0-serial-port">
+<h2>pyprofibus on Linux with /dev/ttyS0 or /dev/ttyAMA0 serial port</h2>
+<p>Using the Linux serial port is a supported way to connect pyprofibus to a Profibus network. On some boards it may only supports low baud rates of up to about 19200 baud. However that depends on the actual serial transceiver hardware. On certain embedded boards with flexible serial hardware, high baudrates such as 1.5 MBaud may also be possible.</p>
+<p>To run pyprofibus on serial port configure pyprofibus as follows:</p>
+<pre><span class="k">[PHY]</span><span class="w">
+</span><span class="na">type</span><span class="o">=</span><span class="s">serial</span><span class="w">
+</span><span class="na">dev</span><span class="o">=</span><span class="s">/dev/ttyS0</span><span class="w">
+</span><span class="na">baud</span><span class="o">=</span><span class="s">19200</span>
+</pre>
+</div>
+<div id="pyprofibus-on-linux-with-dev-ttyusb0-serial-port">
+<h2>pyprofibus on Linux with /dev/ttyUSB0 serial port</h2>
+<p>It is not recommended to run pyprofibus on an emulated USB serial adapter. USB does not meet the realtime requirements of Profibus. It might work with slow baud rates, though. Use without any guarantee.</p>
+</div>
+<div id="pyprofibus-on-esp32-with-micropython">
+<h2>pyprofibus on ESP32 with Micropython</h2>
+<p>Pyprofibus on ESP32 with Micropython supports baud rates of at least 1.5 MBaud.</p>
+<p>Please see the <a href="../micropython/README.html" rel="nofollow">pyprofibus Micropython help</a>.</p>
+<p>To run pyprofibus on Micropython serial port (UART 2) configure pyprofibus as follows:</p>
+<pre><span class="k">[PHY]</span><span class="w">
+</span><span class="na">type</span><span class="o">=</span><span class="s">serial</span><span class="w">
+</span><span class="na">dev</span><span class="o">=</span><span class="s">UART2</span><span class="w">
+</span><span class="na">baud</span><span class="o">=</span><span class="s">1500000</span>
+</pre>
+</div>
+<div id="pyprofibus-on-linux-with-fpga-phy">
+<h2>pyprofibus on Linux with FPGA PHY</h2>
+<p>This is one of the fastest albeit most expensive alternative to connect pyprofibus to a Profibus network. Currently baud rates of up to 1.5 MBaud are supported. There is room for improvement towards higher baud rates.</p>
+<p>The pyprofibus FPGA is connected via high speed SPI bus to the host computer. It’s known to work well with the Raspberry Pi. However it’s not strictly limited to that as host computer. The pyprofibus FPGA PHY driver utilizes the Linux SPI subsystem for communication to the FPGA board.</p>
+<p>Please see the <a href="hardware_fpga.html" rel="nofollow">pyprofibus FPGA PHY documentation</a> for more information on how to build and run the FPGA PHY.</p>
+<p>To run pyprofibus on FPGA PHY configure pyprofibus as follows:</p>
+<pre><span class="k">[PHY]</span><span class="w">
+</span><span class="na">type</span><span class="o">=</span><span class="s">fpga</span><span class="w">
+</span><span class="na">spiBus</span><span class="o">=</span><span class="s">0</span><span class="w">
+</span><span class="na">spiCS</span><span class="o">=</span><span class="s">0</span><span class="w">
+</span><span class="na">spiSpeedHz</span><span class="o">=</span><span class="s">2500000</span><span class="w">
+</span><span class="na">baud</span><span class="o">=</span><span class="s">1500000</span>
+</pre>
+<p>The FPGA PHY is currently not supported on Micropython.</p>
+</div>
+<div id="pyprofibus-on-ms-windows">
+<h2>pyprofibus on MS Windows</h2>
+<p>pyprofibus has been reported to work on Windows with the <cite>serial</cite> PHY. Just use the COM1 / COM2 / COMx as <cite>dev=</cite> in the configuration. The same restrictions apply as with Linux <cite>serial</cite> PHY. Please the the Linux /dev/ttyS0 section.</p>
+</div>
+
