@@ -1,0 +1,93 @@
+Metadata-Version: 2.1
+Name: mlflow_wrapper
+Version: 0.0.1.5
+Summary: A mlflow wrapper for easier handling of runs and experiments
+Author-email: Exitare <exitare@exitare.de>
+License: MIT License
+        
+        Copyright (c) 2022 Exitare
+        
+        Permission is hereby granted, free of charge, to any person obtaining a copy
+        of this software and associated documentation files (the "Software"), to deal
+        in the Software without restriction, including without limitation the rights
+        to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+        copies of the Software, and to permit persons to whom the Software is
+        furnished to do so, subject to the following conditions:
+        
+        The above copyright notice and this permission notice shall be included in all
+        copies or substantial portions of the Software.
+        
+        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+        IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+        FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+        AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+        LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+        OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+        SOFTWARE.
+        
+Project-URL: Homepage, https://github.com/Exitare/mlflow-wrapper
+Project-URL: Bug Tracker, https://github.com/Exitare/mlflow-wrapper/issues
+Project-URL: Documentation, https://github.com/Exitare/mlflow-wrapper/wiki
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.7
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
+# MLFlow Wrapper
+
+Mlflow Wrapper is a python library intended to abstract some functionality away from the developer
+when interacting with the mlflow library.
+The library supports/ improves the handling of experiments and offers helper functions which are not available in mlflow
+by default.
+Furthermore, the library offers functions to interact with Runs itself, and uploading/downloading files.
+
+# Installation
+
+```pip install mlflow-wrapper```
+
+# Quick start
+
+Some quick start examples. Please refer to the [wiki](https://github.com/Exitare/mlflow-wrapper/wiki)
+for a complete overview of all functions.
+
+
+## Experiment Handler
+
+```
+from mlflow_wrapper.experiment_handler import ExperimentHandler
+
+# Connect to a local mlflow server
+exp_handler:ExperimentHandler = ExperimentHandler()
+
+# Get the id of a new experiment which does no exist so far
+exp_id = exp_handler.get_experiment_by_name(experiment_name="New Experiment")
+
+
+```
+
+## Run Handler
+
+```
+from mlflow_wrapper.run_handler import RunHandler
+
+run_handler: RunHandler = RunHandler()
+
+# Delete a parent run and all associated children run. 
+# Does only delete the first occurence of the given run name. If multiple runs do have the same name,
+# this command needs to be executed multiple times
+
+run_handler.delete_runs_and_child_runs(experiment_id=exp_id, run_name="My Run")
+
+
+```
+
+# Bugs & Issues
+
+Please use the GitHub issue tracker for issues. I will try to get to them asap.
+
+# Feedback
+
+Feedback is most welcomed and I will respond asap.
+
