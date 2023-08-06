@@ -1,0 +1,25 @@
+{% load bootstrap %}
+{% load i18n %}
+
+<form id="aa-discord-announcements-form" class="form-horizontal">
+    {% csrf_token %}
+    <fieldset class="aa-discord-announcements-form">
+        <!-- announcement_target -->
+        {{ form.announcement_target|bootstrap_horizontal }}
+
+        <!-- announcement_channel -->
+        {% if webhooks_configured %}
+            {{ form.announcement_channel|bootstrap_horizontal }}
+        {% endif %}
+
+        <!-- announcement_text -->
+        {{ form.announcement_text|bootstrap_horizontal }}
+
+        <div class="form-group clearfix">
+            <div class=" col-sm-offset-2 col-sm-10 col-lg-offset-2 col-lg-10">
+                <div class="aa-discord-announcements-form-message"></div>
+                <button id="createAnnouncementText" name="createAnnouncementText" class="btn btn-primary">{% translate "Create Announcement" %}</button>
+            </div>
+        </div>
+    </fieldset>
+</form>
