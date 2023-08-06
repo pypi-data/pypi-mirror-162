@@ -1,0 +1,70 @@
+Metadata-Version: 2.1
+Name: pistar-echo-agent
+Version: 1.0.6
+Summary: pistar echo agent: support Huawei CloudTest execute test case
+Home-page: UNKNOWN
+License: MIT
+Keywords: test
+Platform: linux
+Platform: win32
+Classifier: Development Status :: 6 - Mature
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: Microsoft :: Windows
+Classifier: Operating System :: POSIX
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Topic :: Software Development :: Testing
+Classifier: Topic :: Software Development :: Libraries
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: colorlog (==6.4.1)
+Requires-Dist: PyYAML (==6.0)
+Requires-Dist: tornado (==6.0.4)
+Requires-Dist: astunparse (==1.6.3)
+Requires-Dist: colorama (==0.4.4)
+
+# PiStarEchoAgent
+
+The `PiStarEchoAgent` is a local agent that supports `Huawei Devcloud CloudTest` to execute `PiStar` and `Pytest` test cases.
+
+## Basic introduction
+Command entry:
+```
+$ pistar-echo-agent
+usage: pistar-echo-agent [-h] [-p PORT] -o OUTPUT [-v]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -p PORT, --port PORT  specify the port of pistar echo agent server
+                        # default value: 10001
+  -o OUTPUT, --output OUTPUT
+                        specify the report path of the task
+  -v, --version         show the version of pistar-echo-agent
+```
+
+## Start Command
+
+``` shell
+nohup pistar-echo-agent -o ./result &                
+```
+
+Run the following command to avoid generating `nohup.out` standard output:
+
+``` shell
+nohup pistar-echo-agent -o ./result > /dev/null 2>&1 &                
+```
+
+## License
+
+Copyright (c) Huawei Technologies Co., Ltd. 2021-present.
+
+Distributed under the terms of the MIT license, `PiStarEchoAgent` is free software.
+
+
+
