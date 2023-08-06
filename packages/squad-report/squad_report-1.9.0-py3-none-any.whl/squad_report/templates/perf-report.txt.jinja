@@ -1,0 +1,36 @@
+{% include "blocks/kernel.jinja" %}
+
+
+{{ compare_kernel.info["test"] }}
+{{ compare_kernel.info["cmd"] }}
+{% for item in compare_kernel.info["item"] %}
+{{ item }}
+{% endfor %}
+---
+
+The quantities in the columns are: statistics for which we have a
+regression, possible extra parameters for which that quantity has been
+obtained (number of threads, ...), value of the statistics for build
+<{{ build.metadata.kernel_version }}>, value of the statistics for build
+<{{ base_build.version }}>, percentage of loss/gain.
+{{ doc }}
+
+## Regression (compared to {{ base_build.version }})
+{% if regression_output|length %}
+
+{% for line in regression_output %}
+{{ line }}
+{% endfor %}
+
+Reported-by: Linux Kernel Functional Testing <lkft@linaro.org>
+{% else %}
+No regressions found.
+
+Tested-by: Linux Kernel Functional Testing <lkft@linaro.org>
+{% endif %}
+
+{% for line in complete_output %}
+{{ line }}
+{% endfor %}
+
+{% include "blocks/signature.jinja" %}

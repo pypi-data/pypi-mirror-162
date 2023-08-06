@@ -1,0 +1,22 @@
+{% include "blocks/base.jinja" %}
+
+## Environments
+{% for e in environments %}
+* {{ e }}
+{% endfor %}
+
+{% include "blocks/fails.jinja" %}
+
+## Skips
+{% if skips|length == 0 %}
+No skips found.
+{% else %}
+{% for key in skips %}
+{% if skips[key]|length == 0 %}{% continue %}{% endif %}
+{% for t in skips[key] %}
+* {{ key[0] }}, {{ key[1] }}, {{ t }}
+{% endfor %}
+{% endfor %}
+{% endif %}
+
+{% include "blocks/signature.jinja" %}

@@ -1,0 +1,71 @@
+{# has_regressions is used in blocks/subject.jinja #}
+{% set has_regressions = True if test_regressions|length > 0 else False %}
+{% include "blocks/subject.jinja" %}
+{% include "blocks/kernel.jinja" %}
+
+## Test Regressions (compared to {{ base_build.version }})
+{% if test_regressions|length == 0 %}
+No test regressions found.
+{% else %}
+{% for key in test_regressions %}
+{% if test_regressions[key]|length == 0 %}{% continue %}{% endif %}
+* {{ key[0] }}, {{ key[1] }}
+{% for t in test_regressions[key] %}
+  - {{ t }}
+{% endfor %}
+
+{% endfor %}
+{% endif %}
+
+## Metric Regressions (compared to {{ base_build.version }})
+{% if metric_regressions|length == 0 %}
+No metric regressions found.
+{% else %}
+{% for key in metric_regressions %}
+{% if metric_regressions[key]|length == 0 %}{% continue %}{% endif %}
+* {{ key[0] }}, {{ key[1] }}
+{% for m in metric_regressions[key] %}
+  - {{ m }}
+  -- {{ mdu['regressions'][key[0]][key[1]][m] }}
+{% endfor %}
+
+{% endfor %}
+{% endif %}
+
+{% if test_regressions|length == 0 %}
+Tested-by: {{config.reported_tested_by}}
+
+{% else %}
+Reported-by: {{config.reported_tested_by}}
+
+{% endif %}
+
+## Test Fixes (compared to {{ base_build.version }})
+{% if test_fixes|length == 0 %}
+No test fixes found.
+{% else %}
+{% for key in test_fixes %}
+{% if test_fixes[key]|length == 0 %}{% continue %}{% endif %}
+* {{ key[0] }}, {{ key[1] }}
+{% for t in test_fixes[key] %}
+  - {{ t }}
+{% endfor %}
+
+{% endfor %}
+{% endif %}
+
+## Metric Fixes (compared to {{ base_build.version }})
+{% if metric_fixes|length == 0 %}
+No metric fixes found.
+{% else %}
+{% for key in metric_fixes %}
+{% if metric_fixes[key]|length == 0 %}{% continue %}{% endif %}
+* {{ key[0] }}, {{ key[1] }}
+{% for m in metric_fixes[key] %}
+  - {{ m }}
+{% endfor %}
+
+{% endfor %}
+{% endif %}
+
+{% include "blocks/summary.jinja" %}

@@ -1,0 +1,18 @@
+{# has_regressions is used in blocks/subject.jinja #}
+{% set has_regressions = True if fails|length > 0 else False %}
+{% include "blocks/subject.jinja" %}
+{% include "blocks/kernel.jinja" %}
+
+{% include "blocks/fails.jinja" %}
+
+{% if fails|length == 0 %}
+Tested-by: {{config.reported_tested_by}}
+
+{% else %}
+Reported-by: {{config.reported_tested_by}}
+
+{% endif %}
+
+{% include "blocks/summary.jinja" %}
+
+{% include "blocks/signature.jinja" %}
