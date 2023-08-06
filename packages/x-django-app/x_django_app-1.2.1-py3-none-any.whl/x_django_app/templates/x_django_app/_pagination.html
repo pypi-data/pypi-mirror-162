@@ -1,0 +1,29 @@
+{% load i18n %}
+{% load x_tags %}
+{% if page_obj.paginator.num_pages > 1 %}
+<div class="d-flex justify-content-center">
+  <div class="pagination">
+    <span class="step-links">
+      {% if page_obj.has_previous %}
+      <a href="{% add_parameter request.get_full_path 'page=' '1' %}">
+        &laquo; {% trans 'first' %}
+      </a>
+      <a href="{% add_parameter request.get_full_path 'page=' page_obj.previous_page_number %}">
+        {% trans 'previous' %}
+      </a>
+      {% endif %}
+      <span class="current">
+        {% trans 'Page' %} {{ page_obj.number }} {% trans 'of' %} {{ page_obj.paginator.num_pages }}.
+      </span>
+      {% if page_obj.has_next %}
+      <a href="{% add_parameter request.get_full_path 'page=' page_obj.next_page_number %}">
+        {% trans 'next' %}
+      </a>
+      <a href="{% add_parameter request.get_full_path 'page=' page_obj.paginator.num_pages %}">
+        {% trans 'last' %} &raquo;
+      </a>
+      {% endif %}
+    </span>
+  </div>
+</div>
+{% endif %}
