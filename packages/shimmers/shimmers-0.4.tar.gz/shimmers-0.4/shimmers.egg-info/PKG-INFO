@@ -1,0 +1,83 @@
+Metadata-Version: 2.1
+Name: shimmers
+Version: 0.4
+Summary: shimmers
+Home-page: https://bitbucket.org/dbuy/shimmers
+Author: dev
+Author-email: developers@directbuy.com
+License: BSD
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Environment :: Console
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: System Administrators
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Operating System :: POSIX
+Classifier: Operating System :: Unix
+Classifier: Operating System :: MacOS :: MacOS X
+Classifier: Operating System :: Microsoft :: Windows
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Topic :: Software Development
+Classifier: Topic :: Software Development :: Libraries
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Description-Content-Type: text/markdown
+Provides-Extra: dev
+
+# shimmers
+
+simple client to upload files to / from an office 365 sharepoint site 
+using [waddle](https://pypi.org/project/waddle) to provide credential management.
+named after the group of hummingbirds.  _pax avium_.
+
+based on [office365-rest-python-client](https://github.com/vgrem/Office365-REST-Python-Client/)
+
+## quick start
+
+```bash
+pip install shimmers
+```
+
+## usage
+
+### uploading a file
+
+```python
+from waddle import load_config
+from shimmers import Sharepoint
+from io import BytesIO
+conf = load_config('path/to/conf.yml')
+sharepoint = Sharepoint(conf=conf, site_name='my_site')
+buff = new BytesIO()
+buff.write('hello, shimmers!\n'.encode('utf-8'))
+sharepoint.upload(buff, 'Documents/hello_shimmers.txt')
+```
+
+### downloading a file
+
+```python
+from waddle import load_config
+from shimmers import Sharepoint
+conf = load_config('path/to/conf.yml')
+sharepoint = Sharepoint(conf=conf, site_name='my_site')
+buff = sharepoint.download('Documents/hello_shimmers.txt')
+st = buff.getvalue().decode('utf-8')
+print(st)
+```
+
+### uploading a set of dataframes as a single excel spreadsheet
+
+```python
+from waddle import load_config
+from pandas import DataFrame
+from shimmers import Sharepoint
+conf = load_config('path/to/conf.yml')
+sharepoint = Sharepoint(conf=conf, site_name='my_site')
+df1 = DataFrame([dict(pet='sesame', type='cat'), dict(pet='peanut', type='dog')])
+df2 = DataFrame([dict(pet='cody', owner='will'), dict(pet='kho', owner='boris')])
+sharepoint.upload_dataframes('Documents/pets.xlsx', df1, 'names', df2, 'owners')
+```
