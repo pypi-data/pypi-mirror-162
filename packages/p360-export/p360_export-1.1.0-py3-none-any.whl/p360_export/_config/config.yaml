@@ -1,0 +1,197 @@
+parameters:
+  p360_export:
+    config:
+      secret_getter: 'dbutils_secrets'
+      dbutils_secrets_scope:
+      azure_storage_config_base_path:
+      local_file_config_base_path:
+      config_getter: 'azure_storage'
+    data:
+      type:
+        validate:
+          phone_number_regex: '^(\(?\+?\d{1,3}\)?)([ .\/-]?\d{2,4}){3,4}$'
+          min_phone_number_digit_count: 8
+          max_phone_number_digit_count: 15
+    facebook:
+      access_token_key:
+      ad_account_id:
+    azure_storage:
+      csv_exports_base_path:
+    google_ads:
+      developer_token_key:
+      refresh_token_key:
+      client_secret_key:
+      client_id:
+      customer_id:
+    sfmc:
+      client_secret_key:
+      ftp_password_key:
+      client_id:
+      ftp_username:
+      tenant_url:
+      account_id:
+      file_location:
+
+services:
+  p360_export.utils.EnvVariableSecretGetter:
+    tags:
+      - {name: 'secret_getter', alias: 'env_variable'}
+
+  p360_export.utils.DbutilsSecretsSecretGetter:
+    arguments:
+      scope: '%p360_export.config.dbutils_secrets_scope%'
+    tags:
+      - {name: 'secret_getter', alias: 'dbutils_secrets'}
+
+  p360_export.utils.SecretGetterFactory:
+    arguments:
+      - !tagged_aliased ['secret_getter', '%p360_export.config.secret_getter%']
+
+  p360_export.utils.ColumnHasher:
+
+  p360_export.utils.ColumnSampleGetter:
+
+  p360_export.utils.secret_getter:
+    class: p360_export.utils.SecretGetterInterface.SecretGetterInterface
+    factory: ['@p360_export.utils.SecretGetterFactory', 'get']
+
+  p360_export.config.AzureStorageConfigGetter:
+    arguments:
+      base_path: '%p360_export.config.azure_storage_config_base_path%'
+    tags:
+      - {name: 'config_getter', alias: 'azure_storage'}
+
+  p360_export.config.LocalFileConfigGetter:
+    arguments:
+      base_path: '%p360_export.config.local_file_config_base_path%'
+    tags:
+      - {name: 'config_getter', alias: 'local_file'}
+
+  p360_export.config.ConfigGetterFactory:
+    arguments:
+      - !tagged_aliased ['config_getter', '%p360_export.config.config_getter%']
+
+  p360_export.config.config_getter:
+    class: p360_export.config.ConfigGetterInterface.ConfigGetterInterface
+    factory: ['@p360_export.config.ConfigGetterFactory', 'get']
+
+  p360_export.query.QueryBuilder:
+
+  p360_export.data.pick.ColumnMappingGetter:
+
+  p360_export.data.pick.DataPlatformDataPicker:
+    tags:
+      - {name: 'data_picker', alias: 'data_platform'} 
+
+  p360_export.data.pick.FacebookDataPicker:
+    tags:
+      - {name: 'data_picker', alias: 'facebook'} 
+
+  p360_export.data.pick.GoogleAdsDataPicker:
+    tags:
+      - {name: 'data_picker', alias: 'google_ads'} 
+
+  p360_export.data.pick.SFMCDataPicker:
+    tags:
+      - {name: 'data_picker', alias: 'sfmc'} 
+
+  p360_export.export.ConfigVariablesChecker:
+
+  p360_export.export.AudienceNameGetter:
+
+  p360_export.export.AzureStorageCsvExporter:
+    tags:
+      - {name: 'exporter', alias: 'data_platform'}
+    arguments:
+      exports_base_path: '%p360_export.azure_storage.csv_exports_base_path%'
+
+  p360_export.export.facebook.FacebookExporter:
+    tags:
+      - {name: 'exporter', alias: 'facebook'}
+    arguments:
+      access_token_key: '%p360_export.facebook.access_token_key%'
+      ad_account_id: '%p360_export.facebook.ad_account_id%'
+  
+  p360_export.export.facebook.CustomAudienceGetter:
+
+  p360_export.export.facebook.FacebookParameters:
+
+  p360_export.export.google.GoogleAdsExporter:
+    tags:
+      - {name: 'exporter', alias: 'google_ads'}
+
+  p360_export.export.google.GoogleClientGetter:
+
+  p360_export.export.google.GoogleConfigVariablesGetter:
+    arguments:
+      developer_token_key: '%p360_export.google_ads.developer_token_key%'
+      refresh_token_key: '%p360_export.google_ads.refresh_token_key%'
+      client_secret_key: '%p360_export.google_ads.client_secret_key%'
+      client_id: '%p360_export.google_ads.client_id%'
+
+  p360_export.export.google.UserDataJobCreator:
+    arguments:
+      customer_id: '%p360_export.google_ads.customer_id%'
+
+  p360_export.export.google.UserDataJobOperationGetter:
+
+  p360_export.export.google.UserDataJobOperationRequestGetter:
+
+  p360_export.export.google.UserDataSender:
+
+  p360_export.export.google.UserListGetter:
+    arguments:
+      customer_id: '%p360_export.google_ads.customer_id%'
+
+  p360_export.export.sfmc.SFMCExporter:
+    tags:
+      - {name: 'exporter', alias: 'sfmc'}
+
+  p360_export.export.sfmc.DataExtensionFieldCreator:
+
+  p360_export.export.sfmc.DataExtensionFieldUpdater:
+
+  p360_export.export.sfmc.DataExtensionGetter:
+
+  p360_export.export.sfmc.DataExtensionCreator:
+
+  p360_export.export.sfmc.SFTPUploader:
+
+  p360_export.export.sfmc.ImportDefinitionGetter:
+
+  p360_export.export.sfmc.ImportDefinitionExecutor:
+
+  p360_export.export.sfmc.SFMCClientGetter:
+
+  p360_export.export.sfmc.SFMCDataGetter:
+    arguments:
+      client_id: '%p360_export.sfmc.client_id%'
+      client_secret_key: '%p360_export.sfmc.client_secret_key%'
+      ftp_username: '%p360_export.sfmc.ftp_username%'
+      ftp_password_key: '%p360_export.sfmc.ftp_password_key%'
+      tenant_url: '%p360_export.sfmc.tenant_url%'
+      account_id: '%p360_export.sfmc.account_id%'
+      file_location: '%p360_export.sfmc.file_location%'
+
+  p360_export.export.sfmc.SFTPClientGetter:
+
+  p360_export.data.build.FeatureStoreDataBuilder:
+
+  p360_export.data.type.validate.EmailValidator:
+
+  p360_export.data.type.validate.PhoneNumberValidator:
+    arguments:
+      phone_number_regex: '%p360_export.data.type.validate.phone_number_regex%'
+      min_phone_number_digit_count: '%p360_export.data.type.validate.min_phone_number_digit_count%'
+      max_phone_number_digit_count: '%p360_export.data.type.validate.max_phone_number_digit_count%'
+
+  p360_export.data.type.resolve.DataFrameTypeResolver:
+
+  p360_export.data.type.resolve.SFMCTypeResolver:
+
+  p360_export.P360ExportRunner:
+
+  p360_export.P360ExportManager:
+    arguments:
+      data_pickers: !tagged 'data_picker'
+      exporters: !tagged 'exporter'

@@ -1,0 +1,2 @@
+class ColumnContainsNoValidExampleException(Exception):
+    pass
