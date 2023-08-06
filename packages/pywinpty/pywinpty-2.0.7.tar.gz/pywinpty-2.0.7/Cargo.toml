@@ -1,0 +1,28 @@
+[package]
+name = "pywinpty"
+version = "2.0.7"
+authors = ["Edgar Andrés Margffoy Tuay <andfoy@gmail.com>"]
+description = "Pseudo terminal support for Windows from Python."
+repository = "https://github.com/spyder-ide/pywinpty"
+license = "MIT"
+keywords = ["pty", "pseudo-terminal", "conpty", "windows", "winpty"]
+readme = "README.md"
+edition = "2021"
+
+[lib]
+name = "winpty"
+crate-type = ["cdylib"]
+
+[dependencies]
+winpty-rs = "0.3.8"
+
+[dependencies.pyo3]
+version = "0.16.2"
+features = ["extension-module"]
+
+[package.metadata.docs.rs]
+default-target = "x86_64-pc-windows-msvc"
+targets = ["x86_64-pc-windows-msvc"]
+
+[package.metadata.maturin]
+requires-python = ">=3.6"
