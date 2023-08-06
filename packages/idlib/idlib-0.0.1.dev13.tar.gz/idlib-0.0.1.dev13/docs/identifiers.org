@@ -1,0 +1,348 @@
+#+title: Ramblings on Identifiers
+#+author: Tom Gillespie
+
+* What makes a good identifier? What makes an identifier as opposed to just a string? What makes a good identifier grammar?
+In theory any arbitrary string is an identifier. What it identifies is a different issue.
+However, not all arbitrary strings are equally useful as identifiers, and some have
+decidedly nasty properties depending on how they are constructed.
+
+Even in typed languages, data from an untrusted source must be parsed to ensure that
+its internal structure matches the type.
+
+Practically this means that good identifiers must be parsable by turning incomplete systems.
+
+1. Identifiers must be parsed.
+   Parsing may be a simple as checking that the identifier
+   contains only 0 or 1, or may be arbitrarily complex.
+
+2. Any string can be an identifier.
+3. The procedures needed to determine key properties of an identifier must provably halt.
+   Identity. The equality and equivalence of two identifiers (they are not necessarily the same).
+   [fn::This is why in other places I talk about an 'identity-function' the terminology is incorrect,
+   but the idea is essentially that you can have as many functions as you want to will tell you whether
+   two things are the same or different, and what matters is the properties of the function you choose.
+   If I choose to use =(lambda (a b) (equal? (type-of a) (type-of b)))= as my equivalence function I am
+   going find out that a whole bunch of things are equal because the function throws away data]
+   Structure. The well-formedness of the internal structure of an identifier.
+
+4. 
+
+5. Good identifiers use parsers that are guranteed to halt.
+6. Good identifier systems have identif
+7. The grammar for identifiers should
+8. 
+
+Default accepting vs default rejecting systems. UNIX vs Lisp
+
+* What is a local pid? All pids are local, so what makes a pid?
+A pid is something whose dereference doesn't change over the lifetime
+of the environment that it lives in.
+
+A local file path e.g. =/etc/nginx/nginx.conf= is a pid. It is missing
+certain nice features that some other pids have, such as the ability
+to have a stable reference to a specific version. Technically all
+posix file paths make no gurantees about the stability of their
+contents.
+
+=/etc/nginx/nginx.conf= would cease to be a PID the moment that that
+file could no longer be used to configure nginx, e.g. if that was
+moved to =/var/run/nginx/nginx.conf=. HOWEVER if that computer was
+taken offline permanently, and a new one booted up with a new
+environment then =/var/run/nginx/nginx.conf= could become a new
+persistent identifier, assuming that it never changes its practical
+semantics.
+
+You can see the sort of insanity that non-pids can produce in the kind
+of issues that use of non-persistent identifers caused in =/dev/=,
+where a keyboard might one day be identified by =/dev/input/event4=
+and the next reboot =/dev/input/event5=. Completely maddening, because
+to the human, the stable system is the whole computer with nothing
+plugged or unplugged.
+
+You can also run this logic in reverse to identify what the
+implementation _thinks_ is a stable environment. This is in fact more
+useful, because you can identify for example, that the URI system is
+composed of multiple different environments whose lifetime duration is
+maximally limited by the ownership of the domain name by a single
+party. Similarly, in our =/dev/= example, we can infer that the old
+way that udev was implemented had a definition of environment which
+was temporally restricted to be only for a single power on cycle of a
+computer.
+
+With these observations in hand it is much easier to identify how the
+actual behavior of a system diverges from the desired behavior for a
+pid.
+
+Consider for example that it is possible to infer that there is an
+environment of well defined extent where =/etc/nginx/nginx.conf= is
+the PID for the nginx config file. It covers a wide variety of systems
+running a posix file system that conform to common practice by linux
+distributions.  Windows and Macos fall outside that environment.
+Similarly, alternate distributions such as openresty also fall outside
+that environment under normal circumstances, unless a user configures
+openresty as a replacement for the system nginx.
+
+Identifying the environment, both temporal, spatial, informational,
+contextual, etc. over which the behavior of a pid is invariant is thus
+key to characterizing the real persistence gurantees.
+
+Note that this is a somewhat extended definition from the one that is
+usually given for pids, which is restricted primarily to the temporal
+domain. However consider the PID https://en.wikipedia.org/wiki/8964.
+There is are a large number of computer networks where that PID is not
+dereferencable or that might display contents that are divergent from
+the contents that are displayed if it were dereferenced in other
+environments.
+
+Thus it is possible to create a system for assessing the types of
+invariance that a given persistent identifier, or persistent
+identifier system is capable of providing. Most PID systems in use
+today intentionally lack a kind of invariance that is critical for a
+variety of use cases, namely content invariance up to some hash
+collision. Not all PID systems require those kinds of gurantees, and
+NO pid system that is used to track multiple versions of something
+across time _can_ have that property. There are an entire class of
+PIDs that are forever excluded from being able to use content
+invariant names, and they are often the most useful ones. Imagine if
+every time you went to a website you had to click on an embedded link
+to see the latest version of that website because it was imossible
+(hopefully) to guess the identifier of the next version. It would be a
+mess! If you want a PID that always dereferences to the "now" version
+of a thing (or the latest version), then you it cannot itself be
+content invariant. In a world where it was possible to implement a
+time traveling hash function that could hash all actual future
+versions of a file, then in principle you could do this, however in
+reality a level of indirection is necessary.
+* What makes a good resolver/client?
+Clients/resolvers must specify a finite maximum runtime and should
+accept a timeout as an argument with guranteed return within some
+delta of that timeout.
+
+The must return one of the following with regard to the thing dereferenced to.
++1. found+
++2. unknown (timeout)+
++3. not found+
+
+* Query types
+something about checking whether cached values match during
+negotiation
+
+** exists
+
+** exists-and-deref
+
+#+begin_src elisp :eval never
+(defun exists-and-deref (id)
+  (and (exists id) (deref id)))
+#+end_src
+
+* Success and failure modes when querying a system
+** local
+client errors
+*** could-not-ask-the-question
+network down for some reason
+server did not respond
+** reachability
++inbetween+
+traversal error?
+*** prelude
+**** telephone
+While it would be nice if we could abstract away the process of
+getting from an identifier to its referent entirely and pretend that
+we can always get an answer existing systems for resolving identifiers
+on the web are horribly broken because they make extensive use of the
+redirect system, which means that there isn't a dereferencing process
+so much as there is a completely insane game of telephone. See
+[[https://www.youtube.com/watch?v=T4VjLW2K2KQ][Understanding the Web, How Theory and Practice Diverge]]
+by Henry S. Thompson for an introduction to the madness.
+
+The game of telephone is basically a bunch of repeated conversations
+along the lines of "Hello, I am looking for the referent of so-and-so
+identifier, and the last person I asked told me that I might be able
+to find under the address that I have contacted you at? Sorry, we
+don't have the referent of so-and-so at that address, but we do have a
+note that you can ask yet-another-system about yet-another-identifier
+and you might or might not find it there. Good luck!
+
+At any point someone could interpose and say "why yes we are the
+referent of so-and-so!" without a shred of evidence. All of this
+series of redirects is a complete failure of engineering, or rather
+the kind of runaround that is only acceptable because round-trip times
+are milliseconds not minutes. If I need to ask about a library book on
+Mars the current engineering solution is laughably, soul destroyingly,
+inadequate. It makes horrible assumptions about the cost of repeated
+messages and makes it impossible to reason about the actual underlying
+architecture of the system.
+
+This system is ... problematic. To see why, consider for a moment
+trying to resolve a DOI as a researcher working on Mars. If, after
+stewing for a moment, this does not evoke a deep sense of concern
+accompanied by hysterical laughter, let me know, you might have a
+clearer picture of what could happen than I do.
+*** redirection
+I am so angry that this exists.
+
+This is not allowed.  All redirection is an error.  A single
+redirection may be allowed in certain special cases where the social
+structure of the identifier system makes it difficult to hide the
+implementation details.
+*** redirection-failed
+*** transport protocol etc. issues
+ssl errors
+511 errors
+505 errors maybe? no, that falls under unknown errors
+** remote
+server responses
+*** prelude
+how do you deal with people trying to infer information or use a side channel attack
+e.g. Do you have a document on some-classified-topic or some-secret-code-name
+where the human answer is "I can neither confirm nor deny the existence of such a name"
+Of course that non-answer is not effective at all because most of the time you will
+have been getting nice normal answers, and when you cross over into a new logical
+space it is immediately obvious that information is being hidden, so basically the
+system has to not answer any questions at all to people who aren't authorized to
+be able to infer whether or not something like that exists, or just answer with
+
+essentially these cases would get translated up into =unknown-incomplete=
+because the system would know that there was somewhere that it is not allowed
+to look and thus can infer that it cannot definitively say that a record does not exist
+**** you-are-not-authorized-to-ask-this-question
+This has a flavor of impossible universality because it implies that
+the universe has somehow make it impossible for you to even form the
+question. If it has to be operationalized, it would probably mean that
+the facade that the local user agent serves the user is broken and the
+request cannot even be sent. There are cases where this is important,
+such as when the user agent only has access to an unsecured network.
+In this situation this situation expands to a case where the local
+computer is now a remote because the user does not have control over
+it, or at least not over the subprocess that is running. An alternate
+interpretation is that the asker is on a universal blacklist
+maintained for all connected agents in the remote system, the
+semantics here are significantly different because one requires a
+connection to be established. In theory one way a remote system could
+try to manage this would be to put up a firewall but those can be
+detect as distinct from a connection error unless the remote controls
+the transport network too.
+**** you-are-not-authorized-to-receive-an-answer-to-this-question
+This is the universal form of
+i-am-not-authorized-to-answer-this-question-to-you, it means that
+within the whole of the system known to the current remote agent there
+is none that will answer the question because the asker has been put
+on a blacklist. This is the version of
+you-are-not-authorized-to-ask-this-question that actually has meaning
+since it is enforceable by a system.
+**** i-am-not-authorized-to-answer-this-question
+This is a remote blacklist where the agent that has been connected to
+is not authorized. Usually this would be hidden from the user if it
+were just a single agent because it would be a bug. The more useful
+response would be more along the lines of "I am not authorized to
+answer this, but if you connect directly to this other agent they can
+answer it for you."  A concrete example of a case like this would be a
+request for identifying patient information where the computer system
+might know the data exists and even that the patient has an age, but
+cannot answer the question "how old is patient-20" because their
+system can't pull data from secure servers because it itself has not
+gone through the security review needed.
+**** i-am-not-authorized-to-answer-this-question-to-you
+Someone else might be authorized to answer this question to you. For
+example, an analyst might not be able to disclose certain information
+to someone lacking a certain level of clearance, but a senior
+commander might be allowed to tell someone with a lower level of
+clearance because they presumably can take responsibility for the
+action in the way that an analyst cannot.
+
+In the context of answering questions about whether identifiers exist
+or not, "Do you have records about a project with id MANHATTAN?"  is
+the case where the only secure answer is "I cannot answer questions
+about project ids." This implies that users would need to be blocked
+from making queries about entire subsets of a schema, so any query
+that touched one of those schema would have to be very careful,
+because a user could as questions to see which ones would hit a
+forbidden schema and in that way infer additional information about
+the structure of the query planner etc. I think the right thing to do
+in this case would be to return the parts of the query that could be
+answered without touching on that schema. However even this seems
+dangerous due to potential correlations between the contents of
+secured parts of a schema and unsecured parts. Consider for example
+the work that has been done on re-identifying patients using
+supposedly anonymized data. Yes you may be blocked from accessing the
+social security number of a patient (which is actually a completely
+useless thing to keep secret, but that is another matter) but if you
+have their age and place of birth you can massively reduce the search
+space needed to guess the SSN. Similarly if you can know the sex of
+the person but not their name, you can reduce the search space for
+their first name nearly in half. While some of these examples may not
+be security issues, it is extremely hard to draw the line between a
+correlation that is not a security issue and one that is. The
+non-random serial numbers on German tanks is a perfect example.
+**** i-am-not-authorized-to-speak-to-you-except-to-say-this-sentence
+i-am-only-authorized-to-say-this-exact-sentence-to-you-and-nothing-more-GOOD-DAY-SIR
+**** i-cant-tell-you-that-dave
+*** exists
+a record exists in this system prior in time to this query
+
+=a record exists=
+*** exists-but
+**** data-in-transit
+**** transaction-in-process
+extend the notion of a database transaction to be something that can
+be of significant extent, thus you can initiate something like a
+transaction which involves putting tapes in the mail
+**** data-partially-available
+sometimes some portion of the data may have finished transit if it is
+of a type that is technically divisible and interpretable in parts then
+that works, if it is partially avaiable but cannot be parsed
+**** known-not-dereferenceable-yet
+consider having a record in an index but you know that it is being
+delivered in bulk on tape, metadata could be returned that included
+where it is in the transit process, or return a
+data-expected-to-be-available-after-datetime value or something
+**** temporarily-unavaiable
+undergoing maintenance
+**** awaiting-retrieval
+aka dereferencing in process, e.g. from glacier or something
+*** does-not-exist
+no record exits in this system prior in time to this query
+
+=no record exists= vs =no record has ever existed=?
+
+There is always doubt when you receive a negative answer.
+
+it probably makes more sense to use the 404 language here
+~not-found~ or ~not-found-anywhere-on-this-system~
+*** used-to-exist
+was deleted, but we keep a record of the fact that yes, once upon a time such as record existed
+this is critical for avoiding the kind of gaslighting insanity that deleting metadata produces
+*** malformed
+the identifier is malformed
+*** not-indexed-here
+if the type of identifier can be recognized
+
+but cannot be resolved by the current system, see other maybe? FIXME naming
+most likely an issue for handles/arks
+*** unknown
+not =a record exists= and not =no record exists=
+in this system prior in time to this query
+**** i-am-malfunctioning
+these are the 500 family of errors
+*** ambiguous
+usually returned when a local identifier is provided
+
+e.g. not enough context if some context is inferred from
+an api key or something like that, but that might be cheating
+* Promises that can be made by a system
+** remote
+*** immutable
+Promises that the remote data associated with this id will never
+change and can be cached indefinitely.
+
+Building systems that can _prove_ to remove systems that they are
+immutable is significantly more difficult. This is especially
+important for systems that need to be robust against censorship or
+accounting fraud. For example, systems that host official government
+statements, or business invoices. Every number needs to have a status.
+It cannot be possible to erase the existence of those without someone
+being able to at the very least know that it has been erased. This is
+why gapless increasing integers are a hard and fast requirement in
+those systems. They are one of the few ways that a remote system can
+protect itself and its users from deletion attacks.
