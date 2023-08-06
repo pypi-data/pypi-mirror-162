@@ -1,0 +1,41 @@
+[project]
+name = "swaystatus"
+version = "0.2.5"
+authors = [
+    { name="Jeremy Cantrell", email="jmcantrell@gmail.com" }
+]
+description = "Generates a status line for swaybar"
+readme = "README.md"
+license-files = { paths = ["LICENSE.md"] }
+requires-python = ">=3.8"
+keywords = ["sway", "wm", "status"]
+classifiers = [
+    "Environment :: Console",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+]
+dependencies = [
+    "schema>=0.7",
+    "toml>=0.10",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/jmcantrell/swaystatus"
+"Bug Tracker" = "https://github.com/jmcantrell/swaystatus/-/issues"
+
+[project.scripts]
+swaystatus = "swaystatus.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build]
+only-include = ["src", "tests"]
+
+[tool.pytest.ini_options]
+addopts = "--cov-report term-missing --cov=swaystatus"
+testpaths = ["tests"]
