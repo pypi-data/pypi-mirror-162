@@ -1,0 +1,77 @@
+Metadata-Version: 2.1
+Name: fastapi-paseto-auth
+Version: 0.5.0
+Summary: FastAPI extension that provides JWT Auth support (secure, easy to use and lightweight)
+Home-page: https://github.com/Chloe-ko/fastapi-paseto-auth
+Author: Neneko
+Author-email: fastapi@nyu.moe
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Classifier: Environment :: Web Environment
+Classifier: Intended Audience :: Developers
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.10
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Topic :: Internet :: WWW/HTTP :: Dynamic Content
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Requires-Dist: fastapi>=0.61.0,<=0.79.0
+Requires-Dist: pyseto>=1.6.9,<=1.6.9
+Requires-Dist: pydantic>=1.9.1,<=1.9.1
+Requires-Dist: uvicorn>=0.11.5 ; extra == "dev"
+Requires-Dist: mkdocs>=1.1.2,<2.0.0 ; extra == "doc"
+Requires-Dist: mkdocs-material>=5.5.0,<6.0.0 ; extra == "doc"
+Requires-Dist: markdown-include>=0.5.1,<0.6.0 ; extra == "doc"
+Requires-Dist: pytest==6.2.5 ; extra == "test"
+Requires-Dist: pytest-cov==2.10.0 ; extra == "test"
+Requires-Dist: coveralls==2.1.2 ; extra == "test"
+Project-URL: Documentation, https://chloe-ko.github.io/fastapi-paseto-auth/
+Provides-Extra: dev
+Provides-Extra: doc
+Provides-Extra: test
+
+<h1 align="left" style="margin-bottom: 20px; font-weight: 500; font-size: 50px; color: black;">
+  FastAPI PASETO Auth
+</h1>
+
+![Tests](https://github.com/Chloe-ko/fastapi-paseto-auth/workflows/Tests/badge.svg)
+[![Coverage Status](https://coveralls.io/repos/github/Chloe-ko/fastapi-paseto-auth/badge.svg?branch=master)](https://coveralls.io/github/IndominusByte/fastapi-jwt-auth?branch=master)
+---
+
+**Documentation**: <a href="https://chloe-ko.github.io/fastapi-paseto-auth" target="_blank">https://chloe-ko.github.io/fastapi-paseto-auth</a>
+
+**Source Code**: <a href="https://github.com/Chloe-ko/fastapi-paseto-auth" target="_blank">https://github.com/Chloe-ko/fastapi-paseto-auth</a>
+
+---
+
+## Features
+FastAPI extension that provides PASETO (**P**lastform-**A**gnostic **SE**curity **TO**kens) Auth support\
+PASETO are a simpler, yet more secure alternative to JWTs.
+
+If you were familiar with flask-jwt-extended or fastapi-jwt-auth this extension suitable for you, as this is forked from fastapi-jwt-auth which in turn used flask-jwt-extended as motivation
+
+- Access tokens and refresh tokens
+- Freshness Tokens
+- Revoking Tokens
+- Support for adding custom claims to JSON Web Tokens
+
+## Installation
+The easiest way to start working with this extension with pip
+
+```bash
+pip install fastapi-paseto-auth
+```
+
+## Roadmap
+- Support for WebSocket authorization
+
+## FAQ
+- **Where's support for tokens in cookies?**\
+I mostly forked fastapi-jwt-auth because I needed a library to use for authentication using PASETO tokens in my private FastAPI Application. Which is why I only kept the functionality that I personally required.\
+Personally, I'm not a fan of saving data in cookies, and cookie support made up a big part of the code which just didn't make sense for me to bother adapting.\
+Hence, I will not be implementing support for storing PASETO tokens in cookies.\
+However, I will gladly accept PRs implementing such if someone else wants to implement it.
+
+## License
+This project is licensed under the terms of the MIT license.
+
