@@ -1,0 +1,51 @@
+{# -*- engine:django -*- #}
+
+{% extends "core/base.html" %}
+
+{% load i18n rules material_form data_helpers %}
+{% load render_table from django_tables2 %}
+
+{% block browser_title %}{% blocktrans %}Display group{% endblocktrans %} {{ object }}{% endblock %}
+{% block page_title %}{% blocktrans %}Display group{% endblocktrans %} {{ object }}{% endblock %}
+
+{% block content %}
+  {% has_perm 'core.create_display_rule' user displaygroup as can_create_display %}
+
+  <h5>{% trans "Connected displays" %}</h5>
+  <form method="get">
+    {% form form=displays_filter.form %}{% endform %}
+    {% trans "Search" as caption %}
+    {% include "core/partials/save_button.html" with caption=caption icon="search" %}
+    <button type="reset" class="btn red waves-effect waves-light">
+      <i class="material-icons left">clear</i>
+      {% trans "Clear" %}
+    </button>
+    {% if can_create_display %}
+      <a class="btn green waves-effect waves-light" href="{% url 'create_display' %}">
+        <i class="material-icons iconify left" data-icon="mdi:add"></i>
+        {% trans "Create display" %}
+      </a>
+    {% endif %}
+  </form>
+
+
+  {% render_table displays_table %}
+
+  <h5>{% trans "Slides" %}</h5>
+  <a class="btn green waves-effect waves-light dropdown-trigger" href="#" data-target="slide-dropdown">
+    <i class="material-icons left iconify" data-icon="mdi:add"></i>
+    {% trans "Create slide" %}
+  </a>
+  <ul id="slide-dropdown" class="dropdown-content">
+    {% for ct, model in slide_types %}
+      <li>
+        <a href="{% url 'create_slide' ct.app_label ct.model %}">
+          {% verbose_name_object model as slide_name %}
+          {% blocktrans with name=slide_name %}Create {{ name }}{% endblocktrans %}
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+  {% render_table slides_table %}
+
+{% endblock %}

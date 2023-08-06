@@ -1,0 +1,23 @@
+{# -*- engine:django -*- #}
+
+{% extends "core/base.html" %}
+{% load material_form i18n data_helpers %}
+
+{% block browser_title %}
+  {% verbose_name_object object as slide_title %}
+  {% blocktrans with slide=slide_title %}Edit {{ slide }}{% endblocktrans %}
+{% endblock %}
+{% block page_title %}
+  {% verbose_name_object object as slide_title %}
+  {% blocktrans with slide=slide_title %}Edit {{ slide }}{% endblocktrans %}
+{% endblock %}
+
+{% block content %}
+
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {% form form=form %}{% endform %}
+    {% include "core/partials/save_button.html" %}
+  </form>
+
+{% endblock %}
