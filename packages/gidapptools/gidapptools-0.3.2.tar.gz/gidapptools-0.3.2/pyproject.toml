@@ -1,0 +1,97 @@
+[build-system]
+build-backend = "flit_core.buildapi"
+requires = ["flit_core >=3.2,<4"]
+
+[project]
+name = "gidapptools"
+authors = [{ name = "brocaprogs" }]
+classifiers = ["License :: OSI Approved :: MIT License"]
+license = { file = "LICENSE" }
+readme = { file = "README.rst", content-type = "text/x-rst" }
+dynamic = ['version', 'description']
+requires-python = ">=3.9"
+dependencies = ["attrs==21.4.0", "deepmerge==1.0.1", "frozendict==2.3.2", "idna==3.3", "multidict==6.0.2", "platformdirs==2.5.2", "psutil==5.9.1", "pyparsing==3.0.9", "pytz-deprecation-shim==0.1.0.post0", "tzdata==2022.1", "tzlocal==4.2", "yarl==1.7.2"]
+
+[project.urls]
+Source = "https://github.com/Giddius/GidAppTools"
+
+[project.scripts]
+
+
+[project.optional-dependencies]
+all = [
+    "PySide6~=6.3.1",
+    "peewee~=3.14.0",
+    "cython~=0.29.0",
+    "rich~=12.2.0",
+    "jinja2~=3.1.0",
+    "python-dateutil==2.8.2",
+]
+pyside = ["PySide6~=6.3.1", "jinja2~=3.1.0"]
+orm = ["peewee~=3.14.0"]
+rich = ["rich~=12.2.0"]
+parsing = ["python-dateutil==2.8.2"]
+[tool.flit.sdist]
+exclude = [
+    "misc",
+    "temp",
+    "docs",
+    "tools",
+    ".pydeps",
+    "tests",
+    ".gitattributes",
+    ".gitignore",
+    ".editorconfig",
+    "planning.todo",
+    "tasks.py",
+]
+[tool.setuptools]
+packages = ["gidapptools"]
+
+[tool.autopep8]
+ignore = ["E402", "E501", "E731"]
+max_line_length = 250
+
+[tool.isort]
+balanced_wrapping = true
+ensure_newline_before_comments = true
+group_by_package = true
+import_heading_firstparty = "* Local Imports --------------------------------------------------------------------------------------->"
+import_heading_gid = "* Gid Imports ----------------------------------------------------------------------------------------->"
+import_heading_qt = "* Qt Imports --------------------------------------------------------------------------------------->"
+import_heading_stdlib = "* Standard Library Imports ---------------------------------------------------------------------------->"
+import_heading_thirdparty = "* Third Party Imports --------------------------------------------------------------------------------->"
+known_gid = ["gid*"]
+known_qt = ["PyQt5", "PyQt6", "PySide6", "pyqtgraph"]
+length_sort = true
+line_length = 200
+lines_after_imports = 1
+sections = [
+    "FUTURE",
+    "STDLIB",
+    "THIRDPARTY",
+    "QT",
+    "GID",
+    "FIRSTPARTY",
+    "LOCALFOLDER",
+]
+indented_import_headings = false
+
+[tool.autoflake]
+# additional_imports=None
+expand_star_imports = true
+remove_all_unused_imports = true
+remove_duplicate_keys = false
+remove_unused_variables = false
+ignore_init_module_imports = false
+
+
+[tool.pytest.ini_options]
+addopts = "-rA -vv --durations=0 --capture=tee-sys --show-capture=all --color=auto --code-highlight=yes --cov=gidapptools --cov-report html --html-report=./tools/reports/pytest_report --title='PYTEST REPORT'"
+
+[tool.coverage.report]
+omit = ["**/__init__.py"]
+exclude_lines = ["if __name__ == .__main__.:", "def __rich__", "def __repr__"]
+
+[tool.coverage.html]
+directory = "tools/reports/coverage/html"
