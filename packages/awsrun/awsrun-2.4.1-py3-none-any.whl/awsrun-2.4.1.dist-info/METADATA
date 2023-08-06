@@ -1,0 +1,42 @@
+Metadata-Version: 2.1
+Name: awsrun
+Version: 2.4.1
+Summary: CLI to execute user-defined commands across one or more AWS accounts
+Home-page: https://github.com/fidelity/awsrun
+Author: Pete Kazmier
+Author-email: opensource@fidelity.com
+Keywords: awsrun,aws,cli
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: Unix
+Classifier: Operating System :: POSIX
+Classifier: Operating System :: Microsoft :: Windows
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: Implementation :: CPython
+Classifier: Topic :: Utilities
+Requires-Python: >=3.7
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: boto3 (>=1.12.39)
+Requires-Dist: azure-identity
+Requires-Dist: azure-mgmt-network
+Requires-Dist: bs4
+Requires-Dist: colorama
+Requires-Dist: asciichartpy (>=1.5.14)
+Requires-Dist: pysparklines (>=1.0)
+Requires-Dist: py-cui (==0.0.3)
+Requires-Dist: requests-file
+Requires-Dist: requests-ntlm
+Requires-Dist: requests
+Requires-Dist: PyYAML (>=3.10)
+
+`awsrun` is both a CLI and library to execute commands over one or more AWS accounts
+concurrently. Commands are user-defined Python modules that implement a simple
+interface to abstract away the complications of obtaining credentials for Boto3
+sessions - especially when using SAML authentication and/or cross-account
+access.
