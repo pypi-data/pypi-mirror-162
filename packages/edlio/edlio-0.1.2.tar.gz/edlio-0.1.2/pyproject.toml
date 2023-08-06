@@ -1,0 +1,66 @@
+[project]
+name = "edlio"
+authors = [
+    {name = "Matthias Klumpp"},
+]
+
+license = {text="LGPL-3.0+"}
+readme = "README.md"
+classifiers = [
+    "License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers"
+]
+dynamic = ['version', 'description']
+
+requires-python = ">=3.8"
+dependencies = [
+    "tomlkit>=0.6.0",
+    "numpy>=1.17",
+    "xxhash>=2.0",
+    "Pint>=0.10"
+]
+
+[project.urls]
+Documentation = "https://edl.readthedocs.io/"
+Source = "https://github.com/bothlab/edlio"
+
+[build-system]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[tool.pylint.format]
+max-line-length = 100
+
+[tool.pylint."messages control"]
+disable = [
+    'C', 'R',
+    'fixme',
+    'unused-argument',
+    'logging-format-interpolation',
+    'protected-access',
+    'broad-except',
+    'redefined-builtin',
+]
+
+[tool.pylint.reports]
+score = 'no'
+
+[tool.pylint.typecheck]
+ignored-modules = [
+    'cv2',
+]
+
+[tool.isort]
+py_version = 39
+profile = "black"
+multi_line_output = 3
+skip_gitignore = true
+length_sort = true
+atomic = true
+skip_glob = ["tests/samples/*"]
+
+[tool.black]
+target-version = ['py39']
+line-length = 100
+skip-string-normalization = true
