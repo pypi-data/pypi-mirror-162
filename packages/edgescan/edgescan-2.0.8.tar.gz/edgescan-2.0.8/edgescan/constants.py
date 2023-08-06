@@ -1,0 +1,18 @@
+import os
+
+DEFAULT_HOST = os.getenv('EDGESCAN_HOST', 'live.edgescan.com')
+DEFAULT_API_KEY = os.getenv('EDGESCAN_API_KEY')
+
+HOSTS = 'hosts'
+ASSETS = 'assets'
+VULNERABILITIES = 'vulnerabilities'
+RESOURCE_TYPES = [HOSTS, ASSETS, VULNERABILITIES]
+
+LICENSE = 'license'
+LICENSES = 'licenses'
+
+#: Network connection handling.
+MAX_RETRIES_ON_HTTP_CONNECTION_ERRORS = 5
+MAX_RETRIES_ON_HTTP_READ_ERRORS = 5
+MAX_RETRIES_ON_HTTP_REDIRECTS = 5
+HTTP_REQUEST_BACKOFF_FACTOR = 0.1
