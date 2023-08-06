@@ -1,0 +1,95 @@
+Metadata-Version: 2.1
+Name: dpm360-lightsaber
+Version: 0.3.0
+Summary: Package to handle model training for dpm tasks
+Home-page: https://ibm.github.io/DPM360/Lightsaber/
+Author: Prithwish Chakraborty
+Author-email: prithwish.chakraborty@ibm.com
+License: UNKNOWN
+Platform: UNKNOWN
+Description-Content-Type: text/markdown
+License-File: LICENSE.txt
+Requires-Dist: scikit-learn (>=1.*)
+Requires-Dist: mlflow (>=1.2.0)
+Requires-Dist: pandas (>=1.2)
+Requires-Dist: pytorch-lightning (>=1.*)
+Requires-Dist: toolz
+Requires-Dist: ray[tune] (>=1.13.*)
+Requires-Dist: tabulate
+Provides-Extra: doc
+Requires-Dist: Jinja2 (==3.1.2) ; extra == 'doc'
+Requires-Dist: mkdocs (==1.3.0) ; extra == 'doc'
+Requires-Dist: mkdocs-material (==8.3.9) ; extra == 'doc'
+Requires-Dist: mkdocstrings (==0.18.1) ; extra == 'doc'
+Requires-Dist: mknotebooks (==0.7.1) ; extra == 'doc'
+Requires-Dist: mkdocs-monorepo-plugin (==1.0.2) ; extra == 'doc'
+Requires-Dist: pytkdocs[numpy-style] (==0.16.1) ; extra == 'doc'
+Provides-Extra: full
+Requires-Dist: pysurvival (==0.1.2) ; extra == 'full'
+Requires-Dist: Jinja2 (==3.1.2) ; extra == 'full'
+Requires-Dist: mkdocs (==1.3.0) ; extra == 'full'
+Requires-Dist: mkdocs-material (==8.3.9) ; extra == 'full'
+Requires-Dist: mkdocstrings (==0.18.1) ; extra == 'full'
+Requires-Dist: mknotebooks (==0.7.1) ; extra == 'full'
+Requires-Dist: mkdocs-monorepo-plugin (==1.0.2) ; extra == 'full'
+Requires-Dist: pytkdocs[numpy-style] (==0.16.1) ; extra == 'full'
+Provides-Extra: t2e
+Requires-Dist: pysurvival (==0.1.2) ; extra == 't2e'
+
+# Welcome to lightsaber
+
+<!-- For full documentation visit [mkdocs.org](https://www.mkdocs.org). -->
+## Overview
+
+`lightsaber` is designed ground up to provide a _simple_, _composible_, and unified
+model training framework. It has been designed based on state-of-the-art open source
+tools and extended to support the common use cases for disease progression modeling (DPM). 
+
+`lightsaber` provides four main components:
+
+* Data ingestion modules
+* Model Trainers
+* DPM problem specific model evaluation
+* Model tracking and support for post-hoc model evaluation.
+
+Each of these components are designed such that a user should be able to pick some
+or all of the modules and embed these seamlessly with their current workflow. 
+Futhermore, when used in the recommended manner, `lightsaber` provides a _batteries included_
+approach allowing the modeler to focus only on developing the logic of their model and
+letting `lightsaber` handle the rest.
+
+Currently, we support the following DPM use cases:
+
+* classification: one or multi-class
+
+Also, we support and extend the following frameworks:
+
+* `scikit-learn` compliant models: for classical models
+* `pytorch` compliant models: for general purpose models, including deep learning models.
+
+
+To summarize, it is thus an `opinionated` take on how DPM should be conducted providing with a 
+unified core to abstract and standardize out the engineering, evaluation, model training, and model tracking
+to support: **(a) reproducible research, (b) accelarate model development, and (c) standardize model deployment**.
+
+## Installation Instructions
+
+`Lightsaber` is installable as a python package.  
+
+It can be installed using `conda` as:
+```
+conda install -c conda-forge dpm360-lightsaber
+```
+ or from `pypi` as:
+```
+pip install dpm360-lightsaber
+```
+It can also be installed from source using pip as follows:
+* barebones install of `Lightsaber`: `pip install .` 
+* with doc support: `pip install .[doc]`
+* with time-to-event modeling (T2E) support: `pip install .[t2e]`
+* full install with all components: `pip install .[full]`
+
+[![Downloads](https://pepy.tech/badge/lightsaber)](https://pepy.tech/project/dpm360-lightsaber)
+
+
