@@ -1,0 +1,1 @@
+Stuff for helping around connected objects
