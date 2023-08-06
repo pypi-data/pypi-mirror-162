@@ -1,0 +1,39 @@
+[tool.poetry]
+name = "nextcord-ormar"
+version = "0.3.3"
+description = "Database integration for Nextcord with Ormar"
+authors = ["Peter DeVita <mewtwo2643@yahoo.com>"]
+license = "MIT"
+readme = "Readme.md"
+homepage = "https://github.com/pmdevita/nextcord-ormar"
+repository = "https://github.com/pmdevita/nextcord-ormar"
+documentation = "https://nextcord-ormar.readthedocs.io"
+keywords = ["nextcord", "discord", "ormar"]
+classifiers = [
+    "Topic :: Internet",
+    "Topic :: Software Development :: Libraries",
+    "Framework :: AsyncIO"
+]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+nextcord = "^2.0"
+ormar = "^0.11"
+alembic = "^1.8"
+Sphinx = {version = "^5.1", optional = true }
+releases = {version = "^1.6", optional = true }
+sphinx-argparse = {version = "^0.3.1", optional = true }
+six = {version = "^1.16.0", optional = true }
+tomlkit = {version = "^0.11.2", optional = true }
+
+[tool.poetry.dev-dependencies]
+
+[tool.poetry.scripts]
+nxalembic = 'nextcord_ormar.nxalembic:main'
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.extras]
+docs = ["Sphinx", "releases", "sphinx-argparse", "six", "tomlkit"]
