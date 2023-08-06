@@ -1,0 +1,6 @@
+KEY_FIELD_NAME = 'key'
+ORDER_NUMBER_FIELD_NAME = 'order_number'
+
+ATTRIBUTE_NOT_FOUND = 'attribute not found'
+
+DEFAULT_ORDER_NUMBER = 100_000
