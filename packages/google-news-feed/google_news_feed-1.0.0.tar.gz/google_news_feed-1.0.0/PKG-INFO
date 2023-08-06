@@ -1,0 +1,86 @@
+Metadata-Version: 2.1
+Name: google_news_feed
+Version: 1.0.0
+Summary: A simple python library to consume the google news rss feed
+Project-URL: Homepage, https://github.com/LLukas22/Google-News-RSS
+Project-URL: Bug Tracker, https://github.com/LLukas22/Google-News-RSS/issues
+Author: Lukas Kreussel
+License: MIT License
+        
+        Copyright (c) 2022 LLukas22
+        
+        Permission is hereby granted, free of charge, to any person obtaining a copy
+        of this software and associated documentation files (the "Software"), to deal
+        in the Software without restriction, including without limitation the rights
+        to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+        copies of the Software, and to permit persons to whom the Software is
+        furnished to do so, subject to the following conditions:
+        
+        The above copyright notice and this permission notice shall be included in all
+        copies or substantial portions of the Software.
+        
+        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+        IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+        FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+        AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+        LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+        OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+        SOFTWARE.
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 3
+Requires-Python: >=3.10
+Requires-Dist: dateparser>=1.1.1
+Requires-Dist: httpx>=0.23.0
+Requires-Dist: lxml>=4.9.0
+Description-Content-Type: text/markdown
+
+# Google-News-Feed
+A simple python library to consume the google news rss feed.
+
+Inspired by [pygooglenews](https://github.com/kotartemiy/pygooglenews) and implemented using [httpx](https://pypi.org/project/httpx/) and [lxml](https://pypi.org/project/lxml/).
+
+
+## Installation
+Via pip: <code>pip install google-news-feed</code>
+
+## How to use
+```python
+from google_news_feed import GoogleNewsFeed
+
+gnf = GoogleNewsFeed(language='en',country='US')
+results = gnf.query("python")
+print(results)
+```
+For more information about the query parameters see [here](https://newscatcherapi.com/blog/google-news-rss-search-parameters-the-missing-documentaiton).
+
+### Get Top Headlines
+```python
+gnf = GoogleNewsFeed(language='en',country='US')
+results = gnf.top_headlines()
+```
+
+### Query a specific topic
+```python
+gnf = GoogleNewsFeed(language='en',country='US')
+results = gnf.query_topic("business")
+```
+For more topics see [here](https://newscatcherapi.com/blog/google-news-rss-search-parameters-the-missing-documentaiton).
+### Accessing the results
+The results are a list of NewsItems.
+```python
+result = gnf.query("python")[0]
+print(result.title)
+print(result.link)
+print(result.pubDate)
+print(result.description)
+print(result.source)
+```
+
+## Handling internal links
+Some links are internal to google news. To access the actual link to the news site the internal link has to be accessed and the redirect url is returned. To simplify this process the `resolve_internal_links` property can be set to True.
+```python
+gnf = GoogleNewsFeed(language='en',country='US',resolve_internal_links=True)
+print(gnf.top_headlines()[0].link)
+```
+The resolution is handled asynchronously by default, but can be forced to be done synchronously via the `run_async` parameter.
