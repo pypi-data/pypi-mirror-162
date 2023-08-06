@@ -1,0 +1,62 @@
+Metadata-Version: 2.1
+Name: ubii-processing-module-ocr
+Version: 0.2.0
+Summary: "Ubi Interact Processing Module to perform OCR tasks via Tesseract"
+Home-page: https://github.com/saggitar/ubii-interact-ocr-module.git
+Author: Maximilian Schmidt
+Author-email: ga97lul@mytum.de
+Keywords: ocr,tesseract,ubi-interact,ubii,opencv
+Classifier: Programming Language :: Python :: 3
+Requires-Python: >=3.7
+Description-Content-Type: text/markdown
+Provides-Extra: test
+Provides-Extra: docs
+Provides-Extra: dev
+License-File: LICENSE
+License-File: LICENSE.rst
+
+# ubii-processing-module-ocr
+Tesseract OCR for Ubi Interact
+
+## Requirements
+* [tesseract](https://tesseract-ocr.github.io/) OCR Engine with appropriate language packs _(>= 4.0.0)_
+* opencv (some of the modules try to improve OCR performance with additional preprocessing, in the future this might become an optional requirement)
+* numpy
+* [``tesserocr``](https://github.com/sirfz/tesserocr)
+
+   > :warning: On windows ``tesserocr`` can't be installed from PyPi. Windows builds for tesserocr are available for [some python versions](https://github.com/simonflueckiger/tesserocr-windows_build/releases). Only python version __>=3.7 < 3.8__ is supported by both ``tesserocr`` and the ``ubi-interact-python`` node on Windows. Tesseract 5.+ should be compatible with Tesseract 4.0.0 (which is used for the Windows builds).
+   
+## Known Issues
+* The processing modules which use opencv seem to sometimes randomly crash under Windows
+* Processing Frequency depends on the module implementation. Typically ``TesseractOCR_EAST`` allows for a slightly higher processing frequency and is run at __10fps__ while the ``TesseractOCR_PURE`` module is run at __5fps__.
+
+
+BSD 3-Clause License
+
+Copyright (c) 2022, Maximilian Schmidt (ga97lul@mytum.de)
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+* Redistributions of source code must retain the above copyright notice, this
+  list of conditions and the following disclaimer.
+
+* Redistributions in binary form must reproduce the above copyright notice,
+  this list of conditions and the following disclaimer in the documentation
+  and/or other materials provided with the distribution.
+
+* Neither the name of the copyright holder nor the names of its
+  contributors may be used to endorse or promote products derived from
+  this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
