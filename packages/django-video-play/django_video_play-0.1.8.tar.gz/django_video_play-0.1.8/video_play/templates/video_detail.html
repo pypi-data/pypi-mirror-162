@@ -1,0 +1,946 @@
+{% load static %}<!DOCTYPE html>
+<head>
+    {#    {% load staticfiles %}#}
+
+    <script src="{% static 'video_play/js/jquery-3.4.1.min.js' %}"></script>
+    <script src="{% static 'video_play/js/csrftoken.js' %}"></script>
+    {#    https://docs.videojs.com/ #}
+    {#    <link href="https://vjs.zencdn.net/7.8.4/video-js.css" rel="stylesheet"/>#}
+    <link href="{% static 'video_play/video-js/css/video-js.min.css' %}" rel="stylesheet"/>
+    {#<link href="{% static 'video_play/video-js/css/my-video-js.css' %}" rel="stylesheet"/>#}
+    <!-- If you'd like to support IE8 (for Video.js versions prior to v7) -->
+    {#    <script src="https://vjs.zencdn.net/ie8/1.1.2/videojs-ie8.min.js"></script>#}
+
+    <!-- 标签 -->
+    <!-- https://github.com/yairEO/tagify -->
+    <link href="{% static 'video_play/css/tagify.css' %}" rel="stylesheet">
+    <script src="{% static 'video_play/js/tagify.min.js' %}"></script>
+    {# https://github.com/gojuukaze/django-ktag #}
+
+    {#<style type="text/css">#}
+    {#    .div_video {#}
+    {#        background-color: #90ff77;#}
+    {#        width: 100px;#}
+    {#        margin: auto;#}
+    {#    }#}
+    {#</style>#}
+
+
+    {#<script>#}
+    {#</script>#}
+
+    <title>{{ video }}</title>
+
+
+</head>
+
+<body>
+
+{{ video_src }} <a href="{{ video_src }}" target="_blank">视频源</a>
+<a href="{{ video.admin_edit_url }}" target="_blank">编辑</a>
+<a><span style="color: #A9A9A9; ">v{{ version }}</span></a>
+
+<div class="div_video">
+    <video
+            webkit-playsinline="true"
+            {{ autoplay }}
+            playsinline="true"
+            id="video-play"
+            class="video-js vjs-big-play-centered vjs-default-skin"
+            controls
+            preload="auto"
+            width="1080"
+            height="608"
+            data-setup="{}"
+    >
+        <source src='{{ video_src }}' type="video/mp4"/>
+        {#    <source src="MY_VIDEO.webm" type="video/webm"/>#}
+        <p class="vjs-no-js">
+            To view this video please enable JavaScript, and consider upgrading to a
+            web browser that
+            <a href="https://videojs.com/html5-video-support/" target="_blank"
+            >supports HTML5 video</a
+            >
+        </p>
+    </video>
+
+
+</div>
+
+{{ video.get_previous_html }} <a>&nbsp&nbsp&nbsp&nbsp</a> {{ video.get_next_html }}
+
+<br/>
+<br/>
+
+<button type="submit" id="btn_play">播放</button>
+<button type="submit" id="btn_pause">暂停</button>
+<a>&nbsp&nbsp</a>
+秒
+<button type="submit" id="btn_back_30">30</button>
+<button type="submit" id="btn_back_15">15</button>
+<button type="submit" id="btn_back_5">5</button>
+后退
+前进
+<button type="submit" id="btn_forward_5">5</button>
+<button type="submit" id="btn_forward_15">15</button>
+<button type="submit" id="btn_forward_30">30</button>
+秒
+<a>&nbsp&nbsp</a>
+<button type="submit" id="btn_load">载入视频（测试）</button>
+
+<a>&nbsp&nbsp&nbsp&nbsp</a>
+倍速
+<button type="submit" id="btn_rate_1">0.1</button>
+<button type="submit" id="btn_rate_2">0.5</button>
+<button type="submit" id="btn_rate_3">正常</button>
+<button type="submit" id="btn_rate_4">1.5</button>
+<button type="submit" id="btn_rate_5">2</button>
+<button type="submit" id="btn_rate_6">4</button>
+<button type="submit" id="btn_rate_7">8</button>
+<button type="submit" id="btn_rate_8">16</button>
+
+<br/>
+<br/>
+
+{% if video.is_favorite %}
+    <button type="submit" id="btn_favorite" name="is_favorite">☑ 收藏</button>
+{% else %}
+    <button type="submit" id="btn_favorite" name="is_favorite">◻ 收藏</button>
+{% endif %}
+
+{% if video.is_mosaic %}
+    <button type="submit" id="btn_mosaic" name="is_mosaic">☑ 马赛克</button>
+{% else %}
+    <button type="submit" id="btn_mosaic" name="is_mosaic">◻ 马赛克</button>
+{% endif %}
+
+{% if video.is_watermark %}
+    <button type="submit" id="btn_watermark" name="is_watermark">☑ 水印</button>
+{% else %}
+    <button type="submit" id="btn_watermark" name="is_watermark">◻ 水印</button>
+{% endif %}
+
+<a>&nbsp&nbsp&nbsp&nbsp</a>
+<button type="submit" id="btn_load_scenes" name="load_markers">载入场景</button>
+<a>&nbsp&nbsp</a>
+<button type="submit" id="btn_load_markers" name="load_markers">载入标记</button>
+<button type="submit" id="btn_save_markers" name="save_markers">保存标记</button>
+
+<a>&nbsp&nbsp&nbsp&nbsp</a>
+
+<button type="submit" id="btn_load_user_markers" name="load_markers">载入用户标记</button>
+标记: <input type="text" id="field_tag" value="">
+<button type="submit" id="btn_tag" name="tag">添加</button>
+<input type="text" id="field_update_tag" value="">
+<button type="submit" id="btn_update_tag" name="">更新</button>
+<button type="submit" id="btn_prev_tag" name="prev_tag">上一个</button>
+<button type="submit" id="btn_next_tag" name="next_tag">下一个</button>
+{#<button class='tags--AddTagsBtn' type='button'>add tags ⬆</button>#}
+{#<button class='tags--removeAllBtn' type='button'>Remove all these tags ⬆</button>#}
+<input name='tags-readonly' readonly class='tagify--readonly' value='{{ tags_readonly }}' placeholder=''>
+<input name='tags' class='tagify--outside1' value='' placeholder='write some tags'>
+<br/>
+</div>
+
+{# class="video-js vjs-big-play-centered" 控制按钮居中显示 preload="auto" 预加载 poster="" 设置封面图 #}
+{# 解决在iPhone中播放时自动全屏问题 添加playsinline="true"属性#}
+{#https://segmentfault.com/a/1190000018914486?utm_source=sf-related#}
+
+{# https://github.com/videojs/video.js #}
+{#<script src="https://vjs.zencdn.net/7.8.4/video.js"></script>#}
+<script src="{% static 'video_play/video-js/js/video.min.js' %}"></script>
+<script src="{% static 'video_play/video-js/lang/zh-CN.js' %}"></script>
+{# https://github.com/spchuang/videojs-markers #}
+<script src="{% static 'video_play/video-js/js/videojs-markers.min.js' %}"></script>
+{# https://github.com/cladera/videojs-offset https://www.npmjs.com/package/videojs-offset #}
+{#<script src="{% static 'video_play/video-js/js/videojs-offset.js' %}"></script>#}
+<!-- 插件 -->
+{# https://videojs.com/plugins #}
+<link href="{% static 'video_play/video-js/css/videojs.markers.css' %}" rel="stylesheet"/>
+{# https://github.com/brightcove/videojs-playlist #}
+{# https://github.com/collab-project/videojs-record #}
+{# https://www.npmjs.com/package/@misterben/brightcove-chapter-cues#}
+{# https://www.npmjs.com/package/@silvermine/videojs-airplay #}
+{# https://www.npmjs.com/package/videojs-sprite-thumbnails #}
+{# https://www.npmjs.com/package/videojs-contextmenu-ui #}
+{# https://github.com/brightcove/videojs-overlay #}
+{# https://www.npmjs.com/package/videojs-thumbnail-sprite #}
+{# https://github.com/rigelk/videojs-vtt-thumbnails#readme #}
+{# https://www.npmjs.com/package/videojs-shuttle-controls #}
+{# https://www.npmjs.com/package/videojs-seek-buttons https://github.com/mister-ben/videojs-seek-buttons#readme #}
+<link href="{% static 'video_play/video-js/css/videojs-seek-buttons.css' %}" rel="stylesheet"/>
+<script src="{% static 'video_play/video-js/js/videojs-seek-buttons.min.js' %}"></script>
+{# https://www.npmjs.com/package/videojs-vr #}
+<link href="{% static 'video_play/video-js/css/videojs-vr.css' %}" rel="stylesheet"/>
+<script src="{% static 'video_play/video-js/js/videojs-vr.js' %}"></script>
+
+<script data-name="tags">
+    var input_readonly = document.querySelector('input[name=tags-readonly]');
+    var tagify_readonly = new Tagify(input_readonly);
+
+    {#tagify_readonly.addTags([{value: "banana", color: "yellow"}, {value: "apple", color: "red"}])#}
+
+    var input = document.querySelector('input[name=tags]');
+    // 在上面的输入中初始化Tagify脚本
+    var video_tagify = new Tagify(input, {
+        {#whitelist: ["foo1", "bar2", "baz3", "bar4", "bar5", "baz7", "ba9r",],#}
+        {#dropdown: {#}
+        {#    position: "input",#}
+        {#    enabled: 0 }, // 输入获得焦点时始终打开下拉列表#}
+        callbacks: {
+            {#add: onAddTag,  // 添加标签时回调#}
+            {#remove: onRemoveTag   // 删除标签时回调#}
+        },
+        duplicates: true,
+        hooks: {
+            /**
+             * Removes a tag
+             * @param  {Array}  tags [Array of Objects [{node:..., data:...}, {...}, ...]]
+             */
+            beforeRemoveTag: function (tags) {
+                return new Promise((resolve, reject) => {
+                    confirm("删除 " + tags[0].data.value + "?")
+                        ? resolve()
+                        : reject()
+                })
+            },
+        },
+    });
+
+    // “添加”按钮的事件监听器
+    {#document.querySelector('.tags--AddTagsBtn').addEventListener('click', AddTags);#}
+    // “删除所有标签”按钮事件监听器
+    {#document.querySelector('.tags--removeAllBtn')#}
+    {#    .addEventListener('click', video_tagify.removeAllTags.bind(video_tagify));#}
+
+    // 可链接事件监听器
+    video_tagify.on('click', onTagClick)
+    {#.on('add', onAddTag)#}
+        .on('remove', onRemoveTag)
+        .on('edit:updated', onTagEdit)
+        .on('edit:beforeUpdate', onTagbeforeUpdate)
+        .on('invalid', onInvalidTag)
+
+        .on('focus', onTagifyFocusBlur)
+        .on('blur', onTagifyFocusBlur)
+        .on('dropdown:hide dropdown:show', e => console.log(e.type))
+        .on('dropdown:select', onDropdownSelect);
+
+    tagify_readonly.on('click', onReadonlyTagClick);
+
+    var mockAjax = (function mockAjax() {
+        var timeout;
+        return function (duration) {
+            clearTimeout(timeout); // abort last request
+            return new Promise(function (resolve, reject) {
+                timeout = setTimeout(resolve, duration || 700, whitelist)
+            })
+        }
+    })();
+
+    // 标签添加回调
+    function onAddTag(e) {
+        console.log("onAddTag: ", e.detail);
+        {#console.log("original input value: ", inputElm.value)#}
+        {#video_tagify.off('add', onAddTag) // 删除自定义Tagify事件的示例#}
+    }
+
+    // 标记已删除的回调
+    function onRemoveTag(e) {
+        console.log("onRemoveTag:", e.detail, "tagify instance value:", video_tagify.value, "tagify index:", e.detail.data.id);
+
+        // 删除视频标记比较复杂，我们用ID比较来找到索引，然后用索引删除视频标记
+        let remove_id = e.detail.data.id;
+        // 发送 Ajax 内容
+        $.ajax({
+            url: "{% url 'video_play:del_video_marker' %}",
+            data: {
+                'data': remove_id
+            },
+            type: "post",
+            dataType: 'json',
+            success: function (res) {
+                {#alert('发送成功，返回 ' + JSON.stringify(res.data));#}
+                let markers_data = player.markers.getMarkers();
+                for (var key in markers_data) {
+                    let item = markers_data[key];
+                    if (item.id === remove_id) {
+                        console.log("remove markers: ", key, item);
+                        player.markers.remove([key]);
+                        break
+                    }
+                }
+            },
+            error: function (er) {
+                alert('访问服务器发生错误 ' + JSON.stringify(er));
+            }
+        });
+    }
+
+    // 在添加/删除的字符上（用户正在输入/删除）
+    function onInput(e) {
+        console.log("onInput: ", e.detail);
+        video_tagify.settings.whitelist.length = 0; // reset current whitelist
+        video_tagify.loading(true);// show the loader animation
+
+        // get new whitelist from a delayed mocked request (Promise)
+        mockAjax()
+            .then(function (result) {
+                // replace tagify "whitelist" array values with new values
+                // and add back the ones already choses as Tags
+                video_tagify.settings.whitelist.push(...result, ...video_tagify.value);
+
+                video_tagify
+                    .loading(false)
+                    // render the suggestions dropdown.
+                    .dropdown.show.call(video_tagify, e.detail.value);
+            })
+            .catch(err => video_tagify.dropdown.hide.call(video_tagify))
+    }
+
+    function UpdateTag(marker_id, text) {
+        // 发送 Ajax 内容
+        $.ajax({
+            url: "{% url 'video_play:update_video_marker' %}",
+            data: {
+                'data': JSON.stringify({
+                    marker_id: marker_id,
+                    text: text
+                })
+            },
+            type: "post",
+            dataType: 'json',
+            success: function (res) {
+                {#alert('发送成功，返回 ' + JSON.stringify(res.data));#}
+                let markers_data = player.markers.getMarkers();
+                for (var key in markers_data) {
+                    let item = markers_data[key];
+                    if (item.id === marker_id) {
+                        console.log("remove markers: ", key, item);
+                        player.markers.remove([key]);
+                        player.markers.add(res.data);
+                        video_tagify.removeAllTags();
+                        video_tagify.addTags(DictAddValue(player.markers.getMarkers()));
+                        break
+                    }
+                }
+            },
+            error: function (er) {
+                alert('访问服务器发生错误 ' + JSON.stringify(er));
+            }
+        });
+
+    }
+
+    function onTagbeforeUpdate(e) {
+        console.log("onTagbeforeUpdate: ", e.detail, video_tagify.value, e.detail.index,);
+        //
+        {#video_tagify.addTags([{time: 398.70495, text: "标记", id: 93, value: "标记", title: 398.70495,}]);#}
+        {#e.detail.data.value = 'e.detail.previousData'#}
+        console.log("onTagbeforeUpdate: ", e.tagData, e.detail.previousData.id, e.detail.data.value);
+        {#return#}
+
+        {#video_tagify.value[e.detail.index] = {#}
+        {#    id: 83,#}
+        {#    text: "标记",#}
+        {#    time: 0.536602,#}
+        {#    value: "标记",}#}
+        // 我们还不太熟悉这个插件，现在用最笨的方法处理，如果修改标记以后重新导入
+        // 删除视频标记比较复杂，我们用ID比较来找到索引，然后用索引删除视频标记
+        let marker_id = e.detail.previousData.id;
+        // 更新标签
+        UpdateTag(marker_id, e.detail.data.value)
+
+    }
+
+    function onTagEdit(e) {
+        console.log("onTagEdit: ", e.detail, video_tagify.value, e.detail.index,);
+        // 我们还不太熟悉这个插件，现在用最笨的方法处理，如果修改标记以后重新导入
+        {#video_tagify.addTags([{time: 398.70495, text: "标记", id: 93, value: "标记", title: 398.70495,}]);#}
+        {#console.log("onTagEdit: ", e.tagData, e.detail.previousData);#}
+        {#return#}
+        {#player.markers.add([{time: 10, text: "添加 added"}]#}
+        {#video_tagify.removeAllTags();#}
+        {#video_tagify.addTags(DictAddValue(player.markers.getMarkers()));#}
+
+        {#video_tagify.value[e.detail.index] = {#}
+        {#    id: 83,#}
+        {#    text: "标记",#}
+        {#    time: 0.536602,#}
+        {#    value: "标记",}#}
+
+    }
+
+    // 添加了无效标签的回调
+    function onInvalidTag(e) {
+        alert("onInvalidTag: " + e.detail);
+        console.log("onInvalidTag: ", e.detail);
+    }
+
+    // 点击标签的回调
+    function onTagClick(e) {
+        console.log(e.detail);
+        player.currentTime(e.detail.data.time);
+        console.log("onTagClick: ", e.detail, "time: ", e.detail.data.time);
+        player.play();
+        document.getElementById("field_update_tag").value = e.detail.data.value;
+        document.getElementById("field_update_tag").name = e.detail.data.id;
+
+    }
+
+    // 点击标签的回调
+    function onReadonlyTagClick(e) {
+        console.log("onReadonlyTagClick: ", e.detail);
+        add_video_markers(e.detail.data.value)
+    }
+
+    function onTagifyFocusBlur(e) {
+        console.log(e, e.type, "event fired")
+    }
+
+    function onDropdownSelect(e) {
+        console.log("onDropdownSelect: ", e.detail);
+        e.detail.data = '111';
+        console.log("onAddTag: ", e.detail.data);
+        console.log("onDropdownSelect 2: ", e.detail)
+    }
+
+
+    function AddTags(e) {
+        console.log("onRemoveTag:", e.detail, "tagify instance value:", tagify.value);
+        video_tagify.addTags([{value: "banana", color: "yellow"}, {value: "apple", color: "red"}, {
+            value: "watermelon",
+            color: "green"
+        }]);
+    }
+
+</script>
+
+<script>
+    {#1.25，1.5  1.75 2#}
+    var player = videojs("video-play", {
+        playbackRates: [0.1, 0.5, 1, 1.5, 2, 4, 8, 16],
+        controls: true, //启用控制条：boolean
+        //durationDisplay: true,
+        controlBar: {
+            // 隐藏重播图标
+            // playToggle: {
+            //   replay: false
+            // },
+            // 竖直的音量控制
+            volumePanel: {
+                inline: false
+            },
+            // 隐藏播放进度控制
+            // progressControl: false
+        },
+        {#        techOrder : [“html5”,“flash”],#}
+        {#bigPlayButton : false,#}
+        {#textTrackDisplay : false,#}
+        {#posterImage: false,#}
+        {#errorDisplay : false,#}
+        control: {
+            captionsButton: false,
+            chaptersButton: true,
+            subtitlesButton: false,
+            liveDisplay: false,
+            playbackRateMenuButton: false
+        },
+        language: 'zh-CN',
+    });
+
+    {#tagify_readonly.addTags([{value: "banana", }, {value: "apple", color: "red"}]);#}
+
+    // 设置标记插件
+    player.markers({
+        markerStyle: {
+            'width': '5px',
+            'border-radius': '30%',
+            'background-color': 'red'
+        },
+        markerTip: {
+            display: true,
+            text: function (marker) {
+                return marker.text;
+            },
+            time: function (marker) {
+                return marker.time;
+            }
+        },
+        breakOverlay: {
+            display: false,
+            displayTime: 3,
+            style: {
+                'width': '100%',
+                'height': '20%',
+                'background-color': 'rgba(0,0,0,0.7)',
+                'color': 'white',
+                'font-size': '17px'
+            },
+            text: function (marker) {
+                return "Break overlay: " + marker.overlayText;
+            }
+        },
+        onMarkerClick: function (marker) {
+        },
+        onMarkerReached: function (marker) {
+        },
+        {#markers: [{#}
+        {#    time: 1.5,#}
+        {#    text: "标记文本",#}
+        {#    overlayText: '标记显示',#}
+        {#    class: 'custom-marker'},#}
+        {#    ]#}
+        markers: {{markers}}
+    });
+
+    // videojs-seek-buttons
+    player.seekButtons({
+        forward: 10,
+        back: 5
+    });
+
+    // 设置 videojs-vr
+    {% if video.vr_projection %}
+        // 设置 player.mediainfo 和 player.mediainfo.projection 为有效的投影值，
+        if (!player.mediainfo) {
+            player.mediainfo = {};
+        }
+        if (!player.mediainfo.projection) {
+            player.mediainfo.projection = '{{ video.vr_projection }}';
+        }
+        // projection 在初始化插件时默认是 'AUTO'
+        player.vr({projection: 'AUTO'});
+    {% endif %}
+
+    // plugin api
+    console.log("返回插件中当前标记的数组，按升序排序", player.markers.getMarkers());
+    {#player.markers.next(); // 从视频中的当前时间转到下一个标记。如果没有下一个标记，则不执行任何操作 #}
+    {#player.markers.prev(); // 从视频中的当前时间转到上一个标记。如果没有，那就什么都不做 #}
+    {#player.markers.updateTime(); // 动态地修改标记的时间（从传入的原始标记对象开始）。更改标记时间后，应调用updateTime以立即反映UI中的更改 #}
+    {#var markers = player.markers.getMarkers();#}
+    {#for (var i = 0; i < markers.length; i++) {#}
+    {#    markers[i].time += 1}#}
+    {#player.markers.updateTime();#}
+    {#player.markers.remove([1, 2]); // 删除给定索引数组中的标记。请注意，索引基于0（例如，第一个标记的索引为0） #}
+    {#player.markers.removeAll(); // 删除播放器中的所有标记 #}
+    {#player.markers.add([{time: 10, text: "添加 added"}]); // 动态添加新标记 #}
+    {#player.markers.reset([{time: 23, text: "I'm reset"}]); // 重置视频中的所有标记。这相当于removeAll再add新的标记 #}
+    {#player.markers.destroy(); // 销毁插件。调用此函数后，player.markers 应未定义 #}
+    // 偏移的例子
+    {#player.offset({start: 10, end: 300, restart_beginning: false}); // 视频结束时应该转到开头 #}
+
+    // 5秒处开始播放
+    {#player.currentTime(5);#}
+
+    player.ready(function () {
+        console.log("已就绪");
+    });
+
+    //绑定在window上，点击可获取当前时间进度
+    onclick = function () {
+        console.log(player.currentTime());
+    };
+
+    //获取声音
+    console.log(player.volume());
+
+    //设置声音
+    player.volume(.3);
+    console.log(player.volume());
+
+    //获取宽高
+    console.log(player.width());
+    console.log(player.height());
+
+    {#player.width(300);#}
+    {#player.height(200);#}
+    {#console.log(player.width());#}
+    {#console.log(player.height());#}
+
+    //查看更多方法
+    console.log(player);
+
+    player.on("ended", function () {
+        console.log("视频播放结束");
+    });
+
+    player.on("pause", function () {
+        console.log("点击暂停");
+    });
+
+    player.on("play", function () {
+        console.log("点击播放");
+    });
+
+    player.on("volumechange", function () {
+        console.log("声音改变");
+    });
+
+    player.on("timeupdate", function () {
+        console.log("视频播放中");
+    });
+
+    player.on("seeked", function () {
+        console.log("视频跳转结束");
+    });
+
+    player.on("seeking", function () {
+        console.log("视频跳转中");
+    });
+
+    video_tagify.addTags(DictAddValue({{markers}}));
+
+    var btn = document.getElementById("btn_play");
+    btn.onclick = function () {
+        {#player.load('/video_play/test_resp/?path=staticHelloWorld');  //不能加载链接#}
+        {#alert("btn_play");#}
+        player.play();
+    };
+
+    var btn = document.getElementById("btn_pause");
+    btn.onclick = function () {
+        player.pause();
+    };
+
+
+    var btn = document.getElementById("btn_forward_5");
+    btn.onclick = function () {
+        player.currentTime(player.currentTime() + 5);
+        player.play();
+    };
+
+    var btn = document.getElementById("btn_forward_15");
+    btn.onclick = function () {
+        player.currentTime(player.currentTime() + 15);
+        player.play();
+    };
+
+    var btn = document.getElementById("btn_forward_30");
+    btn.onclick = function () {
+        player.currentTime(player.currentTime() + 30);
+        player.play();
+    };
+
+    var btn = document.getElementById("btn_back_5");
+    btn.onclick = function () {
+        player.currentTime(player.currentTime() - 5);
+        player.play();
+    };
+
+    var btn = document.getElementById("btn_back_15");
+    btn.onclick = function () {
+        player.currentTime(player.currentTime() - 15);
+        player.play();
+    };
+
+    var btn = document.getElementById("btn_back_30");
+    btn.onclick = function () {
+        player.currentTime(player.currentTime() - 30);
+        player.play();
+    };
+
+    function sec_to_time(s) {
+        /** * 时间秒数格式化 * @param s 秒数 * @returns {*} 格式化后的时分秒 */
+        var t;
+        if (s > -1) {
+            var hour = Math.floor(s / 3600);
+            var min = Math.floor(s / 60) % 60;
+            var sec = s % 60;
+            if (hour < 10) {
+                t = '0' + hour + ":";
+            } else {
+                t = hour + ":";
+            }
+
+            if (min < 10) {
+                t += "0";
+            }
+            t += min + ":";
+            if (sec < 10) {
+                t += "0";
+            }
+            // 秒后面的位数，我们为了好看，设置为 0
+            t += sec.toFixed(0);
+        }
+        return t;
+    }
+
+
+    var time_to_sec = function (time) {
+        /** * 时间转为秒 * @param time 时间(00:00:00) * @returns {string} 秒数 */
+        var s = '';
+
+        var hour = time.split(':')[0];
+        var min = time.split(':')[1];
+        var sec = time.split(':')[2];
+
+        s = Number(hour * 3600) + Number(min * 60) + Number(sec);
+
+        return s;
+    };
+
+    function DictAddValue(data) {
+        for (var key in data) {
+            var item = data[key];
+            item.value = item.text;
+            item.title = sec_to_time(item.time);
+        }
+        return data
+    }
+
+    function add_video_markers(text) {
+        // 发送 Ajax 内容
+        $.ajax({
+            url: "{% url 'video_play:add_video_markers' video.id %}",
+            data: {
+                'data': JSON.stringify([{
+                    time: player.currentTime(),
+                    text: text
+                }])
+            },
+            type: "post",
+            dataType: 'json',
+            success: function (res) {
+                player.markers.add(res.data);
+                video_tagify.addTags(DictAddValue(res.data));
+                {#alert('发送成功，返回 ' + JSON.stringify(res.data));#}
+            },
+            error: function (er) {
+                alert('访问服务器发生错误 ' + JSON.stringify(er));
+            }
+        });
+    }
+
+    var btn = document.getElementById("btn_tag");
+    btn.onclick = function () {
+        {#alert(document.getElementById("field_tag").value + player.currentTime());#}
+        {#player.markers.add([{time: player.currentTime(), text: document.getElementById("field_tag").value}]);#}
+        let tag_value = document.getElementById("field_tag").value;
+        add_video_markers(tag_value);
+        if (tag_value) {
+            tagify_readonly.addTags([{value: tag_value,}]);
+            document.getElementById("field_tag").value = '';
+        }
+
+    };
+
+    document.getElementById("btn_update_tag").addEventListener("click", function () {
+        let update_tag = document.getElementById("field_update_tag");
+        console.log("btn_update_tag: ", update_tag.name, update_tag.value);
+        if (update_tag.name) {
+            UpdateTag(parseInt(update_tag.name), update_tag.value);
+            update_tag.name = '';
+            update_tag.value = '';
+        } else {
+            alert('没有标签选择或者已经修改完成')
+        }
+    });
+
+    var btn = document.getElementById("btn_load");
+    btn.onclick = function () {
+        var data = {
+            src: '/video_play/v_resp/?path=E:\\git_ldsxp\\lds_spider\\lds_site\\media\\pornhub\\video\\ph5da5c0dd7ada0.mp4',
+            type: 'video/mp4'
+        };
+        player.pause();
+        player.src(data);
+        player.load(data);
+        // 动态切换poster
+        // player.posterImage.setSrc('xxx.jpg');
+        player.play()
+    };
+
+    var btn_load_markers = document.getElementById("btn_load_markers");
+    btn_load_markers.onclick = function () {
+        // 发送 Ajax 内容
+        $.ajax({
+            url: "{% url 'video_play:load_markers' video.md5 %}",
+            type: "get",
+            dataType: 'json',
+            success: function (res) {
+                player.markers.reset(res.data);
+                {#alert('发送成功，返回 ' + JSON.stringify(res.data));#}
+            },
+            error: function (er) {
+                alert('访问服务器发生错误 ' + JSON.stringify(er));
+            }
+        });
+    };
+
+    var btn_load_scenes = document.getElementById("btn_load_scenes");
+    btn_load_scenes.onclick = function () {
+        // 发送 Ajax 内容
+        $.ajax({
+            url: "{% url 'video_play:load_scenes' video.md5 %}",
+            type: "get",
+            dataType: 'json',
+            success: function (res) {
+                player.markers.reset(res.data);
+                {#alert('发送成功，返回 ' + JSON.stringify(res.data));#}
+            },
+            error: function (er) {
+                alert('访问服务器发生错误 ' + JSON.stringify(er));
+            }
+        });
+    };
+
+
+    var btn_load_user_markers = document.getElementById("btn_load_user_markers");
+    btn_load_user_markers.onclick = function () {
+        // 发送 Ajax 内容
+        $.ajax({
+            url: "{% url 'video_play:load_user_markers' video.id %}",
+            type: "get",
+            dataType: 'json',
+            success: function (res) {
+                player.markers.reset(res.data);
+                video_tagify.removeAllTags();
+                video_tagify.addTags(DictAddValue(res.data));
+                {#alert('发送成功，返回 ' + JSON.stringify(res.data));#}
+            },
+            error: function (er) {
+                alert('访问服务器发生错误 ' + JSON.stringify(er));
+            }
+        });
+    };
+
+    var btn_save_markers = document.getElementById("btn_save_markers");
+    btn_save_markers.onclick = function () {
+        // 发送 Ajax 内容
+        $.ajax({
+            url: "{% url 'video_play:save_markers' video.md5 %}",
+            data: {
+                'data': JSON.stringify(player.markers.getMarkers()),
+            },
+            type: "post",
+            dataType: 'json',
+            success: function (res) {
+                {#alert(res.msg);#}
+            },
+            error: function (er) {
+                alert('访问服务器发生错误 ' + JSON.stringify(er));
+            }
+        });
+    };
+
+    var btn = document.getElementById("btn_prev_tag");
+    btn.onclick = function () {
+        player.markers.prev();
+    };
+
+    var btn = document.getElementById("btn_next_tag");
+    btn.onclick = function () {
+        player.markers.next();
+    };
+
+    var btn_mosaic = document.getElementById("btn_mosaic");
+    btn_mosaic.onclick = function () {
+        var mosaic = $("#btn_mosaic");
+        {#alert(mosaic.text())#}
+        // 发送 Ajax 内容
+        $.ajax({
+            url: "{% url 'video_play:mosaic' video.id %}",
+            data: {
+                'data': mosaic.text()
+            },
+            type: "post",
+            dataType: 'json',
+            success: function (res) {
+                mosaic.text(res.data); // 只支持修改文本 ☑ ◻
+                {#alert('发送成功，返回 ' + JSON.stringify(res.data));#}
+            },
+            error: function (er) {
+                alert('访问服务器发生错误 ' + JSON.stringify(er));
+            }
+        });
+    };
+
+    var btn_watermark = document.getElementById("btn_watermark");
+    btn_watermark.onclick = function () {
+        var watermark = $("#btn_watermark");
+        // 发送 Ajax 内容
+        $.ajax({
+            url: "{% url 'video_play:watermark' video.id %}",
+            data: {
+                'data': watermark.text()
+            },
+            type: "post",
+            dataType: 'json',
+            success: function (res) {
+                watermark.text(res.data); // 只支持修改文本 ☑ ◻
+                {#alert('发送成功，返回 ' + JSON.stringify(res.data));#}
+            },
+            error: function (er) {
+                alert('访问服务器发生错误 ' + JSON.stringify(er));
+            }
+        });
+    };
+
+    var btn_favorite = document.getElementById("btn_favorite");
+    btn_favorite.onclick = function () {
+        var favorite = $("#btn_favorite");
+        // 发送 Ajax 内容
+        $.ajax({
+            url: "{% url 'video_play:favorite' video.id %}",
+            data: {
+                'data': favorite.text()
+            },
+            type: "post",
+            dataType: 'json',
+            success: function (res) {
+                favorite.text(res.data); // 只支持修改文本 ☑ ◻
+                {#alert('发送成功，返回 ' + JSON.stringify(res.data));#}
+            },
+            error: function (er) {
+                alert('访问服务器发生错误 ' + JSON.stringify(er));
+            }
+        });
+    };
+
+    var btn = document.getElementById("btn_rate_1");
+    btn.onclick = function () {
+        player.playbackRate(0.1);
+        player.play();
+    };
+    var btn = document.getElementById("btn_rate_2");
+    btn.onclick = function () {
+        player.playbackRate(0.5);
+        player.play();
+    };
+    var btn = document.getElementById("btn_rate_3");
+    btn.onclick = function () {
+        player.playbackRate(1);
+        player.play();
+    };
+    var btn = document.getElementById("btn_rate_4");
+    btn.onclick = function () {
+        player.playbackRate(1.5);
+        player.play();
+    };
+    var btn = document.getElementById("btn_rate_5");
+    btn.onclick = function () {
+        player.playbackRate(2);
+        player.play();
+    };
+    var btn = document.getElementById("btn_rate_6");
+    btn.onclick = function () {
+        player.playbackRate(4);
+        player.play();
+    };
+    var btn = document.getElementById("btn_rate_7");
+    btn.onclick = function () {
+        player.playbackRate(8);
+        player.play();
+    };
+
+    var btn = document.getElementById("btn_rate_8");
+    btn.onclick = function () {
+        player.playbackRate(16);
+        player.play();
+    };
+
+</script>
+
+
+</body>
