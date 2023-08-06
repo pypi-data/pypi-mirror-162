@@ -1,0 +1,44 @@
+[Authenticator]
+passthrough = sshmitm.authentication:AuthenticatorPassThrough
+
+[BaseSFTPServerInterface]
+base = sshmitm.interfaces.sftp:SFTPProxyServerInterface
+
+[BaseSSHProxyManager]
+base = sshmitm.interfaces.server:SSHProxyManager
+
+[BaseServerInterface]
+base = sshmitm.interfaces.server:ServerInterface
+
+[LocalPortForwardingBaseForwarder]
+base = sshmitm.forwarders.tunnel:LocalPortForwardingForwarder
+socks4 = sshmitm.plugins.tunnel.socks4:SOCKS4TunnelForwarder
+socks5 = sshmitm.plugins.tunnel.socks5:SOCKS5TunnelForwarder
+
+[RemotePortForwardingBaseForwarder]
+base = sshmitm.forwarders.tunnel:RemotePortForwardingForwarder
+inject = sshmitm.plugins.tunnel.injectservertunnel:InjectableRemotePortForwardingForwarder
+
+[SCPBaseForwarder]
+CVE-2022-29154 = sshmitm.plugins.scp.CVE202229154:CVE202229154
+base = sshmitm.forwarders.scp:SCPForwarder
+debug_traffic = sshmitm.plugins.scp.debug_traffic:SCPDebugForwarder
+inject_file = sshmitm.plugins.scp.inject_file:SCPInjectFile
+replace-command = sshmitm.plugins.scp.rewrite_command:SCPRewriteCommand
+replace_file = sshmitm.plugins.scp.replace_file:SCPReplaceFile
+store_file = sshmitm.plugins.scp.store_file:SCPStorageForwarder
+
+[SFTPHandlerBasePlugin]
+base = sshmitm.forwarders.sftp:SFTPHandlerPlugin
+replace_file = sshmitm.plugins.sftp.replace_file:SFTPProxyReplaceHandler
+store_file = sshmitm.plugins.sftp.store_file:SFTPHandlerStoragePlugin
+
+[SSHBaseForwarder]
+base = sshmitm.forwarders.ssh:SSHForwarder
+mirrorshell = sshmitm.plugins.ssh.mirrorshell:SSHMirrorForwarder
+noshell = sshmitm.plugins.ssh.noshell:NoShellForwarder
+
+[console_scripts]
+ssh-mitm = sshmitm.cli:main
+ssh-mitm-askpass = sshmitm.tools.askpass:main
+
