@@ -1,0 +1,52 @@
+Metadata-Version: 2.1
+Name: ptorru-matmul
+Version: 0.1.6a2
+Summary: Learning how to publish in PyPi through a generic implementation of matrix multiplication
+Home-page: https://azure-brush-f4c.notion.site/ptorru-matmul-f056c93477d646d88f2bec319e12d2a1
+License: MIT
+Author: Pedro Torruella
+Requires-Python: >=3.8,<4.0
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Requires-Dist: numpy (>=1.22.4,<2.0.0)
+Project-URL: Documentation, https://github.com/ptorru/ptorru-matmul/blob/main/README.md
+Project-URL: Repository, https://github.com/ptorru/ptorru-matmul
+Description-Content-Type: text/markdown
+
+# ptorru-matmul
+
+Learning about pipy, distributing a simple matrix multiply example
+
+To consult how to distribute a package in PyPI take a look at the [publish_notes.md](https://github.com/ptorru/ptorru-matmul/blob/main/publish_notes.md)
+
+# Installing this package
+
+Using [PyPI](https://pypi.org)
+
+```bash
+pip install ptorru-matmul
+```
+
+Alternatively use [poetry](https://python-poetry.org)
+
+```bash
+poetry add ptorru-matmul
+```
+
+# Using this package
+
+```python
+import numpy as np
+from ptorru_matmul import matmul
+sides = 3
+a = np.arange(sides*sides).reshape(sides,sides)
+b = np.arange(sides*sides).reshape(sides,sides)
+c = matmul(a,b)
+assert np.array_equal(c, np.matmul(a,b))
+print(a,b)
+print(c)
+```
+
