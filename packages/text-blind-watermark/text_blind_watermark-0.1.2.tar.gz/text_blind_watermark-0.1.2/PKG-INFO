@@ -1,0 +1,79 @@
+Metadata-Version: 2.1
+Name: text_blind_watermark
+Version: 0.1.2
+Summary: Text Blind Watermark in Python
+Home-page: https://github.com/guofei9987/text_blind_watermark
+Author: Guo Fei
+Author-email: guofei9987@foxmail.com
+License: MIT
+Description: # text_blind_watermark
+        
+        Put blind watermark into a text.
+        
+        [![PyPI](https://img.shields.io/pypi/v/text_blind_watermark)](https://pypi.org/project/text_blind_watermark/)
+        [![Build Status](https://app.travis-ci.com/guofei9987/text_blind_watermark.svg?branch=main)](https://app.travis-ci.com/guofei9987/text_blind_watermark)
+        [![codecov](https://codecov.io/gh/guofei9987/text_blind_watermark/branch/main/graph/badge.svg?token=85EAN4IVM6)](https://codecov.io/gh/guofei9987/text_blind_watermark)
+        [![License](https://img.shields.io/pypi/l/text_blind_watermark.svg)](https://github.com/guofei9987/text_blind_watermark/blob/master/LICENSE)
+        ![Python](https://img.shields.io/badge/python->=3.5-green.svg)
+        ![Platform](https://img.shields.io/badge/platform-windows%20|%20linux%20|%20macos-green.svg)
+        [![stars](https://img.shields.io/github/stars/guofei9987/text_blind_watermark.svg?style=social)](https://github.com/guofei9987/text_blind_watermark/)
+        [![fork](https://img.shields.io/github/forks/guofei9987/text_blind_watermark?style=social)](https://github.com/guofei9987/text_blind_watermark/fork)
+        [![Downloads](https://pepy.tech/badge/text_blind_watermark)](https://pepy.tech/project/text_blind_watermark)
+        
+        
+        - Online demo: [https://www.guofei.site/pictures_for_blog/app/text_watermark/v1.html](https://www.guofei.site/pictures_for_blog/app/text_watermark/v1.html)
+        
+        
+        Can be used in 
+        - [x] Wechat
+        - [x] dingding
+        - [x] pages
+        - [x] zhihu.com 
+        - [x] ...
+        
+        ## How to Use
+        
+        install
+        
+        ```bash
+        >pip install text_blind_watermark
+        ```
+        
+        ### Alice Put her text watermark into a text:
+        
+        ```python
+        from text_blind_watermark import embed, extract
+        
+        wm = "绝密：两点老地方见！"
+        sentence = "这句话中有盲水印，你能提取出来吗？" * 16
+        
+        twm = TextBlindWatermark(password='20190808')
+        twm.read_wm(watermark=watermark)
+        twm.read_text(text=text)
+        text_embed = twm.embed()
+        
+        print("打上盲水印之后:")
+        print(text_embed)
+        ```
+        
+        Then, you can paste this text to where you need.
+        
+        
+        
+        ### Bob Extract the invisible watermark
+        
+        ```python
+        from text_blind_watermark import embed, extract
+        
+        twm_new = TextBlindWatermark(password='20190808')
+        wm_extract = twm_new.extract(text_embed)
+        print("解出的盲水印：")
+        print(wm_extract)
+        ```
+        
+        
+Platform: linux
+Platform: windows
+Platform: macos
+Requires-Python: >=3.5
+Description-Content-Type: text/markdown
