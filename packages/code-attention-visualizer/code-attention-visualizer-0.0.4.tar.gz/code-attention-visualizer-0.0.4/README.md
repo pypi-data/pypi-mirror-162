@@ -1,0 +1,159 @@
+# Colored Tokens Visualizer
+
+A python library to color your code tokens based on certain vector of weights.
+
+It supports both **Python** and **Java** source code, see these example:
+
+
+
+# Quick Start
+
+Once you have the two JSON files: `example_java.json` and `example_python.json` you can simply use this code to create the colored version of your tokens, using your weights.
+
+```python
+from codeattention.source_code import SourceCode
+from codeattention.tokenizer import PythonTokenizer
+
+# read your snippet
+python_code = """def hello_python():
+    print("Hello World!")"""
+
+# prepare the tokenized code in a file of the right format (read below)
+pt = PythonTokenizer()
+pt.tokenize(python_code)
+pt.save_tokens("example_python.json")
+
+# inject your own application-specific weights (random here)
+import random
+from random import randint
+random.seed(42)
+weights = []
+for i in range(len(pt.tokens)):
+    weights.append(randint(1, 10))
+
+# plot
+python_sc = SourceCode("example_python.json")
+fig, ax = python_sc.show_with_weights(weights=weights)
+print(weights)
+```
+Output:
+```python
+[2, 1, 5, 4, 4, 3, 2, 9, 2, 10]
+```
+![Demo Python](demo_python.png)
+
+
+
+## Python Input Format
+
+With Python we might want to separate a long identifier with underscores in separate tokens. That is why we have the fields `si` and `d`.
+
+```python
+def hello_python():
+    print("Hello World!")
+```
+
+You will need to prepare your input like this JSON: `example_python.json`:
+```json
+[
+    {
+        "t": "def",
+        "i": 0,
+        "l": 1,
+        "c": 0
+    },
+    {
+        "t": "hello",
+        "i": 1,
+        "l": 1,
+        "c": 4,
+        "si": 0,
+        "d": 2
+    },
+    {
+        "t": "python",
+        "i": 1,
+        "l": 1,
+        "c": 10,
+        "si": 1,
+        "d": 2
+    },
+    {
+        "t": "(",
+        "i": 2,
+        "l": 1,
+        "c": 16
+    },
+    ...
+]
+```
+
+Here the identifier `hello_world` is split in two, and for the two parts you need to use the same `i` field, and use an incremental `si` (subindex) field. Both should have a `d` (dimension) field to keep track of how many token the original identifier had.
+
+
+
+## Java Input Format
+
+Given some Java code:
+
+```Java
+class HelloWorld {
+    public static void main(String[] args) {
+        System.out.println("Hello, World!");
+    }
+}
+```
+
+You can create a JSON file which contains information on the tokens you are going to color. For the given snippets you will have to provide the following JSON file: `example_java.json`
+
+```json
+[
+    [
+    {
+        "t": "class",
+        "i": 0,
+        "l": 1,
+        "c": 1
+    },
+    {
+        "t": "HelloWorld",
+        "i": 1,
+        "l": 1,
+        "c": 7
+    },
+    {
+        "t": "{",
+        "i": 2,
+        "l": 1,
+        "c": 18
+    },
+    {
+        "t": "public",
+        "i": 3,
+        "l": 2,
+        "c": 5
+    },
+    {
+        "t": "static",
+        "i": 4,
+        "l": 2,
+        "c": 12
+    },
+    ...
+]
+```
+Note that there are no meaningless tokens, such as whitespace, new lines, tab, etc.
+
+**Warning:** If you use our tool to prepare the JSON file, remember that the `JavaTokenizer` removes comments while `PythonTokenizer` keeps them. Implement your own tokenizer if you want a different behavior.
+
+Which is a list of element, each representing one token. A token contains the following fields:
+- `t` key contains the string representation of the token,
+- `i` key contains the major index position of the token,
+- `l` key contains the line number of the token,
+- `c` key contains the column number of the token.
+- `si` key contains the minor index position (si = subindex),
+- `d` key contains the number of other tokens sharing the same
+index
+
+### Example of java output.
+![Demo Java](demo_java.png)
