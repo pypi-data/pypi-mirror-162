@@ -1,0 +1,47 @@
+Metadata-Version: 2.1
+Name: vkmini
+Version: 0.4.1
+Summary: VK API wrapper
+Home-page: https://github.com/elchinchel/vkmini
+Author: Elchin Sarkarov
+Author-email: elchin751@gmail.com
+License: UNKNOWN
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: aiohttp (>=3.6.2)
+
+# VKmini
+
+Лёгкая библиотека, "оборачивающая" запросы к API vk.com
+
+Параметры запросов и ответы библиотекой не модифицируются,
+поведение методов максимально соответствует официальной [документации API](https://vk.com/dev/methods)
+
+## Установка
+
+```
+pip install vkmini
+```
+
+## Пример использования:
+
+```python
+import asyncio
+import vkmini
+
+vk = vkmini.VkApi(access_token='токен', excepts=True)
+
+async def main():
+    print(await vk.users.get())
+
+asyncio.run(main())
+```
+
+Больше примеров [здесь](https://github.com/Elchinchel/vkmini/tree/master/examples)
+
