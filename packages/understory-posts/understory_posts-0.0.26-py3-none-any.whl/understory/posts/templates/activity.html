@@ -1,0 +1,29 @@
+$def with (channels, media, posts)
+$var title: Posts
+
+<a href=/all>All</a>
+
+$# <h4>Channels</h4>
+$# $if channels:
+$#     <ul>
+$#     $for channel in channels:
+$#         <li><a href=/channels/$channel>$channel</a></li>
+$#     </ul>
+
+<h4>Editors</h4>
+<ul>
+<li><a href=$tx.origin/editors/text>Text</a></li>
+<li><a href=$tx.origin/editors/photo>Photo</a></li>
+</ul>
+
+<h4>Media</h4>
+<p><a href=$tx.origin/media>$len(media) total</a></p>
+
+$for post in posts:
+    $ post_url = post["url"][0]
+    <p><a href="$post_url">$post</a></p>
+    <form method=post>
+    <input type=hidden name=action value=delete>
+    <input type=hidden name=url value=$post_url>
+    <button>Delete</button>
+    </form>
