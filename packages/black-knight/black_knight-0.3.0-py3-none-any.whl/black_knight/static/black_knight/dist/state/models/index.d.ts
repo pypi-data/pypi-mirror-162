@@ -1,0 +1,22 @@
+export * from './User';
+export * from './Admin';
+export * from './Log';
+export * from './BraceList';
+export * from './BraceForm';
+export * from './Fields';
+declare type PK = string | number;
+declare type TLoading = ['loading', string];
+declare type VImage = ['image', string | null];
+declare type VFile = ['file', string | null];
+declare type VDate = ['date', string];
+declare type VDateTime = ['datetime', string];
+declare type VTime = ['time', string];
+declare type VLink = ['link', string];
+declare type VForeignKey = ['foreign_key', PK, string];
+declare type VManyToMany = ['many_to_many', PK[]];
+declare type TBaseValue = string | number | boolean | null;
+declare type TypedValues = VImage | VDate | VTime | VDateTime | VLink | VForeignKey | VManyToMany | VFile;
+declare type TValue = TBaseValue | TypedValues;
+export { PK, TLoading, TValue, TBaseValue, TypedValues };
+export { VImage, VDate, VDateTime, VTime, VLink, VForeignKey, VFile, VManyToMany, };
+//# sourceMappingURL=index.d.ts.map
