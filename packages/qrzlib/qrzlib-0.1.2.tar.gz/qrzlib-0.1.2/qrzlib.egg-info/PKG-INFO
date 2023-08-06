@@ -1,0 +1,56 @@
+Metadata-Version: 2.1
+Name: qrzlib
+Version: 0.1.2
+Summary: python Interface to QRZ.com
+Home-page: https://github.com/0x9900/qrzlib/
+Author: Fred C. (W6BSD)
+Author-email: w6bsd@bsdworld.org
+License: BSD
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Telecommunications Industry
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Topic :: Communications :: Ham Radio
+Description-Content-Type: text/markdown
+
+# qrzlib
+
+Python interface to qrz.com
+
+In order to use this interface you need to have a valid Ham radio
+license and a qrz.com account.
+
+## Usage
+
+```python
+import qrzlib
+
+qrz = qrzlib.QRZ()
+qrz.authenticate('qrz-id', 'xmldata-key')
+try:
+	qrz.get_call('W6BSD')
+	print(qrz.fullname, qrz.zip, qrz.latlon, qrz.grid, qrz.email)
+except QRZ.NotFound as err:
+	print(err)
+```
+
+On the first request the class QRZ get the data from the qrz web
+service. Then, by default, the information will be cached forever.
+
+the object QRZ can also return all the fields as a dictionary of as a
+json object.
+
+```python
+In [6]: qrz.to_dict()
+Out[6]:
+{'call': 'W6BSD',
+ 'aliases': 'KM6IGK',
+ 'dxcc': '291',
+ 'fname': 'Fred',
+ . . .
+ 'ituzone': '6',
+ 'geoloc': 'user',
+ 'born': None}
+```
