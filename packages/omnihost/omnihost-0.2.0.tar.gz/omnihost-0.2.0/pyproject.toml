@@ -1,0 +1,74 @@
+[tool.poetry]
+name = "omnihost"
+version = "0.2.0"
+description = "Easily convert native Gemini (gemtext markup) files into html and gophermaps for trihosting"
+authors = ["Brett Gleason <brettmgleason@gmail.com>"]
+readme = "README.md"
+packages = [
+    { include = "omnihost" },
+]
+license = "MIT"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3 :: Only",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: End Users/Desktop",
+    "Topic :: Internet",
+]
+homepage = "https://github.com/b-src/omnihost"
+repository = "https://github.com/b-src/omnihost"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+[tool.poetry.dev-dependencies]
+black = "^22.6.0"
+flakeheaven = "^3.0.0"
+mypy = "^0.971"
+
+[tool.poetry.scripts]
+omnihost = "omnihost.__main__:main"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 90
+extend-exclude = '''
+(
+    ^test/test_files/
+)
+'''
+
+[tool.mypy]
+disallow_any_unimported = true
+disallow_any_expr = false
+disallow_any_decorated = true
+disallow_subclassing_any = true
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_unused_ignores = true
+warn_return_any = true
+
+[tool.flakeheaven]
+max_line_length = 90
+format = "grouped"
+show_source = true
+
+[tool.flakeheaven.plugins]
+# E203 required to maintain compatibility with black
+# W503 is a linebreak before binary operators. flake8 also has W504, linebreak *after*
+# binary operators. PEP-8 recommends linebreaks before binary operators to keep all
+# operators aligned. this config respects W504 and ignores W503
+pycodestyle = [
+    "-E203",
+    "-W503",
+]
