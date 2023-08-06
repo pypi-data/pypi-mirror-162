@@ -1,0 +1,91 @@
+Metadata-Version: 2.1
+Name: couch-remote
+Version: 0.2.1
+Summary: A simple remote web keyboard
+Author-email: Sorebit <tomulewicz.s@pm.me>
+License: MIT License        
+        Copyright (c) 2022 Sorebit        
+        Permission is hereby granted, free of charge, to any person obtaining a copy
+        of this software and associated documentation files (the "Software"), to deal
+        in the Software without restriction, including without limitation the rights
+        to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+        copies of the Software, and to permit persons to whom the Software is
+        furnished to do so, subject to the following conditions:        
+        The above copyright notice and this permission notice shall be included in all
+        copies or substantial portions of the Software.        
+        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+        IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+        FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+        AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+        LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+        OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+        SOFTWARE.        
+Project-URL: Homepage, https://github.com/sorebit/pilot
+Keywords: remote,keyboard,couch
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Development Status :: 3 - Alpha
+Classifier: Environment :: Console
+Classifier: Environment :: Web Environment
+Classifier: Framework :: FastAPI
+Classifier: Intended Audience :: End Users/Desktop
+Classifier: Natural Language :: English
+Classifier: Operating System :: OS Independent
+Classifier: Topic :: Home Automation
+Classifier: Topic :: Utilities
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: FastAPI (>=0.79.0)
+Requires-Dist: uvicorn[standard] (>=0.18.0)
+Requires-Dist: pydantic (<2.0.0,>=1.9.0)
+Requires-Dist: jinja2 (>=3.1.2)
+Requires-Dist: pynput (>=1.7.6)
+Provides-Extra: dev
+Requires-Dist: black ; extra == 'dev'
+Requires-Dist: bumpver ; extra == 'dev'
+Requires-Dist: isort ; extra == 'dev'
+Requires-Dist: pip-tools ; extra == 'dev'
+Requires-Dist: pytest ; extra == 'dev'
+
+# Couch Remote
+
+A utility, available at [pypi](#). Download it on a computer and serve yourself a remote keyboard to control it.
+
+> Current state of things:
+> - run `remote` to serve, commands are not supported yet.
+
+## Usage
+
+1. **To install:** `pip install couch-remote` (in a venv or globally)
+2. Now, your `remote` should be available.
+3. **Optionally,** `remote scaffold-config`, creates a basic settings file, then `remote global settings.py` copies it to a [global configuration directory](#install-a-global-settings-file-pilot-global-settingspy).
+4.  **Finally,** `remote control` serves an instance at [localhost:4444](http://localhost:4444). This is the **only** command, you're going to need from now on.
+
+## Settings
+
+And how to set them.
+
+```python
+from pynput.keyboard import Key
+from remote.models import Button
+
+buttons = {
+    'play_pause_media': Button(key=Key.media_play_pause, label='⏯️'),
+    'esc': Button(key=Key.esc, label='Esc'),
+    'caps': Button(key=Key.caps_lock, label='Caps Lock'),
+    'space': Button(key=Key.space, label='Space'),
+}
+
+port = 4444
+```
+
+Q: Do jakiego formatu zapisują się i wczytują configi w settingsach?
+
+
+### Install a global settings file `remote global settings.py `
+
+When ran, stores settings at a default path: `~/.config/couch-remote/settings.py`
+
+Pilot will default to this path when not specified.
