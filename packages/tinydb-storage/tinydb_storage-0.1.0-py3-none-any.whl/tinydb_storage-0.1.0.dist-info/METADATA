@@ -1,0 +1,125 @@
+Metadata-Version: 2.1
+Name: tinydb-storage
+Version: 0.1.0
+Summary: Wrapper tinydb storage
+Home-page: https://mnc-repo.mncdigital.com/ai-team/vision_plus/rce_offline_results_module
+Author: Ferdina Kusumah
+Author-email: ferdina.kusumah@gmail.com
+License: MIT
+Platform: UNKNOWN
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: tinydb (>=4.5.0)
+Requires-Dist: redis (>=4.0.0)
+Requires-Dist: pydantic (>=1.5)
+Requires-Dist: cachetools (>=4.2.0)
+Requires-Dist: boto3 (>=1.24.18)
+
+# tinydb-storage
+
+Tiny db storage extension, this is an unofficial from [tinydb](https://github.com/msiemens/tinydb). I'm creating this
+extension based on my case only.
+
+
+## Installation
+```shell
+pip install tinydb-storage
+```
+
+## Storage extension to use Tinydb
+
+* Memory storage
+* File storage
+* Redis storage
+* S3 storage
+
+## Memory storage example
+
+```python
+import requests
+from tinydb import TinyDB, Query
+from tinydbstorage.storage import MemoryStorage
+
+db = TinyDB(storage=MemoryStorage)
+
+def insert_data():
+    resp = requests.get("https://jsonplaceholder.typicode.com/users")
+    db.table("users").insert_multiple(resp.json())
+```
+
+## File storage example
+
+```python
+import os
+
+import requests
+from tinydb import TinyDB, Query
+from tinydbstorage.storage import FileStorage
+
+db_path = os.path.join(os.path.dirname(__file__), "db.json")
+db = TinyDB(path=db_path, storage=FileStorage)
+
+def insert_data():
+    resp = requests.get("https://jsonplaceholder.typicode.com/users")
+    db.table("users").insert_multiple(resp.json())
+```
+
+## Redis storage example
+
+```python
+import requests
+from tinydb import TinyDB, Query
+
+from tinydbstorage.storage import RedisStorage
+
+db = TinyDB(storage=RedisStorage, redis_uri="redis://:rahasia@localhost:6379/0")
+
+def insert_data():
+    resp = requests.get("https://jsonplaceholder.typicode.com/users")
+    db.table("users").insert_multiple(resp.json())
+```
+
+## S3 storage example
+
+```python
+import requests
+from tinydb import TinyDB, Query
+from tinydbstorage.schema import S3ConfigSchema
+from tinydbstorage.storage import S3Storage
+
+config = S3ConfigSchema.parse_obj({
+    "aws_bucket_name": "foo",
+    "aws_file_path": "foo/bar/baz.json",
+    "aws_region_name": "ap-southeast-1",
+    "aws_access_key_id": "foobar",
+    "aws_secret_access_key": "foobar",
+})
+
+db = TinyDB(storage=S3Storage, config=config)
+
+def insert_data():
+    resp = requests.get("https://jsonplaceholder.typicode.com/users")
+    db.table("users").insert_multiple(resp.json())
+```
+
+## Help & Bugs
+
+[![contributions welcome](https://img.shields.io/badge/contributions-welcome-blue.svg)](https://github.com/FerdinaKusumah/tinydb-storage/issues)
+
+If you are still confused or found a bug,
+please [open the issue](https://github.com/FerdinaKusumah/tinydb-storage/issues). All bug reports are appreciated, some
+features have not been tested yet due to lack of free time.
+
+## License
+
+[![license](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+
+**tinydb-storage** released under MIT. See `LICENSE` for more details.
+
+
