@@ -1,0 +1,56 @@
+Metadata-Version: 2.1
+Name: nested-search
+Version: 0.0.2
+Summary: Utility to deep search and compare two JSON string
+Home-page: 
+Author: Technical Coder
+Author-email: Technical Coder <techcoder2125@gmail.com>
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.7
+Description-Content-Type: text/markdown
+
+# deepsearchdict - Deep search you dictionary 
+
+Utility package that helps you to compare two dictionary or json string and search deep in complex nested structure
+
+### Assumptions:
+
++ Assuming python is installed on your system.
+
+Install `deepsearchdict` on your system using : 
+
+```
+pip install deepsearchdict
+```
+
+## Description
+
++ Takes three arguments 
+  + Source JSON string which is the super set
+  + Target JSON string which will be searched in the Source
+  + Type of validation. There are three types of validations supported.
+    + keys : Deep searches only if the keys specified in target json are present in source json
+    + partial : Deep searches all the keys and values are compared partially if it is contained in the source string
+    + all : Deep searches all the keys and values and finds for exact match of values
++ Method to invoke
+```
+DeepSearchDict(source_json,target_json,validation_type)
+```
++ Returns True if Target JSON is contained within Source JSON, else False
++ Example
+```
+from deepsearchdict import DeepSearchDict
+import json
+
+# read the json from file 
+actual_result = json.load(open('source.json'))
+expected_result = json.load(open('target.json'))
+
+# invoke DeepSearchDict with source,target and validation type
+if DeepSearchDict(source, target, "partial"):
+    print("Expected and Actual Results Matching")
+else:
+    print("Expected and Actual Results Not Matching")
+```
