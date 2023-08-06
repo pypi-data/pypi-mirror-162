@@ -1,0 +1,79 @@
+Metadata-Version: 2.1
+Name: itk-tubetk
+Version: 1.3.1
+Summary: An open-source toolkit, led by Kitware, Inc., for the segmentation, registration, and analysis of tubes and surfaces in images.
+Home-page: https://github.com/InsightSoftwareConsortium/ITKTubeTK/
+Download-URL: https://github.com/InsightSoftwareConsortium/ITKTubeTK
+Author: Stephen R. Aylward
+Author-email: stephen.aylward@kitware.com
+License: Apache
+Project-URL: Dashboard, https://open.cdash.org/index.php?project=TubeTK
+Project-URL: Issue Tracker, https://github.com/InsightSoftwareConsortium/ITKTubeTK/issues
+Project-URL: Testing Data, https://data.kitware.com/#collection/5888b7d38d777f4f3f3085a8/folder/58a3abf08d777f0721a65b16
+Project-URL: ITK, https://itk.org
+Keywords: ITK InsightToolkit Tubes Vessels Nerves Ultrasound MRI CT Medical
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: C++
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Education
+Classifier: Intended Audience :: Healthcare Industry
+Classifier: Intended Audience :: Science/Research
+Classifier: Topic :: Scientific/Engineering
+Classifier: Topic :: Scientific/Engineering :: Medical Science Apps.
+Classifier: Topic :: Scientific/Engineering :: Information Analysis
+Classifier: Topic :: Software Development :: Libraries
+Classifier: Operating System :: Microsoft :: Windows
+Classifier: Operating System :: POSIX
+Classifier: Operating System :: Unix
+Classifier: Operating System :: MacOS
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: numpy
+Requires-Dist: itk (>=5.3rc4.post2)
+Requires-Dist: itk-minimalpathextraction (>=1.2.2)
+
+ITKTubeTK: Tubular Object Extraction, Registration, and Analysis
+================================================================
+
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/InsightSoftwareConsortium/ITKTubeTK/blob/master/LICENSE)
+
+[![Build, test, package](https://github.com/InsightSoftwareConsortium/ITKTubeTK/actions/workflows/build-test-package.yml/badge.svg)](https://github.com/InsightSoftwareConsortium/ITKTubeTK/actions/workflows/build-test-package.yml)
+
+[![Documentation Status](https://readthedocs.org/projects/tubetk/badge/?version=latest)](https://tubetk.readthedocs.io/en/latest/?badge=latest)
+
+Available in C++ and Python for Linux, Windows, and MacOS.
+
+Overview
+--------
+
+TubeTK is an open-source toolkit for the segmentation, registration, and analysis of tubes and surfaces in images, developed by [Kitware, Inc.](https://www.kitware.com)
+
+Tubes and surfaces, as generalized 1D and 2D manifolds in N-dimensional images, are essential components in a variety of image analysis tasks. Instances of tubular structures in images include blood vessels in magnetic resonance angiograms and b-mode ultrasound images, wires in microscopy images of integrated circuits, roads in aerial photographs, and nerves in confocal microscopy.
+
+A guiding premise of TubeTK is that by focusing on 1D and 2D manifolds we can devise methods that are insensitive to the modality, noise, contrast, and scale of the images being analyzed and to the arrangement and deformations of the objects in them. In particular, we propose that TubeTK's manifold methods offer improved performance for many applications, compared to methods involving the analysis of independent geometric measures (e.g., edges and corners) or requiring complete shape models.
+
+TubeTK offers various interface layers:
+
+* [TubeTK/src](src): This is the algorithms library.   It is the lowest level of access to the methods of TubeTK.  It is only available via C++, and it requires considerable expertise to effectively combine and call its methods to do anything useful.   Interfacing directly with these algorithms is not recommended and is not well supported. Unit-level testing is performed continuously on these methods.
+
+* [TubeTK/include](include): This is the ITK interface to select methods in `TubeTK/src`.  This level of interface is intended for ITK users and Python scripts writers.  The methods exposed represent a level of modularization that invites experimentation, integration with other toolkits (e.g., Scikit-Learn), and development of processing pipelines that accomplish significant image analysis goals.  The interface is available as an ITK Extension and thereby available via Python using Wrapped ITK.
+
+* [TubeTK/examples/Applications](examples/Applications): These are optional command-line interface applications.  These applications are mostly also available via the TubeTK/include interface, and thereby are available via python.  Expansion of ITK will focus on the TubeTK/include directory, and new applications will only rarely be added.  These applications are built when the cmake options BUILD_EXAMPLES is enabled.  These applications also require SlicerExecutionModel, see https://github.com/Slicer/SlicerExecutionModel.   
+
+Using TubeTK
+------------
+
+Minimal
+    $ python -c "from itk import TubeTK"
+
+Recommended
+    $ python -c "from itk import TubeTK as ttk"
+
+
+Acknowledgements
+----------------
+
+If you find TubeTK to be useful for your work, please cite the following publication when publishing your work:
+* S. R. Aylward and E. Bullitt, "Initialization, noise, singularities, and scale in height ridge traversal for tubular object centerline extraction," Medical Imaging, IEEE Transactions on, vol. 21, no. 2, pp. 61-75, 2002.
