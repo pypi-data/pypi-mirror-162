@@ -1,0 +1,59 @@
+[tool.poetry]
+name = "marko-namo"
+version = "0.1.0"
+description = "Markov chain project name generator"
+authors = ["Yass Eltahir <15998949+diabolical-ninja@users.noreply.github.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+requests = "^2.28.1"
+PyYAML = "^6.0"
+
+[tool.poetry.dev-dependencies]
+black = "^22.6.0"
+codecov = "^2.1.12"
+darglint = "^1.8.1"
+flake8 = "^5.0.4"
+flake8-annotations = "^2.9.1"
+flake8-bandit = "^3.0.0"
+flake8-black = "^0.3.3"
+flake8-bugbear = "^22.7.1"
+flake8-docstrings = "^1.6.0"
+flake8-import-order = "^0.18.1"
+flake8-quotes = "^3.3.1"
+flake8-requirements = "^1.6.0"
+mypy = "^0.971"
+nox = "^2022.8.7"
+pep8-naming = "^0.13.1"
+pytest = "^7.1.2"
+pytest-cov = "^3.0.0"
+pytest-xdist = "^2.5.0"
+safety = "^2.1.1"
+types-requests = "^2.28.8"
+coverage = "^6.4.3"
+xdoctest = "^1.0.1"
+Sphinx = "^5.1.1"
+myst-parser = "^0.18.0"
+sphinx-autodoc-typehints = "^1.19.2"
+furo = "^2022.6.21"
+sphinx-copybutton = "^0.5.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.coverage.run]
+source = ['src/']
+branch = true
+
+[tool.coverage.report]
+fail_under = 100
+show_missing = true
+
+[tool.mypy]
+files = ["src/", "tests/"]
+disallow_untyped_defs = true
+no_implicit_optional = true
+check_untyped_defs = true
+warn_return_any = true
