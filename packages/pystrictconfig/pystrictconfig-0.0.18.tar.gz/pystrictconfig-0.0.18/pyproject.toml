@@ -1,0 +1,59 @@
+[project]
+name = "pystrictconfig"
+description = "A python package to enforce correctness of configuration values"
+authors = [
+    { name = "Ivan Lamperti", email = "ivan.lamperti.work@gmail.com" }
+]
+version = "0.0.18"
+license = { file = "LICENSE.txt" }
+readme = "README.md"
+requires-python = ">=3.10"
+keywords = ["configuration"]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha"
+]
+dependencies = [
+    "PyYAML==6.0"
+]
+
+[project.optional-dependencies]
+dev = [
+    "tox",
+    "bumpver",
+    "pip-tools",
+]
+test = [
+    "check-manifest",
+    "pytest",
+    "pytest-cov",
+    "flake8"
+]
+
+[project.urls]
+homepage = "https://github.com/odococo/pystrictconfig"
+documentation = "https://github.com/odococo/pystrictconfig"
+repository = "https://github.com/odococo/pystrictconfig"
+
+[project.scripts]
+validator = "pystrictconfig.__main__:main"
+
+[build-system]
+requires = ["setuptools>=43.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.bumpver.file_patterns]
+"pyproject.toml" = [
+    'current_version = "{version}"',
+    'version = "{version}"'
+]
+"src/pystrictconfig/__init__.py" = [
+    "__version__ = '{version}'"
+]
+
+[tool.bumpver]
+current_version = "0.0.18"
+version_pattern = "MAJOR.MINOR.PATCH"
+commit_message  = "Bump version {old_version} -> {new_version}"
+commit          = true
+tag             = true
+push            = false
