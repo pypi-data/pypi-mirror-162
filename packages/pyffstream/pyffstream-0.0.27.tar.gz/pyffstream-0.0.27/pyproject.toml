@@ -1,0 +1,89 @@
+[build-system]
+requires = ["flit_core >=3.4,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "pyffstream"
+readme = "README.md"
+license = {file = "LICENSE"}
+version = "0.0.27"
+authors = [{name = "Gregory Beauregard", email = "pyffstream@gably.net"}]
+dynamic = ["description"]
+keywords = ["ffmpeg", "streaming", "srt", "rtmp"]
+classifiers = [
+  "License :: OSI Approved :: MIT License",
+  "Development Status :: 3 - Alpha",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Typing :: Typed",
+  "Environment :: Console",
+]
+requires-python = ">=3.9"
+dependencies = [
+  # "typing_extensions >= 3.10.0.2; python_version <= '3.9'",
+  "platformdirs >= 2.1.0",
+  "rich >= 10.15.0",
+  "requests",
+]
+
+[project.urls]
+Source = "https://github.com/GBeauregard/pyffstream"
+
+[project.optional-dependencies]
+dev = [
+  "flit",
+  "tox",
+  "black",
+  "isort",
+  "mypy",
+  "pyright",
+  #"flake8",
+]
+docs = [
+  "sphinx",
+  "sphinx_autodoc_typehints",
+  "sphinxcontrib-autoprogram",
+]
+
+[project.scripts]
+pyffstream = "pyffstream.cli:main"
+
+[tool.pylint.messages_control]
+max-line-length = 88
+disable = [
+  "fixme",
+  "missing-docstring",
+  "no-else-return",
+  "no-else-break",
+  "no-else-continue",
+  "no-else-raise",
+  "too-many-locals",
+  "too-many-branches",
+  "invalid-name",
+  "global-statement",
+  "too-few-public-methods",
+  "too-many-statements",
+  "too-many-arguments",
+  "too-many-lines",
+  "too-many-instance-attributes",
+  "too-many-nested-blocks",
+  "unsubscriptable-object",  # buggy
+]
+
+[tool.isort]
+skip="venv"
+profile="black"
+
+[tool.black]
+target-version = ['py39']
+
+[tool.pyright]
+pythonVersion = "3.9"
+include = ["src"]
+strict = ["src"]
+
+[tool.mypy]
+python_version = "3.9"
+show_error_codes = true
