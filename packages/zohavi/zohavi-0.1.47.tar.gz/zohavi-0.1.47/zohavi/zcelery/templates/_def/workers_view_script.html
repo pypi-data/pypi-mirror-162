@@ -1,0 +1,394 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.1/jquery.validate.min.js"></script>
+<script src="/common/st/_def/js/common_utils.js"></script>
+<script src="/common/st/_def/js/form_validator.js"></script>
+
+<script>
+    $(document).ready( function () {
+        
+        var field_settings = [ {'field':'worker_name'}, {'field':'log_path', 'hidden':true}, {'field':'nohup_path', 'hidden':true}, {'field':'log_level', 'hidden':true}, {'field':'pid'} ,{'field':'pgid'} , {'field':'concurrency_count'} ];
+
+        load_table_data();
+
+        //*********************************************************************************************
+        // Load the table data on load
+        function load_table_data(){ 
+
+            {% for worker_item in worker_data %}
+                row_data = {}
+                {%for fieldname in worker_item.keys() %}
+                    row_data['{{fieldname}}'] = '{{worker_item[fieldname]|safe}}'
+                {%endfor%}
+        
+               
+                _append_new_record_to_table( row_data );
+            {%endfor%}
+        }
+
+
+
+        //*********************************************************************************************
+        // Update the fields in the edit area with values;
+        function update_form_fields_for_worker(tr){
+            //clear all values first
+            $('#id_worker_name').val( '' );
+            $('#id_log_file_path').val( ''  );
+            $('#id_process_output_path').val( '');
+            $('#id_log_level').val( '' );
+            $('#id_concurrent_process_count').val( '' );
+            $('#id_worker_rec_id').val( '' );
+            // $('#id_span_process_id').html( '' );
+            $('#id_process_control').prop('checked', false  );
+
+            if( typeof tr !== 'undefined' ){    //If there's an active row selected, then populate valies from table
+                $('#id_worker_name').val( tr.find('.key_td_worker_name').html() );
+                $('#id_log_file_path').val( tr.find('.key_td_log_path').html()  );
+                $('#id_process_output_path').val( tr.find('.key_td_nohup_path').html());
+                $('#id_log_level').val( tr.find('.key_td_log_level').html() );
+                $('#id_concurrent_process_count').val( tr.find('.key_td_concurrency_count').html() );
+                $('#id_worker_rec_id').val( tr.data('val') );
+                // $('#id_span_process_id').html( tr.find('.key_td_pid').html() );
+
+                if( tr.find('.key_td_active').data('val') == 'True'  ){
+                     $('#id_process_control').prop('checked', true  );
+                } 
+            } 
+        }
+        //************************************************************************************
+        //Click on icon to Add a new worker item - 
+        $('#id_add_new_worker').on('click', function(event){
+            update_form_fields_for_worker();
+            $('#id_worker_details').show();
+            // $('#id_process_config').show();
+            $('#id_config_heading_action').html('New Worker Process');
+            // $('#id_worker_name').focus();
+            C_UI.scroll_to_field('#id_form_worker_config', '#id_worker_name' );
+            
+        });
+
+        // $('.key_process_status_cell').on('click', function(event){
+        //     console.log('clicked cell:', this);
+        // });
+        function _set_worker_config_edit_stauts(id){
+            if( C_UTIL.is_str_true( $(".key_tr_id[data-val='" + id + "']").find('.key_td_active').attr('data-val'))  ){
+                $('#id_worker_details  .key_form_input').prop("disabled", true);
+            }else{
+                $('#id_worker_details  .key_form_input').prop("disabled", false);
+            }
+        }
+
+        //************************************************************************************
+        //Click on icon to edit exisiting worker row
+        $('tr' ).on('click', '.key_edit_row',   function(event){
+            // console.log('edit worker', this);
+            tr = $(this).closest('tr')
+            if( $('#id_worker_details').is(":visible") ){
+                $('#id_worker_details').hide();
+                // $('#id_process_config').show();
+            }else{
+                update_form_fields_for_worker(tr);
+
+                show_runtime_command();
+
+                _set_worker_config_edit_stauts( tr.attr('data-val') );  //Set the worker config to be disabled or enabled
+                $('#id_worker_details').show();
+                // $('#id_process_config').show();
+                // $('#id_process_status_cards').show();
+                $('#id_config_heading_action').html('Edit Existing Worker Process');
+      
+                C_UI.scroll_to_field('#id_form_worker_config', '#id_worker_name' );
+            }
+            
+        });
+
+        //************************************************************************************
+        // Show log data
+        function _display_log_data(data){
+            var output = ""
+            data.rec.forEach( function(item){
+                output = output + item + "<br>"
+            } );
+            $('#id_log_area').html(output)
+        }
+        
+
+
+        //************************************************************************************
+        // Start or stop the process
+        // $('#id_label_process_on_off').on('click', function(event) {
+        // $('.key_process_status_cell').on('click', function(event){
+        $(document).on('click', '.key_log_view', function(){
+            var curr_elt = this;
+            
+            if( $('#id_worker_log').is(":visible") ){
+                $('#id_worker_log').toggleClass('collapse');
+            }else{
+
+                var ID = $(curr_elt).closest('tr').data('val');
+
+                $.ajax({
+                    url: "{{ url_for('celery.celery_workers_get_logs') }}", 
+                    data: {'rec_id': ID  },
+                    type: 'POST',
+                    success: function(response) { 
+                        console.log(response);  
+                        // debugger; 
+                        _display_log_data(response);
+                    },
+                    error: function(error) {
+                        Swal.fire('Error in process', '', 'error');
+                        console.log(error);   
+                    }
+                });
+
+                $('#id_worker_log').toggleClass('collapse');
+            }
+
+        });
+
+
+        //************************************************************************************
+        // Start or stop the process
+        $(document).on('click', '.key_process_status_cell', function(){
+            console.log('clicked switch');
+            var curr_elt = this;
+            $(curr_elt).closest('td').find('.key_status_running').show();
+            $(curr_elt).closest('td').find('.key_status_on').hide();
+            $(curr_elt).closest('td').find('.key_status_off').hide();
+            // $('#id_switch_control_main').hide();
+            // $('#id_switch_control_processing').show();
+            // debugger;
+            // var ID = $('#id_worker_rec_id').val() ;
+            // debugger;
+            var ID = $(curr_elt).closest('tr').data('val');
+            console.log('updating record:', ID)
+            var active_status = $(curr_elt).closest('td').attr('data-val') + "";
+            console.log('current statys:',  active_status)
+            // debugger;
+
+            url_query = "{{ url_for('celery.celery_worker_start' ) }}"   //assume to be started
+            // if( $('#id_process_control').prop('checked') ){
+            if( ['True', 'true'].indexOf( String(active_status) ) >= 0  ){
+                url_query = "{{ url_for('celery.celery_worker_stop' ) }}" //If aleady started then turn off
+            }
+            console.log('Calling url:', url_query, " active status:", active_status);
+            $.ajax({
+                    url: url_query, 
+                    data: {'rec_id': ID  },
+                    type: 'POST',
+                    success: function(response) { 
+                        console.log(response); 
+                        update_table_record( response.data);
+                        _set_worker_config_edit_stauts(ID);
+                        $('#id_worker_details').hide();
+                    },
+                    error: function(error) {
+                        Swal.fire('Error in process', '', 'error');
+                        console.log(error);  
+                        update_table_record( error.data);
+                    }
+                });
+        });
+        
+
+
+        //************************************************************************************
+        //The file dialog box was closed, process the return function
+       $('.key_btn_file_server_dialog').on('click', function(event) {
+           
+            btn_dialog = this
+            if( $(btn_dialog).data('path_config')){
+
+                server_file_dialog_open( $(this).data('path_config'), function(event){
+                    ret_path = $('#modal_file_tree').find('#fullpath_input').val()
+                    console.log('File :', ret_path ); 
+                    $(btn_dialog).closest('.key_form_input_field').find('input').val( ret_path  ); 
+
+                    server_file_dialog_reset();
+                    show_runtime_command();
+                }); 
+            }
+
+        }); 
+
+        //************************************************************************************
+        $('.key_form_input').on('change', function(event) { 
+             show_runtime_command();
+        });
+ 
+ 
+
+        //************************************************************************************
+        //Update the config changes to the database
+        $('#id_config_update').on('click', function(event){
+ 
+            event.preventDefault();
+            
+            $('.key_span_error_text').html(''); //clear all errors
+            var formValid = true;
+            $('#id_form_worker_config .key_form_input').each( function(index){
+                formValid = formValid && validate_input( $(this),$(this).data('validation') ); 
+            });
+  
+            if(   formValid ){
+                modal_updating_status_show('Updating work configuration');
+
+                console.log( "form data:", $('#id_form_worker_config').serialize());
+                $.ajax({
+                          url: "{{ url_for('celery.celery_worker_update' ) }}" , 
+                          data: $('#id_form_worker_config').serialize(),
+                          type: 'POST',
+                          success: function(response) {  
+                                modal_updating_status_complete(true,   'Configuration updated successfully to server');
+                                console.log("ret data for updating workers:", response);  
+                                // debugger;
+                                var response_data = $.parseJSON(response);
+                                update_table_record( response_data );
+                                $('#id_worker_details').hide();
+                          },
+                          error: function(response) { 
+                            modal_updating_status_complete(false , 'Configuration failed to udpate to server');
+                            console.log('error:', response);
+                            var response_data = $.parseJSON(response.responseText);
+                            jQuery.each(response_data, function (name, value) { 
+                                $( '#' + name ).closest('.input-group').find('.key_span_error_text').html(value); 
+                            });
+                             
+                            throw new Error('Error in updating data:', response); 
+                          }
+                });
+            }
+            else{
+                $("#id_form_worker_config")[0].reportValidity()
+            } 
+
+        });
+
+       //************************************************************************************
+        //Update the table record with saved data
+        function update_table_record( response_data){ 
+            // debugger;
+            var search_str = ".key_tr_id[data-val='" + response_data['id'] + "']";
+            console.log('search str:', search_str);
+            console.log('response_data:', response_data);
+            var tr_rec = $( search_str );
+            if( tr_rec.length ){        //If item already exists
+                for ( var key in response_data){
+                    tr_rec.find(".key_td_" + key ).attr( 'data-val', String(response_data[key]) );
+                    if( key != 'active'){
+                        tr_rec.find(".key_td_" + key ).html( response_data[key] );
+                        // tr_rec.find(".key_td_" + key ).attr( 'data-val', response_data[key] );
+                    }else{
+
+                        if(  ['true', 'True'].indexOf( String(response_data['active']) ) != -1 ){ //is true 
+                            tr_rec.find('.key_status_on').show();
+                            tr_rec.find('.key_status_off').hide();
+                            tr_rec.find('.key_status_running').hide();
+                        }
+                        else{ 
+                            tr_rec.find('.key_status_on').hide();
+                            tr_rec.find('.key_status_off').show();
+                            tr_rec.find('.key_status_running').hide();
+                        }
+                    }   
+                } 
+
+            }
+            else{   //update existng records
+                _append_new_record_to_table( response_data );
+            }
+        }
+
+
+        //************************************************************************************
+        //Update new record
+        function _append_new_record_to_table(response_data){
+            var new_row_str = "<tr class='key_tr_id' data-val='" + response_data['id'] +"''>"
+
+            field_settings.forEach( function(item){
+                new_column = "<td class='key_td_" + item['field'] + "' data-val='" + response_data[ item['field'] ] + "' ";
+                new_column = new_column + ( item['hidden'] ? "style='display:none' " : "" );
+                new_column = new_column + ">";
+                new_column = new_column + response_data[ item['field'] ] + '</td>';
+                console.log( "new col: ", new_column); 
+                new_row_str = new_row_str + new_column;
+            });
+
+            //add last indicator columns
+            new_column = '<td class="key_td_active" data-val="' + response_data['active'] + '" >'; 
+            if( response_data['active']=='True'  ){
+                new_column = new_column +  '<i class="fas fa-toggle-on text-success key_process_status_cell key_status_on"></i>';
+                new_column = new_column +  '<i class="fas fa-toggle-off text-danger key_process_status_cell key_status_off collapse"></i>';
+            }else{
+                new_column = new_column +  '<i class="fas fa-toggle-on text-success key_process_status_cell key_status_on collapse"></i>';
+                new_column = new_column +  '<i class="fas fa-toggle-off text-danger key_process_status_cell key_status_off"></i>';
+            }  
+            new_column = new_column +  '<i class="fas fa-spinner fa-2x fa-fw fa-spin key_status_running collapse"></i>';
+            new_column = new_column +  '</td>'
+            console.log( "new col: ", new_column);
+            new_row_str = new_row_str + new_column;
+
+            new_column = '<td>'
+            new_column = new_column +  '<a href="#" class="key_edit_row"><i class="fas fa-edit"></i></a>   '
+            new_column = new_column +  '<a href="#" class="key_log_view"><i class="fas fa-file-alt"></i></a>'
+            new_column = new_column +  '</td>'
+            new_row_str = new_row_str + new_column;
+            new_row_str = new_row_str + "</tr>";
+            console.log( new_row_str );
+            $('#id_tbl_worker_list tr:last').after(new_row_str);
+        }
+
+        //****************************************************************************************************
+        //Delete record pressed
+        //****************************************************************************************************
+        $('#id_config_delete').on('click', function(event){
+            Swal.fire({
+                      title: 'Are you sure?', 
+                      text: 'Sure you want to delete the record?',
+                      showCancelButton: true,
+                      confirmButtonText: `Delete`,  
+                      icon: 'warning',
+                    }).then((result) => {
+ 
+                      if (result.isConfirmed) {
+                        var ID = $('#id_worker_rec_id').val() ;
+
+                        $.ajax({
+                            url: "{{ url_for('celery.celery_workers_del' ) }}", 
+                            data: {'rec_id': ID},
+                            type: 'POST',
+                            success: function(response) {
+                                $(".key_tr_id[data-val='" + ID + "']").remove();
+                                Swal.fire('Deleted!', '', 'success');
+                                $('#id_worker_details').hide();
+                                console.log(response);
+                            },
+                            error: function(error) {
+                                Swal.fire('Not deleted!', '', 'error')
+                                console.log(error);
+                            }
+                        });
+                      } else if (result.isDenied) {
+                        Swal.fire('Record not deleted', '', 'info')
+                      }
+                    }); 
+        });
+
+    });
+
+    function show_runtime_command(){
+
+        runtime =   'nohup celery -A app._def.celery.celeryrun worker ' +
+                    '-l ' + $('#id_log_level').val() + ' ' +
+                    '--concurrency=' + $('#id_concurrent_process_count').val() + ' ' +
+                    '-n ' + $('#id_worker_name').val() + ' ' +
+                    '--logfile=' + $('#id_log_file_path').val() + ' ' +
+                    '&> ' + $('#id_process_output_path').val() + '&' ;
+
+        $('#id_runtime_command_line').val( runtime);
+
+
+    }
+
+
+      
+</script>

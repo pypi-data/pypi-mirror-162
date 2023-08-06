@@ -1,0 +1,43 @@
+{% extends "zerrors/base_error.html" %}
+
+{% block body_content %}
+	
+	<div class="row top-buffer">
+		<div class="container">
+			<div class="row mt-5"></div> 
+			<div class="row mt-5"></div>
+ 			<div class="row mt-5"></div>
+ 
+		</div>
+		<div class="container  border border-dark "> 
+			
+	    	<div class="row">
+		    	<div class="col-lg-8 text-center" > 
+					{% if (config.CONTENT is defined) and (config.CONTENT.ERROR_IMAGE_500 is defined) %}
+		    			<img src="{{config.CONTENT.ERROR_IMAGE_500}}" width="100%" style='background: transparent' >  
+					{% else %}
+						<img src="zerrors/static/404_looked.jpg" width="100%" style='background: transparent' >  
+					{% endif %}
+		    	</div>
+		    	<div class="col-lg-4  text-center">
+		    		<div class="container"  >
+		    			<div class="row mt-5"></div>
+		    			<div class="row mt-5"></div>
+		    			<div class="row mt-5  ">
+							{% if (config.CONTENT is defined) and (config.CONTENT.ERROR_IMAGE_500 is defined) %}
+							<h1 >{{config.CONTENT.ERROR_TITLE_500}}</h1>
+							{%else%}
+								<h1 >500 internal error</h1>
+							{%endif%}
+				    	</div>
+					    <div class="row mt-5  ">
+					    		<h3>Somethign went wrong</h3>
+				    	</div>  
+		    		</div>
+		    	</div>
+	    	</div>
+	    				 
+		    	 
+		</div>
+    </div>
+{% endblock %}

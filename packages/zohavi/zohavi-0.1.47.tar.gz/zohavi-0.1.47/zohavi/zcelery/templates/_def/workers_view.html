@@ -1,0 +1,361 @@
+
+{% extends "_def/base_members.html" %}
+
+
+ 
+
+
+{% block body_content %}
+
+<div class="row">
+    <div class="col-sm-12">
+        <div class="card">
+            <div class="card-header">
+                
+                <div class="row align-items-center m-l-0">
+                    <div class="col-sm-6">
+                        <h5>Manage Celery Workers</h5> 
+                    </div> 
+                    <div class="col-sm-6 text-right">
+                        <button class="btn btn-success btn-sm mb-3 btn-round" id="id_add_new_worker"><i class="fas fa-plus"></i>Add Worker</button>
+                    </div> 
+                </div>
+            </div>
+            <div class="card-body">
+                
+                <div class="row">
+                    <div class="dt-responsive table-responsive">
+                        <table id="id_tbl_worker_list" class="table table-striped table-bordered nowrap table-hover">
+                            <thead>
+                                <tr id="table_header">
+                                    <th>Worker Name</th>
+                                    <th>PID</th>
+                                    <th>PGID</th>
+                                    <th>Concurrency</th>
+                                    <th>Active Status</th>
+                                    <th> <i class="fas fa-wrench"></i> </th> 
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- {# Dynamically populated #} -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+      
+                
+                <hr>
+
+
+                <div class="row collapse" id="id_worker_details"> 
+
+                    <div class="col-12 ">
+                        <div class="col-12 ">
+                            <!-- 
+                            <div class="row  " id="id_process_status_cards">
+
+                                <div class="col-md-4    ">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <div class="row align-items-center m-l-0">
+                                                <div class="col-auto">
+                                                    <i class="fas  fa-microchip f-36 text-info"></i>
+                                                </div>
+                                                <div class="col-auto">
+                                                    <div class="row  ">
+                                                        <h6 class="text-muted m-b-10">Process ID</h6>
+                                                    </div>
+                                                    <div class="row  ">
+                                                        <h4 class="m-b-0 text-muted"><span id="id_span_process_id"></span></h4>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                                
+                                <div class="col-md-4    ">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <div class="row align-items-center m-l-0">
+                                                <div class="col-auto">
+                                                    <i class="fas fas fa-power-off f-36 text-info"></i>
+                                                </div>
+                                                <div class="col-auto  ">
+                                                    <div class="row">
+                                                        <h6 class="text-muted  text-center">Start / Stop</h6>
+                                                    </div>
+                                                    <div class="row  ">
+                                                        <div class="col"> 
+                                                            <div class="custom-control custom-switch  " id="id_switch_control_main" >
+                                                            
+                                                                <input type="checkbox" class=" key_inputfield custom-control-input customSwitchemlnot1"  name="id_process_control" id="id_process_control" >
+                                                                <label class="custom-control-label" for="id_process_control" id="id_label_process_on_off"> </label>
+                                                            </div>
+                                                            <div id="id_switch_control_processing" class="collapse">
+                                                                 <span><i class="fas fa-spinner fa-2x fa-fw fa-spin"></i></span>
+                                                            </div> 
+                                                        </div> 
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                               
+                                <div class="col-md-4    ">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <div class="row align-items-center m-l-0">
+                                                <div class="col-auto">
+                                                    <i class="fas  fa-clock f-36 text-info"></i>
+                                                </div>
+                                                <div class="col-auto">
+                                                    <h6 class="text-muted m-b-10">Run Time</h6>
+                                                    <h2 class="m-b-0"><span id="id_span_run_time"></span></h2>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        -->
+                        <div class="row" id="id_process_config">
+
+                            <!-- ** config files ** --> 
+                            <div class="col-xl-12 col-md-12 element-item  filter_config">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5>Configuration : <span id="id_config_heading_action" style=" color:red;"></span></h5>
+                                    </div>
+
+                                    <div class="card-body">
+                                        <form class="" id="id_form_worker_config">
+                                            <input type="hidden" id="id_worker_rec_id" name="id_worker_rec_id" class="form-control" value=''>
+
+                                            <h5>Settings </h5>
+                                            <hr> 
+
+                                            <div class="row mt-3">
+                                                 <div class="col-12">
+                                                     <div class="form-label-group" id="id_worker_name_form_group">
+                                                        <label for="id_worker_name">Worker name</label>
+                                                        <input type="text" id="id_worker_name" name="id_worker_name" data-validation="match_pattern:^[a-zA-Z][a-zA-Z0-9]+$" class="form-control key_form_input" placeholder="Worker name" required>
+                                                        <div class="invalid-feedback">Enter a name starting with letter, then contains letters or numbres, and no spaces, e.g. worker1</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row mt-3">
+                                                <div class="col-6">
+                                                    <div class=" form-group  ">
+                                                        <label for="key_concurrent_process_count">Number of Concurrent processes:</label>
+                                                        <select class="custom-select key_form_input " id="id_concurrent_process_count" name="id_concurrent_process_count" data-validation="required">
+                                                            <option value="1">1</option>
+                                                            <option value="2">2</option>
+                                                            <option value="3">3</option>
+                                                            <option value="4">4</option>
+                                                            <option value="5">5</option>
+                                                        </select>
+                                                        <div class="invalid-feedback">Please choose number of concurrent threads to have under this worker - maximu of 5</div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <div class=" form-group  ">
+                                                        <label for="key_concurrent_process_count">Log level:</label>
+                                                        <select class="custom-select key_form_input" id="id_log_level" name="id_log_level" data-validation="required">
+                                                            <option value="DEBUG">Debug</option>
+                                                            <option value="ERROR">Error</option>
+                                                            <option value="INFO">Info</option>
+
+                                                        </select>
+                                                        <div class="invalid-feedback">Please choose what level of logging to capture</div> 
+                                                    </div>
+                                                </div>
+                                            </div>
+
+
+
+                                            <h5 class="mt-5">Ouput Files </h5>
+                                            <hr>
+                                            <div class="row">
+
+                                                <div class="col-12">
+                                                    <div class="form-label-group key_form_input_field">
+                                                        <label for="id_process_output_path">Worker process Output Path</label>
+                                                        <div class='input-group'>
+                                                            <input type="text" id="id_process_output_path" name="id_process_output_path" class="form-control key_form_input" placeholder="Worker process path" required>
+                                                            <div class="input-group-append">
+                                                                <button type="button" class="btn btn-primary key_btn_file_server_dialog" data-path_config='cworker_worker_process_output'>File...</button>
+                                                            </div>
+                                                            <div class="invalid-feedback force-display"> 
+                                                                <span class="text-danger   key_span_error_text"></span> 
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                 
+                                            </div>
+
+                                            <div class="row mt-3">
+
+                                                <div class="col-12">
+                                                    <!-- <div class="form-label-group form-group input-group"> -->
+                                                    <div class="form-label-group key_form_input_field" >
+                                                        <label for='id_log_file_path' >Log Output Path</label>
+                                                        <div class="input-group">
+                                                            <input type="text" id="id_log_file_path" name="id_log_file_path" class="form-control key_form_input" placeholder="Log file path" required>
+                                                            <div class="input-group-append">
+                                                                <button type="button" class="btn btn-primary key_btn_file_server_dialog" data-path_config='cworker_worker_log_path'>File...</button>
+                                                            </div>
+                                                            <div class="invalid-feedback force-display"> 
+                                                                <span class="text-danger   key_span_error_text"></span> 
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+
+                                            <h5 class="mt-5">Run time </h5>
+                                            <hr>
+                                            <div class="row">
+
+                                                <div class="col-12">
+                                                    <div class="form-label-group form-group input-group">
+                                                        <input type="text" id="id_runtime_command_line" class="form-control"  readonly="readonly">
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <hr>
+                                            <div class="row">
+
+                                                <div class="col-12">
+                                                    <div class="form-group ">
+                                                        <button type="button" class="btn btn-primary key_form_input" id="id_config_update">Save</button>
+                                                        <button type="button" class="btn btn-danger key_form_input" id="id_config_delete">Delete</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        </form>
+                                    </div>
+                                </div>
+                            </div> 
+                 
+
+                 
+                        </div>
+                    </div>
+                </div> 
+
+            </div>
+
+            <div class="row collapse" id="id_worker_log"> 
+
+                <div class="col-12">
+                    <div class="card task-card">
+                        <div class="card-header">
+                            <h5>Notice</h5>
+                        </div>
+                        <div class="card-body">
+                            <span id="id_log_area"></span>
+                            <!-- <ul class="list-unstyled task-list">
+                                <li>
+                                    <i class="feather icon-check f-w-600 task-icon bg-success"></i>
+                                    <p class="m-b-5">8:50</p>
+                                    <h6 class="text-muted">Your first semester Exam will held on <span class="text-primary">19-04-2018</span>.</h6>
+                                </li>
+                                <li>
+                                    <i class="task-icon bg-primary"></i>
+                                    <p class="m-b-5">Sat, 5 Mar</p>
+                                    <h6 class="text-muted">In your school campus on <span class="text-primary">1-03-2018</span> will held a program of <span class="text-primary">annual sports day</span>.You are all invited.</h6>
+                                </li>
+                                <li>
+                                    <i class="task-icon bg-danger"></i>
+                                    <p class="m-b-5">Sun, 17 Feb</p>
+                                    <h6 class="text-muted">Your second semester exam will held on 30-08-2018.Please be prepare for your exam</h6>
+                                </li>
+                                <li>
+                                    <i class="task-icon bg-warning"></i>
+                                    <p class="m-b-5">Sat, 18 Mar</p>
+                                    <h6 class="text-muted">On <span class="text-primary">20-11-2018</span> will held a programming contest in school campus.Registration start from today. </h6>
+                                </li>
+                                <li class="pb-2 mb-0">
+                                    <i class="task-icon bg-success"></i>
+                                    <p class="m-b-5">Sat, 22 Mar</p>
+                                    <h6 class="text-muted">Prize giving ceremony will held on <span class="text-primary">03-01-2019</span>.Best Student List published In your Website.</h6>
+                                </li>
+                            </ul> -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include "_def/server_file_explorer.html" %}
+{% include "_def/updating_status_dialog.html" %}
+
+ 
+{% endblock %}
+
+{% block page_script %}
+
+
+    {% with  %}
+        {% set args={ 'dir_location_config_name':'process_output'} %}
+        {% include "_def/server_file_explorer_script.html" %}
+        
+    {% endwith %}
+
+
+    {% include "_def/workers_view_script.html" %}
+
+<!-- 
+<script src="https://unpkg.com/isotope-layout@3/dist/isotope.pkgd.js"></script>
+<script>
+    // $(document).ready( function () {
+    //     // init Isotope
+    //     var $grid = $('.grid').isotope({
+    //         itemSelector: '.element-item',
+    //         layoutMode: 'fitRows',
+    //         getSortData: {
+    //             name: '.name',
+    //             symbol: '.symbol',
+    //             number: '.number parseInt',
+    //             category: '[data-category]',
+    //         }
+    //     });
+
+    //     // bind filter button click
+    //     $('#filters').on('click', 'button', function() {
+    //         var filterValue = $(this).attr('data-filter');
+    //         $grid.isotope({
+    //             filter: filterValue
+    //         });
+    //     });
+    //     $('#filters-side').on('click', 'button', function() {
+    //         // alert('clicked');
+    //         var filterValue = $(this).attr('data-filter');
+    //         $grid.isotope({
+    //             filter: filterValue
+    //         });
+    //     });
+    //     // change active class on buttons
+    //     $('.button-group').each(function(i, buttonGroup) {
+    //         var $buttonGroup = $(buttonGroup);
+    //         $buttonGroup.on('click', 'button', function() {
+    //             $buttonGroup.find('.active').removeClass('active');
+    //             $(this).addClass('active');
+    //         });
+    //     });
+    // });
+</script> -->
+{% endblock %}
