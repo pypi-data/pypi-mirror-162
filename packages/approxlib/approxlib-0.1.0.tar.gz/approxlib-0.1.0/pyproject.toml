@@ -1,0 +1,77 @@
+[tool.poetry]
+name = "approxlib"
+version = "0.1.0"
+description = "Too lazy to quantize? Don't worry! Just tell approx to cast everything automatically!"
+license = "Apache-2.0"
+authors = ["sudomaze", "xiurobert"]
+readme = 'README.md'
+homepage = "https://github.com/approx-ml/approx"
+repository = "https://github.com/approx-ml/approx"
+# NOTE(sudomaze): set of classifiers is taken from https://pypi.org/classifiers/
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "License :: OSI Approved :: Apache Software License",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3.7",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+packages = [{ include = "approx" }]
+
+[tool.poetry.dependencies]
+python = "^3.7.13"
+tqdm = "^4.64.0"
+torch = "^1.12"
+numpy = "1.21"
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.1.1"
+black = "^22.3.0"
+mypy = "^0.961"
+pre-commit = "^2.19.0"
+isort = "^5.10.1"
+pre-commit-hooks = "^4.3.0"
+jupyter = "^1.0.0"
+mkdocs = "^1.3.0"
+mkdocstrings = {extras = ["python"], version = "^0.19.0"}
+mkdocs-material = "^8.3.9"
+pycln = "^2.0.1"
+ipykernel = "^6.15.1"
+torchvision = "^0.13.0"
+
+[tool.mypy]
+files = ["^approx/"]
+pretty = true
+strict = true
+# show_error_codes = true
+enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
+# ignore_missing_imports = true
+exclude = "(/tests/)|(/docs/)|(/examples/)"
+
+[tool.pytest]
+# log_cli = true
+addopts = [
+    # show summary of all tests that did not pass
+    "-ra",
+    # idk
+    "-s",
+    # Make tracebacks shorter
+    "--tb=native",
+    # enable all warnings
+    "-Wd",
+]
+testpaths = ["tests"]
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.isort]
+profile = "black"
+line_length = 79
+
+[tool.black]
+line-length = 79 # override the default of 88
+
+[build-system]
+requires = ["poetry>=1.1.6"]
+build-backend = "poetry.masonry.api"
