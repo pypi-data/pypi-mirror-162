@@ -1,0 +1,54 @@
+Metadata-Version: 2.1
+Name: pydaisi
+Version: 0.3.2
+Summary: A Python Client Interface for the Daisi Platform
+Home-page: https://github.com/BelmontTechnology/PyDaisi
+Author: Daisi Technology, Inc.
+Author-email: eng@daisi.io
+License: Apache License 2.0
+Project-URL: Documentation, https://doc.daisi.io/
+Project-URL: Source, https://github.com/daisi-io/PyDaisi
+Keywords: Daisi SDK
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: requests
+Requires-Dist: httpx
+Requires-Dist: python-dotenv
+Requires-Dist: dill
+Requires-Dist: rich
+Requires-Dist: requests-toolbelt
+Requires-Dist: trio
+Requires-Dist: tqdm
+
+# About PyDaisi
+
+Full documentation on the features of the PyDaisi client, as well as the platform itself, are available at the [Daisi Documentation](https://doc.daisi.io). Below is a quick overview of the basic PyDaisi usage:
+
+## Installing PyDaisi
+
+PyDaisi can be installed with PIP:
+
+- `pip install --upgrade pydaisi`
+
+## Using PyDaisi
+
+You can execute a Daisi simply by:
+
+1. Connecting to the Daisi
+2. Calling a top-level function fo that Daisi, providing arguments as needed
+
+In this example, we connect to the `Titanic Statistic` Daisi, and call two different top-level functions (`median` and `percentile`):
+
+```python
+from pydaisi import Daisi
+
+# instantiate a Daisi object
+daisi = Daisi("Titanic Statistics")
+
+# call a Daisi function. You can also use positional parameters: daisi.median("Age")
+med = daisi.median(field="Age")
+
+print(f"Median Age of Titanic Passengers was: {med.value}")
+print(f"10th Percentile of Titanic Passengers' Ages was: {daisi.percentile('Age', .1).value}")
+```
