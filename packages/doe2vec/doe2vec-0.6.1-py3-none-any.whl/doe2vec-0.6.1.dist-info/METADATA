@@ -1,0 +1,73 @@
+Metadata-Version: 2.1
+Name: doe2vec
+Version: 0.6.1
+Summary: Feature extraction for exploratory landscape analysis
+Author-email: Bas van Stein <b.van.stein@liacs.leidenuniv.nl>
+License: MIT License        
+        Copyright (c) 2022 Bas van Stein        
+        Permission is hereby granted, free of charge, to any person obtaining a copy
+        of this software and associated documentation files (the "Software"), to deal
+        in the Software without restriction, including without limitation the rights
+        to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+        copies of the Software, and to permit persons to whom the Software is
+        furnished to do so, subject to the following conditions:        
+        The above copyright notice and this permission notice shall be included in all
+        copies or substantial portions of the Software.        
+        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+        IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+        FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+        AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+        LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+        OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+        SOFTWARE.        
+Project-URL: Homepage, https://github.com/Basvanstein/doe2vec
+Keywords: autoencoder,representation learning,exploratory landscape analysis
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: scikit-learn
+Requires-Dist: tensorflow
+Requires-Dist: matplotlib
+Requires-Dist: mlflow
+Requires-Dist: pandas
+Provides-Extra: dev
+Requires-Dist: black ; extra == 'dev'
+Requires-Dist: isort ; extra == 'dev'
+Requires-Dist: pip-tools ; extra == 'dev'
+
+# DoE2Vec
+
+DoE2Vec is a self-supervised approach to learn exploratory landscape analysis features from design of experiments.
+The model can be used for downstream meta-learning tasks such as learninig which optimizer works best on a given optimization landscape.
+Or to classify optimization landscapes in function groups.
+
+The approach uses randomly generated functions and can also be used to find a "cheap" reference function given a DOE.
+The model uses Sobol sequences as the default sampling method. A custom sampling method can also be used.
+Both the samples and the landscape should be scaled between 0 and 1.
+ 
+## How to Setup your Environment
+
+- `python3.8 -m venv env` 
+- `source ./env/bin/activate`
+- `pip install -r requirements.txt`
+
+
+## Generate the Data Set
+
+To generate the artificial function dataset for a given dimensionality and sample size
+run the following code
+    from doe2vec inport doe_model
+
+    obj = doe_model(d, m, n=50000, latent_dim=latent_dim)
+    if not obj.load():
+        obj.generateData()
+        obj.compile()
+        obj.fit(100)
+        obj.save()
+
+Where `d` is the number of dimensions, `m` the number of samples (2^`m`) per DOE, `n` the number of functions generated and `latent_dim` the size of the output encoding vector.
+
+Once a data set and encoder has been trained it can be loaded with the `load()` function.
