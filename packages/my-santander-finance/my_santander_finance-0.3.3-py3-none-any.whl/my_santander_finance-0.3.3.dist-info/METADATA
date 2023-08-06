@@ -1,0 +1,136 @@
+Metadata-Version: 2.1
+Name: my-santander-finance
+Version: 0.3.3
+Summary: automated process to obtain the consumption of the bank credit and debit cards, classify them and generate a dashboard
+Home-page: https://github.com/opaniagu/my-santander-finance
+License: MIT
+Author: Oscar Paniagua
+Author-email: opaniagu@gmail.com
+Requires-Python: >=3.10,<4.0
+Classifier: Development Status :: 4 - Beta
+Classifier: Environment :: Console
+Classifier: Environment :: Win32 (MS Windows)
+Classifier: Intended Audience :: End Users/Desktop
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Topic :: Office/Business :: Financial :: Accounting
+Requires-Dist: Jinja2 (>=3.1.2,<4.0.0)
+Requires-Dist: Markdown (>=3.4.1,<4.0.0)
+Requires-Dist: PyAutoGUI (>=0.9.53,<0.10.0)
+Requires-Dist: SQLAlchemy (>=1.4.39,<2.0.0)
+Requires-Dist: black (>=22.6.0,<23.0.0)
+Requires-Dist: bumpversion (>=0.6.0,<0.7.0)
+Requires-Dist: click (>=8.1.3,<9.0.0)
+Requires-Dist: flake8 (>=4.0.1,<5.0.0)
+Requires-Dist: isort (>=5.10.1,<6.0.0)
+Requires-Dist: mkdocs-material (>=8.3.9,<9.0.0)
+Requires-Dist: mkdocs[i18n] (>=1.3.0,<2.0.0)
+Requires-Dist: numpy (>=1.23.0,<2.0.0)
+Requires-Dist: pandas (>=1.4.3,<2.0.0)
+Requires-Dist: pre-commit (>=2.19.0,<3.0.0)
+Requires-Dist: pydantic (>=1.9.1,<2.0.0)
+Requires-Dist: pywin32 (>=304,<305)
+Requires-Dist: requests (>=2.28.1,<3.0.0)
+Requires-Dist: selenium (>=4.3.0,<5.0.0)
+Requires-Dist: typer (>=0.6.1,<0.7.0)
+Requires-Dist: webdriver-manager (>=3.7.1,<4.0.0)
+Requires-Dist: xlrd (>=2.0.1,<3.0.0)
+Project-URL: Repository, https://github.com/opaniagu/my-santander-finance
+Description-Content-Type: text/markdown
+
+# App para Automatizacion (web scrapping) de Banco Santander
+Aplicacion para la gestion de cuentas del banco Santander de Argentina, permite:
+
+* [x] obtener el resumen de la cuenta(download) de los ultimos 60 dias
+* [x] transformarlos y cargarlos en una base de datos (sqlite)
+* [ ] clasificar y etiquetar los consumos
+* [ ] generar reportes
+
+## Instalacion
+
+_se requiere tener instalado python_
+
+Instalar utilizando pip, desde la consola(cmd.exe):
+
+```bash
+  pip install my-santander-finance
+```
+
+## Actualizacion
+
+Actualizar utilizando pip
+
+```bash
+  pip install --upgrade my-santander-finance
+```
+
+Luego verificar version
+```bash
+  sanfi --version
+```
+
+
+## Configuracion
+
+La aplicacion crea un directorio en el 'home' del usuario con el nombre '.sanfi', por ejemplo en Windows seria en:
+
+c:\Users\Oscar\.sanfi\
+
+Para poder realizar el web scrapping de la pagina de Santander Argentina, es necesario definir tres(3) variables de entorno, ya sea como variables de entorno propiamente dichas o bien en un archivo en el raiz del directorio de la app llamado .env, por ejemplo:
+
+c:\Users\Oscar\.sanfi\.env
+
+### Environment Variables
+
+Las tres(3) variables de entorno son:
+
+`DNI`
+
+`CLAVE`
+
+`USUARIO`
+
+_Estos datos, son los requeridos para el login en la web de Santander._ 
+
+Para mas informacion de como trabajar con las variables de entorno hacer click en este link [variables de entorno](docs/es/environment_variables.md)
+
+## Utilizacion
+
+Desde la consola, ejecutar para obtener la ayuda:
+```bash
+sanfi --help
+```
+
+En el caso de querer realizar el download de los consumos:
+```bash
+sanfi --download
+```
+La informacion se guarda en una base de datos sqlite (santander.sqlite). Se puede consultar el formato de las tablas en [sqlite](my_santander_finance/sqlite.sql)
+
+Para trabajar directamente con la base de datos sqlite, utilizo la siguiente herramienta grafica free para Windows [HeidiSQL](https://www.heidisql.com/)
+
+Obviamente, tambien es posible utlizar al consola proporcionada por sqlite desde la linea de comandos:
+
+```bash
+sqlite3 --help
+```
+Para mas informacion, click en [sqlite3](docs/es/sqlite3.md)
+
+## Crontab
+
+Para mas informacion, click en [crontab](docs/es/crontab.md)
+
+## Feedback
+
+Contactarme a opaniagu@gmail.com
+
+## Authors
+
+- [@opaniagu](https://www.github.com/opaniagu)
+
+
+## License
+
+[MIT](https://choosealicense.com/licenses/mit/)
+
