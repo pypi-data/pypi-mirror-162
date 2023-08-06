@@ -1,0 +1,31 @@
+version: 1
+formatters:
+  simple:
+    format: '%(asctime)s|%(name)15s|%(levelname)7s|%(process)04d| %(message)s'
+
+handlers:
+  console:
+    class: logging.StreamHandler
+    level: DEBUG
+    formatter: simple
+    stream: ext://sys.stdout
+loggers:
+
+  vqr:
+    level: INFO
+    handlers: [console]
+    propagate: no
+
+  experiments:
+    level: INFO
+    handlers: [console]
+    propagate: no
+
+  __main__:
+    level: INFO
+    handlers: [console]
+    propagate: no
+
+root:
+  level: INFO
+  handlers: [console]
