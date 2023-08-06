@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>{{ page_title }}</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width">
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+
+<body id="{{ name }}">
+
+<nav>
+<section>
+    <span class="home">
+        {% if name == 'index' %}
+            <span>{{ site_title }}</span>
+        {% else %}
+            <a href="index.html">{{ site_title }}</a>
+        {% end %}
+    </span>
+    <span class="links">
+        {% if name == 'galleries' %}
+            <span>Galleries</span>
+        {% else %}
+            <a href="galleries.html">Galleries</a>
+        {% end %}
+        {% if name == 'contact' %}
+            <span>Contact</span>
+        {% else %}
+            <a href="contact.html">Contact</a>
+        {% end %}
+    </span>
+</section>
+</nav>
+
+<main>
+{{ content }}
+</main>
+
+<footer>
+<section>
+<p>
+    <a href="https://twitter.com/sunainapai">Twitter</a>
+    <a href="https://github.com/sunainapai">GitHub</a>
+    <a href="https://www.example.com/">Example</a>
+</p>
+</section>
+</footer>
+
+</body>
+</html>
