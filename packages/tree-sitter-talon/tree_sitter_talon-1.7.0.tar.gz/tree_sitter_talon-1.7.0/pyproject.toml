@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=43.0.0", "wheel>=0.36.2"]
+build-backend = "setuptools.build_meta"
+
+[tool.cibuildwheel]
+manylinux-x86_64-image = "manylinux_2_28"
+manylinux-i686-image = "manylinux_2_24"
+manylinux-aarch64-image = "manylinux_2_28"
+manylinux-ppc64le-image = "manylinux_2_28"
+manylinux-s390x-image = "manylinux_2_24"
+manylinux-pypy_x86_64-image = "manylinux_2_28"
+manylinux-pypy_i686-image = "manylinux_2_24"
+manylinux-pypy_aarch64-image = "manylinux_2_28"
+
+[pytest]
+path = "tests"
+
+[tool.pytest.ini_options]
+enable_assertion_pass_hook = true
+filterwarnings = ["ignore::DeprecationWarning:.*:"]
+addopts = "--ignore=test/data"
+
+[tool.bumpver]
+current_version = "1.7.0"
+version_pattern = "MAJOR.MINOR.PATCH"
+commit_message = "Bump version {old_version} -> {new_version}"
+commit = true
+tag = true
+push = true
+
+[tool.bumpver.file_patterns]
+"pyproject.toml" = ['current_version = "{version}"']
+"setup.py" = ['version="{version}"']
+"doc-source/conf.py" = ['release = "{version}"']
+"tree_sitter_talon/core.py" = ['__version__: str = "{version}"']
