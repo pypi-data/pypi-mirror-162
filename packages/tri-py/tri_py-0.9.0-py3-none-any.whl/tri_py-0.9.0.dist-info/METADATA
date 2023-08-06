@@ -1,0 +1,84 @@
+Metadata-Version: 2.1
+Name: tri-py
+Version: 0.9.0
+Summary: A package for efficient loglikelihood evaluation with structured covariance matrices
+Home-page: https://gitlab.com/GKoune/tripy
+Author: Ioannis Koune
+Author-email: G.Koune@gmail.com
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+License-File: LICENCE
+Requires-Dist: numpy (<2)
+Requires-Dist: scipy (<2)
+Requires-Dist: nestle (<1)
+Requires-Dist: emcee (<4)
+Requires-Dist: dynesty (<2)
+Requires-Dist: matplotlib (<4)
+Requires-Dist: tabulate (<1)
+Requires-Dist: tqdm (<5)
+Requires-Dist: numba (<1)
+Provides-Extra: development
+Requires-Dist: six ; extra == 'development'
+Requires-Dist: sphinx (<5) ; extra == 'development'
+Requires-Dist: sphinx-copybutton (<1) ; extra == 'development'
+Requires-Dist: sphinx-inline-tabs ; extra == 'development'
+Requires-Dist: sphinxcontrib-bibtex (<3) ; extra == 'development'
+Requires-Dist: myst-parser (<1) ; extra == 'development'
+Requires-Dist: sphinx-rtd-theme (<2) ; extra == 'development'
+Requires-Dist: sphinx-rtd-dark-mode (<2) ; extra == 'development'
+Requires-Dist: sphinx-gallery (<1) ; extra == 'development'
+Requires-Dist: pytest ; extra == 'development'
+Requires-Dist: coverage ; extra == 'development'
+Requires-Dist: torch (<2) ; extra == 'development'
+Requires-Dist: twine ; extra == 'development'
+Requires-Dist: pre-commit ; extra == 'development'
+Requires-Dist: black ; extra == 'development'
+Requires-Dist: flake8 ; extra == 'development'
+Requires-Dist: flake8-tidy-imports ; extra == 'development'
+Requires-Dist: flake8-import-order ; extra == 'development'
+Provides-Extra: docs
+Requires-Dist: six ; extra == 'docs'
+Requires-Dist: sphinx (<5) ; extra == 'docs'
+Requires-Dist: sphinx-copybutton (<1) ; extra == 'docs'
+Requires-Dist: sphinx-inline-tabs ; extra == 'docs'
+Requires-Dist: sphinxcontrib-bibtex (<3) ; extra == 'docs'
+Requires-Dist: myst-parser (<1) ; extra == 'docs'
+Requires-Dist: sphinx-rtd-theme (<2) ; extra == 'docs'
+Requires-Dist: sphinx-rtd-dark-mode (<2) ; extra == 'docs'
+Requires-Dist: sphinx-gallery (<1) ; extra == 'docs'
+Provides-Extra: testing
+Requires-Dist: pytest ; extra == 'testing'
+Requires-Dist: coverage ; extra == 'testing'
+Requires-Dist: torch (<2) ; extra == 'testing'
+
+# tripy
+A package for efficient[^1] likelihood evaluation and sampling for Multivariate Normal distributions where the covariance matrix:
+
+* Is Separable, i.e. can be expressed as the [Kronecker product](https://en.wikipedia.org/wiki/Kronecker_product) of the covariance over different dimensions (e.g. space and time);
+* May have Exponential correlation (i.e. [(block-) tridiagonal](https://en.wikipedia.org/wiki/Tridiagonal_matrix) precision matrix) in one or more dimensions;
+* Is polluted with uncorrelated scalar or vector noise.
+
+[^1]: In the general case, exact likelihood evaluation has *O(N<sup>3</sup>)* computational complexity and *O(N<sup>2</sup>)* memory requirements. The term "efficient" is used here to refer to the reduction of complexity and memory usage by utilizing the sparsity and Kronecker product structure of the covariance matrix.
+
+## Structure
+**base**: Base class for problem formulation, taken from [taralli](https://gitlab.com/tno-bim/taralli). Likely to be removed in a future update.
+
+**utils**: Utility functions for efficient linear algebra invovling tridiagonal and Kronecker product matrices.
+
+**loglikelihood**: Functions for efficient loglikelihood evaluation.
+
+**kernels**: Formulation of commonly used kernels.
+
+**sampling**: Functions for efficient sampling.
+
+## Usage
+![Usage flowchart](docs/figures/loglikelihood_selection_flowchart.png "Loglikelihood function selection flowchart")
+
+## TODOs
+* Validation of all functions against reference implementations.
+* Documentation, including examples and timing tests.
+* Unit and integration testing.
+* Improve this README by including mathematical notation and references.
