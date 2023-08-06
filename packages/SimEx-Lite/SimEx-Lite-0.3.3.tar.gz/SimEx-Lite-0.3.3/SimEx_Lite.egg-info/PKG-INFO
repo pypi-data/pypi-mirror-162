@@ -1,0 +1,166 @@
+Metadata-Version: 2.1
+Name: SimEx-Lite
+Version: 0.3.3
+Summary: The core package of the SIMEX platform providing the calculator interfaces.
+Home-page: https://github.com/PaNOSC-ViNYL/SimEx-Lite
+Author: Juncheng E
+Author-email: juncheng.e@xfel.eu
+License: GNU General Public License v3
+Keywords: SimEx-Lite
+Platform: UNKNOWN
+Classifier: Development Status :: 2 - Pre-Alpha
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: GNU General Public License v3 (GPLv3)
+Classifier: Natural Language :: English
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Requires-Python: >=3.6
+Description-Content-Type: text/x-rst
+License-File: LICENSE
+License-File: AUTHORS.rst
+
+==========
+Quickstart
+==========
+
+
+.. image:: https://img.shields.io/pypi/v/SimEx-Lite.svg
+        :target: https://pypi.python.org/pypi/SimEx-Lite
+
+.. image:: https://travis-ci.com/PaNOSC-ViNYL/SimEx-Lite.svg?branch=main
+        :target: https://travis-ci.com/PaNOSC-ViNYL/SimEx-Lite
+
+.. image:: https://readthedocs.org/projects/simex-lite/badge/?version=latest
+        :target: https://SimEx-Lite.readthedocs.io/en/latest/?badge=latest
+        :alt: Documentation Status
+
+
+
+
+SimEx-Lite is the core package of the SIMEX platform providing the calculator interfaces and data APIs.
+
+
+* Free software: GNU General Public License v3
+* Documentation: https://SimEx-Lite.readthedocs.io
+* GitHub: https://github.com/PaNOSC-ViNYL/SimEx-Lite
+
+
+Installing
+----------
+SimEx-Lite can be installed with Python 3.6 or later:
+
+.. code-block:: bash
+
+    $ pip install SimEx-Lite
+
+Developing
+----------
+We encourage everyone to contribute to SimEx. For a detailed guide, please visit
+https://simex-lite.readthedocs.io/en/latest/contributing.html
+
+1. Clone this Github repository:
+
+.. code-block:: bash
+
+   $ git clone --recursive git@github.com:PaNOSC-ViNYL/SimEx-Lite.git
+
+2. Install the package locally:
+
+.. code-block:: bash
+
+    $ cd SimEx-Lite
+    $ pip install -e .
+
+Tests
+-----
+1. Download the testing files.
+
+.. code-block:: bash
+
+    $ cd tests
+    $ git clone https://github.com/PaNOSC-ViNYL/SimEx-Lite-testFiles testFiles
+
+2. Run the test
+
+.. code-block:: bash
+
+    $ pytest .
+
+
+Features
+--------
+
+* Provide the python interface of calculators for the SIMEX platform.
+    * PhotonSourceCalculator
+    * PhotonPropagationCalculator
+    * PhotonMattterInteractor
+    * DiffractionCalculator
+    * DetectorClaculator
+* Provide data APIs for different data formats.
+    * Photon beam data
+    * Photon matter interaction Data
+    * Diffraction data
+
+Acknowledgement
+---------------
+
+This package was created with Cookiecutter_ and the `audreyr/cookiecutter-pypackage`_ project template.
+
+.. _Cookiecutter: https://github.com/audreyr/cookiecutter
+.. _`audreyr/cookiecutter-pypackage`: https://github.com/audreyr/cookiecutter-pypackage
+
+This project has received funding from the European Union's Horizon 2020 research and innovation programme under grant agreement No. 823852.
+
+
+
+=======
+History
+=======
+
+0.3.3 (2022-08-05)
+------------------
+
+* Fixed reading singfel rewrited data.
+* Add chunk functions to `GaussianNoiseCalculator`.
+
+0.3.2 (2021-10-20)
+------------------
+
+* Included utils as a subpackage.
+
+0.3.1 (2021-09-29)
+------------------
+
+* Updated the interface of data APIs. Details at this `PR link <https://github.com/PaNOSC-ViNYL/SimEx-Lite/pull/4>`_.
+* Updated the deployment guide for PyPI in `CONTRIBUTING <https://github.com/PaNOSC-ViNYL/SimEx-Lite/blob/main/CONTRIBUTING.rst>`_.
+
+0.2.1 (2021-04-19)
+------------------
+
+* Deploy PyPI with Travis
+
+0.2.0 (2021-04-17)
+------------------
+
+* Data API:
+    * Added: PhotonBeamData.py
+    * Added: SampleData.py
+    * Added: DiffractionData.py
+    * Added Singfel Diffraction data API
+    * Added EMC photon data API
+
+* Calculator:
+    * Detector calculators:
+        * Added Gaussian noise calculator
+
+* Examples:
+    * Added singfel2EMC data analysis example
+
+0.1.0 (2021-02-24)
+------------------
+
+* First release on PyPI.
+
+
