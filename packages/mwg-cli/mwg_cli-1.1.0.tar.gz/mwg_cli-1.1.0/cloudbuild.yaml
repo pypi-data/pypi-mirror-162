@@ -1,0 +1,7 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    entrypoint: /bin/bash
+    args: 
+      - '-c'
+      - docker build -t gcr.io/aaa-private-assets/mwg --build-arg VERSION=$_VERSION . 
+images: ['gcr.io/aaa-private-assets/mwg']
