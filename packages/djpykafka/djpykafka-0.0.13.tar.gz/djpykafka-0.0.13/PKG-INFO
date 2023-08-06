@@ -1,0 +1,60 @@
+Metadata-Version: 2.1
+Name: djpykafka
+Version: 0.0.13
+Summary: Django + Pydantic + Kafka
+Home-page: https://github.com/Voltane-EU/djpykafka
+Author: Manuel Stingl
+Author-email: info+opensource@voltane.eu
+License: GNU LGPLv2.1
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: GNU Lesser General Public License v2 or later (LGPLv2+)
+Classifier: Operating System :: OS Independent
+Classifier: Framework :: Django
+Classifier: Topic :: Utilities
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
+# djpykafka
+
+## 🚧 This project is WIP and is subject to change at any time
+
+This project is currently in the alpha state, even though it can be used in production with some caution. Make sure to fix the version in your requirements.txt and review changes frequently.
+
+## Installation
+
+`pip install djpykafka`
+
+## Examples
+
+Add the `KafkaPublishMixin` to your model class.
+
+```python
+from django.db import models
+from djpykafka.models import KafkaPublishMixin
+
+
+class MyModel(KafkaPublishMixin, models.Model):
+    ...
+```
+
+Create a publisher class, e.g. at `events/publish/{modelname_plural}.py`
+
+```python
+from djpykafka.events.publish import EventPublisher, DataChangePublisher
+from ... import models
+from ...schemas import response
+from . import connection
+
+
+class MyModelPublisher(
+    DataChangePublisher,
+    EventPublisher,
+    orm_model=models.MyModel,
+    event_schema=response.MyModel,
+    connection=connection,
+    topic='bizberry.access.users',
+    data_type='access.user',
+):
+    pass
+```
