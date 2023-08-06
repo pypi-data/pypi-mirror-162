@@ -1,0 +1,51 @@
+Metadata-Version: 2.1
+Name: assertshape
+Version: 0.0.1
+Summary: Utility for checking n-dim array shapes using Einstein notation.
+Project-URL: Homepage, https://github.com/steinwaywhw/assertshape
+Project-URL: Bug Tracker, https://github.com/steinwaywhw/assertshape/issues
+Author-email: Steinway Wu <steinwaywhw@gmail.com>
+License: MIT License
+        
+        Copyright (c) 2022 Steinway Wu
+        
+        Permission is hereby granted, free of charge, to any person obtaining a copy
+        of this software and associated documentation files (the "Software"), to deal
+        in the Software without restriction, including without limitation the rights
+        to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+        copies of the Software, and to permit persons to whom the Software is
+        furnished to do so, subject to the following conditions:
+        
+        The above copyright notice and this permission notice shall be included in all
+        copies or substantial portions of the Software.
+        
+        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+        IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+        FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+        AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+        LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+        OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+        SOFTWARE.
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 3
+Requires-Python: >=3
+Description-Content-Type: text/markdown
+
+# assertshape
+
+![Unit Test Status](https://github.com/steinwaywhw/assertshape/actions/workflows/unit-tests.yml/badge.svg)
+![![PyPI](https://img.shields.io/pypi/v/requests?logo=pypi)](https://pypi.org/project/assertshape/)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/assertshape?logo=python)
+
+Python library for asserting n-dim array shapes using Einstein notations.
+
+Examples: 
+
+```python
+from assertshape import assertshape
+
+assertshape("nmk,mkn", [(1,2,3), (2,3,1)])
+assertshape("nmk,m_n", [(1,2,3), (2,42,1)])
+assertshape("nmk,mkn...", [(1,2,3), (2,3,1,4,5,6)])
+```
