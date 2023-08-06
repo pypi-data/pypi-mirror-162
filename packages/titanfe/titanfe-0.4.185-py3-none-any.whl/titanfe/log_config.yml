@@ -1,0 +1,31 @@
+version: 1
+
+disable_existing_loggers: False
+
+formatters:
+  default:
+    format: "%(asctime)s %(name)s (%(process)5d|%(thread)-5d) %(levelname)s --> %(message)s"
+
+handlers:
+  console:
+    class: logging.StreamHandler
+    formatter: default
+    stream: ext://sys.stdout
+
+loggers:
+  titanfe:
+    level:
+      DEBUG
+      #METRIC
+      #INFO
+      #WARNING
+
+  titanfe.bricks:
+    #level: INFO
+    level: DEBUG
+
+
+root:
+  # level: DEBUG  # enable to see asyncio/kafka/etc
+  handlers:
+     - console
