@@ -1,0 +1,226 @@
+"""Quick and dirty URL checker."""
+import fnmatch
+import typing as t
+import uuid
+from inspect import Parameter, _empty, signature  # type: ignore[attr-defined]
+
+from django.conf import settings
+from django.core import checks
+from django.urls import URLPattern, URLResolver, converters, get_resolver
+from django.urls.resolvers import RoutePattern
+
+Problem = t.Union[checks.Error, checks.Warning]
+
+# Update docs about default value if you change this:
+_DEFAULT_SILENCED_VIEWS = {
+    # CBVs use **kwargs, and have a `__name__` that ends up looking like this in URLconf
+    "*.View.as_view.<locals>.view": "W001",
+    # RedirectView is used in a way that makes it appear directly, and it has **kwargs
+    "django.views.generic.base.RedirectView": "W001",
+    # Django contrib views currently don’t have type annotations:
+    "django.contrib.*": "W003",
+}
+
+
+@checks.register(checks.Tags.urls)
+def check_url_signatures(app_configs, **kwargs) -> t.List[Problem]:
+    """Check that all callbacks in the main urlconf have the correct signature.
+
+    Args:
+        app_configs: A list of AppConfig instances that will be checked.
+        **kwargs: Not used.
+
+    Returns:
+        A list of errors.
+    """
+    if not getattr(settings, 'ROOT_URLCONF', None):
+        return []
+
+    resolver = get_resolver()
+    errors = []
+    silencers = _build_view_silencers(getattr(settings, "URLCONFCHECKS_SILENCED_VIEWS", _DEFAULT_SILENCED_VIEWS))
+    for route in get_all_routes(resolver):
+        errors.extend(check_url_args_match(route))
+    return _filter_errors(errors, silencers)
+
+
+def get_all_routes(resolver: URLResolver) -> t.Iterable[URLPattern]:
+    """Recursively get all routes from the resolver."""
+    for pattern in resolver.url_patterns:
+        if isinstance(pattern, URLResolver):
+            yield from get_all_routes(pattern)
+        else:
+            if isinstance(pattern.pattern, RoutePattern):
+                yield pattern
+
+
+def check_url_args_match(url_pattern: URLPattern) -> t.List[Problem]:
+    """Check that all callbacks in the main urlconf have the correct signature."""
+    callback = url_pattern.callback
+    callback_repr = f'{callback.__module__}.{callback.__qualname__}'
+    errors = []
+    sig = signature(callback)
+    parameters = sig.parameters
+
+    has_star_args = False
+    if any(p.kind in [Parameter.VAR_KEYWORD, Parameter.VAR_POSITIONAL] for p in parameters.values()):
+        errors.append(
+            checks.Warning(
+                f'View {callback_repr} signature contains *args or **kwarg syntax, can\'t properly check args',
+                obj=url_pattern,
+                id='urlchecker.W001',
+            )
+        )
+        has_star_args = True
+
+    used_from_sig = []
+    parameter_list = list(sig.parameters)
+    if parameter_list and parameter_list[0] == 'self':
+        # HACK: we need to find some nice way to detect closures/bound methods,
+        # while also getting the final signature.
+        parameter_list.pop(0)
+        used_from_sig.append('self')
+
+    if not parameter_list or parameter_list[0] != 'request':
+        if not has_star_args:
+            if parameter_list:
+                message = (
+                    f'View {callback_repr} signature does not start with `request` parameter, '
+                    f'found `{parameter_list[0]}`.'
+                )
+            else:
+                message = f'View {callback_repr} signature does not have `request` parameter.'
+            errors.append(
+                checks.Error(
+                    message,
+                    obj=url_pattern,
+                    id='urlchecker.E001',
+                )
+            )
+    else:
+        used_from_sig.append('request')
+
+    # Everything in RoutePattern must be in signature
+    for name, converter in url_pattern.pattern.converters.items():
+        if has_star_args:
+            used_from_sig.append(name)
+        elif name in sig.parameters:
+            used_from_sig.append(name)
+            expected_type = get_converter_output_type(converter)
+            found_type = sig.parameters[name].annotation
+            if expected_type == Parameter.empty:
+                # TODO - only output this warning once per converter
+                obj = converter.__class__
+                errors.append(
+                    checks.Warning(
+                        f"Don\'t know output type for converter {obj.__module__}.{obj.__name__},"
+                        " can\'t verify URL signatures.",
+                        obj=obj,
+                        id=f'urlchecker.W002.{obj.__module__}.{obj.__name__}',
+                    )
+                )
+            elif found_type == Parameter.empty:
+                errors.append(
+                    checks.Warning(
+                        f'View {callback_repr} missing type annotation for parameter `{name}`, can\'t check type.',
+                        obj=url_pattern,
+                        id='urlchecker.W003',
+                    )
+                )
+            elif expected_type != found_type:
+                errors.append(
+                    checks.Error(
+                        f'View {callback_repr} for parameter `{name}`,'  # type: ignore[union-attr]
+                        f' annotated type {_name_type(found_type)} does not match'  # type: ignore[union-attr]
+                        f' expected `{_name_type(expected_type)}` from urlconf',  # type: ignore[union-attr]
+                        obj=url_pattern,
+                        id='urlchecker.E002',
+                    )
+                )
+        else:
+            errors.append(
+                checks.Error(
+                    f'View {callback_repr} signature does not contain `{name}` parameter',
+                    obj=url_pattern,
+                    id='urlchecker.E003',
+                )
+            )
+
+    # Anything left over must have a default argument
+    for name, param in sig.parameters.items():
+        if name in used_from_sig:
+            continue
+        if param.kind in (Parameter.VAR_POSITIONAL, Parameter.VAR_KEYWORD):
+            continue
+        if param.default == Parameter.empty:
+            errors.append(
+                checks.Error(
+                    f'View {callback_repr} signature contains `{name}` parameter without default or ULRconf parameter',
+                    obj=url_pattern,
+                    id='urlchecker.E004',
+                )
+            )
+
+    return errors
+
+
+def _name_type(type_hint):
+    # Things like `Optional[int]`:
+    # - repr() does a better job than `__name__`
+    # - `__name__` is not available in some Python versions.
+    return type_hint.__name__ if (hasattr(type_hint, "__name__") and type(type_hint) == type) else repr(type_hint)
+
+
+CONVERTER_TYPES = {
+    converters.IntConverter: int,
+    converters.StringConverter: str,
+    converters.UUIDConverter: uuid.UUID,
+    converters.SlugConverter: str,
+    converters.PathConverter: str,
+}
+
+
+def get_converter_output_type(converter) -> t.Union[int, str, uuid.UUID, t.Type[_empty]]:
+    """Return the type that the converter will output."""
+    for cls in converter.__class__.__mro__:
+        if cls in CONVERTER_TYPES:
+            return CONVERTER_TYPES[cls]
+
+        if hasattr(cls, "to_python"):
+            sig = signature(cls.to_python)
+            if sig.return_annotation != Parameter.empty:
+                return sig.return_annotation
+
+    return Parameter.empty
+
+
+class ViewSilencer:
+    """Utility that checks whether errors for a view or set of views should be ignored."""
+
+    def __init__(self, view_glob: str, errors: t.Iterable[str]):
+        self.view_glob = view_glob
+        self.errors = set(errors)
+
+    def matches(self, error: Problem):
+        """Returns True if this silencer matches the given error or warning."""
+        url_pattern = error.obj
+        if not isinstance(url_pattern, URLPattern):
+            # Some other error, eg. for a convertor
+            return False
+        if error.id not in self.errors:
+            return False
+        view_name = f"{url_pattern.callback.__module__}.{url_pattern.callback.__qualname__}"
+        if fnmatch.fnmatch(view_name, self.view_glob):
+            return True
+        return False
+
+
+def _build_view_silencers(silenced_views: t.Dict[str, str]) -> t.List[ViewSilencer]:
+    return [
+        ViewSilencer(view_glob=view_glob, errors=[f"urlchecker.{error}" for error in error_list.split(",")])
+        for view_glob, error_list in silenced_views.items()
+    ]
+
+
+def _filter_errors(errors: t.List[Problem], silencers: t.List[ViewSilencer]) -> t.List[Problem]:
+    return [error for error in errors if not any(silencer.matches(error) for silencer in silencers)]
