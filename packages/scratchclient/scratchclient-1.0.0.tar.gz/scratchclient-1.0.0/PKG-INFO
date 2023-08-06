@@ -1,0 +1,74 @@
+Metadata-Version: 2.1
+Name: scratchclient
+Version: 1.0.0
+Summary: A scratch API wrapper for Python.
+Home-page: https://github.com/CubeyTheCube/scratchclient
+Download-URL: https://github.com/CubeyTheCube/scratchclient/archive/v_10.0.tar.gz
+Author: CubeyTheCube
+Author-email: turtles142857@gmail.com
+License: MIT
+Keywords: scratch,api
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Description-Content-Type: text/markdown
+Provides-Extra: fast
+License-File: LICENSE.txt
+
+# scratchclient
+A scratch API wrapper for python. 
+
+## Installation
+
+Go to your terminal (not your python shell) and execute this command:
+```bash
+pip install scratchclient
+```
+
+If this didn't work for whatever reason, open your python shell and run the following:
+```python
+import os; os.system("pip install scratchclient")
+```
+
+## Example Usage
+
+### Basic Usage
+```python
+from scratchclient import ScratchSession
+
+session = ScratchSession("ceebee", "--uwu--")
+
+# post comments
+session.get_user("Paddle2See").post_comment("OwO")
+
+# lots of other stuff
+print(session.get_project(450216269).get_comments()[0].content)
+print(session.get_studio(29251822).description)
+```
+### Cloud Connection
+```python
+from scratchclient import ScratchSession
+
+session = ScratchSession("griffpatch", "SecurePassword7")
+
+connection = session.create_cloud_connection(450216269)
+
+connection.set_cloud_variable("variable name", 5000)
+
+@connection.on("set")
+def on_set(variable):
+    print(variable.name, variable.value)
+
+print(connection.get_cloud_variable("other variable"))
+```
+
+Documentation is available at <https://cubeythecube.github.io/scratchclient>.
+
+All bugs should be reported to the [github repository](https://github.com/CubeyTheCube/scratchclient/issues). If you need help or guideance, check out the [forum topic](https://scratch.mit.edu/discuss/topic/506810).
+
+
