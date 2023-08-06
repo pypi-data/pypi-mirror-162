@@ -1,0 +1,169 @@
+[tool.black]
+line-length = 79
+target-version = ["py39"]
+exclude = '''
+  /(
+      \.git
+    | \.artifacts
+    | \.github
+    | \.run
+    | \.venv
+  )/
+'''
+
+
+[tool.isort]
+case_sensitive = false
+force_single_line = true
+line_length = 79
+multi_line_output = 3
+order_by_type =  false
+profile = "black"
+
+
+[tool.pytest.ini_options]
+cache_dir = ".artifacts/pytest/"
+console_output_style = "count"
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]
+testpaths = [
+    "tests",
+]
+addopts = "--cov --cov-fail-under=50"
+
+
+[tool.mypy]
+cache_dir = ".artifacts/mypy/"
+check_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+files = ["oyabun", "tests",]
+no_implicit_optional = true
+plugins = ["pydantic.mypy"]
+pretty = true
+python_version = "3.9"
+show_error_context = true
+sqlite_cache = true
+warn_redundant_casts = true
+warn_return_any = true
+warn_unused_configs = true
+warn_unused_ignores = true
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
+warn_untyped_fields = true
+
+[tool.poetry]
+authors = ["Alexander Sidorov <alexander@sidorov.dev>"]
+maintainers = ["Alexander Sidorov <alexander@sidorov.dev>"]
+description = "Telegram bare-metal lib"
+license = "MIT"
+name = "oyabun"
+version = "2022.08.10"
+readme = "README.md"
+repository = "https://github.com/tgrx/oyabun"
+keywords = ["telegram"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Telecommunications Industry",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Operating System :: MacOS :: MacOS X",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python",
+    "Topic :: Communications :: Chat",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+]
+exclude = [
+    "*.pyc",
+    "*.pyo",
+    "*.tests",
+    "*.tests.*",
+    "*_test.*",
+    "*~",
+    ".artifacts/*",
+    ".coveragerc",
+    ".flake8",
+    ".git/*",
+    ".gitattributes",
+    ".github/*",
+    ".gitignore",
+    ".python-version",
+    ".run/*",
+    "__pycache__",
+    "build/*",
+    "CODEOWNERS",
+    "dist/*",
+    "Makefile*",
+    "poetry.lock",
+    "poetry.toml",
+    "tests.*",
+    "tests/*",
+    "tmp/*",
+]
+include = [
+    "README.md",
+    "LICENSE",
+]
+
+[tool.poetry.dependencies]
+aiohttp = {extras = ["speedups"], version = "^3.8.1"}
+httpx = "^0.23.0"
+orjson = "^3.7.11"
+pydantic = {extras = ["dotenv"], version = "^1.9.1"}
+python = "^3.9"
+
+[tool.poetry.dev-dependencies]
+black = "^22.6.0"
+devtools = {extras = ["pygments"], version = "^0.9.0"}
+dlint = "^0.12.0"
+fb-sapp = "^0.5.2"
+flake8 = "^4.0.1"
+flake8-annotations-complexity = "^0.0.7"
+flake8-bandit = "^3.0.0"
+flake8-black = "^0.3.3"
+flake8-broken-line = "^0.4.0"
+flake8-bugbear = "^22.7.1"
+flake8-builtins = "^1.5.3"
+flake8-cognitive-complexity = "^0.1.0"
+flake8-comprehensions = "^3.10.0"
+flake8-dashboard = "^0.1.4"
+flake8-debugger = "^4.1.2"
+flake8-eradicate = "^1.2.1"
+flake8-executable = "^2.1.1"
+flake8-expression-complexity = "^0.0.11"
+flake8-fixme = "^1.1.1"
+flake8-isort = "^4.2.0"
+flake8-multiline-containers = "^0.0.19"
+flake8-mutable = "^1.2.0"
+flake8-pep3101 = "^1.3.0"
+flake8-print = "^5.0.0"
+flake8-printf-formatting = "^1.1.2"
+flake8-simplify = "^0.19.3"
+flake8-variables-names = "^0.0.5"
+ipython = "^8.4.0"
+isort = "^5.10.1"
+mypy = "^0.971"
+pep8-naming = "^0.13.1"
+pudb = "^2022.1.2"
+pyre-check = "^0.9.15"
+pytest = "^7.1.2"
+pytest-asyncio = "^0.19.0"
+pytest-cov = "^3.0.0"
+pytest-mock = "^3.8.2"
+uvicorn = {extras = ["standard"], version = "^0.18.2"}
+
+[build-system]
+build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core"]
