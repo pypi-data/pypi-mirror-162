@@ -1,0 +1,1 @@
+print("pydinogame package is imported")
