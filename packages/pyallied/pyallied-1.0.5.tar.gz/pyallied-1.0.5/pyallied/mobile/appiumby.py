@@ -1,0 +1,12 @@
+class appiumby:
+    ACCESSIBILITY_ID= 'accessibility id'
+    ANDROID_DATA_MATCHER= '-android datamatcher'
+    ANDROID_UIAUTOMATOR= '-android uiautomator'
+    ANDROID_VIEWTAG= '-android viewtag'
+    ANDROID_VIEW_MATCHER= '-android viewmatcher'
+    CUSTOM= '-custom'
+    IMAGE= '-image'
+    IOS_CLASS_CHAIN= '-ios class chain'
+    IOS_PREDICATE= '-ios predicate string'
+    IOS_UIAUTOMATION= '-ios uiautomation'
+    WINDOWS_UI_AUTOMATION= '-windows uiautomation'
