@@ -1,0 +1,6 @@
+- [ ] Simplify intellisense - move base_config_map, myproperties_list and properties list into internal and rest methods somehow into do object
+- [ ] Try to make oneliner config. Try property decorator on variable
+- [ ] Remove project.rst as it is in index.rst via automodule
+- [ ] Check if coverage from doctest included
+- [ ] Better test coverage (doctest in functions + check if in coverage)
+- [ ] Redirect stdout and stderr from do_terminal_command
