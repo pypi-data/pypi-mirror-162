@@ -1,0 +1,140 @@
+[build-system]
+requires = ["setuptools", "wheel", "versioneer-518"]  # PEP 508 specifications.
+
+##########
+## MyPy ##
+##########
+[tool.mypy]
+check_untyped_defs = true
+disallow_untyped_defs = true
+files = ['src']
+exclude = ["fidesops.migrations.*"]
+plugins = ["pydantic.mypy", "sqlmypy"]
+pretty = true
+show_error_codes = true
+warn_unused_configs = true
+
+[pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
+warn_untyped_fields = true
+
+[mypy-src.fidesops._version]
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+disallow_untyped_defs = false
+
+[[tool.mypy.overrides]]
+module = [
+  "alembic.*",
+  "apscheduler.*",
+  "boto3.*",
+  "botocore.*",
+  "bson.*",
+  "celery.*",
+  "dask.*",
+  "fideslang.*",
+  "fideslib.*",
+  "fideslog.*",
+  "jose.*",
+  "jwt.*",
+  "multidimensional_urlencode.*",
+  "pandas.*",
+  "pydash.*",
+  "pymongo.*",
+  "snowflake.*",
+  "sqlalchemy_utils.*",
+  "uvicorn.*"
+]
+ignore_missing_imports = true
+
+#######
+# Black
+#######
+[tool.black]
+py39 = true
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | _build
+    | buck-out
+    | build
+    | dist
+
+    # The following are specific to Black, you probably don't want those.
+    | blib2to3
+    | tests/data
+)/
+'''
+
+#######
+# isort
+#######
+[tool.isort]
+profile = "black"
+line_length = 88
+src_paths = ["src", "tests"]
+
+########
+# Pylint
+########
+[tool.pylint.messages_control]
+disable=[
+    "bad-option-value",
+    "broad-except",
+    "dangerous-default-value",
+    "duplicate-code",
+    "fixme",
+    "import-error",
+    "import-outside-toplevel",
+    "invalid-name",
+    "line-too-long",
+    "logging-fstring-interpolation",
+    "missing-class-docstring",
+    "missing-function-docstring",
+    "missing-module-docstring",
+    "no-self-argument",
+    "no-self-use",
+    "raise-missing-from",
+    "too-few-public-methods",
+    "too-many-ancestors",
+    "too-many-arguments",
+    "unnecessary-comprehension",
+    "unsubscriptable-object", # Otherwise throws errors on certain Type annotations
+    "unused-argument",
+]
+
+[tool.pylint.reports]
+reports="no"
+output-format="colorized"
+
+[tool.pylint.format]
+max-line-length="88"
+
+[tool.pylint.basic]
+good-names="_,i,setUp,tearDown,maxDiff,default_app_config"
+
+[tool.pylint.ignore]
+ignore="migrations,tests"
+
+[tool.pylint.whitelist]
+extension-pkg-whitelist='pydantic'
+
+########
+# Pytest
+########
+[tool.pytest.ini_options]
+testpaths="tests"
+log_level = "INFO"
+addopts = ["--cov-report=term-missing",
+            "-vv",
+            "--no-cov-on-fail",
+            "--disable-pytest-warnings"]
