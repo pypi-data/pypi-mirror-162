@@ -1,0 +1,18 @@
+[Unit]
+Description=Shaken Fist minimal cloud
+After=network.target remote-fs.target nss-lookup.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+
+EnvironmentFile=/etc/sf/config
+ExecStart=/bin/sh -c '/srv/shakenfist/venv/bin/sf-daemon'
+ExecStop=/bin/sh -c '/srv/shakenfist/venv/bin/sf-ctl stop'
+
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
