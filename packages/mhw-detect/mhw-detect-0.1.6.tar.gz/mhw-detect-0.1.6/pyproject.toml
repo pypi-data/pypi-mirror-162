@@ -1,0 +1,32 @@
+[tool.poetry]
+name = "mhw-detect"
+version = "0.1.6"
+description = "Fast marine heatwaves and extrem events detector based on https://github.com/ecjoliver/marineHeatWaves"
+authors = ["John Brouillet"]
+packages = [
+    { include = "src/mhw_detect/detection/" },
+    { include = "src/mhw_detect/cut/" }
+]
+readme = "README.md"
+
+[tool.poetry.scripts]
+mhw-detect = 'src.mhw_detect.detection.mhw:extreme_events'
+mhw-cut = 'src.mhw_detect.cut.cut:cut'
+
+
+[tool.poetry.dependencies]
+python = ">=3.8,<3.12"
+xarray = "^2022.6.0"
+numba = ">=0.54.1"
+netCDF4 = ">=1.5.7"
+scipy = ">=1.7.3"
+numpy = ">=1.20.3"
+pandas = ">=1.3.5"
+dask = ">=2021.10.0"
+click = "^8.1.3"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
