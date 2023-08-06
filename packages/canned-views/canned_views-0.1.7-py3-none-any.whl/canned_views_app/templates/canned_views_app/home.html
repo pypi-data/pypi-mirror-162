@@ -1,0 +1,47 @@
+{% extends 'canned_views_app/base.html' %}
+{% load static edc_dashboard_extras %}
+
+{% block main %}
+
+    <style>
+
+        .bg-1 {
+            background-color: #428bca; /* dark blue */
+            color: #ffffff;
+        }
+
+        .bg-2 {
+            background-color: #5bc0de; /* light Blue */
+            color: #ffffff;
+        }
+
+        .bg-3 {
+            background-color: #f9f9f9; /* White */
+            color: #555555;
+        }
+
+    </style>
+
+    {{ block.super }}
+
+
+    <div class="row">
+
+        <div class="col-sm-4">&nbsp;</div>
+        <div class="col-sm-4">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                </div>
+                <div class="list-group">
+                        <a href="{% url 'canned_views:home_url' %}" class="list-group-item"><i
+                                class="fas fa-list-alt fa-lg fa-fw"></i>&nbsp;Reports</a>
+                    <a href="{% url 'logout' %}" class="list-group-item"><i class="fas fa-sign-out-alt fa-lg fa-fw"></i>&nbsp;Log&nbsp;out</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-4">&nbsp;
+        </div>
+    </div>
+
+
+{% endblock main %}
