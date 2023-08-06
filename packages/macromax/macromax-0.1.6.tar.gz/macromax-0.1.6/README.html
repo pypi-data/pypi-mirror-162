@@ -1,0 +1,265 @@
+<h1 id="macroscopic-maxwell-solver">Macroscopic Maxwell Solver</h1>
+<h2 id="introduction">Introduction</h2>
+<p>This Python 3 package enables solving the macroscopic Maxwell equations in complex dielectric materials.</p>
+<p>The material properties are defined on a rectangular grid (1D, 2D, or 3D) for which each voxel defines an isotropic or anisotropic permittivity. Optionally, a heterogeneous (anisotropic) permeability as well as bi-anisotropic coupling factors may be specified (e.g. for chiral media). The source, such as an incident laser field, is specified as an oscillating current-density distribution.</p>
+<p>The method iteratively corrects an estimated solution for the electric field (default: all zero). Its memory requirements are on the order of the storage requirements for the material properties and the electric field within the calculation volume. Full details can be found in the <a href="https://doi.org/10.1364/OE.27.011946">open-access</a> manuscript <a href="https://doi.org/10.1364/OE.27.011946">"Calculating coherent light-wave propagation in large heterogeneous media"</a>. When available, the <a href="https://pytorch.org/">machine learning library PyTorch</a> is used instead for <a href="https://arxiv.org/abs/2208.01118">(cloud/GPU) accelerated calculations</a>.</p>
+<p>Examples of usage can be found in <a href="examples">the examples/ sub-folder</a>. The <a href="https://macromax.readthedocs.io">Complete MacroMax Documentation</a> can be found at <a href="https://macromax.readthedocs.io">https://macromax.readthedocs.io</a>. All <a href="https://github.com/corilim/MacroMax">source code</a> is available on <a href="https://github.com/corilim/MacroMax">GitHub</a> under the <strong><a href="https://opensource.org/licenses/MIT">MIT License</a>: <a href="https://opensource.org/licenses/MIT">https://opensource.org/licenses/MIT</a></strong></p>
+<p><a href="https://www.python.org/downloads"><img src="https://img.shields.io/pypi/pyversions/macromax" alt="PyPI - Python Version" /></a> <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/pypi/l/macromax" alt="PyPI - License" /></a> <a href="https://github.com/corilim/MacroMax/tree/master/python"><img src="https://img.shields.io/pypi/v/macromax?label=version&amp;color=808000" alt="PyPI" /></a> <a href="https://pypi.org/project/macromax/tree/master/python"><img src="https://img.shields.io/pypi/status/macromax" alt="PyPI - Status" /></a> <a href="https://pypi.org/project/macromax/#files"><img src="https://img.shields.io/pypi/wheel/macromax?label=python%20wheel" alt="PyPI - Wheel" /></a> <a href="https://pypi.org/project/macromax/"><img src="https://img.shields.io/pypi/dm/macromax" alt="PyPI - Downloads" /></a> <a href="https://github.com/corilim/MacroMax"><img src="https://img.shields.io/github/languages/code-size/corilim/MacroMax" alt="GitHub code size in bytes" /></a> <a href="https://github.com/corilim/MacroMax"><img src="https://img.shields.io/github/last-commit/corilim/MacroMax" alt="GitHub last commit" /></a> <a href="https://libraries.io/pypi/macromax"><img src="https://img.shields.io/librariesio/release/pypi/macromax" alt="Libraries.io dependency status for latest release" /></a> <a href="https://readthedocs.org/projects/macromax"><img src="https://readthedocs.org/projects/macromax/badge/?version=latest" alt="Documentation Status" /></a></p>
+<h2 id="installation">Installation</h2>
+<h3 id="prerequisites">Prerequisites</h3>
+<p>This library requires Python 3 with the <code>numpy</code> and <code>scipy</code> packages for the main calculations. These modules will be automatically installed. The modules <code>multiprocessing</code>, <code>torch</code>, <code>pyfftw</code>, and <code>mkl-fft</code> (Intel(R) CPU specific) can significantly speed up the calculations.</p>
+<p>The examples require <code>matplotlib</code> for displaying the results. In the creation of this package for distribution, the <code>pypandoc</code> package is used for translating this document to other formats. This is only necessary for software development.</p>
+<p>The code has been tested on Python 3.7-3.10, though it is expected to work on versions 3.6 and above.</p>
+<h3 id="installing">Installing</h3>
+<p>Installing the <code>macromax</code> package and its mandatory dependencies is as straightforward as running the following command in a terminal:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install macromax</span></code></pre></div>
+<p>While this is sufficient to get started, optional packages are useful to display the results and to speed-up the calculations.</p>
+<h4 id="optimizing-execution-speed">Optimizing execution speed</h4>
+<p>The calculation time can be reduced to a fraction by ensuring you have the fastest libraries installed for your system. Python packages for multi-core CPUs and the FFTW library can be installed with:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install macromax multiprocessing pyFFTW</span></code></pre></div>
+<p>Do note that the <a href="https://pypi.org/project/pyFFTW/">pyFFTW</a> package requires the <a href="http://www.fftw.org/download.html">FFTW library</a>, and does not always install automatically. However, it is easy to install it using Anaconda with the commands: <code>conda install fftw</code>, or on Debian-based systems with <code>sudo apt-get install fftw</code>.</p>
+<p>Alternatively, the <a href="https://github.com/IntelPython/mkl_fft">mkl-fft</a> package is available for Intel(R) CPUs, though it may require compilation or relying on the <a href="https://www.anaconda.com/">Anaconda</a> or <a href="https://software.intel.com/content/www/us/en/develop/tools/distribution-for-python.html">Intel Python</a> distributions:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> install -c intel intelpython</span></code></pre></div>
+<p>NVidia CUDA-enabled GPU can be leveraged to offer an even more significant boost in efficiency. This can be as simple as installing the appropriate <a href="https://www.nvidia.co.uk/Download/index.aspx?lang=en-uk">CUDA drivers</a> and the PyTorch module following the <a href="https://pytorch.org/">PyTorch Guide</a>. Note that for PyTorch to work correctly, Nvidia drivers need to be up to date and match the installed CUDA version. At the time of writing, you can install PyTorch as follows:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install torch --extra-index-url https://download.pytorch.org/whl/cu116</span></code></pre></div>
+<p>Specifics for your CUDA version and operating system are listed on <a href="https://pytorch.org/">PyTorch Guide</a>.</p>
+<p>When PyTorch and a GPU are detected, these will be used by default. If not, FFTW and mkl-fft will be used if available. NumPy and SciPy will be used otherwise. The default backend can be set in your code or by creating a text file named <code>backend_config.json</code> in the current working directory with contents:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ot">[</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">{</span><span class="dt">&quot;type&quot;</span><span class="fu">:</span> <span class="st">&quot;torch&quot;</span><span class="fu">,</span> <span class="dt">&quot;device&quot;</span><span class="fu">:</span> <span class="st">&quot;cuda&quot;</span><span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">{</span><span class="dt">&quot;type&quot;</span><span class="fu">:</span> <span class="st">&quot;numpy&quot;</span><span class="fu">}</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="ot">]</span></span></code></pre></div>
+<p>to choose PyTorch with a CUDA GPU if available, and NumPy as a back-up option. The latter is usually faster when no GPU is available.</p>
+<h4 id="additional-packages">Additional packages</h4>
+<p>The package comes with a submodule containing example code that should run as-is on most desktop installations of Python. Some systems may require the installation of the ubiquitous <code>matplotlib</code> graphics library:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install matplotlib</span></code></pre></div>
+<p>The output logs can be colored by installing the coloredlogs packaged:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install coloredlogs</span></code></pre></div>
+<p>Building and distributing the library may require further packages as indicated below.</p>
+<h2 id="usage">Usage</h2>
+<p>The basic calculation procedure consists of the following steps:</p>
+<ol>
+<li><p>define the material</p></li>
+<li><p>define the coherent light source</p></li>
+<li><p>call <code>solution = macromax.solve(...)</code></p></li>
+<li><p>display the solution</p></li>
+</ol>
+<p>The <code>macromax</code> package must be imported to be able to use the <code>solve</code> function. The package also contains several utility functions that may help in defining the property and source distributions.</p>
+<p>Examples can be found in <a href="examples">the examples package in the examples/ folder</a>. Ensure that the entire <code>examples/</code> folder is downloaded, including the <code>__init__.py</code> file with general definitions. Run the examples from the parent folder using e.g. <code>python -m examples.air_glass_air_1D</code>.</p>
+<p>The complete functionality is described in the <a href="https://macromax.readthedocs.io">Library Reference Documentation</a> at <a href="https://macromax.readthedocs.io">https://macromax.readthedocs.io</a>.</p>
+<h3 id="loading-the-python-3-package">Loading the Python 3 package</h3>
+<p>The <code>macromax</code> package can be imported using:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> macromax</span></code></pre></div>
+<p><strong>Optional:</strong> If the package is installed without a package manager, it may not be on Python's search path. If necessary, add the library to Python's search path, e.g. using:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> sys</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>sys.path.append(os.path.dirname(os.getcwd()))</span></code></pre></div>
+<p>Reminder: this library requires Python 3, <code>numpy</code>, and <code>scipy</code>. Optionally, <code>pyfftw</code> can be used to speed up the calculations. The examples also require <code>matplotlib</code>.</p>
+<h3 id="specifying-the-material">Specifying the material</h3>
+<h4 id="defining-the-sampling-grid">Defining the sampling grid</h4>
+<p>The material properties are sampled on a plaid uniform rectangular grid of voxels. The sample points are defined by one or more linearly increasing coordinate ranges, one range per dimensions. The coordinates must be specified in meters, e.g.:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>x_range <span class="op">=</span> <span class="fl">50e-9</span> <span class="op">*</span> np.arange(<span class="dv">1000</span>)</span></code></pre></div>
+<p>Ranges for multiple dimensions can be passed to <code>solve(...)</code> as a tuple of ranges: <code>ranges = (x_range, y_range)</code>, or the convenience object <code>Grid</code> in the <code>macromax.utils.array</code> sub-package. The latter can be used as follows:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>data_shape <span class="op">=</span> (<span class="dv">200</span>, <span class="dv">400</span>)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>sample_pitch <span class="op">=</span> <span class="fl">50e-9</span>  <span class="co"># or (50e-9, 50e-9)</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>grid <span class="op">=</span> macromax.Grid(data_shape, sample_pitch)</span></code></pre></div>
+<p>This defines a uniformly spaced plaid grid, centered around the origin, unless specified otherwise.</p>
+<h4 id="defining-the-material-property-distributions">Defining the material property distributions</h4>
+<p>The material properties are defined by ndarrays of 2+N dimensions, where N can be up to 3 for three-dimensional samples. In each sample point, or voxel, a complex 3x3 matrix defines the anisotropy at that point in the sample volume. The first two dimensions of the ndarray are used to store the 3x3 matrix, the following dimensions are the spatial indices x, y, and z. Four complex ndarrays can be specified: <code>epsilon</code>, <code>mu</code>, <code>xi</code>, and <code>zeta</code>. These ndarrays represent the permittivity, permeability, and the two coupling factors, respectively.</p>
+<p>When the first two dimensions of a property are found to be both a singleton, i.e. 1x1, that property is assumed to be isotropic. Similarly, singleton spatial dimensions are interpreted as homogeneity in that property. The default permeability <code>mu</code> is 1, and the coupling constants are zero by default.</p>
+<h5 id="boundary-conditions">Boundary conditions</h5>
+<p>The underlying algorithm assumes <a href="https://en.wikipedia.org/wiki/Periodic_boundary_conditions">periodic boundary conditions</a>. Alternative boundary conditions can be implemented by surrounding the calculation area with absorbing (or reflective) layers. Back reflections can be suppressed by e.g. linearly increasing the imaginary part of the permittivity with depth into a boundary with a thickness of a few wavelengths.</p>
+<h3 id="defining-the-source">Defining the source</h3>
+<p>The coherent source is defined by as a spatially-variant free current density. Although the current density may be non-zero in all of space, it is more common to define a source at one of the edges of the volume, to model e.g. an incident laser beam; or even as a single voxel, to simulate a dipole emitter. The source density can be specified as a complex number, indicating the phase and amplitude of the current at each point. If an extended source is defined, care should be taken so that the source currents constructively interfere in the desired direction. I.e. the current density at neighboring voxels should have a phase difference matching the k-vector in the background medium. Optionally, instead of a current density, the internally-used source distribution may be specified directly. It is related to the current density as follows: <code>S = i omega mu_0 J</code> with units of rad s^-1 H m^-1 A m^-2 = rad V m^-3, where <code>omega</code> is the angular frequency, and <code>mu_0</code> is the vacuum permeability, mu_0.</p>
+<p>The source distribution is stored as a complex ndarray with 1+N dimensions. The first dimension contains the current 3D direction and amplitude for each voxel. The complex argument indicates the relative phase at each voxel.</p>
+<h3 id="calculating-the-electromagnetic-light-field">Calculating the electromagnetic light field</h3>
+<p>Once the <code>macromax</code> module is imported, the solution satisfying the macroscopic Maxwell's equations is calculated by calling:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>solution <span class="op">=</span> macromax.solve(...)</span></code></pre></div>
+<p>The function arguments to <code>macromax.solve(...)</code> can be the following:</p>
+<ul>
+<li><p><code>grid|x_range</code>: A Grid object, a vector (1D), or tuple of vectors (2D, or 3D) indicating the spatial coordinates of the sample points. Each vector must be a uniformly increasing array of coordinates, sufficiently dense to avoid aliasing artefacts.</p></li>
+<li><p><code>vacuum_wavelength|wave_number|anguler_frequency</code>: The wavelength in vacuum of the coherent illumination in units of meters.</p></li>
+<li><p><code>current_density</code> or <code>source_distribution</code>: An ndarray of complex values indicating the source value and direction at each sample point. The source values define the free current density in the sample. The first dimension contains the vector index, the following dimensions contain the spatial dimensions. If the source distribution is not specified, it is calculated as :math:<code>-i c k0 mu_0 J</code>, where <code>i</code> is the imaginary constant, <code>c</code>, <code>k0</code>, and <code>mu_0</code>, the light-speed, wavenumber, and permeability in vacuum. Finally, <code>J</code> is the free current density (excluding the movement of bound charges in a dielectric), specified as the input argument current_density. These input arguments should be <code>numpy.ndarray</code>s with a shape as specified by the <code>grid</code> input argument, or have one extra dimension on the left to indicate the polarization. If polarization is not specified the solution to the <em>scalar</em> wave equation is calculated. However, when polarization is specified the <em>vectorial</em> problem is solved. The returned <code>macromax.Solution</code> object has the property <code>vectorial</code> to indicate whether polarization is accounted for or not.</p></li>
+<li><p><code>refractive_index</code>: A complex <code>numpy.ndarray</code> of a shape as indicated by the <code>grid</code> argument. Each value indicates the refractive at the corresponding spatial grid point. Real values indicate a loss-less material. A positive imaginary part indicates the absorption coefficient, :math:<code>\kappa</code>. This input argument is not required if the permittivity, <code>epsilon</code> is specified.</p></li>
+<li><p><code>epsilon</code>: (optional, default: :math:<code>n^2</code>) A complex <code>numpy.ndarray</code> of a shape as indicated by the <code>grid</code> argument for <em>isotropic</em> media, or a shape with two extra dimensions on the left to indicate <em>anisotropy/birefringence</em>. The array values indicate the relative permittivity at all sample points in space. The optional two first (left-most) dimensions may contain a 3x3 matrix at each spatial location to indicate the anisotropy/birefringence. By default the 3x3 identity matrix is assumed, scaled by the scalar value of the array without the first two dimensions. Real values indicate loss-less permittivity. This input argument is unit-less, it is relative to the vacuum permittivity.</p></li>
+</ul>
+<p>Optionally one can also specify magnetic and coupling factors:</p>
+<ul>
+<li><p><code>mu</code>: A complex ndarray that defines the 3x3 permeability matrix at all sample points. The first two dimensions contain the matrix indices, the following dimensions contain the spatial dimensions.</p></li>
+<li><p><code>xi</code> and <code>zeta</code>: Complex ndarray that define the 3x3 coupling matrices at all sample points. This may be useful to model chiral materials. The first two dimensions contain the matrix indices, the following dimensions contain the spatial dimensions.</p></li>
+</ul>
+<p>It is often useful to also specify a callback function that tracks progress. This can be done by defining the <code>callback</code>-argument as a function that takes an intermediate solution as argument. This user-defined callback function can display the intermediate solution and check if the convergence is adequate. The callback function should return <code>True</code> if more iterations are required, and <code>False</code> otherwise. E.g.:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>callback<span class="op">=</span><span class="kw">lambda</span> s: s.residue <span class="op">&gt;</span> <span class="fl">0.01</span> <span class="kw">and</span> s.iteration <span class="op">&lt;</span> <span class="dv">1000</span></span></code></pre></div>
+<p>will iterate until the residue is at most 1% or until the number of iterations reaches 1,000.</p>
+<p>The solution object (of the Solution class) fully defines the state of the iteration and the current solution as described below.</p>
+<p>The <code>macromax.solve(...)</code> function returns a solution object. This object contains the electric field vector distribution as well as diagnostic information such as the number of iterations used and the magnitude of the correction applied in the last iteration. It can also calculate the displacement, magnetizing, and magnetic fields on demand. These fields can be queried as follows:</p>
+<ul>
+<li><code>solution.E</code>: Returns the electric field distribution.</li>
+<li><code>solution.H</code>: Returns the magnetizing field distribution.</li>
+<li><code>solution.D</code>: Returns the electric displacement field distribution.</li>
+<li><code>solution.B</code>: Returns the magnetic flux density distribution.</li>
+<li><code>solution.S</code>: The Poynting vector distribution in the sample.</li>
+</ul>
+<p>The field distributions are returned as complex <code>numpy</code> ndarrays in which the first dimensions is the polarization or direction index. The following dimensions are the spatial dimensions of the problem, e.g. x, y, and z, for three-dimensional problems.</p>
+<p>The solution object also keeps track of the iteration itself. It has the following diagnostic properties:</p>
+<ul>
+<li><code>solution.iteration</code>: The number of iterations performed.</li>
+<li><code>solution.residue</code>: The relative magnitude of the correction during the previous iteration. and it can be used as a Python iterator.</li>
+</ul>
+<p>Further information can be found in the <a href="https://github.com/corilim/MacroMax/python/examples/">examples</a> and the <a href="https://github.com/corilim/MacroMax/python/macromax/">signatures of each function and class</a>.</p>
+<h3 id="complete-example">Complete Example</h3>
+<p>The following code loads the library, defines the material and light source, calculates the result, and displays it. To keep this example as simple as possible, the calculation is limited to one dimension. Higher dimensional calculations simply require the definition of the material and light source in 2D or 3D.</p>
+<p>The first section of the code loads the <code>macromax</code> library module as well as its <code>utils</code> submodule. More</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> macromax</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="co"># %matplotlib notebook  # Uncomment this line in an iPython Jupyter notebook</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Define the material properties</span></span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>wavelength <span class="op">=</span> <span class="fl">500e-9</span>  <span class="co"># [ m ] In SI units as everything else here</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>source_polarization <span class="op">=</span> np.array([<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">0</span>])[:, np.newaxis]  <span class="co"># y-polarized</span></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Set the sampling grid</span></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>nb_samples <span class="op">=</span> <span class="dv">1024</span></span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>sample_pitch <span class="op">=</span> wavelength <span class="op">/</span> <span class="dv">10</span>  <span class="co"># [ m ]  # Sub-sample for display</span></span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>boundary_thickness <span class="op">=</span> <span class="fl">5e-6</span>  <span class="co"># [ m ]</span></span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>x_range <span class="op">=</span> sample_pitch <span class="op">*</span> np.arange(nb_samples) <span class="op">-</span> boundary_thickness  <span class="co"># [ m ]</span></span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Define the medium as a spatially-variant permittivity</span></span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Don&#39;t forget absorbing boundary:</span></span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a>dist_in_boundary <span class="op">=</span> np.maximum(<span class="dv">0</span>, np.maximum(<span class="op">-</span>x_range,</span>
+<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a>                                            x_range <span class="op">-</span> (x_range[<span class="op">-</span><span class="dv">1</span>] <span class="op">-</span> boundary_thickness)</span>
+<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a>                                            ) <span class="op">/</span> boundary_thickness)</span>
+<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a>permittivity <span class="op">=</span> <span class="fl">1.0</span> <span class="op">+</span> <span class="ot">0.25j</span> <span class="op">*</span> dist_in_boundary  <span class="co"># unit-less, relative to vacuum permittivity</span></span>
+<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a><span class="co"># glass has a refractive index of about 1.5</span></span>
+<span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a>permittivity[(x_range <span class="op">&gt;=</span> <span class="fl">20e-6</span>) <span class="op">&amp;</span> (x_range <span class="op">&lt;</span> <span class="fl">30e-6</span>)] <span class="op">+=</span> <span class="fl">1.5</span><span class="op">**</span><span class="dv">2</span></span>
+<span id="cb14-27"><a href="#cb14-27" aria-hidden="true" tabindex="-1"></a>permittivity <span class="op">=</span> permittivity[np.newaxis, np.newaxis, ...]  <span class="co"># Define an isotropic material</span></span>
+<span id="cb14-28"><a href="#cb14-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-29"><a href="#cb14-29" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
+<span id="cb14-30"><a href="#cb14-30" aria-hidden="true" tabindex="-1"></a><span class="co"># Define the illumination source</span></span>
+<span id="cb14-31"><a href="#cb14-31" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
+<span id="cb14-32"><a href="#cb14-32" aria-hidden="true" tabindex="-1"></a><span class="co"># point source at x = 0</span></span>
+<span id="cb14-33"><a href="#cb14-33" aria-hidden="true" tabindex="-1"></a>current_density <span class="op">=</span> source_polarization <span class="op">*</span> (np.<span class="bu">abs</span>(x_range) <span class="op">&lt;</span> sample_pitch<span class="op">/</span><span class="dv">4</span>)</span>
+<span id="cb14-34"><a href="#cb14-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-35"><a href="#cb14-35" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
+<span id="cb14-36"><a href="#cb14-36" aria-hidden="true" tabindex="-1"></a><span class="co"># Solve Maxwell&#39;s equations</span></span>
+<span id="cb14-37"><a href="#cb14-37" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
+<span id="cb14-38"><a href="#cb14-38" aria-hidden="true" tabindex="-1"></a><span class="co"># (the actual work is done in this line)</span></span>
+<span id="cb14-39"><a href="#cb14-39" aria-hidden="true" tabindex="-1"></a>solution <span class="op">=</span> macromax.solve(x_range, vacuum_wavelength<span class="op">=</span>wavelength,</span>
+<span id="cb14-40"><a href="#cb14-40" aria-hidden="true" tabindex="-1"></a>                          current_density<span class="op">=</span>current_density, epsilon<span class="op">=</span>permittivity)</span>
+<span id="cb14-41"><a href="#cb14-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-42"><a href="#cb14-42" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
+<span id="cb14-43"><a href="#cb14-43" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the results</span></span>
+<span id="cb14-44"><a href="#cb14-44" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
+<span id="cb14-45"><a href="#cb14-45" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(<span class="dv">2</span>, <span class="dv">1</span>, frameon<span class="op">=</span><span class="va">False</span>, figsize<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">6</span>))</span>
+<span id="cb14-46"><a href="#cb14-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-47"><a href="#cb14-47" aria-hidden="true" tabindex="-1"></a>x_range <span class="op">=</span> solution.grid[<span class="dv">0</span>]  <span class="co"># coordinates</span></span>
+<span id="cb14-48"><a href="#cb14-48" aria-hidden="true" tabindex="-1"></a>E <span class="op">=</span> solution.E[<span class="dv">1</span>, :]  <span class="co"># Electric field in y</span></span>
+<span id="cb14-49"><a href="#cb14-49" aria-hidden="true" tabindex="-1"></a>H <span class="op">=</span> solution.H[<span class="dv">2</span>, :]  <span class="co"># Magnetizing field in z</span></span>
+<span id="cb14-50"><a href="#cb14-50" aria-hidden="true" tabindex="-1"></a>S <span class="op">=</span> solution.S_forw[<span class="dv">0</span>, :]  <span class="co"># Poynting vector in x</span></span>
+<span id="cb14-51"><a href="#cb14-51" aria-hidden="true" tabindex="-1"></a>f <span class="op">=</span> solution.f[<span class="dv">0</span>, :]  <span class="co"># Optical force in x</span></span>
+<span id="cb14-52"><a href="#cb14-52" aria-hidden="true" tabindex="-1"></a><span class="co"># Display the field for the polarization dimension</span></span>
+<span id="cb14-53"><a href="#cb14-53" aria-hidden="true" tabindex="-1"></a>field_to_display <span class="op">=</span> E</span>
+<span id="cb14-54"><a href="#cb14-54" aria-hidden="true" tabindex="-1"></a>max_val_to_display <span class="op">=</span> np.amax(np.<span class="bu">abs</span>(field_to_display))</span>
+<span id="cb14-55"><a href="#cb14-55" aria-hidden="true" tabindex="-1"></a>poynting_normalization <span class="op">=</span> np.amax(np.<span class="bu">abs</span>(S)) <span class="op">/</span> max_val_to_display</span>
+<span id="cb14-56"><a href="#cb14-56" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].plot(x_range <span class="op">*</span> <span class="fl">1e6</span>,</span>
+<span id="cb14-57"><a href="#cb14-57" aria-hidden="true" tabindex="-1"></a>           np.<span class="bu">abs</span>(field_to_display) <span class="op">**</span> <span class="dv">2</span> <span class="op">/</span> max_val_to_display,</span>
+<span id="cb14-58"><a href="#cb14-58" aria-hidden="true" tabindex="-1"></a>           color<span class="op">=</span>[<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>])</span>
+<span id="cb14-59"><a href="#cb14-59" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].plot(x_range <span class="op">*</span> <span class="fl">1e6</span>, np.real(S) <span class="op">/</span> poynting_normalization,</span>
+<span id="cb14-60"><a href="#cb14-60" aria-hidden="true" tabindex="-1"></a>           color<span class="op">=</span>[<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>])</span>
+<span id="cb14-61"><a href="#cb14-61" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].plot(x_range <span class="op">*</span> <span class="fl">1e6</span>, np.real(field_to_display),</span>
+<span id="cb14-62"><a href="#cb14-62" aria-hidden="true" tabindex="-1"></a>           color<span class="op">=</span>[<span class="dv">0</span>, <span class="fl">0.7</span>, <span class="dv">0</span>])</span>
+<span id="cb14-63"><a href="#cb14-63" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].plot(x_range <span class="op">*</span> <span class="fl">1e6</span>, np.imag(field_to_display),</span>
+<span id="cb14-64"><a href="#cb14-64" aria-hidden="true" tabindex="-1"></a>           color<span class="op">=</span>[<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>])</span>
+<span id="cb14-65"><a href="#cb14-65" aria-hidden="true" tabindex="-1"></a>figure_title <span class="op">=</span> <span class="st">&quot;Iteration </span><span class="sc">%d</span><span class="st">, &quot;</span> <span class="op">%</span> solution.iteration</span>
+<span id="cb14-66"><a href="#cb14-66" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].set_title(figure_title)</span>
+<span id="cb14-67"><a href="#cb14-67" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].set_xlabel(<span class="st">&quot;x  [$\mu$m]&quot;</span>)</span>
+<span id="cb14-68"><a href="#cb14-68" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].set_ylabel(<span class="st">&quot;I, E  [a.u., V/m]&quot;</span>)</span>
+<span id="cb14-69"><a href="#cb14-69" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">0</span>].set_xlim(x_range[[<span class="dv">0</span>, <span class="op">-</span><span class="dv">1</span>]] <span class="op">*</span> <span class="fl">1e6</span>)</span>
+<span id="cb14-70"><a href="#cb14-70" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-71"><a href="#cb14-71" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].plot(x_range[<span class="op">-</span><span class="dv">1</span>] <span class="op">*</span> <span class="fl">2e6</span>, <span class="dv">0</span>,</span>
+<span id="cb14-72"><a href="#cb14-72" aria-hidden="true" tabindex="-1"></a>           color<span class="op">=</span>[<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>], label<span class="op">=</span><span class="st">&#39;I&#39;</span>)</span>
+<span id="cb14-73"><a href="#cb14-73" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].plot(x_range[<span class="op">-</span><span class="dv">1</span>] <span class="op">*</span> <span class="fl">2e6</span>, <span class="dv">0</span>,</span>
+<span id="cb14-74"><a href="#cb14-74" aria-hidden="true" tabindex="-1"></a>           color<span class="op">=</span>[<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>], label<span class="op">=</span><span class="st">&#39;$S_</span><span class="sc">{real}</span><span class="st">$&#39;</span>)</span>
+<span id="cb14-75"><a href="#cb14-75" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].plot(x_range[<span class="op">-</span><span class="dv">1</span>] <span class="op">*</span> <span class="fl">2e6</span>, <span class="dv">0</span>,</span>
+<span id="cb14-76"><a href="#cb14-76" aria-hidden="true" tabindex="-1"></a>           color<span class="op">=</span>[<span class="dv">0</span>, <span class="fl">0.7</span>, <span class="dv">0</span>], label<span class="op">=</span><span class="st">&#39;$E_</span><span class="sc">{real}</span><span class="st">$&#39;</span>)</span>
+<span id="cb14-77"><a href="#cb14-77" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].plot(x_range[<span class="op">-</span><span class="dv">1</span>] <span class="op">*</span> <span class="fl">2e6</span>, <span class="dv">0</span>,</span>
+<span id="cb14-78"><a href="#cb14-78" aria-hidden="true" tabindex="-1"></a>           color<span class="op">=</span>[<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">0</span>], label<span class="op">=</span><span class="st">&#39;$E_</span><span class="sc">{imag}</span><span class="st">$&#39;</span>)</span>
+<span id="cb14-79"><a href="#cb14-79" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].plot(x_range <span class="op">*</span> <span class="fl">1e6</span>, permittivity[<span class="dv">0</span>, <span class="dv">0</span>].real,</span>
+<span id="cb14-80"><a href="#cb14-80" aria-hidden="true" tabindex="-1"></a>           color<span class="op">=</span>[<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">1</span>], label<span class="op">=</span><span class="st">&#39;$\epsilon_</span><span class="sc">{real}</span><span class="st">$&#39;</span>)</span>
+<span id="cb14-81"><a href="#cb14-81" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].plot(x_range <span class="op">*</span> <span class="fl">1e6</span>, permittivity[<span class="dv">0</span>, <span class="dv">0</span>].imag,</span>
+<span id="cb14-82"><a href="#cb14-82" aria-hidden="true" tabindex="-1"></a>           color<span class="op">=</span>[<span class="dv">0</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>], label<span class="op">=</span><span class="st">&#39;$\epsilon_</span><span class="sc">{imag}</span><span class="st">$&#39;</span>)</span>
+<span id="cb14-83"><a href="#cb14-83" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].set_xlabel(<span class="st">&#39;x  [$\mu$m]&#39;</span>)</span>
+<span id="cb14-84"><a href="#cb14-84" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].set_ylabel(<span class="st">&#39;$\epsilon$&#39;</span>)</span>
+<span id="cb14-85"><a href="#cb14-85" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].set_xlim(x_range[[<span class="dv">0</span>, <span class="op">-</span><span class="dv">1</span>]] <span class="op">*</span> <span class="fl">1e6</span>)</span>
+<span id="cb14-86"><a href="#cb14-86" aria-hidden="true" tabindex="-1"></a>ax[<span class="dv">1</span>].legend(loc<span class="op">=</span><span class="st">&#39;upper right&#39;</span>)</span>
+<span id="cb14-87"><a href="#cb14-87" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-88"><a href="#cb14-88" aria-hidden="true" tabindex="-1"></a>plt.show(block<span class="op">=</span><span class="va">True</span>)  <span class="co"># Not needed for iPython Jupyter notebook</span></span></code></pre></div>
+<h3 id="optimization-of-time-and-memory-efficiency">Optimization of time and memory efficiency</h3>
+<p>Electromagnetic calculations tend to test the limits of the hardware. Two factors should be considered when optimizing the calculation: computation and memory. Naturally, the number of operations and the duration of each operation should be minimized. However, the latter is often dominated by memory accesses and copying of arrays. The memory usage therefore does not only affect the size of the problems that can be solved, it also tends to have an important impact on the total calculation time.</p>
+<p>A straightforward method to reduce memory usage is to switch from 128-bit precision complex numbers to 64-bit. By default, the precision of the source_density is used, which is typically <code>np.complex128</code> or its real equivalent. The <code>Solution</code>'s default <code>dtype</code> can be overridden by specifying it as <code>solve(... dtype=np.complex64)</code>. Halving the storage requirements can eliminate additional copies between the main memory and CPU cache. In extreme cases it can also avoid swapping. Lower precision math also executes faster on many architectures.</p>
+<p>While oversampling to less than 1/10th of the wavelength may aid visualization, it is often sufficient to sample at a quarter of the wavelength. The sample solution represents a sinc-interpolated continuous function. The final result can be visualized with arbitrary resolution using interpolation.</p>
+<p>The number of operations can be kept to a minimum by:</p>
+<ul>
+<li>using non-magnetic and non-chiral materials,</li>
+<li>using isotropic materials,</li>
+<li>limiting the largest difference in permittivity (including the absorbing boundary), and</li>
+<li>using a scalar approximation whenever possible.</li>
+</ul>
+<p>Optimization of the implementation is another route to consider. Potentially areas of improvement are:</p>
+<ul>
+<li>Profiling of memory usage and elimination of redundant temporary copies</li>
+<li>In-place fast-Fourier transforms. When available, the <a href="http://fftw.org/">FFTW</a> library is used; however, the drop-in fft and ifft replacements are used at the moment.</li>
+<li>Moving the calculations to a GPU or a cloud-computing environment. Since the copying-overheads may quickly become a bottleneck, it is important to consider the memory requirements for the problem you want to solve.</li>
+</ul>
+<h2 id="development">Development</h2>
+<p>The <a href="https://macromax.readthedocs.io">Library API Documentation</a> can be found at <a href="https://macromax.readthedocs.io">https://macromax.readthedocs.io</a>.</p>
+<h3 id="source-code-organization">Source code organization</h3>
+<p>The source code is organized as follows:</p>
+<ul>
+<li><a href=".">/</a> (root): Module description and distribution files.</li>
+<li><a href="macromax/">macromax/</a>: The iterative solver.
+<ul>
+<li><a href="macromax/utils/">macromax/utils/</a>: Helper functionality used in the solver and to use the solver.</li>
+</ul></li>
+<li><a href="examples/">examples/</a>: Examples of how the solver can be used.</li>
+<li><a href="tests/">tests/</a>: Automated unit tests of the solver's functionality. Use this after making modifications to the solver and extend it if new functionality is added.</li>
+</ul>
+<p>The library functions are contained in <code>macromax/</code>:</p>
+<ul>
+<li><a href="macromax/solver.py">solver</a>: Defines the <code>solve(...)</code> function and the <code>Solution</code> class.</li>
+<li><a href="macromax/backend/numpy.py">backend</a>: Defines linear algebra functions to work efficiently with large arrays of 3x3 matrices and 3-vectors.</li>
+<li><a href="macromax/utils/">utils/</a>: Defines utility functions that can be used to prepare and interpret function arguments.</li>
+</ul>
+<p>The included examples in the <a href="examples/">examples/</a> folder are:</p>
+<ul>
+<li><a href="examples/notebook_example.ipynb">notebook_example.ipynb</a>: An iPython notebook demonstrating basic usage of the library.</li>
+<li><a href="examples/air_glass_air_1D.py">air_glass_air_1D.py</a>: Calculation of the back reflection from an air-glass interface (one-dimensional calculation)</li>
+<li><a href="examples/air_glass_air_2D.py">air_glass_air_2D.py</a>: Calculation of the refraction and reflection of light hitting a glass window at an angle (two-dimensional calculation)</li>
+<li><a href="examples/birefringent_crystal.py">birefringent_crystal.py</a>: Demonstration of how an anisotropic permittivity can split a diagonally polarized Gaussian beam into ordinary and extraordinary beams.</li>
+<li><a href="examples/polarizer.py">polarizer.py</a>: Calculation of light wave traversing a set of two and a set of three polarizers as a demonstration of anisotropic absorption (non-Hermitian permittivity)</li>
+<li><a href="examples/rutile.py">rutile.py</a>: Scattering from disordered collection of birefringent rutile (TiO2) particles.</li>
+<li><a href="examples/benchmark.py">benchmark.py</a>: Timing of a simple two-dimensional calculation for comparison between versions.</li>
+</ul>
+<h3 id="testing">Testing</h3>
+<p>Unit tests are contained in <code>macromax/tests</code>. The <code>BackEnd</code> class in <code>backend.py</code> is well covered and specific tests have been written for the <code>Solution</code> class in <code>solver.py</code>.</p>
+<p>To run the tests, make sure that the <code>nose</code> package is installed, and run the following commands from the <code>Macromax/python/</code> directory:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install nose</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="ex">nosetests</span> -v tests</span></code></pre></div>
+<h3 id="building-and-distributing">Building and Distributing</h3>
+<p>The <a href="https://github.com/corilim/MacroMax">source code</a> consists of pure Python 3, hence only packaging is required for distribution. A package is generated by <code>setup.py</code>, which relies on the <code>pypandoc</code> package:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install pypandoc</span></code></pre></div>
+<p>Please refer to: <a href="https://pypi.org/project/pypandoc/" class="uri">https://pypi.org/project/pypandoc/</a> for instructions on its installation for your operating system of choice.</p>
+<p>To prepare a package for distribution, increase the <code>__version__</code> number in <a href="macromax/__init__.py">macromax/__init__.py</a>, and run:</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> setup.py sdist bdist_wheel</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install . --upgrade</span></code></pre></div>
+<p>The second line installs the newly-forged <code>macromax</code> package for testing.</p>
+<p>The package can then be uploaded to a test repository as follows:</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install twine</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="ex">twine</span> upload --repository-url https://test.pypi.org/legacy/ dist/*</span></code></pre></div>
+<p>Installing from the test repository is done as follows:</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install -i https://test.pypi.org/simple/ macromax --upgrade</span></code></pre></div>
+<p>To facilitate importing the code, IntelliJ IDEA/PyCharm project files can be found in <code>MacroMax/python/</code>: <code>MacroMax/python/python.iml</code> and the folder <code>MacroMax/python/.idea</code>.</p>
