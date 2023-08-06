@@ -1,0 +1,91 @@
+Metadata-Version: 2.1
+Name: cvindrones
+Version: 0.0.1
+Summary: Direct Implementation of computer vision with just a line of code
+Home-page: https://www.lakshaykumar.tech/
+Author: Lakshay Kumar
+Author-email: contact@lakshaykumar.tech
+License: UNKNOWN
+Download-URL: https://github.com/laksh-2193/coterie/archive/refs/tags/v0.0.1.tar.gz
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.3
+Description-Content-Type: text/markdown
+Requires-Dist: mediapipe
+
+More about coterie
+==============================
+It is a package having pre-built codes of face recognition, hands tracking module and body pose tracking. Implemented with a single line of code.
+
+https://www.lakshaykumar.tech/
+
+What Is This?
+-------------
+
+Implement the power of Computer Vision in your program with just few simple lines of code. Hand detection, Body Pose and face Recognition modules are included in this package
+
+
+faceProcessor(image, draw=False)
+> This function returns a 1D list of 3 items. Image (with rectangular box, if drawArea=True), area of face and [x,y,w,h]
+
+bodyProcessor(image, draw=False)
+> This function returns a list of 3 items i.e. Image (with rectangular box, if drawArea=True), list of body points and area of body.
+
+handProcessor(image, draw=False)
+> This function returns a list having image (with hand connections, if drawArea=True) and points in handlandmarks
+
+Usage
+-------
+
+> faceProcessor(image, draw=True)
+```
+from coterie import faceProcessor
+import cv2
+cap = cv2.VideoCapture(0)
+while True:
+    success, image = cap.read()
+    funValues = faceProcessor(image,draw=True)
+    image = funValues[0]
+    area = funValues[1]
+    x,y,w,h = funValues[2]
+    cv2.imshow('Faces', image)
+    cv2.waitKey(1)
+cap.release()
+```
+
+> bodyProcessor(image, draw=True)
+```
+from coterie import bodyProcessor
+import cv2
+cap = cv2.VideoCapture(0)
+while True:
+    success, image = cap.read()
+    funValues = bodyProcessor(image,draw=True)
+    image = funValues[0]
+    poseList = funValues[1]
+    area = funValues[2]
+    cv2.imshow('Body Posture Detection', image)
+    cv2.waitKey(1)
+cap.release()
+```
+
+> handProcessor(image,draw=True)
+```
+from coterie import handProcessor
+import cv2
+cap = cv2.VideoCapture(0)
+while True:
+    success, image = cap.read()
+    funValues = handProcessor(image,draw=True)
+    image = funValues[0]
+    handLms = funValues[1]
+    cv2.imshow('Hand Gesture Controller', image)
+    cv2.waitKey(1)
+cap.release()
+```
+
+
+
+
