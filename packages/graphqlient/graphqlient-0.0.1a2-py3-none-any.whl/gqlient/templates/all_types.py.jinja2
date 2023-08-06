@@ -1,0 +1,122 @@
+
+{% for type_ in types %}
+{{ get_type(type_, suffix=constants.selection_type) }} = TypeVar('{{ get_type(type_, suffix=constants.selection_type) }}')
+
+
+class {{ get_type(type_, constants.field) }}(BaseField):
+    pass
+
+
+@dataclass
+class {{ get_type(type_) }}(metaclass=GeneratedType):
+    {% for field_name, field in type_.fields.items() -%}
+        {{ underscore(field_name) }}{{ ': ' }}
+        {%- if get_type(field.type, constants.selection).rstrip(']').endswith(constants.selection.value) -%}
+            {%- set f_type = get_type(field.type, constants.selection.value + '[' + type_.name + 'Field]', enquote=True) -%}
+            {{ f_type }} = {{ get_type(type_, suffix=constants.field) }}('{{ field_name }}', {{ f_type }})
+        {%- else %}{{ get_type(type_, suffix=constants.field) }} = {{ get_type(type_, suffix=constants.field) }}('{{ field_name }}', {{ get_type(field.type, constants.selection) }}){% endif %}
+    {% endfor %}
+
+class {{ get_type(type_, constants.selection) }}(Generic[{{ get_type(type_, constants.selection_type) }}]):
+    def __init__(self, _calling_field: str):
+        self._calling_field = _calling_field
+        self._finish_select = lambda: None
+
+    {% set field_type = get_type(type_, suffix='Field') -%}
+    def select(self, *fields: {{ field_type }}) -> {{ get_type(type_, constants.selection_type) }}:
+        graphql_fields = [f.field_name for f in fields if isinstance(f, {{ field_type }})]
+        nested_selects = list(map(lambda f: lambda s: f._finish_select(getattr(s.{{ get_type(type_) }}, f._calling_field), s),  # type: ignore
+                                  filter(lambda f: not isinstance(f, {{ field_type }}), fields)))
+        self._finish_select = partial_select(list(map(lambda f: lambda s: getattr(s.{{ get_type(type_) }}, f), graphql_fields)) + nested_selects)
+        return self
+
+{% endfor %}
+
+
+{%- for type_ in union_types %}
+{%- set sub_types = get_union_types(type_) %}
+{{ get_type(type_, constants.field_type) }} = TypeVar('{{ get_type(type_, constants.field_type) }}')
+{{ get_type(type_, constants.selection_type) }} = TypeVar('{{ get_type(type_, constants.selection_type) }}')
+
+
+class {{ get_type(type_, constants.field) }}(BaseField):
+    pass
+
+
+@dataclass
+class {{ get_type(type_) }}(metaclass=GeneratedUnionType):
+    class _OnFragment:
+        def __init__(self, on_type: {{ sub_types }}):
+            self.on_type = on_type
+
+    {%- for sub_type in type_.types %}
+
+    @staticmethod
+    @overload
+    def on(on_type: Type[{{ sub_type }}]) -> {{ get_type(sub_type, constants.selection.value + '[Any]') }}: ...
+    {%- endfor %}
+
+    @staticmethod
+    def on(on_type: Union[{% for sub_type in type_.types %}Type[{{ sub_type }}]{% if not loop.last %}, {% endif %}{% endfor %}]):
+        return {
+            {%- for sub_type in type_.types %}
+            {{ sub_type }}: {{ get_type(sub_type, constants.selection.value + '[Any]') }}
+            {%- if not loop.last %},{% endif -%}
+            {% endfor %}
+        }[on_type](None)
+
+{% endfor %}
+
+{%- for type_ in interface_types %}
+{%- set sub_types = get_interface_types(type_) %}
+{{ get_type(type_, constants.field_type) }} = TypeVar('{{ get_type(type_, constants.field_type) }}')
+{{ get_type(type_, constants.selection_type) }} = TypeVar('{{ get_type(type_, constants.selection_type) }}')
+
+
+class {{ get_type(type_, constants.selection) }}(Generic[{{ get_type(type_, constants.selection_type) }}]):
+    def __init__(self, _calling_field: str):
+        self._calling_field = _calling_field
+        self._finish_select = lambda: None
+
+    {% set field_type = get_type(type_, suffix='Field') -%}
+    def select(self, *fields: '{{ field_type }}') -> {{ get_type(type_, constants.selection_type) }}:
+        graphql_fields = [f.field_name for f in fields if isinstance(f, {{ field_type }})]
+        nested_selects = list(map(lambda f: lambda s: f._finish_select(getattr(s.{{ get_type(type_) }}, f._calling_field), s),  # type: ignore
+                                  filter(lambda f: not isinstance(f, {{ field_type }}), fields)))
+        self._finish_select = partial_select(list(map(lambda f: lambda s: getattr(s.{{ get_type(type_) }}, f), graphql_fields)) + nested_selects)
+        return self
+
+
+class {{ get_type(type_, constants.field) }}(BaseField):
+    pass
+
+
+@dataclass
+class {{ get_type(type_) }}(metaclass=GeneratedInterfaceType):
+    class _OnFragment:
+        def __init__(self, on_type: {{ sub_types }}):
+            self.on_type = on_type
+
+    {% for field_name, field in type_.fields.items() -%}
+        {{ underscore(field_name) }}{{ ': ' }}
+        {%- if get_type(field.type, constants.selection).rstrip(']').endswith(constants.selection.value) -%}
+            {%- set f_type = get_type(field.type, constants.selection.value + '[' + type_.name + 'Field]', enquote=True) -%}
+            {{ f_type }} = {{ type_ }}Field('{{ field_name }}', {{ f_type }})
+        {%- else %}{{ type_ }}Field = {{ type_ }}Field('{{ field_name }}', {{ get_type(field.type, constants.selection) }}){% endif %}
+    {% endfor %}
+
+    {%- for sub_type in type_.types %}
+    @staticmethod
+    @overload
+    def on(on_type: Type[{{ sub_type }}]) -> {{ sub_type }}Selection[Any]: ...
+    {% endfor %}
+    @staticmethod
+    def on(on_type: Union[{% for sub_type in type_.types %}Type[{{ sub_type }}]{% if not loop.last %}, {% endif %}{% endfor %}]):
+        return {
+            {%- for sub_type in type_.types %}
+            {{ sub_type }}: {{ sub_type }}Selection[Any]
+            {%- if not loop.last %},{% endif -%}
+            {% endfor %}
+        }[on_type](None)
+
+{%- endfor %}
