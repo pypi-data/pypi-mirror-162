@@ -1,0 +1,112 @@
+Metadata-Version: 2.1
+Name: finlab
+Version: 0.3.7.dev1
+Summary: Analyzing stock has never been easier.
+Home-page: UNKNOWN
+Author: FinLab
+Author-email: finlab.company@finlab.tw
+License: UNKNOWN
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: License :: OSI Approved :: GNU General Public License v3 (GPLv3)
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: requests
+Requires-Dist: numpy
+Requires-Dist: pandas (>=1.0.3)
+Requires-Dist: pyarrow (>=2.0.0)
+Requires-Dist: lz4
+Requires-Dist: Cython
+
+---
+hide:
+  - navigation
+---
+
+# 快速上手
+
+## 安裝
+
+在任意平台上，皆可安裝 FinLab Package，我們支援 Windows、MacOS、Linux，並且甚至是 Pyodide！
+以新手來說，推薦的使用方式是直接在 [Google Colab](https://colab.research.google.com/)，來使用。
+Google Colab 可以線上產生一個執行 Python 的環境，使用者不需額外在本機安裝任何程式，即可開始使用。
+
+=== ":octicons-code-16: Google Colab"
+    ``` py
+    # 在 Colab 中任意 Cell 中執行
+
+    !pip install finlab > log.txt
+    ```
+=== ":octicons-code-16: FinLab 實驗室"
+    ``` 
+    打開選股策略頁面
+    https://ai.finlab.tw/strategies
+    並點選「建立策略」即可開始使用。
+    ```
+
+=== ":octicons-code-16: 本機 Python"
+    ``` py
+    # 在 anacnoda prompt 中執行
+
+    pip install finlab
+    ```
+
+
+## 下載資料
+
+輸入以下程式碼，即可下載資料。可以[查詢](https://ai.finlab.tw/database)有哪些歷史資料可以下載。
+
+``` py
+from finlab import data
+
+data.get('price:收盤價')
+```
+
+| date       |   0015 |   0050 |   0051 |   0052 |   0053 |
+|:-----------|-------:|-------:|-------:|-------:|-------:|
+| 2007-04-23 |   9.54 |  57.85 |  32.83 |  38.4  |    nan |
+| 2007-04-24 |   9.54 |  58.1  |  32.99 |  38.65 |    nan |
+| 2007-04-25 |   9.52 |  57.6  |  32.8  |  38.59 |    nan |
+| 2007-04-26 |   9.59 |  57.7  |  32.8  |  38.6  |    nan |
+| 2007-04-27 |   9.55 |  57.5  |  32.72 |  38.4  |    nan |
+
+## 撰寫策略
+
+可以用非常簡單的 `Pandas` 語法來撰寫策略邏輯，以創新高的策略來說，可以用以下的寫法：
+
+``` py
+from finlab import data
+
+close = data.get('price:收盤價')
+position = close >= close.rolling(300).max()
+position
+```
+
+| date                |   0015 |   0050 |   0051 |   0052 |   0053 |
+|:--------------------|-------:|-------:|-------:|-------:|-------:|
+| 2007-04-23 00:00:00 |      0 |      0 |      0 |      0 |      0 |
+| 2007-04-24 00:00:00 |      0 |      0 |      0 |      0 |      0 |
+| 2007-04-25 00:00:00 |      0 |      0 |      0 |      0 |      0 |
+| 2007-04-26 00:00:00 |      0 |      0 |      0 |      1 |      0 |
+| 2007-04-27 00:00:00 |      0 |      0 |      0 |      0 |      0 |
+
+這邊的 `position` 是一個 0/1 的查詢表，當數字為 1，代表該股票在當天有創新高，而數字 0 則代表沒有創新高。由於創新高的股票很少，上面的範例中，只有少數股票的數值會是 1。
+
+假設我們希望每個月底，搜尋上表中數值為 1 的股票並且買入持有一個月，可以用以下的語法：
+
+## 回測績效
+
+``` py
+from finlab import backtest
+
+report = backtest.sim(position, resample='M')
+```
+
+![image](https://i.ibb.co/7kNyvhP/Screen-Shot-2021-07-13-at-11-54-29-PM.png)
+
+
