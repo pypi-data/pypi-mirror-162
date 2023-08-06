@@ -1,0 +1,31 @@
+# CHANGELOG
+### Release 1.0.4
+- Removing receiveOk and sendFlag on agent comms. Added returns to all functions (returns true or false if the message is sent or not, returning message when executing receive or receiveAll). Added a dictionary to store the last message received by each agent.
+- Communication: First 4 bytes should contain the message length. (Full message should contain first4bytes + message)
+- world now retrieves teams' names from both sides
+- Initialization script to run server, agents and gym automatically. Fixing singleton class and initialization of the env (trying to solve starting latency).
+- Modifications on startScript, start.sh and config.ini . Solved Singleton class bug.
+- The initial version of players' position mapping by the server
+- Removed unnecessary comments.
+- Removed unnecessary comments. Added config.ini to set variables for automated start script.
+- Added methods to keep track of connected players' positions
+- Removed unnecessary print() statements. Fixed an issue on the getObjIndex method. Increased demo_env episode time limit from 20 to 40 seconds.
+- Communication with the team has been finished. The gym can send and receive messages from the team.
+- fixed singleton design patter using python's metaclass.
+- Updated network connection classes to accept port parameteres. Created start.py with module startEnv() which automatically start RCSSSERVER3D, a test script provided by user which is supposed to run his environment, and an agent or team with a command provided by user. 
+- Created terminate.py to kill rcssserver3d, the user-defined environment, and the agents started in the environment. Modfied start.py to make startEnv() return the PIDs from the three processes started. 
+- Players and ball index and positions are correctly retrieved. 
+- Updated classes with the Copyright License comment.
+- Updated Markdown and Manifest files. 
+- Updated BahiaRT Gym files with license mandatory comments. 
+- Updated BahiaRT Gym source files with mandatory license comments. 
+- Fixed players maping with 2 teams. Isolated private variables in world.py
+- Modified server to agent messages parsing to enhance performance. Created a critical region using a mutex when the library sexpr is called to parse the s-expression.
+- Remove message buffer. It is not necessary anymore and impacts performance.
+- Removed test scripts.
+- world.py optimized and new method added to player.py getJointAngle() method added to player.py getObs() method changed to getPerceptions(). The previous name was not good, since an observation depends on each implementation of this code. Server's S-Expression values extractions optimized on both staticUpdate() and dynamicUpdate() methods.
+- terminateEnv updated to be a dynamic reward in demo_env fixed. ballPolarPos fixed on player startEnv and killEnv added to their respective init.py 
+- Updated release version in setup.py
+- Updated README.md with information for software citation. Included cite.bib with BibTeX reference.
+- Updated link to cite.bib in README.md. Updated release version 1.0.4 on setup.y
+- Created CHANGELOG.md
