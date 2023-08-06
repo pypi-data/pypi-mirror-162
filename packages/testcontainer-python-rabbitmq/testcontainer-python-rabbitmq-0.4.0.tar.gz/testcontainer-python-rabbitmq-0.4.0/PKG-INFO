@@ -1,0 +1,37 @@
+Metadata-Version: 2.1
+Name: testcontainer-python-rabbitmq
+Version: 0.4.0
+Summary: Testcontainer for RabbitMQ
+Author: Max Fröhlich
+Author-email: max.froehlich@serviceware.de
+Requires-Python: >=3.8,<4.0
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Requires-Dist: testcontainers (>=3.6.0,<4.0.0)
+Description-Content-Type: text/markdown
+
+# Python Testcontainer RabbitMQ
+
+## Usage
+
+```python
+import pika
+from testcontainer_python_rabbitmq import RabbitMQContainer
+
+
+def test_rabbitmq():
+    config = RabbitMQContainer()
+    with config as container:
+        connection = pika.BlockingConnection(
+            pika.ConnectionParameters(
+                host=container.get_container_host_ip(),
+                port=container.get_amqp_port(),
+                credentials=pika.PlainCredentials(username="guest", password="guest"),
+            )
+        )
+
+        # do something...
+```
+
