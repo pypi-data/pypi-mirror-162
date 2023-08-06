@@ -1,0 +1,55 @@
+Metadata-Version: 2.1
+Name: nutanix-api
+Version: 0.0.11
+Summary: Library for interact with v3 Nutanix API
+Home-page: https://github.com/eliorerz/nutanix_api
+Author: Elior Erez
+Author-email: elior123@gmail.com
+License: MIT
+Classifier: Development Status :: 3 - Alpha
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Topic :: Software Development :: Build Tools
+Classifier: Topic :: Software Development :: Testing
+Requires-Python: >=3.7.0
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: requests (~=2.28.1)
+Requires-Dist: urllib3 (~=1.26.11)
+
+
+# Nutanix API
+* Work in progress
+
+Easily interact with Nutanix API v3 
+
+
+## Installation
+
+```bash
+pip install nutanix-api
+```
+
+
+##  Usage 
+
+```python
+from nutanix_api import NutanixApiClient, NutanixVM, NutanixCluster
+
+client = NutanixApiClient("username", "password", 9440, "https://path/to/endpoint")
+
+# Virtual Machine
+vm = NutanixVM.get(client, "61b13e12-1494-11ed-861d-0242ac120002")
+vm.turn_off()  # Turn VM off 
+vm.turn_on()  # Turn VM on
+
+# Cluster
+cluster = NutanixCluster.get(client, "81b13e12-1494-11ed-861d-0242ac120003")
+print(cluster.name)
+
+```
