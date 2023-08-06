@@ -1,0 +1,21 @@
+{# -*- engine:django -*- #}
+
+{% load i18n %}
+
+{% if user.person.is_dummy or not user.person and not user.is_anonymous %}
+  <message-box type="error">
+
+  {% if user.person.is_dummy %}
+    {% blocktrans %}
+      Your administrator account is not linked to any person. Therefore,
+      a dummy person has been linked to your account.
+    {% endblocktrans %}
+  {% else %}
+    {% blocktrans %}
+      Your user account is not linked to a person. This means you
+      cannot access any school-related information. Please contact
+      the managers of AlekSIS at your school.
+    {% endblocktrans %}
+  {% endif %}
+  </message-box>
+{% endif %}

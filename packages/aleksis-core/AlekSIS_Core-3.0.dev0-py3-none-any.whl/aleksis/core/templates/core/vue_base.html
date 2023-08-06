@@ -1,0 +1,222 @@
+{# -*- engine:django -*- #}
+
+{% load i18n menu_generator static sass_tags any_js rules html_helpers %}
+{% load render_bundle from webpack_loader %}
+{% get_current_language as LANGUAGE_CODE %}
+{% get_available_languages as LANGUAGES %}
+
+
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}">
+<head>
+  {% include "core/partials/meta.html" %}
+
+  <title>
+    {% block no_browser_title %}
+      {% block browser_title %}{% endblock %} —
+    {% endblock %}
+    {{ request.site.preferences.general__title }}
+  </title>
+
+  {# CSS #}
+  {# FIXME ↓ #}
+  {#  {% include_css "material-design-icons" %}#}
+  {% include_css "Roboto100" %}
+  {% include_css "Roboto300" %}
+  {% include_css "Roboto400" %}
+  {% include_css "Roboto500" %}
+  {% include_css "Roboto700" %}
+  {% include_css "Roboto900" %}
+  {#  <link rel="stylesheet" href="{% sass_src 'public/style.scss' %}">#}
+
+  <!-- FIXME: Find a way to use SCSS!!! -->
+
+  {# Add JS URL resolver #}
+  <script src="{% url "js_reverse" %}" type="text/javascript"></script>
+
+  {# Add i18n names for calendar (for use in datepicker) #}
+  {# Passing the locale is not necessary for the scripts to work, but prevents caching issues #}
+  <script src="{% url "javascript-catalog" %}?locale={{ LANGUAGE_CODE }}" type="text/javascript"></script>
+  <script src="{% url "calendarweek_i18n_js" %}?first_day=6&amp;locale={{ LANGUAGE_CODE }}"
+          type="text/javascript"></script>
+
+  {% if SENTRY_ENABLED %}
+    {% if SENTRY_TRACE_ID %}
+      <meta name="sentry-trace" content="{{ SENTRY_TRACE_ID }}"/>
+    {% endif %}
+    {% include_js "Sentry" %}
+    {{ SENTRY_SETTINGS|json_script:"sentry_settings" }}
+    <script type="text/javascript">
+      const sentry_settings = JSON.parse(document.getElementById('sentry_settings').textContent);
+
+      Sentry.init({
+        dsn: sentry_settings.dsn,
+        environment: sentry_settings.environment,
+        tracesSampleRate: sentry_settings.traces_sample_rate,
+        integrations: [new Sentry.Integrations.BrowserTracing()]
+      });
+    </script>
+  {% endif %}
+
+  <script type="text/javascript" src="{% url 'config.js' %}"></script>
+  {% include_js "iconify" %}
+
+  {# Include jQuery early to provide $(document).ready #}
+  {% include_js "jQuery" %}
+
+  {% block extra_head %}{% endblock %}
+</head>
+<body {% if no_menu %}class="without-menu"{% endif %}>
+<main id="app">
+  <v-app v-cloak>
+    {% if not no_menu %}
+      <v-navigation-drawer app v-model="drawer">
+        <v-list nav dense shaped>
+          <v-list-item class="logo">
+            {% static "img/aleksis-banner.svg" as aleksis_banner %}
+            <a id="logo-container" href="/" class="brand-logo">
+              <img src="{% firstof request.site.preferences.theme__logo.url aleksis_banner %}"
+                   alt="{{ request.site.preferences.general__title }} – Logo" style="width: 100%">
+            </a>
+          </v-list-item>
+          {% has_perm 'core.search_rule' user as search %}
+          {% if search %}
+            <v-list-item class="search">
+              <sidenav-search action="{% url "haystack_search" %}" placeholder="{% trans "Search" %}"></sidenav-search>
+            </v-list-item>
+          {% endif %}
+          {% include "core/partials/vue_sidenav.html" %}
+        </v-list>
+
+      </v-navigation-drawer>
+    {% endif %}
+    <v-app-bar app color="primary white--text">
+      <v-app-bar-nav-icon @click="drawer = !drawer" color="white"></v-app-bar-nav-icon>
+
+      <v-toolbar-title tag="a" class="white--text text-decoration-none" href="{% url "index" %}">
+        {{ request.site.preferences.general__title }}
+      </v-toolbar-title>
+
+      <v-spacer></v-spacer>
+      <language-form action="{% url "set_language" %}" csrf_value={{ csrf_token }} next_url={{ request.get_full_path }}></language-form>
+      {% if user.is_authenticated %}
+        <v-menu offset-y>
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn depressed color="primary" v-bind="attrs" v-on="on">
+              <v-icon color="white">
+                {% if request.user.person.unread_notifications_count > 0 %}
+                  mdi-bell-badge-outline
+                {% else %}
+                  mdi-bell-outline
+                {% endif %}
+              </v-icon>
+            </v-btn>
+          </template>
+          <notification-list/>
+        </v-menu>
+        <v-menu offset-y>
+          <template v-slot:activator="{ on, attrs }">
+            <v-avatar v-bind="attrs" v-on="on">
+              {% include "core/partials/vue_avatar_content.html" with person_or_user=request.user.person %}
+            </v-avatar>
+          </template>
+          {% get_menu "NAVBAR_ACCOUNT_MENU" as account_menu %}
+          <v-list>
+            <v-subheader>REPORTS</v-subheader>
+            {% for item in account_menu %}
+              {% if item.divider %}
+                <v-divider></v-divider>
+              {% endif %}
+              <v-list-item href="{{ item.url }}">
+                <v-list-item-icon>
+                  {% if item.vuetify_icon %}
+                    <v-icon>{{ item.vuetify_icon }}</v-icon>
+                  {% elif item.icon_class %}
+                    <i class="{{ item.icon_class }}"></i>
+                  {% elif item.icon %}
+                    <i class="material-icons">{{ item.icon }}</i>
+                  {% elif item.svg_icon %}
+                    <i class="material-icons iconify" data-icon="{{ item.svg_icon }}"></i>
+                  {% endif %}
+                </v-list-item-icon>
+                <v-list-item-title>{{ item.name }}</v-list-item-title>
+                </a>
+              </v-list-item>
+            {% endfor %}
+          </v-list>
+        </v-menu>
+      {% else %}
+        <v-btn icon href="{% url "notifications" %}">
+          <v-icon>mdi-bell-outline</v-icon>
+        </v-btn>
+      {% endif %}
+    </v-app-bar>
+    <v-main>
+      <v-container>
+        <cache-notification></cache-notification>
+        {% include 'core/partials/vue_no_person.html' %}
+
+        {% if messages %}
+          {% for message in messages %}
+            <message-box type="{{ message.tags }}">{{ message }}</message-box>
+          {% endfor %}
+        {% endif %}
+        {% block no_page_title %}
+          <h1 class="text-h2">{% block page_title %}{% endblock %}</h1>
+        {% endblock %}
+        {% block content %}{% endblock %}
+      </v-container>
+    </v-main>
+
+    <v-footer app absolute inset class="white--text">
+      <v-container>
+        <v-row>
+          <v-col cols="12" lg="6">
+            {% include "core/partials/vue_footer_menu.html" %}
+          </v-col>
+          <v-col cols="12" >
+            <v-row>
+              <v-btn plain rounded href="{% url "about_aleksis" %}" color="white">
+                {% trans "About AlekSIS® — The Free School Information System" %}
+              </v-btn>
+              <span>© The AlekSIS Team</span>
+              <v-spacer></v-spacer>
+              {% if request.site.preferences.footer__imprint_url %}
+                <v-btn plain rounded href="{{ request.site.preferences.footer__imprint_url }}" color="white">
+                  {% trans "Imprint" %}
+                </v-btn>
+              {% endif %}
+              {% if request.site.preferences.footer__privacy_url and request.site.preferences.footer__imprint_url %}
+                ·
+              {% endif %}
+              {% if request.site.preferences.footer__privacy_url %}
+                <v-btn plain rounded href="{{ request.site.preferences.footer__privacy_url }}" color="white">
+                  {% trans "Privacy Policy" %}
+                </v-btn>
+              {% endif %}
+            </v-row>
+          </v-col>
+        </v-row>
+      </v-container>
+    </v-footer>
+  </v-app>
+</main>
+
+
+{% include_js "luxon" %}
+{#{% include_js "materialize" %}#}
+{% include_js "sortablejs" %}
+{# Fixme: das muss weg ↓ #}
+{% include_js "jquery-sortablejs" %}
+{% absolute_url "graphql" as GRAPHQL_URL %}
+{{ GRAPHQL_URL|json_script:"graphql-url" }}
+{{ request.user.person.preferences.theme__design|json_script:"design-mode" }}
+{{ request.site.preferences.theme__primary|json_script:"primary-color" }}
+{{ request.site.preferences.theme__secondary|json_script:"secondary-color" }}
+{{ LANGUAGE_CODE|json_script:"current-language" }}
+{{ LANGUAGES|json_script:"language-info-list" }}
+<script type="text/javascript" src="{% static 'js/search.js' %}"></script>
+{% render_bundle 'core' %}
+{% block extra_body %}{% endblock %}
+</body>
+</html>

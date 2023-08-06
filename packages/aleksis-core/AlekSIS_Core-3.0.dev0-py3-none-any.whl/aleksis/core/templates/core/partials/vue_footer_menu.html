@@ -1,0 +1,10 @@
+{# -*- engine:django -*- #}
+
+{% for item in FOOTER_MENU.items.all %}
+  <v-btn plain tile href="{{ item.url }}" color="primary">
+    {% if item.icon %}
+      <v-icon left>mdi-{{ item.icon }}</v-icon>
+    {% endif %}
+    {{ item.name }}
+  </v-btn>
+{% endfor %}

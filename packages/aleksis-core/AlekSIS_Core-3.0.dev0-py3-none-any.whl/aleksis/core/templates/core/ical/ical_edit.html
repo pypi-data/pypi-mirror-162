@@ -1,0 +1,20 @@
+{% extends 'core/base.html' %}
+{% load i18n material_form %}
+
+{% block page_title %}{% blocktrans %}Edit iCal URL {{ object }}{% endblocktrans %}{% endblock page_title %}
+{% block browser_title %}{% blocktrans %}Edit iCal URL {{ object }}{% endblocktrans %}{% endblock browser_title %}
+
+{% block content %}
+  <form method="post">
+    {% csrf_token %}
+
+    {% form form=form %}{% endform %}
+
+    {% include "core/partials/save_button.html" %}
+    <a href="{% url "ical_feed_list" %}" class="btn red">
+      <i class="material-icons iconify left" data-icon="mdi:close"></i>
+      {% blocktrans %}Cancel{% endblocktrans %}
+    </a>
+  </form>
+
+{% endblock content %}
