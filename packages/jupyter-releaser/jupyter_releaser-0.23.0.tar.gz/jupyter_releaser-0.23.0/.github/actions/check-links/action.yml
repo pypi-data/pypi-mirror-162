@@ -1,0 +1,21 @@
+name: "Check Links"
+description: "Run a link check function for a repo"
+runs:
+  using: "composite"
+  steps:
+    - name: install-releaser
+      uses: jupyter-server/jupyter_releaser/.github/actions/install-releaser@v1
+
+    - name: Cache checked links
+      uses: actions/cache@v2
+      with:
+        path: ~/.cache/releaser-link-check
+        key: ${{ runner.os }}-releaser-linkcheck-${{ hashFiles('**/*.md', '**/*.rst') }}-links
+        restore-keys: |
+          ${{ runner.os }}-releaser-linkcheck-
+
+    - shell: bash
+      id: check-links
+      run: |
+        set -eux
+        python -m jupyter_releaser.actions.check_links
