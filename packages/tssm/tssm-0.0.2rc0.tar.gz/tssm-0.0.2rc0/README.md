@@ -1,0 +1,94 @@
+[![Status](https://img.shields.io/pypi/status/tssm)](https://pypi.python.org/pypi/tssm)
+[![Version](https://img.shields.io/pypi/v/tssm.svg)](https://pypi.python.org/pypi/tssm)
+[![Python Version](https://img.shields.io/pypi/pyversions/tssm)](https://pypi.python.org/pypi/tssm)
+[![Wheel](https://img.shields.io/pypi/wheel/tssm)](https://pypi.python.org/pypi/tssm)
+[![PyPI - License](https://img.shields.io/pypi/l/tssm)](https://opensource.org/licenses/BSD-3-Clause)
+[![Documentation Status](https://readthedocs.org/projects/tssm/badge/?version=latest)](https://tssm.readthedocs.io/en/latest/?badge=latest)
+[![coverage report](https://git.fh-aachen.de/tb5152e/tssm/badges/main/coverage.svg)](https://git.fh-aachen.de/tb5152e/tssm/-/commits/main)
+[![pipeline status](https://git.fh-aachen.de/tb5152e/tssm/badges/main/pipeline.svg)](https://git.fh-aachen.de/tb5152e/tssm/-/commits/main)
+[![Latest Release](https://git.fh-aachen.de/tb5152e/tssm/-/badges/release.svg)](https://git.fh-aachen.de/tb5152e/diversityfactor/-/releases)
+[![Pylint](https://git.fh-aachen.de/tb5152e/tssm/-/jobs/artifacts/main/raw/public/pylint/pylint.svg?job=pylint)](https://pylint.pycqa.org/en/latest/)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336)](https://pycqa.github.io/isort/)
+[![Checked with mypy](http://www.mypy-lang.org/static/mypy_badge.svg)](http://mypy-lang.org/)
+[![security: bandit](https://img.shields.io/badge/security-bandit-success.svg)](https://github.com/PyCQA/bandit)
+[![made-with-python](https://img.shields.io/badge/Made%20with-Python-1f425f.svg)](https://www.python.org/)
+[![Last Commit](https://git.fh-aachen.de/tb5152e/tssm/-/jobs/artifacts/main/raw/public/badges/last_commit.svg?job=badges)](https://git.fh-aachen.de/tb5152e/tssm/-/commits/main)
+[![Last Release](https://git.fh-aachen.de/tb5152e/tssm/-/jobs/artifacts/main/raw/public/badges/last_release.svg?job=badges)](https://git.fh-aachen.de/tb5152e/tssm/-/commits/main)
+[![OpenIssues](https://git.fh-aachen.de/tb5152e/tssm/-/jobs/artifacts/main/raw/public/badges/open_issues.svg?job=badges)](https://git.fh-aachen.de/tb5152e/tssm/-/issues)
+
+
+<a href="https://www.fh-aachen.de/forschung/solar-institut-juelich"><img src="https://www.fh-aachen.de/fileadmin/ins/ins_sij/Wortmarke_SIJ_ts_web.jpg" alt="Forschungszentrum Juelich Logo"></a> 
+
+# Time Series Scaling Module  (TSSM)
+TSSM is a python package for the scaling of time series. 
+
+**Warning**
+```{warning} 
+This package is under heavy development!
+```
+
+## Getting started
+### Install tssm
+Install tssm directly from PyPi as follows. It is recommended to set up a fresh Conda environment before using this package by following these steps:
+
+* Install Miniconda or update your conda installation with `conda update conda`
+* Create a new environment with `conda create -n <environmentName> python=<pythonVersion>`. The python version to be specified should be greater than python 3.8. 
+* Activate the environment with `source activate <environmentName>` on Linux/MacOS or `activate <environmentName>` on Windows
+* Clone tssm with `git clone https://git.fh-aachen.de/tb5152e/tssm.git`
+* Install tssm with `pip install -e <path_to_tssm_package>`
+* Verify your tssm package installtion by running the configured automated tests. Go to your tssm top-level directory and type `pytest`
+
+Or you can also directly install tssm package from PyPi with the following command
+```console
+pip install tssm
+```
+
+### Usage
+
+example usages can be found in the [**examples'**](../examples) folder.
+
+
+#### Basic workflow
+
+A small example how tssm can be used is described as follows:
+
+```python
+# import module
+from tssm import TimeSeriesScalingModule as tssm
+
+# initialize class with a number of buildings of 202 with a simultaneity factor of 0.786
+df_test = tssm(number_of_buildings=202, simultaneity_factor=0.786)
+# read profile from data.csv file and use the Electricity and Date column
+df_test.values.read_profile_from_csv_with_date(path="./data.csv", column_of_load="Electricity", column_of_date="Date")
+# calculate linear scaled values with a daily (period=1) simultaneity factor and average value
+daily_scaled_values = df_test.calculate_linear(period=1)
+```
+
+#### Examples
+A [**first example**](./examples/example_linear.py) shows the linear approach. It scales the time series between the scaled time series and an average.
+
+A [**second example**](./examples/example_scaling.py) shows the scaling approach. It scales the time series between the scaled time series and a scaling time 
+series.
+
+A [**third example**](./examples/example_normal_distribution.py) shows the normal distribution approach. It scales the time series by applying a normal 
+distribution to every time step.
+
+A [**fourth example**](./examples/example_of_different_method_2_import_profiles.py) shows the different ways to import the data.
+
+A [**fifth example**](./examples/example_speed_comparison.py) shows the speed of the different approaches.
+
+### License
+
+The module is licensed under BSD 3-Clause License.
+
+Further, License information can be found [**here**](./LICENSE).
+
+### Reference
+
+### Acknowledgements
+
+
+## Content
+
+The documentation of the tssm code can be found [**here**](http://tssm.rtfd.io/).
