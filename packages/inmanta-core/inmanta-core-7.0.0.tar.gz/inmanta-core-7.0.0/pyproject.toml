@@ -1,0 +1,36 @@
+[tool.black]
+line-length = 128
+target-version = ['py36', 'py37', 'py38']
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.eggs
+  | \.git
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | \.env
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
+
+[tool.irt.build.python]
+hooks = { 'pre' = 'pre-build.sh' }
+
+[tool.irt.build.python.subprojects.pytest-inmanta-extensions]
+directory = "tests_common"
+
+[tool.irt.publish.python]
+public = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+markers = [
+    "slowtest",
+    "link_check",
+    "parametrize_any: only execute one of the parameterized cases when in fast mode (see documentation in conftest.py)",
+    "db_restore_dump(dump): mark the db dump to restore. To be used in conjunction with the `migrate_db_from` fixture."
+]
