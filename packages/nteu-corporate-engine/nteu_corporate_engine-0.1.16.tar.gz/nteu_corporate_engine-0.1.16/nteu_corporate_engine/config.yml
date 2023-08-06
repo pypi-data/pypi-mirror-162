@@ -1,0 +1,93 @@
+customer: corp
+src_lang: en
+tgt_lang: es
+flavor: generic
+version: 5
+processors:
+  white_space_stripper: []
+  not_empty_val: []
+  not_contains_new_lines_val: []
+  unicode_accent_norm: []
+  equals_sentences_val: []
+  length_customizer_val:
+  - '0'
+  - '400'
+  length_factor_val:
+  - '3'
+  no_lines_with_only_mail_val: []
+  no_lines_with_only_numbers_val: []
+  no_lines_with_only_url_val: []
+  not_only_reference_code_val: []
+  parallel_number_val: []
+  repeated_chars_val: []
+  moses_normalizer: []
+  quote_norm: []
+  apostrophe_curver_norm: []
+  open_close_val: []
+  parallel_symbol_val: []
+  number_separator_norm: []
+  french_punctuation_spacer_norm: []
+  spanish_outdated_accents_stripper_norm: []
+  detok_blanks_norm: []
+  spanish_sentences_norm: []
+  abbreviation_number_conversor_norm: []
+  casing_postprocess: []
+  convert_empty_lines_postprocess: []
+  delete_repeated_punct_norm: []
+  apostrophe_posprocess: []
+  french_apostrophation_posprocess: []
+tokenizer:
+  src: moses
+  tgt: moses
+truecaser:
+  src: disabled
+  tgt: disabled
+  pretrained: null
+bpe:
+  joint: true
+  threshold: 50
+  num_iterations: 32000
+  pretrained: null
+  sentencepiece: false
+  model_type: null
+  vocab_size: null
+translation_model:
+  name: onmt
+  args: -layers 6 -rnn_size 512 -word_vec_size 512 -transformer_ff 2048 -heads 8 -encoder_type
+    transformer -decoder_type transformer -position_encoding -train_steps 1000000 -max_generator_batches
+    2 -dropout 0.1 -batch_size 4096 -batch_type tokens -normalization tokens -accum_count
+    2 -optim adam -adam_beta2 0.998 -decay_method noam -warmup_steps 8000 -learning_rate
+    2 -max_grad_norm 0 -param_init 0 -param_init_glorot -label_smoothing 0.1 -valid_steps
+    10000 -save_checkpoint_steps 10000 -keep_checkpoint 10 -early_stopping 8
+  args_decoding:
+    gpu: 0
+    n_best: 5
+    min_length: 0
+    max_length: 300
+    ratio: 0.0
+    beam_size: 5
+    random_sampling_topk: 1
+    random_sampling_temp: 1
+    stepwise_penalty: null
+    dump_beam: false
+    block_ngram_repeat: 0
+    replace_unk: true
+    phrase_table: ''
+    data_type: text
+    verbose: false
+    report_time: false
+    copy_attn: false
+    out_file: null
+    report_align: false
+    report_score: true
+    logger: null
+    seed: 829
+prepare:
+  shard_size: '100000'
+  src_seq_length: '400'
+  tgt_seq_length: '400'
+translation_engine_server:
+  bpe: bpe_model
+  gpu: True
+  model_path: translation_model/model_trained.pt
+  online_learning: {src_noise: [], lambda_align: 0.0}
