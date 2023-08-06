@@ -1,0 +1,90 @@
+Metadata-Version: 2.1
+Name: utils-jinja-sqlite
+Version: 0.0.5
+Summary: Common helper utility functions used when connecting to sqlite databases and binding SQL values from python variables.
+Author: Marcelino G. Veloso III
+Author-email: mars@veloso.one
+Requires-Python: >=3.10,<4.0
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.10
+Requires-Dist: Jinja2 (>=3.1.2,<4.0.0)
+Requires-Dist: aiosqlite (>=0.17.0,<0.18.0)
+Requires-Dist: python-dotenv (>=0.19,<0.20)
+Requires-Dist: rich (>=12.2,<13.0)
+Requires-Dist: sqlparse (>=0.4.2,<0.5.0)
+Description-Content-Type: text/markdown
+
+# Utils for Jinja & sqlite
+
+Must setup an .env pointing to a database file `DB_FILE`; otherwise, will default to `test.db`.
+
+## Setup Jinja Environment to fetch via .sql file
+
+Assumes a basic Jinja environment has been setup:
+
+```python
+from jinja2 import Environment
+assert isinstance(env, Environment)
+```
+
+### Sync
+
+Query the environment using `sqlite3`,*viz*:
+
+```python
+from utils_jinja_sqlite import get_rows, get_row
+# base
+params = dict(a="'hello world'")
+sql_stmt = env.get_template("test.sql").render(params)
+
+# get all
+rows = get_rows(sql_stmt=sql_stmt)
+type(rows) # generator
+
+# get one
+row = get_row(sql_stmt=sql_stmt) # gets only the first row
+type(row) # dict
+```
+
+### Async
+
+Query the environment using a `aiosqlite3`,*viz*:
+
+```python
+from utils_jinja_sqlite import get_rows, get_row
+import asyncio
+# base
+params = dict(a="'hello world'")
+sql_stmt = env.get_template("test.sql").render(params)
+
+# get all
+rows = a_rows(sql_stmt=sql_stmt)
+type(rows) # co-routine
+rows_result = asyncio.run(rows)
+type(rows_result) # generator
+
+# get one
+row = a_row(sql_stmt=sql_stmt)
+type(row) # co-routine
+row_result = asyncio.run(row)
+type(row_result) # dict
+
+```
+
+Note that this will not work:
+
+```python
+for first_stmt_row in get_rows(sql_stmt=sql_stmt1):
+    for second_stmt_row in get_rows(sql_stmt=sql_stmt2):
+        ... # the first sql_stmt has not yet terminated
+```
+
+## SQL string literal binder funcs
+
+Instead of quoting a string literal can use a helper function
+
+```python
+from utils_jinja_sqlite import quote_sql_string
+params = dict(a=quote_sql_string(hello world))
+```
+
