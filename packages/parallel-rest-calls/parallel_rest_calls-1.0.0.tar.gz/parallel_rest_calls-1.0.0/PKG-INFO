@@ -1,0 +1,70 @@
+Metadata-Version: 2.1
+Name: parallel_rest_calls
+Version: 1.0.0
+Summary: Tools to easily parallelize GET http calls to REST resource endpoints
+Author-email: Ram Newton A <ramnewton.a@gmail.com>
+Keywords: paralellism,requests,rest
+Description-Content-Type: text/markdown
+Provides-Extra: dev
+
+# Parallel REST Calls
+
+The package provides a couple of methods that can be used to make parallel rest calls to retrieve multiple resources from a single REST collection.
+This packages uses [requests](https://pypi.org/project/requests/) package under the hood.
+
+# Usage
+For retrieving resources by path
+```
+parallelize = ParallelCalls(number_of_threads=20)
+resource_ids = [2,3,5,8,13]
+
+results = parallelize.path_calls('https://www.sample.com/items', resource_ids)
+```
+
+For retrieving resources by query params
+```
+params = [1,2,3]
+results = parallelize.path_calls('https://www.sample.com/items', "param_name" params)
+```
+
+The return value is in the following format
+```
+[
+    {'status_code': 200, 'id': 'id_1', 'result': "result_object_1"},
+    {'status_code': 200, 'id': 'id_2', 'result': "result_object_2"}
+]
+```
+
+# Reporting Bugs
+Development and bug tracking is performed on GitHub
+
+# Contributing
+``` make init ``` initializes the repo. 
+
+``` make tests ``` runs the tests.
+
+Feel free to raise a PR. Please ensure all tests pass before raising a PR
+
+
+# License
+MIT License
+
+Copyright (c) 2022 Parallel REST Calls
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

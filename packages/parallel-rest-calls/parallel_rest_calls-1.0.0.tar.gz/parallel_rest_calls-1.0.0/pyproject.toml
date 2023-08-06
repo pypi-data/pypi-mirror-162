@@ -1,0 +1,33 @@
+[build-system]
+# These are the assumed default build requirements from pip:
+# https://pip.pypa.io/en/stable/reference/pip/#pep-517-and-518-support
+requires = ["setuptools>=43.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "parallel_rest_calls"
+version = "1.0.0"
+description = "Tools to easily parallelize GET http calls to REST resource endpoints"
+readme = "README.md"
+authors = [{name = 'Ram Newton A', email = 'ramnewton.a@gmail.com'}]
+license = {file = "LICENSE"}
+keywords = ['paralellism', 'requests', 'rest']
+
+dependencies = [
+    "requests",
+]
+
+[project.optional-dependencies]
+dev = ["black", "bumpver", "pip-tools", "requests-mock >= 1.9.3", "pytest"]
+
+[tool.bumpver]
+current_version = "1.0.0"
+version_pattern = "MAJOR.MINOR.PATCH"
+commit_message  = "Bump version {old_version} -> {new_version}"
+commit          = true
+tag             = true
+push            = false
+
+[tool.bumpver.file_patterns]
+"pyproject.toml" = ['current_version = "{version}"', 'version = "{version}"']
+"src/__init__.py" = ["{version}"]
