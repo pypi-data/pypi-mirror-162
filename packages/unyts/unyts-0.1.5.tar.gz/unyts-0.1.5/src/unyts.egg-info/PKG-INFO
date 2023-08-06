@@ -1,0 +1,48 @@
+Metadata-Version: 2.1
+Name: unyts
+Version: 0.1.5
+Summary: a unit converter based on graph network and classes to operate with units.
+Author-email: Martin Carlos Araya <martinaraya@gmail.com>
+License: MIT License
+        
+        Copyright (c) 2020 Martín Carlos Araya
+        
+        Permission is hereby granted, free of charge, to any person obtaining a copy
+        of this software and associated documentation files (the "Software"), to deal
+        in the Software without restriction, including without limitation the rights
+        to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+        copies of the Software, and to permit persons to whom the Software is
+        furnished to do so, subject to the following conditions:
+        
+        The above copyright notice and this permission notice shall be included in all
+        copies or substantial portions of the Software.
+        
+        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+        IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+        FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+        AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+        LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+        OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+        SOFTWARE.
+        
+Project-URL: Homepage, https://github.com/ayaranitram/unyts
+Project-URL: Bug Tracker, https://github.com/ayaranitram/unyts/issues
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.7
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
+# unyts
+After culminated a project for a class from MITx couses, I saw the opportunity to use a *dgraph network* to built a unit converter able to from any units to any units without the need to populate a huge but finite table of possible conversions. Powered by BFS algorith to search through the network, this converter is able to found conversions from a particular unit (or ratio of units) to any other unit (or ratio) as long as a path connecting them exists.
+
+This package is under development and is regularly updated. Backcompatibility is intented to be maintained when possible.
+
+## What Contains This Package
+- It is loaded with the network of untis preloaded for distances, area, volume, mass and time conversions defined for SI and Imperial systems according to the definition of each unit, i.e.: _1_foot = 12_inches_.
+- Prefixes applied to the basic units, like _k_ to _m_ to make _km_, are loaded as a network of conversions paths allowing the algorith to apply the prefix to any other unit on the same system.
+- It provides classes of _units_ useful powered with arithmetich and logic operations to intrincically consider unit conversions when making calculations.
+
+## To install this package:
+pip install unyts
