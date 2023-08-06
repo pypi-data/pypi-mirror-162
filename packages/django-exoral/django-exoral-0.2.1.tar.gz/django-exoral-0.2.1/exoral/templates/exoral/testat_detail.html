@@ -1,0 +1,65 @@
+{% extends "exoral/base.html" %}
+
+{% block content %}
+<div class="container">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item" aria-current="page"><a href="{% url 'exoral:home' %}">Start</a></li>
+      <li class="breadcrumb-item" aria-current="page"><a href="{% url 'exoral:testat-list' %}">Testate</a></li>
+      <li class="breadcrumb-item active" aria-current="page">{{ testat }}</li>
+      {% if perms.exoral.change_testat %}
+      <li class="breadcrumb-item" aria-current="page"><a href="{% url 'exoral:testat-edit' testat.id %}">bearbeiten</a></li>
+      {% endif %}
+    </ol>
+  </nav>
+
+  <table class="table">
+    <tbody>
+      <tr>
+        <th>Name</th>
+        <td>{{ testat.name }}</td>
+      </tr>
+      <tr>
+        <th>aktiv?</th>
+        <td>{% if testat.active %}✓{% else %}✗{% endif %}</td>
+      </tr>
+      <tr>
+        <th>Fächer</th>
+        <td>{{ testat.fach.all|join:", " }}</td>
+      </tr>
+      <tr>
+        <th>Studiengänge</th>
+        <td>{{ testat.studiengang.all|join:", " }}</td>
+      </tr>
+      <tr>
+        <th>Studienabschnitt</th>
+        <td>{{ testat.studienabschnitt.all|join:", " }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  {% for fach, dozenten in faecher.items %}
+  <h4>{{ fach }}</h4>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th style="width: 80%;">Prüfer:in</th>
+        <th style="width: 20%;">Anzahl Fragen</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for dozent, anz_fragen in dozenten.items %}
+      <tr>
+        <td><a href="{% url 'exoral:frage-list' testat.pk dozent.pk %}">{{ dozent }}</a></td>
+        <td>{{ anz_fragen }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% empty %}
+  <p>
+    Keine Fächer eingetragen. Wende dich an den FSR, damit Fächer eingetragen werden.
+  </p>
+  {% endfor %}
+</div>
+{% endblock content %}
