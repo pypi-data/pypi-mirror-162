@@ -1,0 +1,1 @@
+from pts_fault_injection.HILDiagnostics import FaultInjection
