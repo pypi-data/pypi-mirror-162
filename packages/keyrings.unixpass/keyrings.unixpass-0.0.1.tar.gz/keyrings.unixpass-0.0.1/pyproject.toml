@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+# order: https://packaging.python.org/en/latest/specifications/declaring-project-metadata/
+[project]
+name = "keyrings.unixpass"
+description = "Keyring plugin for the pass password manager"
+readme = "README.md"
+requires-python = ">=3.7"
+license = {text = "MIT"}
+authors = [{ name = "Alessandro Cerruti", email = "whisper@chrooti.org"}]
+keywords = ["pass", "keyring"]
+classifiers = [
+	"Development Status :: 4 - Beta",
+	"Intended Audience :: Developers",
+	"License :: OSI Approved :: MIT License",
+	"Programming Language :: Python :: 3",
+	"Programming Language :: Python :: 3 :: Only"
+]
+urls = {Homepage = "https://gitlab.com/chrooti/keyrings.unixpass"}
+dynamic = [
+    "dependencies",
+    "version"
+]
+
+[project.entry-points."keyring.backends"]
+unixpass = "keyrings.unixpass"
+
+[tool.setuptools.dynamic]
+version = {attr = "keyrings.unixpass.__version__"}
+dependencies = {file = "requirements.txt"}
+
+[tool.setuptools.packages.find]
+exclude = ["dists", "tests"]
