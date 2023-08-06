@@ -1,0 +1,12 @@
+- case: is
+  # pypy + mypy doesn't work. See https://foss.heptapod.net/pypy/pypy/-/issues/3526
+  skip: platform.python_implementation() == "PyPy"
+  main: |
+    from hamcrest import assert_that, is_, empty
+    from typing import Any, Sequence
+
+    a: Sequence[Any] = []
+    b = 99
+
+    assert_that(a, is_(empty()))
+    assert_that(b, is_(empty()))  # E: Cannot infer type argument 1 of "assert_that"
