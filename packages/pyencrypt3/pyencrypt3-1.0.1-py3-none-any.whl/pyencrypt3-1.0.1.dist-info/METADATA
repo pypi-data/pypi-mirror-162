@@ -1,0 +1,35 @@
+Metadata-Version: 2.1
+Name: pyencrypt3
+Version: 1.0.1
+Summary: python代码一键加密
+Author: 刘飞
+Author-email: liufei-love@foxmail.com
+License: MIT
+Classifier: Programming Language :: Python :: 3
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: Cython (==0.29.32)
+
+# pyencrypt3
+
+![](https://img.shields.io/badge/python-3.0-brightgreen)
+
+## 简介
+
+将python代码一键加密为pyc/so或pyd。支持单个文件加密，整个项目加密。
+
+## 安装
+
+    pip install pyencrypt3
+
+## 使用方法
+
+    pyencrypt3 -i "xxx project dir" [-o output dir]
+`参数说明：
+    -i | --input_file_path    待加密文件或文件夹路径，可是相对路径或绝对路径
+    -o | --output_file_path   加密后的文件输出路径，默认在input_file_path下创建dist文件夹，存放加密后的文件
+    -I | --ignore_files       不需要加密的文件或文件夹，逗号分隔
+    -m | --except_main_file   不加密包含__main__的文件(主文件加密后无法启动), 值为0、1。 默认为0
+    -p | --pyc   编译为pyc格式,值为0、1。 默认为0`
+
+加密后的文件默认存储在 dist/project_name/ 下
