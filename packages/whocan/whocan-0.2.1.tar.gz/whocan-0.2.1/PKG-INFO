@@ -1,0 +1,89 @@
+Metadata-Version: 2.1
+Name: whocan
+Version: 0.2.1
+Summary: Library for defining and determining access.
+Home-page: https://gitlab.com/kjschiroo/whocan
+License: MIT
+Author: Kevin Schiroo
+Author-email: kjschiroo@gmail.com
+Requires-Python: >=3.8,<4.0
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Requires-Dist: PyYAML (>=6.0,<7.0)
+Project-URL: Repository, https://gitlab.com/kjschiroo/whocan
+Description-Content-Type: text/markdown
+
+# Whocan
+
+Library for defining and determining access.
+
+## Usage
+
+### YAML usage
+
+```yaml
+statements:
+- effect: allow
+  actions:
+  - workspace:Create*
+  - workspace:Delete*
+  - workspace:Get*
+  - workspace:List*
+  - workspace:Update*
+  resources:
+  - workspace:individual-${username}
+```
+
+```python
+import pathlib
+import whocan
+
+policy = whocan.Policy.load(pathlib.Path('path-to-file.yaml'))
+policy.is_allowed(
+    resource='workspaces:individual-my-username',
+    action='workspace:DeletePage',
+    arguments={'username': 'my-username'},
+)
+# True
+policy.is_allowed(
+    resource='workspaces:individual-a-different-user',
+    action='workspace:DeletePage',
+    arguments={'username': 'my-username'},
+)
+# False
+```
+
+### Pure python usage
+
+```python
+import whocan
+
+statement = whocan.Statement(
+    resources=['workspaces:individual-${username}'],
+    actions=[
+        'workspace:Create*',
+        'workspace:Delete*',
+        'workspace:Get*',
+        'workspace:List*',
+        'workspace:Update*',
+    ],
+    effect='allow',
+)
+
+policy = whocan.Policy(statements=[statement])
+policy.is_allowed(
+    resource='workspaces:individual-my-username',
+    action='workspace:DeletePage',
+    arguments={'username': 'my-username'},
+)
+# True
+policy.is_allowed(
+    resource='workspaces:individual-a-different-user',
+    action='workspace:DeletePage',
+    arguments={'username': 'my-username'},
+)
+# False
+```
