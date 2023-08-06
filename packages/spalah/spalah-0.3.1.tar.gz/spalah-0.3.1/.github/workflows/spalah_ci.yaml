@@ -1,0 +1,51 @@
+name: spalah CI
+
+on:
+  pull_request:
+    paths:
+      - "spalah/**"
+      - "tests/**"
+      - ".github/workflows/**"
+
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  precommit:
+    name: CI
+    runs-on: ubuntu-latest
+    env:
+      working-directory: .
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - name: Get the list of changed files
+        id: get_list_of_files
+        run:  |
+          git fetch origin main:refs/remotes/origin/main
+          FILES_CHANGED=$(git diff --name-only origin/main)
+
+          echo "Changed files:"
+          echo "$FILES_CHANGED"
+
+          echo "PR_FILES_CHANGED=$( echo $FILES_CHANGED | tr '\n' ' ')" >> $GITHUB_ENV
+
+      - uses: pre-commit/action@v2.0.0
+        with:
+          extra_args: --files ${{ env.PR_FILES_CHANGED }}
+
+      - name: Install spalah dependencies
+        run: pip install . -r requirements_dev.txt
+        working-directory: ${{env.working-directory}}
+
+      - name: Test spalah package
+        run: pytest --cache-clear --cov=spalah tests/ > pytest-coverage.txt
+
+      - name: Comment coverage
+        uses: coroo/pytest-coverage-commentator@v1.0.2
