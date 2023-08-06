@@ -1,0 +1,47 @@
+[tool.poetry]
+name = "tygle"
+version = "0.2.0"
+description = "Typed Google or simply tygle."
+authors = ["shmookoff <shmookoff@gmail.com>"]
+readme = "README.md"
+repository = "https://github.com/typed-google/tygle"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pydantic = "^1.9.0"
+aiogoogle = "^4.2.0"
+
+tygle-drive = { version = "^0.1.0", optional = true }
+tygle-sheets = { version = "^0.1.0", optional = true }
+tygle-docs = { version = "^0.1.0", optional = true }
+
+[tool.poetry.extras]
+drive = ["tygle-drive"]
+sheets = ["tygle-sheets"]
+docs = ["tygle-docs"]
+
+[tool.poetry.group.dev.dependencies]
+pylint = "^2.13.4"
+black = "^22.3.0"
+pytest = "^7.1.1"
+pytest-asyncio = "^0.18.3"
+pytest-cov = "^3.0.0"
+isort = "^5.10.1"
+datamodel-code-generator = "^0.11.20"
+
+[tool.poetry.group.docs.dependencies]
+Sphinx = "^4.5.0"
+autodoc-pydantic = "^1.6.1"
+furo = "^2022.4.7"
+sphinx-paramlinks = "^0.5.2"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+addopts= "--cov=tygle"
+filterwarnings = [
+    "ignore:Inheritance class AiohttpSession from ClientSession is discouraged"
+]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
