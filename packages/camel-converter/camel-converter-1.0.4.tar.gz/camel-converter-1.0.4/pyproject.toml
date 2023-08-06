@@ -1,0 +1,80 @@
+[tool.poetry]
+name = "camel-converter"
+version = "1.0.4"
+description = "Converts a string from snake case to camel case or camel case to snake case"
+authors = ["Paul Sanders <psanders1@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/sanders41/camel-converter"
+homepage = "https://github.com/sanders41/camel-converter"
+documentation = "https://github.com/sanders41/camel-converter"
+keywords = ["python", "pydantic"]
+classifiers=[
+  "Programming Language :: Python :: 3.7",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+]
+include = ["camel_converter/py.typed"]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+pydantic = {version = "^1.8.2", optional = true}
+
+[tool.poetry.extras]
+pydantic = ["pydantic"]
+
+[tool.poetry.dev-dependencies]
+black = "^22.6.0"
+flake8 = "^5.0.4"
+isort = "^5.10.1"
+mypy = "^0.971"
+pre-commit = "^2.20.0"
+pytest = "^7.1.2"
+pytest-cov = "^3.0.0"
+tox = "^3.25.1"
+flake8-docstrings = "^1.6.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 100
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.egg
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.nox
+  | \.tox
+  | \.venv
+  | \venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | setup.py
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 100
+src_paths = ["camel_converter", "tests"]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "--cov=camel_converter --cov-report term-missing"
+
+[tool.mypy]
+check_untyped_defs = true
+disallow_untyped_defs = true
+
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+disallow_untyped_defs = false
