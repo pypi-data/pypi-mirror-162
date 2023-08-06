@@ -1,0 +1,35 @@
+# -*- coding: utf-8 -*-
+from pistar import action_word
+import json
+import os
+
+
+@action_word
+def get_variable(variable):
+    """
+        description: this action word is used to get variable from global json file
+        arguments:
+            variable:
+                type: str
+                description: the variable name.
+        return:
+            type: object
+        author: PiStar
+        modify_records:
+            - null
+        tags:
+            - util
+        status: enable
+        """
+    cur_dir = os.getcwd()
+    if cur_dir.endswith("testcase"):
+        global_file_path = "../config/global.json"
+    elif cur_dir.endswith("pistar"):
+        global_file_path = "./restapitest/config/global.json"
+    else:
+        logger.error("Wrong current workspace directory, please check.")
+        return None
+    with open(global_file_path, 'r') as f:
+        data = json.load(f)
+        result = data[variable]
+    return result

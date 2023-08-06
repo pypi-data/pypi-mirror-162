@@ -1,0 +1,91 @@
+# -*- coding: utf-8 -*-
+from pistar import BaseTestCase
+from pistar import teststep
+from restapitest.aw import {{ testcase.awFilename }}
+from restapitest.config import config_util
+import json
+
+
+class {{ testcase.className }}(BaseTestCase):
+    """
+        description: {{ testcase.description }}
+        version: 1.0
+        author: PiStar
+        preconditions:
+            - 无
+        steps:
+            - construct data and send request to server.
+        results:
+            - 无
+        modify_records:
+            - {{ testcase.createRecord }}
+        tags:
+            - interface test
+        status: enable
+    """
+    host_url = ""
+
+    def setup(self):
+        self.info("testcase start.")
+
+        # 获取host_url变量
+        self.host_url = config_util.get_variable("host_url")
+        self.assert_that(self.host_url).is_not_none()
+
+    @teststep
+    def step(self):
+        # 设置common_header字段
+        testcase_common_header = {}
+{#- 首先是获取字段中的content-type,这个主要是post请求会需要的 #}
+{%- if (testcase.common_header) %}
+        testcase_common_header["Content-Type"] = "{{ testcase.common_header.consume }}"
+{{ "" }}
+{%- endif -%}
+{# 设置请求的各个参数，构造结构体与数组，基本类型就直接进行赋值 -#}
+{#- 对于query的参数应该是什么类型就是什么类型的 -#}
+{%- if testcase.query_params %}
+        # 设置query参数
+{%- for theKey in testcase.query_params.keys() -%}
+{%- if testcase.query_params[theKey].type == "list"  %}
+        {{ testcase.query_params[theKey].name }} = []
+        {{ testcase.query_params[theKey].name }}.append({{ testcase.query_params[theKey].subValue }})
+{%- else %}
+        {{ testcase.query_params[theKey].name }} = {{ testcase.query_params[theKey].value }}
+{%- endif %}
+{%- endfor %}
+{{ "" }}
+{%- endif %}
+{%- if testcase.path_params %}
+        # 设置path参数
+{%- for theKey in testcase.path_params.keys() %}
+        {{ testcase.path_params[theKey].name }} = {{ testcase.path_params[theKey].value }}
+{%- endfor %}
+{{ "" }}
+{%- endif -%}
+{%- if testcase.body %}
+        # 设置body参数
+{{ testcase.body[3] -}}
+{{ "        " }}request_body_data = json.dumps(request_body_object0)
+{{ "" }}
+{%- endif %}
+{%- if testcase.header_params %}
+        # 设置header参数
+{%- for theKey in testcase.header_params.keys() %}
+        {{ testcase.header_params[theKey].name }} = {{ testcase.header_params[theKey].value }}
+{%- endfor -%}
+{{ "" }}
+{%- endif %}
+{#- 此处是处理AW函数的各个参数应该填写什么，需要按照一定的次序进行填写 #}
+        response = {{ testcase.awFilename }}.{{ testcase.awMethodName }}(self.host_url, testcase_common_header{%- if testcase.query_params -%}
+{%- for theKey in testcase.query_params.keys() %}, {{ testcase.query_params[theKey].name }}{% endfor %}{%- endif -%}
+{%- if testcase.path_params -%}
+{%- for pathKey in testcase.path_params.keys() %}, {{ testcase.path_params[pathKey].name }}{%- endfor %}{%- endif -%}
+{%- if testcase.body %}, request_body_data{%- endif -%}
+{%- if testcase.header_params -%}
+{%- for headerKey in testcase.header_params.keys() %}, {{ testcase.header_params[headerKey].name }}{%- endfor %}{%- endif %})
+
+        # 校验结果
+        self.assert_that(response.status_code).is_equal_to(200)
+
+    def teardown(self):
+        self.info("testcase down.")

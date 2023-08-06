@@ -1,0 +1,143 @@
+# -*- coding: utf-8 -*-
+import requests
+import urllib.parse
+from pistar import action_word
+
+{% for reference in tagData %}
+@action_word
+def {{ reference.operationId }}(host_url, aw_common_headers{% if (reference.query_params) -%}
+{% for theKey in reference.query_params.keys() %}, {{ theKey }}{% endfor %}{% endif -%}
+{% if reference.path_params -%}
+{% for pathKey in reference.path_params.keys() %}, {{ pathKey }}{% endfor %}{% endif -%}
+{% if reference.body %}, {{ reference.body[0] }}{% endif -%}
+{% if reference.header_params -%}
+{% for headerKey in reference.header_params.keys() %}, {{ headerKey }}{% endfor %}{% endif %}):
+    """
+        description: this action word is used to test interface get method.
+        arguments:
+            host_url:
+                type: str
+                description: host url.
+            aw_common_headers:
+                type: dict
+                description: the common headers.
+{%- if reference.query_params %}
+{%- for paramKey in reference.query_params.keys() %}
+{{"            "}}{{ paramKey }}:
+                type: {{ reference.query_params[paramKey] }}
+                description: {{ paramKey }} query param.
+{%- endfor %}
+{%- endif -%}
+{% if reference.path_params %}
+{%- for pathKey in reference.path_params.keys() %}
+{{"            "}}{{ pathKey }}:
+                type: {{ reference.path_params[pathKey] }}
+                description: {{ pathKey }} path param.
+{%- endfor %}
+{%- endif -%}
+{% if reference.body %}
+{{"            "}}{{ reference.body[0] }}:
+                type: {{ reference.body[1] }}
+                description: {{ reference.body[0] }} body param.
+{%- endif %}
+{%- if reference.header_params %}
+{%- for headerKey in reference.header_params.keys() %}
+{{"            "}}{{ headerKey }}:
+                type: {{ reference.header_params[headerKey] }}
+                description: {{ headerKey }} header param.
+{%- endfor %}
+{%- endif %}
+{{"        "}}return:
+            type: object
+        author: PiStar
+        modify_records:
+            - {{ reference.createRecord }}
+        tags:
+            - interface aw
+        status: enable
+    """
+{%- if reference.path_params %}
+    # 设置path字段
+{%- for pathKey in reference.path_params.keys() %}
+{%- if reference.path_params[pathKey] == "str" %}
+    {{ pathKey }} = urllib.parse.quote({{ pathKey }})
+{%- else %}
+    {{ pathKey }} = str({{ pathKey }})
+{%- endif %}
+{%- endfor %}
+    aw_base_url = "{{ reference.protocol }}://{}{{ reference.getPath }}".format(host_url{% for pathKey in reference.path_params.keys() -%}
+, {{ pathKey }}={{ pathKey }}{% endfor %})
+{%- else %}
+    # 设置url字段
+    aw_base_url = "{{ reference.protocol }}://{}{{ reference.getPath }}".format(host_url)
+{%- endif %}
+{%- if reference.protocol == "http" %}
+    if host_url.startswith("http"):
+        aw_base_url = aw_base_url[7:]
+{%- elif reference.protocol == "https" %}
+    if host_url.startswith("http"):
+        aw_base_url = aw_base_url[8:]
+{%- endif %}
+{%- if reference.query_params %}
+{{ "" }}
+    # 设置query字段与url
+    aw_request_params = []
+{%- set paramFirstQuery = [] -%}
+{%- for theKey in reference.query_params.keys() %}
+{%- if not paramFirstQuery %}
+    aw_request_params.append("{{ theKey }}=")
+{%- else %}
+    aw_request_params.append("&{{ theKey }}=")
+{%- endif %}
+{%- if paramFirstQuery.append(1) -%}{%- endif -%}
+{%- if reference.query_params[theKey] == "str" %}
+    aw_request_params.append(urllib.parse.quote({{ theKey }}))
+{%- elif reference.query_params[theKey] == "list" %}
+    for i in range(len({{ theKey }})):
+        aw_request_params.append(urllib.parse.quote(str({{ theKey }}[i])))
+        if i < len({{ theKey }}) - 1:
+            aw_request_params.append("&{{ theKey }}=")
+{%- else %}
+    aw_request_params.append(str({{ theKey }}))
+{%- endif %}
+{%- endfor %}
+    query_string = "".join(aw_request_params)
+    aw_dest_url = "{}?{}".format(aw_base_url, query_string)
+{{ "" }}
+{%- else %}
+    aw_dest_url = aw_base_url
+{{ "" }}
+{%- endif %}
+    # 设置header字段
+    aw_request_header = {}
+    if aw_common_headers:
+        aw_request_header.update(aw_common_headers)
+{%- if reference.header_params %}
+{%- for headerKey in reference.header_params.keys() %}
+    aw_request_header["{{ headerKey }}"] = {{ headerKey }}
+{%- endfor %}
+{%- endif %}
+{{ "" }}
+{%- if reference.body %}
+    # 设置body字段
+    aw_request_body = ""
+    aw_request_body = {{ reference.body[0] }}
+
+    # 发送{{ reference.method }}请求
+{%- if reference.protocol == "https" %}
+    aw_response = requests.{{ reference.method }}(aw_dest_url, data=aw_request_body, headers=aw_request_header, verify=False)
+{%- else %}
+    aw_response = requests.{{ reference.method }}(aw_dest_url, data=aw_request_body, headers=aw_request_header)
+{%- endif %}
+{%- else %}
+    # 发送{{ reference.method }}请求
+{%- if reference.protocol == "https" %}
+    aw_response = requests.{{ reference.method }}(aw_dest_url, headers=aw_request_header, verify=False)
+{%- else %}
+    aw_response = requests.{{ reference.method }}(aw_dest_url, headers=aw_request_header)
+{%- endif %}
+{%- endif %}
+    return aw_response
+{{ "" }}
+{{ "" }}
+{%- endfor %}

@@ -1,0 +1,123 @@
+Metadata-Version: 2.1
+Name: pistar
+Version: 2.4.0
+Summary: pistar: functional testing with Python
+Home-page: UNKNOWN
+License: MIT
+Keywords: test
+Platform: linux
+Platform: win32
+Classifier: Development Status :: 6 - Mature
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: Microsoft :: Windows
+Classifier: Operating System :: POSIX
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Topic :: Software Development :: Testing
+Classifier: Topic :: Software Development :: Libraries
+Requires-Python: >=3.6
+Description-Content-Type: text/x-rst
+License-File: LICENSE
+Requires-Dist: colorama (==0.4.4)
+Requires-Dist: colorlog (==6.4.1)
+Requires-Dist: astunparse (==1.6.3)
+Requires-Dist: Jinja2 (==3.0.1)
+Requires-Dist: attrs (==21.2.0)
+Requires-Dist: PyYAML (==6.0)
+Requires-Dist: pytest (==6.2.5)
+Requires-Dist: pluggy (==0.13.1)
+Requires-Dist: dill (==0.3.4)
+Requires-Dist: eventlet (==0.33.1)
+
+The ``pistar`` is a simple and lightweight function testing tool, using pistar testing framework can quickly
+complete the development and execution of test cases.
+
+Basic introduction
+------------------
+Command entry::
+
+    $ pistar
+    usage: pistar [options] <command> <args>
+
+    positional arguments:
+      run          Execute test cases
+      generate     Generate interface test cases
+
+    optional arguments:
+      -v, --version  Show the version of pistar
+      -h, --help     Show help message
+
+Simple test example:
+
+.. code-block:: python
+
+    from pistar import BaseTestCase, teststep
+
+
+    class ExampleTestCase(BaseTestCase):
+        def setup(self):
+            print('ExampleTestCase setup...')
+
+        @teststep
+        def step_basic_assert(self):
+            self.assert_that(100).is_type_of(int, float).is_less_than(200)
+            self.assert_that([1, 2, 3]).contains(4)
+
+        def teardown(self):
+            print('ExampleTestCase teardown...')
+
+
+Execution and output::
+
+    $ pistar run /test/example.py
+    collecting...
+    collected 1 test case
+
+    --------------------------------------------------- ExampleTestCase start ---------------------------------------------------
+    ExampleTestCase setup...
+    [2021-08-23 16:57:54,121] [ERROR] [**/_pistar/utilities/testcases/case.py:142]
+        @teststep
+        def step_basic_assert(self):
+            self.assert_that(100).is_type_of(int, float).is_less_than(200)
+    >       self.assert_that([1, 2, 3]).contains(4)
+                                         ^^^
+    E   expect [1, 2, 3] to contain 4, but it did not
+
+    /test/example.py:15 AssertionContainsException
+    ExampleTestCase teardown...
+    ---------------------------------------------------- ExampleTestCase end ----------------------------------------------------
+
+    ===================================================== test summary info =====================================================
+    FAILED /test/example.py::ExampleTestCase
+    ===================================================== 1 failed in 0.03s =====================================================
+
+Features
+--------
+
+- Test cases can be flexibly composed by pre step, test step and post step
+
+- Various test step usage, such as timeout control and parameterization
+
+- Rich streaming assertion and error log output
+
+- Support session level pre and post conditions
+
+- Compatible with pytest case execution
+
+- Automatic generation of basic test cases
+
+Some features of pistar refer to unittest and pytest.
+
+License
+-------
+
+Copyright (c) Huawei Technologies Co., Ltd. 2020-present.
+
+Distributed under the terms of the MIT license, pistar is free software.
+
+
