@@ -1,0 +1,41 @@
+
+from omegaconf import OmegaConf
+
+import dna
+from dna.camera.image_processor import ImageProcessor
+from dna.node.node_processor import PikaNodeExecutionFactory
+
+import argparse
+def parse_args():
+    parser = argparse.ArgumentParser(description="Detect Objects in a video file")
+    parser.add_argument("--host", "-i", metavar="broker host", help="RabbitMQ broker host", default="localhost")
+    parser.add_argument("--port", "-p", metavar="broker port", help="RabbitMQ broker port", default=5672)
+    parser.add_argument("--user", "-u", metavar="broker user", help="RabbitMQ broker user id", default="dna")
+    parser.add_argument("--password", "-w", metavar="broker password", help="RabbitMQ broker password",
+                        default="urc2004")
+    parser.add_argument("--request_qname", "-q", metavar="json file", help="track event file.",
+                        default="track_requests")
+    parser.add_argument("--show", "-s", action='store_true')
+    parser.add_argument("--db_host", metavar="postgresql host", help="PostgreSQL host", default='localhost')
+    parser.add_argument("--db_port", metavar="postgresql port", help="PostgreSQL port", default=5432)
+    parser.add_argument("--db_name", metavar="dbname", help="PostgreSQL database name", default='dna')
+    parser.add_argument("--db_user", metavar="user_name", help="PostgreSQL user name", default='dna')
+    parser.add_argument("--db_password", metavar="password", help="PostgreSQL user password", default="urc2004")
+    return parser.parse_known_args()
+
+def main():
+    dna.initialize_logger()
+
+    args, _ = parse_args()
+    args_conf = OmegaConf.create(vars(args))
+
+    db_conf = dna.conf.filter(args_conf, ['db_host', 'db_port', 'db_name', 'db_user', 'db_password'])
+    conn_params = dna.PikaConnectionParameters(host=args.host, port=args.port,
+                                               user_id=args.user, password=args.password)
+    server = dna.PikaExecutionServer(conn_params=conn_params,
+                                     execution_factory=PikaNodeExecutionFactory(db_conf=db_conf, show=args.show),
+                                     request_qname=args.request_qname)
+    server.run()
+
+if __name__ == '__main__':
+	main()
