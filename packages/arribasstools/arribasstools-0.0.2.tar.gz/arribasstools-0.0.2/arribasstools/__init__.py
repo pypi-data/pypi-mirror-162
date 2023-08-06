@@ -1,0 +1,1 @@
+from arribasstools.test import mytest
