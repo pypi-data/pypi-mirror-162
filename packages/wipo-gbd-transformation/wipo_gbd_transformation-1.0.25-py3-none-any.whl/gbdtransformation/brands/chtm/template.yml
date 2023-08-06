@@ -1,0 +1,130 @@
+{% from 'navigation.tmpl' import match %}
+
+{% call(info) match('marinfo', transac) %}
+{% set kind = info | get_kind %}
+type: TRADEMARK
+kind: {{ kind }}
+
+markFeature: {{ info.martype | translate_feature(info.marart) }}
+
+registrationOfficeCode: CH
+designatedCountries:
+  - CH
+
+st13: {{ info.basappn | st13('CH', appdate=info.basannd) }}
+
+applicationNumber: {{ info.basappn }}
+applicationDate: {{ info.basannd }}
+registrationNumber: {{ info.basregn }}
+registrationDate: {{ info.basregd }}
+
+applicationLanguageCode: {{ info.origlan }}
+
+expiryDate: {{ info.expirationdate }}
+terminationDate: {{ info.basdeld }}
+
+officeStatus: {{ info.basstate }}
+gbdStatus: {{ info.basstate | translate_status(info.basdeld) }}
+statusDate: {{ info.lastgazd }}
+
+markDisclaimerDetails:
+  - languageCode: {{ info.marrem | guess_language(info.origlan) }}
+    text: {{ info.marrem }}
+
+markImageDetails:
+  - name: {{ info.marpicd }}
+    colourIndicator: {{ info.colclai | get_true_or_false }}
+    colourClaimed:
+      - languageCode: {{ info.colclai | guess_language }}
+        text: {{ info.colclai }}
+
+{% set verbal = info | get_verbal %}
+wordMarkSpecification:
+  markVerbalElement:
+    - languageCode: {{ verbal | guess_language(default=info.origlan) }}
+      text: {{ verbal | trim }}
+
+{% set persons = info | get_roles %}
+applicants:
+{% for applicant in persons.applicants %}
+  - fullName:
+      - languageCode: {{ info.origlan }}
+        text: {{ applicant.name }}
+    fullAddress:
+      - languageCode: {{ info.origlan }}
+        text: {{ applicant.addr  }}
+    countryCode: {{ applicant.nat }}
+{% endfor %}
+
+representatives:
+{% for representative in persons.representatives %}
+  - fullName:
+      - languageCode: {{ info.origlan }}
+        text: {{ representative.name }}
+    fullAddress:
+      - languageCode: {{ info.origlan }}
+        text: {{ representative.addr }}
+    countryCode: {{ representative.nat }}
+{% endfor %}
+
+{% if persons.correspondence %}
+correspondence:
+  fullName:
+    - languageCode: {{ info.origlan }}
+      text: {{ persons.correspondence.name }}
+  fullAddress:
+    - languageCode: {{ info.origlan }}
+      text: {{ persons.correspondence.addr }}
+  countryCode: {{ persons.correspondence.nat }}
+{% endif %}
+
+priorities:
+{% call(prio) match('prigr.prio', info) %}
+  - countryCode: {{ prio.prinat }}
+    number: {{ prio.prinr }}
+    date: {{ prio.priappd }}
+    comment: {{ prigr.prirem }}
+{% endcall %}
+
+{% set (nc_gs, gs) = info.gsgr | structure_gs %}
+{% if nc_gs.keys() | length > 0 %}
+goodsServicesClassification:
+  kind: Nice
+  version: {{ ASK_THE_OFFICE }}
+  class:
+    {% for cls, terms in nc_gs.items() %}
+    - code: {{ cls | int }}
+      {% if terms | length > 0 %}
+      terms:
+        {{ terms | guess_language(default=info.origlan) | field_name }}:
+          {% for term in terms %}
+          - {{ term | lower }}
+          {% endfor %}
+      {% endif %}
+    {% endfor %}
+{% endif %}
+
+{% if gs | length > 0 %}
+goodsServicesUnclassified:
+  {{ gs | guess_language(default=info.origlan) | field_name }}:
+    {% for term in gs %}
+    - {{ term | lower }}
+    {% endfor %}
+{% endif %}
+
+# publications:
+# {% call(publ) match('marhist.histdata', transac) %}
+#   - identifier: {{ publ.artnr }}
+#     date: {{ publ.evdat }}
+#     section: {{ publ.gaznum }}
+# {% endcall %}
+
+extra:
+  {% call(opp) match('oppositiongr', info) %}
+  opposition:
+    state: {{ opp.oppositionstate }}
+    date: {{ opp.oppositiondate }}
+  {% endcall %}
+
+{% endcall %}
+

@@ -1,0 +1,100 @@
+{% from 'navigation.tmpl' import match %}
+{% set TradeMark, status = Transaction.TradeMarkTransactionBody.TransactionContentDetails.TransactionData | get_trademark %}
+
+type: TRADEMARK
+kind: {{ TradeMark.KindMark | translate_kind }}
+st13: {{ TradeMark.ApplicationNumber | st13('RU', appdate=TradeMark.ApplicationDate) }}
+gbdStatus: {{ status }}
+officeStatus: {{ status }}
+markFeature: {{ TradeMark.MarkFeature | translate_feature }}
+registrationOfficeCode: {{ TradeMark.RegistrationOfficeCode }}
+designatedCountries:
+  - {{ TradeMark.RegistrationOfficeCode }}
+applicationLanguageCode: 'ru'
+applicationNumber: {{ TradeMark.ApplicationNumber }}
+applicationDate: {{ TradeMark.ApplicationDate | convertdate('%Y-%m-%d') }}
+registrationNumber: {{ TradeMark.RegistrationNumber }}
+registrationDate: {{ TradeMark.RegistrationDate }}
+markDisclaimerDetails:
+  {% call(desc) match('MarkDisclaimerDetails.MarkDisclaimer', TradeMark) %}
+  - text: {{ desc }}
+    languageCode: {{ desc | guess_language(TradeMark.ApplicationLanguageCode, 'ru') }}
+  {% endcall %}
+markDescriptionDetails:
+  {% call(desc) match('MarkDescriptionDetails.MarkDescription', TradeMark) %}
+  - text: {{ desc }}
+    languageCode: {{ desc | guess_language(TradeMark.ApplicationLanguageCode, 'ru') }}
+  {% endcall %}
+wordMarkSpecification:
+  markVerbalElement:
+    {% call(desc) match('WordMarkSpecification.MarkSignificantVerbalElement', TradeMark) %}
+    - text: {{ desc }}
+      languageCode: {{ desc | guess_language('ru') }}
+    {% endcall %}
+markImageDetails:
+  {% call(img) match('MarkImageDetails.MarkImage', TradeMark) %}
+  - name: {{ img.MarkImageFilename }}
+    colourIndicator: {{ img.MarkImageColourClaimedText | get_true_or_false }}
+    colourClaimed:
+      {% call(desc) match('MarkImageColourClaimedText', img) %}
+      - text: {{ desc }}
+        languageCode: {{ desc | guess_language(TradeMark.ApplicationLanguageCode, 'ru') }}
+      {% endcall %}
+  {% endcall %}
+
+{% call(nc_gs) match('GoodsServicesDetails.GoodsServices', TradeMark) %}
+goodsServicesClassification:
+  kind: Nice
+  version: {{ ASK_THE_OFFICE }}
+  class:
+    {% call(nice) match('ClassDescriptionDetails.ClassDescription', nc_gs) %}
+    - code: {{ nice.ClassNumber | int }}
+      terms:
+      {% if nice.GoodsServicesDescription | has_value %}
+      {% call(desc) match('GoodsServicesDescription', nice) %}
+        ru:
+        {% for gsline in desc | remove_trailing('.') | split_terms %}
+          - {{ gsline | lower }}
+        {% endfor %}
+      {% endcall %}
+      {% endif %}
+    {% endcall %}
+{% endcall %}
+
+{% call(unclassified) match('GoodsServicesDetails.GoodsServices.Comment', TradeMark) %}
+goodsServicesUnclassified:
+  ru:
+    - {{ unclassified }} #TODO sanitize
+{% endcall %}
+
+priorities:
+  {% call(priority) match('PriorityDetails.Priority', TradeMark) %}
+  - countryCode: {{ priority.PriorityCountryCode }}
+    number: {{ priority.PriorityNumber }}
+    date: {{ priority.PriorityDate }}
+  {% endcall %}
+publications:
+  {% call(publication) match('PublicationDetails.Publication', TradeMark) %}
+  - identifier: {{ publication.PublicationIdentifier }}
+    date: {{ publication.PublicationDate }}
+    section: {{ publication.PublicationSection }}
+  {% endcall %}
+
+applicants:
+  {% call(Applicant) match('ApplicantDetails.Applicant', TradeMark) %}
+  - identifier: {{ Applicant.ApplicationNumber }}
+    fullAddress:
+      {% call(adrline) match('FreeFormatAddressDetails.FreeFormatNameAddressLine', Applicant.ApplicantAddressBook) %}
+      - text: {{ adrline}}
+        languageCode: {{ adrline | guess_language('ru') }}
+      {% endcall %}
+  {% endcall %}
+
+correspondence:
+  {% call(corespondance) match('CorrespondenceAddress.CorrespondenceAddressBook', TradeMark) %}
+  fullAddress:
+    {% call(adrline) match('FreeFormatAddressDetails.FreeFormatNameAddressLine', corespondance) %}
+    - text: {{ adrline}}
+      languageCode: {{ adrline | guess_language('ru') }}
+    {% endcall %}
+  {% endcall %}
