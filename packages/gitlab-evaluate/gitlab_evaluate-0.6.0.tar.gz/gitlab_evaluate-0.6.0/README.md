@@ -1,0 +1,141 @@
+# Evaluate
+
+Evaluate is a script that can be run to gather information about all projects of a GitLab
+
+- Instance
+- Group (including sub-groups)
+
+This information is useful to the GitLab Professional Services (PS) team to accurately scope migration services.
+
+## Use Case
+
+GitLab PS plans to share this script with a Customer to run against their GitLab instance or group. Then the customer can send back the output files to enable GitLab engagement managers to scope engagements accurately. There are 3 output files.
+
+The one to send back is the `report.txt` which lists config and project/group data possibly needing some special attention based on these [limits](#project-thresholds)
+
+## Install Method
+
+- [pip Install](#pip-install)
+- [Docker Container](#docker-container)
+  - [Bash](#local-usage)
+
+## Usage
+
+### System level data gathering
+
+Evaluate is meant to be run by an **OWNER** (ideally system **ADMINISTRATOR**) of a GitLab instance to gather data about every project on the instance or group (including sub-groups).
+
+1. A GitLab **OWNER** (ideally system **ADMINISTRATOR**) should provision an access token with `api` scope:
+   - [Personal access token](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html#create-a-personal-access-token) for instance
+   - [Group access token](https://docs.gitlab.com/ee/user/group/settings/group_access_tokens.html#create-a-group-access-token-using-ui) for group
+2. Install `gitlab-evaluate` from the [Install](#install) section above,
+3. Run :point_down:
+
+    For evaluating a GitLab instance
+
+    ```bash
+    evaluate-gitlab -t <access-token-with-api-scope> -s https://gitlab.example.com
+    ```
+
+    For evaluating a GitLab group (including sub-groups)
+
+    ```bash
+    evaluate-gitlab -t <access-token-with-api-scope> -s https://gitlab.example.com -g 42
+    ```
+
+4. This should create a file called `evaluate_output.csv`
+5. If you're coordinating a GitLab PS engagement, email this file to the GitLab account team.
+
+### To gather CI data from a single repo
+
+```bash
+# For evaluating a single git repo's CI readiness
+evaluate-ci-readiness -r|--repo <git-repo-url>
+```
+
+### Command help screen
+
+```text
+usage: evaluate-gitlab [-h] [-t TOKEN] [-s SOURCE] [-f FILENAME] [-o] [-i] [-p PROCESSES] [-g GROUP_ID]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -t TOKEN, --token TOKEN
+                        Personal Access Token: REQ'd
+  -s SOURCE, --source SOURCE
+                        Source URL: REQ'd
+  -f FILENAME, --filename FILENAME
+                        CSV Output File Name. If not set, will default to 'evaluate_output.csv'
+  -o, --output          Output Per Project Stats to screen
+  -i, --insecure        Set to ignore SSL warnings.
+  -p PROCESSES, --processes PROCESSES
+                        Number of processes. Defaults to number of CPU cores
+  -g GROUP_ID, --group GROUP_ID
+                        Group ID. Evaluate all group projects (including sub-groups)
+```
+
+```text
+usage: evaluate-ci-readiness [-h] [-r REPO]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -r REPO, --repo REPO  Git Repository To Clone (ex: https://username:password@repo.com
+```
+
+### pip Install
+
+```bash
+pip install gitlab-evaluate
+```
+
+## Docker Container
+
+[Docker containers with evaluate installed](https://gitlab.com/gitlab-org/professional-services-automation/tools/utilities/evaluate/container_registry) are also available to use.
+
+### Local Usage
+
+```bash
+# Spin up container
+docker run --name evaluate -it registry.gitlab.com/gitlab-org/professional-services-automation/tools/utilities/evaluate:latest /bin/bash
+
+# In docker shell
+evaluate-ci-readiness -r|--repo <git-repo-url>
+evaluate-gitlab -t <access-token-with-api-scope> -s https://gitlab.example.com
+```
+
+### Example GitLab CI job using evaluate ci readiness script
+
+```yaml
+evaluate node-js:
+  stage: test
+  script:
+    - evaluate-ci-readiness --repo=https://github.com/nodejs/node.git
+  artifacts:
+    paths:
+      - node.csv
+```
+
+To **test**, consider standing up a local docker container of GitLab. Provision an access token with `api` scope and **OWNER** (ideally system **ADMINISTRATOR**) privileges. Create multiple projects with varying number of commits, pipelines, merge requests, issues. Consider importing an open source repo or using [GPT](https://gitlab.com/gitlab-org/quality/performance) to add projects to the system.
+
+## Design
+
+Design for the script can be found [here](https://gitlab.com/gitlab-com/customer-success/professional-services-group/ps-leadership-team/ps-practice-management/-/issues/83)
+
+## Project Thresholds
+
+_Below are the thresholds we will use to determine whether a project can be considered for normal migration or needs to have special steps taken in order to migrate_
+
+### Project Data
+
+- Pipelines - 1,500 max
+- Issues - 1,500 total (not just open)
+- Merge Requests - 1,500 total (not just merged)
+- Container images - 20GB per project
+- Packages - Any packages present
+
+### Repo Data
+
+- commits - 20K
+- branches - 1K
+- tags - 1K
+- Disk Size - 10GB
