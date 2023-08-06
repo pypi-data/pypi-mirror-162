@@ -1,0 +1,45 @@
+Metadata-Version: 2.1
+Name: tf-encrypts
+Version: 1.0.5
+Summary: TfEncrypt
+Home-page: UNKNOWN
+Author: kkh
+Author-email: doggood720@gmail.com
+License: MIT
+Platform: UNKNOWN
+Description-Content-Type: text/markdown
+Requires-Dist: Fernet
+Requires-Dist: pycryptodome
+
+# tf-encrypt
+
+#### 사용법 : TfEncrypt
+```
+data = {'a': 123, 'b': 'b123'}
+cipher = TfEncrypt(password="p@ssw0rd")
+encrypted_data = cipher.encrypt(data)
+decrypted_data = cipher.decrypt(encrypted_data)
+```
+
+#### 사용법 : TfEncryptFernet
+```
+data = {'a': 123, 'b': 'b123'}
+data = "1234"
+data = 3.14
+cipher = TfEncryptFernet(password="p@ssw0rd")
+encrypted_data = cipher.encrypt(data)
+decrypted_data = cipher.decrypt(encrypted_data)
+```
+
+#### 사용법
+```
+class A:
+    a = 1
+    b = 'text2'
+
+data = A()
+cipher = TfEncryptFernet(password="p@ssw0rd")
+encrypted_data = cipher.encrypt(data)
+decrypted_data = cipher.decrypt(encrypted_data)
+```
+
