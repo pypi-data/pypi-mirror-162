@@ -1,0 +1,152 @@
+Metadata-Version: 2.1
+Name: iluxaMod
+Version: 2.5
+Summary: Module for simplified work with libraries: TG, PostgreSQL, locations and more...
+Home-page: https://github.com/LazarevIllya/iluxa_module
+Author: Lazarev Illya
+Author-email: lazarevillya031@gmail.com
+License: UNKNOWN
+Download-URL: https://github.com/LazarevIllya/iluxa_module/archive/v2.5.zip
+Platform: UNKNOWN
+Classifier: Operating System :: OS Independent
+Classifier: Intended Audience :: End Users/Desktop
+Classifier: Intended Audience :: Developers
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: Implementation :: PyPy
+Classifier: Programming Language :: Python :: Implementation :: CPython
+Description-Content-Type: text/markdown
+
+
+
+## How to use?
+
+
+Importing iluxaModule
+
+`import iluxaMod as ilm`
+
+
+PostgreSQL
+
+
+```
+# Connect to db
+database = ilm.postgreSQL_connect(user="user", password="password", database="database", host="localhost")
+
+# Variables for manual use
+db = database.db
+sql = database.sql 
+
+
+# Create tables configured by Iluxa, like: stages, sub, setting, staff, balance...
+database.init_DB(stages=False, sub=False, settings=False, staff=False, balance=False, stdout=True)
+
+# User stages [default returns 'None']
+database.stages(user_id) # view current user stage.
+database.stages(user_id, new) # change user stage.
+
+# App settings
+database.settings(setting) # view current setting.
+database.settings(setting, new) # change setting.
+
+
+# Staff manage
+database.staff(user_id) # check current user status
+database.staff(user_id, status) # change user status
+database.staff(user_id, remove=True) # remove user from staff
+
+# Balance
+database.balance(user_id) # check current user balance.
+database.balance(user_id, new) # set new user balance.
+
+# Subscribers
+database.sub_update(user_id) # if user id not in sub-table, it will be added. if exists - updating 'last_update' column
+database.sub_view(user_id) # view user's regiser_date and last_update
+```
+
+Distance
+
+```
+# Distance in km
+ilm.distance(lat1, lon1, lat2, lon2).get_distance()
+```
+
+Telebot
+
+```# TGbot init
+bot = ilm.tgBot(token, parse_mode='HTML')
+
+# send text message
+bot.send(chat_id, msg, reply_markup=None, disable_notification=False)
+
+# Inline Keyboard Markup
+bot.kmarkup() # types.InlineKeyboardMarkup() analog
+
+# Back button
+bot.back(callback_data) # button with static title "Back"
+
+# Inline Keyboard Buttons
+bot.btn("Button", callback_data="Cdata") # callback button
+bot.btn("Button", url="https://google.com/") # url button 
+```
+
+Arduino
+
+```#Arduino init
+plate = ilm.arduino(board="COM3")
+
+# digital ports
+plate.digital_port(port) # view current status of port
+plate.digital_port(port, status) # change status of port
+
+# analog ports
+plate.analog_port(port) # view current status of port
+plate.analog_port(port, status) # change status of port
+```
+
+
+Barcodes
+
+`ilm.barcode(frame).scan() #scan photo/frame`
+
+
+Pickle
+```
+# Pick file
+ilm.tools().pick(filename, data)
+
+# Unpick file
+ilm.tools().unpick(filename)
+```
+
+
+KeysGen
+```
+ilm.KeysGen().generate(upper=False)
+```
+
+Another tools
+
+Importing tools section
+```
+import iluxaMod.tools as tool
+```
+
+Pickle
+```
+# Init
+f = tools.pickle(filename="file")
+
+# Create 
+f.pick("New Data")
+
+# Read
+data = f.unpick()
+print(data)
+```
+
+
