@@ -1,0 +1,6 @@
+__title__ = 'morphometry'
+__description__ = 'FreeSurfer E2E pipeline'
+__url__ = 'https://github.com/harvard-nrg/morphometry'
+__version__ = '0.2.0'
+__author__ = 'Neuroinformatics Research Group'
+__author_email__ = 'info@neuroinfo.org'
