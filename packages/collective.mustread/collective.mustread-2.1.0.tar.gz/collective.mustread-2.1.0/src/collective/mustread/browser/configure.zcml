@@ -1,0 +1,31 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:browser="http://namespaces.zope.org/browser"
+    xmlns:plone="http://namespaces.plone.org/plone"
+    i18n_domain="collective.mustread">
+
+  <browser:page
+      for="..interfaces.ITrackReadEnabledMarker"
+      name="mustread-hit"
+      class=".views.Hit"
+      permission="zope2.View"
+      layer="..interfaces.ICollectiveMustreadLayer"
+      />
+
+  <browser:page
+      for="..interfaces.ITrackReadEnabledMarker"
+      name="mustread-hasread"
+      class=".views.HasRead"
+      permission="zope2.View"
+      layer="..interfaces.ICollectiveMustreadLayer"
+      />
+
+  <browser:page
+      for="*"
+      name="init-mustread-db"
+      class=".init_db.InitView"
+      layer="..interfaces.ICollectiveMustreadLayer"
+      permission="cmf.ManagePortal"
+      />
+
+</configure>
