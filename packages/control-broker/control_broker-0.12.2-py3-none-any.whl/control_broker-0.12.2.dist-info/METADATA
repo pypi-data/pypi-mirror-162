@@ -1,0 +1,108 @@
+Metadata-Version: 2.1
+Name: control-broker
+Version: 0.12.2
+Summary: Control Broker allows customers to deploy an HTTP API on AWS that executes Policy as Code (PaC) policies using Open Policy Agent (OPA) or CloudFormation Guard to evaluate inputs and return decisions.
+Home-page: https://github.com/VerticalRelevance/control-broker/
+Author: Clark Schneider<cschneider@verticalrelevance.com>
+License: Apache-2.0
+Project-URL: Source, https://github.com/VerticalRelevance/control-broker.git
+Classifier: Intended Audience :: Developers
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: JavaScript
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Typing :: Typed
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: License :: OSI Approved
+Requires-Python: ~=3.7
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: aws-cdk-lib (<3.0.0,>=2.28.1)
+Requires-Dist: aws-cdk.aws-apigatewayv2-alpha (==2.28.1.a0)
+Requires-Dist: aws-cdk.aws-apigatewayv2-authorizers-alpha (==2.28.1.a0)
+Requires-Dist: aws-cdk.aws-apigatewayv2-integrations-alpha (==2.28.1.a0)
+Requires-Dist: aws-cdk.aws-lambda-python-alpha (==2.28.1.a0)
+Requires-Dist: constructs (<11.0.0,>=10.0.5)
+Requires-Dist: jsii (<2.0.0,>=1.61.0)
+Requires-Dist: publication (>=0.0.3)
+
+# Control Broker
+
+*Give everyone in your organization subsecond security and compliance decisions based on the organization's latest policies.*
+
+## Contributing
+
+Please see [CONTRIBUTING.md](./CONTRIBUTING.md).
+
+## Features
+
+* Runs a Policy as Code service as a serverless AWS application - you bring the policies, and Control Broker helps you store, organize, and use them - plus it helps you monitor, and analyze their usage.
+* Defined in the AWS Python CDK for push-button, repeatable deployment.
+* Can be invoked from anywhere in your environment that can invoke an API Gateway API.
+* Supports policies written for Open Policy Agent (CloudFormation Guard planned).
+* Also helps with notifications, auditing, and analysis of discovered compliance issues.
+
+## Example use cases
+
+* [Using the Control Broker from a CodePipeline application pipeline to block deployment of non-compliant CDK resources](https://github.com/VerticalRelevance/control-broker-codepipeline-example)
+* [Using the Control Broker to detect non-compliant changes to deployed resources with AWS Config](https://github.com/VerticalRelevance/control-broker-consumer-example-config)
+* [Using the Control Broker from a development machine to evaluate IaC against the organization's latest security policies as it is being written](https://github.com/VerticalRelevance/control-broker-consumer-example-local-dev)
+
+## Deploying Your Own Control Broker
+
+<!--### Upload your secret config file--><!--The Control Broker needs some secret values to be available in its environment. These are stored in a Secrets Manager Secret as a JSON--><!--blob, and the Control Broker's deployment mechanisms grab these values as they need to.--><!--Before proceeding, you'll have to copy [our example secrets file](./supplementary_files/) to a secure location on your machine and replace--><!--the values in it with your own. Then, [create a Secret--><!--in Secrets--><!--Manager](https://docs.aws.amazon.com/secretsmanager/latest/userguide/tutorials_basic.html#tutorial-basic-step1)--><!--called "control-broker/secret-config" with this JSON text as its value.--><!--![Using the SecretsManager console to create the secret value](docs/diagrams/images/secretsmanager-console-secret-config.png)--><!--![Using the SecretsManager console to name the secret and give it a description](docs/diagrams/images/secretsmanager-console-secret-config-name-page.png)--><!--Here are some helpful hints about what to put in these values:--><!--> Note: You can change the name of the secret that Control Broker uses by changing the value of the "control-broker/secret-config/secrets-manager-secret-id" context variable.-->
+
+### Deploy the CDK app
+
+Install the [AWS CDK Toolkit
+v2](https://docs.aws.amazon.com/cdk/v2/guide/cli.html) CLI tool.
+
+If you encounter issues running the `cdk` commands below, check the version of
+`aws-cdk-lib` from [./requirements.txt](./requirements.txt) for the exact
+version of the CDK library used in this repo. The latest v2 version of the CDK
+Toolkit should be compatible, but try installing the CDK Toolkit version
+matching `requirements.txt` before trying other things to resolve your issues.
+
+Clone this repo to your machine before proceeding.
+
+Follow the setup steps below to properly configure the environment and first
+deployment of the infrastructure.
+
+To manually create a virtualenv on MacOS and Linux:
+
+`$ python3 -m venv .venv`
+
+After the init process completes and the virtualenv is created, you can use the
+following step to activate your virtualenv.
+
+`$ source .venv/bin/activate`
+
+If you are on a Windows platform, you would activate the virtualenv like this:
+
+```
+% .venv\Scripts\activate.bat
+```
+
+Once the virtualenv is activated, you can install the required dependencies.
+
+`$ pip install -r requirements.txt`
+
+[Bootstrap](https://docs.aws.amazon.com/cdk/v2/guide/cli.html#cli-bootstrap) the
+cdk app:
+
+`cdk bootstrap`
+
+At this point you can
+[deploy](https://docs.aws.amazon.com/cdk/v2/guide/cli.html#cli-deploy) the CDK
+app for this blueprint:
+
+`$ cdk deploy`
+
+After running `cdk deploy`, the Control Broker will be set up.
+
+## Next Steps
+
+Try launching one of the [Example use cases](./README.md#example-use-cases)!
