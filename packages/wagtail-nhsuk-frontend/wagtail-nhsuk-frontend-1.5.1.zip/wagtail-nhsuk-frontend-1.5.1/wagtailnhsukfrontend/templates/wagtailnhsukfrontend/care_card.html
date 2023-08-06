@@ -1,0 +1,21 @@
+{% load wagtailcore_tags nhsukfrontend_extra_parameters_tags nhsukfrontend_wrapper_tags %}
+
+<div class="nhsuk-card nhsuk-card--care nhsuk-card--care--{{ care_card_type }}">
+  <div class="nhsuk-card--care__heading-container">
+    <h{{ heading_level }} class="nhsuk-card--care__heading" {% add_extra_parameters "title" %}>
+      <span role="text">
+        <span class="nhsuk-u-visually-hidden">{{ accessible_title_prefix }} </span>{{ title }}
+      </span>
+    </h{{ heading_level }}>
+    <span class="nhsuk-card--care__arrow" aria-hidden="true"></span>
+  </div>
+  <div class="nhsuk-card__content">
+    {% for block in body %}
+      {% with "body."|add:block.id as contentpath %}
+        {% contentwrapper contentpath %}
+          {% include_block block %}
+        {% endcontentwrapper %}
+      {% endwith %}
+    {% endfor %}
+  </div>
+</div>
