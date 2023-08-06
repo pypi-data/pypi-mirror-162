@@ -1,0 +1,226 @@
+{% import "_query_table.html" as querytable with context %}
+{% import "_charts.html" as charts with context %}
+{% set new_querytable = extension.use_new_querytable() %}
+
+{% set module = request.args.get('module') %}
+<div class="headerline">
+  {% for key, label in [('aa_class', _('Asset Allocation Classes')), ('aa_account', _('Asset Allocation Accounts')), ('cashdrag', _('Cash Drag')), ('tlh', _('Tax Loss Harvestor')), ('summarizer', _('Summarizer')) ] %}
+  <h3><b>{% if not (module == key) %}<a href="{{ url_for('extension_report', report_name='Investor', module=key) }}">{{ label }}</a>{% else %} {{ label }}{% endif %}</b></h3>
+  {% endfor %}
+</div>
+
+{% if (module == None) %}
+<i>
+Welcome! Fava Investor provides reports, analyses, and tools for investments. It
+implemented as a collection of modules. Use the tabs on the top to navigate to each
+module.
+</i>
+{% endif %}
+
+{% if (module == 'aa_account') %}
+  <h2>Portfolio: Asset Allocation by Accounts</h2>
+  {% set results = extension.build_aa_by_account() %}
+  {% if results|length == 0 %}
+     No regexes found in configuration. See example.beancount for how to configure this module.
+  {% else %}
+    {% for portfolio in results %}
+        <h3>{{portfolio[0]}}</h3>
+        {% if new_querytable %}
+          {{ querytable.querytable(ledger, None, *portfolio[1]) }}
+        {% else %}
+          {{ querytable.querytable(None, *portfolio[1]) }}
+        {% endif %}
+        <br />
+    {% endfor %}
+  {% endif %}
+{% endif %}
+
+
+{% if (module == 'cashdrag') %}
+  <h2>Cash Drag Analysis</h2>
+  {% set results = extension.build_cashdrag() %}
+  {% if new_querytable %}
+    {{ querytable.querytable(ledger, None, *results) }}
+  {% else %}
+    {{ querytable.querytable(None, *results) }}
+  {% endif %}
+{% endif %}
+
+{% if (module == 'summarizer') %}
+  {% set results = extension.build_summarizer() %}
+  {% for table in results %}
+    <h2>{{table[0]}}</h2>
+    {% if new_querytable %}
+      {{ querytable.querytable(ledger, None, *table[1]) }}
+    {% else %}
+      {{ querytable.querytable(None, *table[1]) }}
+    {% endif %}
+  {% endfor %}
+{% endif %}
+
+{% if (module == 'tlh') %}
+  <h2>Tax Loss Harvester</h2>
+  {% set harvests = extension.build_tlh_tables() %}
+
+  <div class="row">
+    <div class="column">
+      <h3 style="text-align:left">Summary</h3>
+      <table class="sortable">
+        <thead>
+          <tr>
+            <th data-sort="string">{{ _('Summary') }}</th>
+            <th data-sort="string">{{ _('Val') }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for key, value in harvests[1].items() %}
+          <tr>
+            <td>{{ key }}</td>
+            <td align="right">{{ value }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <br />
+    </div>
+    <div class="column">
+      <h3 style="text-align:left">Losses by Commodity</h3>
+      {% if new_querytable %}
+        {{ querytable.querytable(ledger, None, *harvests[3]) }}
+      {% else %}
+        {{ querytable.querytable(None, *harvests[3]) }}
+      {% endif %}
+      <br />
+    </div>
+  </div>
+
+
+  <h3>Candidates for tax loss harvesting</h3>
+  {% if new_querytable %}
+    {{ querytable.querytable(ledger, None, *harvests[0]) }}
+  {% else %}
+    {{ querytable.querytable(None, *harvests[0]) }}
+  {% endif %}
+  <br />
+
+
+  <h3>Potential wash sales: purchases within the past 30 days</h3>
+
+  <i>Below is a list of purchases with the past 30 days. "earliest_sale" is the date on
+    which a loss of the ticker shown can be harvested without resulting in a wash sale.</i>
+
+  {% set table_empty_msg = None %}
+  {% if harvests[2][0]|length == 0 %}
+    {% set table_empty_msg = 'No purchases of the candidates above found within the last 30 days!' %}
+  {% endif %}
+  {% if new_querytable %}
+    {{ querytable.querytable(ledger, table_empty_msg, *harvests[2]) }}
+  {% else %}
+    {{ querytable.querytable(table_empty_msg, *harvests[2]) }}
+  {% endif %}
+  <br />
+
+  <h3>What not to buy</h3>
+  <i>Below is a list of recent sales with losses. Assuming these losses were harvested,
+    purchasing these within 30 days of the sale could result in the loss becoming a wash
+    sale.</i>
+  {% set lossy_sales = extension.recently_sold_at_loss() %}
+  {% set table_empty_msg = None %}
+  {% if lossy_sales[1]|length == 0 %}
+    {% set table_empty_msg = 'No sales with losses found in the last 30 days!' %}
+  {% endif %}
+  {% if new_querytable %}
+    {{ querytable.querytable(ledger, table_empty_msg, *lossy_sales) }}
+  {% else %}
+    {{ querytable.querytable(table_empty_msg, *lossy_sales) }}
+  {% endif %}
+
+  <br>
+  <i>None of the above is meant to be financial, legal, tax, or other advice.</i>
+
+
+{% endif %}
+
+{% set table_hover_text = _('Hold Shift while clicking to expand all children.
+Hold Ctrl or Cmd while clicking to expand one level.') %}
+
+{# TODO: 
+- add a format_percentage() to fava's template_filters, and use that here
+- display 0 decimal places for assets (needed for all of fava_investor)
+- fix: asset bucket spacing is too wide
+- get currency from libassetalloc instead of looping: {% for currency in ledger.options.operating_currency %}
+- remove links from asset class name
+#}
+
+{% macro asset_tree(account_node) %}
+<tree-table>
+<ol class="flex-table tree-table{{ ' two-currencies' if ledger.options.operating_currency|length > 1 else '' }}" title="{{ table_hover_text }}">
+  <li class="head">
+    <p>
+      <span class="account-cell"><button type="button" class="link expand-all hidden" title="{{ _('Expand all accounts') }}">{{ _('Expand all') }}</button></span>
+      {% for currency in ledger.options.operating_currency %}
+      <span class="num">{{ currency }}</span>
+      {% endfor %}
+      <span class="num other">{{ _('Percentage') }}</span>
+    </p>
+  </li>
+  {% for account in ([account_node] if account_node.name else account_node.children) recursive %}
+  <li{{ '' }}>
+    <p{{ ' class=has-balance' }}>
+    <span class="account-cell depth-{{ loop.depth0 }} droptarget{{ ' has-children' if account.children else '' }}" data-account-name="{{ account.name }}">
+    <a href='' class='account'>
+      {{ account.name.split('_')[-1] }}
+    </a>
+    </span>
+    {% for currency in ledger.options.operating_currency %}
+    <span class="num">
+      <span class="balance">
+        <span class="number">{{ account.balance|format_currency(currency) }}</span>
+      </span>
+      <span class="balance-children">
+        <span class="number">{{ account.balance_children|format_currency(currency) }}</span>
+      </span>
+    </span>
+    {% endfor %}
+    <span class="num other">
+      {% set percentage_parent =  '{:3.0f}% of {}'.format(account.percentage_parent, account.parent.name) if account.parent else '' %}
+      <span class="balance">
+        <span class="number" title="{{ percentage_parent }}">{{ '{:6.2f} %'.format(account.percentage) if account.percentage else '' }}</span>
+      </span>
+      <span class="balance-children">
+        <span class="number" title="{{ percentage_parent }}">{{ '{:6.2f} %'.format(account.percentage_children) if account.percentage_children else '' }}</span>
+      </span>
+    </span>
+    </p>
+    {% if account.children %}
+    <ol>
+      {{ loop(account.children|sort(attribute='name')) }}
+    </ol>
+    {% endif %}
+  </li>
+  {% endfor %}
+</ol>
+</tree-table>
+{% endmacro %}
+
+{% macro asset_allocation_hierarchy(serialised_tree, label=None) %}
+{% do charts.chart_data.append({
+'type': 'hierarchy',
+'label': 'Asset Allocation' if not label else label,
+'data': {
+  'modifier': 1,
+  'root': serialised_tree,
+},
+}) %}
+{% endmacro %}
+
+{% if (module == 'aa_class') %}
+  <h2>Portfolio: Asset Allocation by Class</h2>
+
+  {% set results = extension.build_assetalloc_by_class() %}
+  {{ asset_tree(results[0]) }}
+
+  {{ asset_allocation_hierarchy(results[0].serialise(results[0]['currency']), label='Asset Allocation') }}
+  <script type="application/json" id="chart-data">{{ charts.chart_data|tojson|safe }}</script>
+
+{% endif %}
