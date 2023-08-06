@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "array",
+  "additionalItems": false,
+  "items": {
+    "type": "object",
+    "required": [
+      "default",
+      "doc",
+      "id",
+      "label",
+      "type",
+      "array",
+      "required",
+      "secondaryFiles"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "default": {
+        "type": ["boolean", "number", "string", "null"]
+      },
+      "doc": {
+        "type": ["string", "null"]
+      },
+      "id": {
+        "type": "string"
+      },
+      "label": {
+        "type": ["string", "null"]
+      },
+      "type": {
+        "type": "string",
+        "enum": ["File", "Directory", "Any", "string", "int", "boolean"]
+      },
+      "array": {
+        "type": "boolean"
+      },
+      "required": {
+        "type": "boolean"
+      },
+      "secondaryFiles": {
+        "type": ["array", "null"],
+        "additionalItems": false,
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["required", "pattern"],
+          "properties": {
+            "required": {
+              "type": "boolean"
+            },
+            "pattern": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}
