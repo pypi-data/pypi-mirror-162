@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html style="width: 100%; height: 100%; margin: 0; padding: 0">
+    <head>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx" crossorigin="anonymous">
+        <meta charset="UTF-8">
+        <title>{{ session_info.get('sport', '').capitalize() }} - {{ session_info.start_time }}</title>
+    </head>
+    <body style="width: 100%; height: 100%; margin: 0; padding: 0">
+        <div style="display: flex; width: 100%; height: 100%; flex-direction: column; overflow: hidden;">
+            <div>
+                <center>
+                    <h1>{{ session_info.get('sport', '').capitalize() }} - {{ session_info.start_time }}</h1><br/>
+                </center>
+                <ul class="nav nav-tabs" role="tablist">
+                    {% if map_iframe %}
+                    <li class="nav-item active" role="presentation">
+                        <button class="nav-link active" id="mapplot-tab" data-bs-toggle="tab" data-bs-target="#mapplot" type="button" role="tab" aria-controls="mapplot" aria-selected="true">Map</button>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item{% if not map_iframe %} active{% endif %}" role="presentation">
+                        <button class="nav-link{% if not map_iframe %} active{% endif %}" id="charts-tab" data-bs-toggle="tab" data-bs-target="#charts" type="button" role="tab" aria-controls="charts" aria-selected="false">Charts</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="detail-tab" data-bs-toggle="tab" data-bs-target="#detail" type="button" role="tab" aria-controls="detail" aria-selected="false">Detail</button>
+                    </li>
+                </ul>
+            </div>
+            <div class="tab-content" style="flex-grow: 1; border: none; margin: 0; padding: 0;">
+                {% if map_iframe %}
+                <div class="tab-pane fade show active" id="mapplot" role="tabpanel" aria-labelledby="mapplot-tab" style="width: 100%; height: 100%;">
+                    <iframe id="mapplot" style="width: 100%; height: 100%;" srcdoc="{{ map_iframe }}"></iframe>
+                </div>
+                {% endif %}
+                <div class="tab-pane fade show active" id="charts" role="tabpanel" aria-labelledby="charts-tab" style="width: 100%; height: 100%;">
+                    {{ charts_iframe }}
+                </div>
+                <div class="tab-pane fade show" id="detail" role="tabpanel" aria-labelledby="detail-tab" style="width: 100%; height: 100%;">
+                    <center>
+                        <b>{{ session_info.get('sport', '').capitalize() }} - {{ session_info.start_time }}</b><br/>
+                        Duration: {{ track_duration }}<br/>
+                        Length: {{ ((session_info.total_distance / 10) | int) / 100 }}km<br/>
+                        Average heart rate: {{ session_info.avg_heart_rate }}bpm<br/>
+                        {% if 'enhanced_avg_speed' in session_info %}
+                        Average speed: {{ ((session_info.enhanced_avg_speed * 3.6 * 100) | int) / 100 }}km/h<br/>
+                        {% endif %}
+                        {% if 'enhanced_max_speed' in session_info %}
+                        Top speed: {{ ((session_info.enhanced_max_speed * 3.6  * 100) | int) / 100}}km/h<br/>
+                        {% endif %}
+                        Total calories: {{ session_info.total_calories }}kcal<br/>
+                    </center>
+                    <div style="position: absolute; bottom: 0; right: 50%; transform: translateX(50%)">Activity report generated with <a target="_blank" href="https://github.com/nbr23/watchmap">watchmap</a>{% if fit_file %} - <a download="{{ fit_file[0] }}" href="data:binary;base64,{{ fit_file[1] }}">Download source FIT file</a>{% endif %}</div>
+                </div>
+            </div>
+        </div>
+    </body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
+    {% if map_iframe %}
+    <script>
+        document.getElementById("charts").classList.remove('active');
+    </script>
+    {% endif %}
+</html>
