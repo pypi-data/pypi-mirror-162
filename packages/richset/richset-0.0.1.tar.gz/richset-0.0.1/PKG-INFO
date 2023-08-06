@@ -1,0 +1,43 @@
+Metadata-Version: 2.1
+Name: richset
+Version: 0.0.1
+Summary: richset interpolate between list, dict, set and iterables.
+Home-page: https://github.com/kitsuyui/python-richset
+Author: Yui Kitsu
+Author-email: kitsuyui+github@kitsuyui.com
+License: BSD-3-Clause
+Classifier: Development Status :: 3 - Alpha
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Intended Audience :: Developers
+Classifier: Topic :: Software Development :: Libraries
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
+# richset
+
+```python
+from dataclasses import dataclass
+from richset import RichSet
+
+
+@dataclass(frozen=True)
+class Something:
+    id: int
+    name: str
+
+
+richset = RichSet.from_list([
+    Something(1, 'one'),
+    Something(2, 'two'),
+])
+richset.to_list()  # => [Something(1, 'one'), Something(2, 'one')]
+richset.to_dict(lambda s: s.id)  # => {1: Something(1, 'one'), 2: Something(2, 'one')}
+```
+
+
+# LICENSE
+
+The 3-Clause BSD License. See also LICENSE file.
