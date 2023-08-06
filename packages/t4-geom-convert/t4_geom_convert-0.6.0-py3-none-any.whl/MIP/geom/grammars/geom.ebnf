@@ -1,0 +1,24 @@
+start = union $;
+
+union =
+    | l:union o:':' r:isect
+    | o:isect;
+
+isect =
+    | l:isect o:'*' r:operand
+    | o:operand;
+
+operand =
+    | o:cell
+    | o:surface
+    | l:'_(' o:compl r:')'
+    | l:'('  o:union r:')'
+    | l:'^(' o:complcell r:')';
+
+compl = union;
+
+surface = /[-+]{0,1}\d+(?:\.\d)?/;
+
+cell = /_\d+/;
+
+complcell =  /\d+/;
