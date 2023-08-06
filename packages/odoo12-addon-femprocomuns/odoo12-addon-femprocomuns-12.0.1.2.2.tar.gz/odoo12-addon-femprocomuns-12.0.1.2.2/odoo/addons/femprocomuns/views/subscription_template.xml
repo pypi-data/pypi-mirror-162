@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+  <template
+    id="become_cooperator_es_share_div"
+    inherit_id="easy_my_coop_website.shares_template"
+    name="Removing Share div"
+    >
+    <xpath expr="//div[@name='share_div']/div[2]" position="attributes">
+      <attribute name="hidden">1</attribute>
+    </xpath>
+  </template>
+  <template id="add_gender_description" inherit_id="easy_my_coop_website.contact_template">
+    <xpath expr="//select[@name='gender']" position="before">
+      <div>
+        <p style="font-size: 0.7rem">We ask for this data to have an indicator of gender bias, to complete the social balance and to be able to take corrective actions, if necessary.</p>
+      </div>
+    </xpath>
+  </template>
+  <template id="hide_account_link" inherit_id="easy_my_coop_website.becomecooperator">
+    <xpath expr="//div[@name='my_account_link_container']//a[@t-if='not logged']" position="replace"/>
+  </template>
+  <template id="add_sepa_approval" inherit_id="easy_my_coop_website.rules_template">
+    <xpath expr="//div[@id='financial_risk_approved']" position="after">
+      <div
+        id="sepa_approved"
+        name="sepa_approved_container"
+        t-attf-class="form-group"
+        >
+        <label for="sepa_approved">
+          SEPA authorization
+        </label>
+        <div class="form-check">
+          <input
+            type="checkbox"
+            name="sepa_approved"
+            required="True"
+            class="form-check-input"
+            />
+          <label>
+            <p style="font-size: 0.7rem">I agree to be charged to the account specified in this form the agreed contribution to the share capital as well as the fees for the requested services.</p>
+          </label>
+        </div>
+      </div>
+      <div
+        id="newsletter_approved"
+        name="newsletter_approved_container"
+        t-attf-class="form-group"
+        >
+        <label for="newsletter_approved">
+          Newsletter approved
+        </label>
+        <div class="form-check">
+          <input
+            type="checkbox"
+            name="newsletter_approved"
+            class="form-check-input"
+            />
+          <label>
+            <p style="font-size: 0.7rem">Estàs d'acord en rebre informació per correu electrònic?</p>
+          </label>
+        </div>
+      </div>
+      <div
+        id="dicovery_channel"
+        name="discovery_channel_container"
+        t-attf-class="form-group"
+        >
+        <label for="discovery_channel">
+            How did you know about us?
+        </label>
+        <select
+          id="discovery_channel"
+          name="discovery_channel"
+          >
+          <option value="">
+            <t t-foreach="channels or []" t-as="type">
+              <option t-att-value="type[0]" t-att-selected="type[0] == channel"><t t-esc="type[1]"/></option>
+            </t>
+          </option>
+        </select>
+      </div>
+    </xpath>
+  </template>
+  <template id="hide_function" inherit_id="easy_my_coop_website.becomecompanycooperator">
+    <xpath expr="//div[@name='contact_person_function_container']" position="replace"/>
+  </template>
+</odoo>
