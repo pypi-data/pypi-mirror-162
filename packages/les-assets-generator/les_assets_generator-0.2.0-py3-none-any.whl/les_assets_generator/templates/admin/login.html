@@ -1,0 +1,17 @@
+{% extends "admin/login.html" %}
+{% load static i18n socialaccount %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <link rel="stylesheet"  href="{% static 'css/lyon_esport.css' %}">
+{% endblock %}
+
+{% block content %}
+    {{ block.super }}
+    <div class="google-submit">
+        <form action="{% provider_login_url 'google' %}" method="post">
+            {% csrf_token %}
+            <button class="social-block" type="submit"><img class="social-logo" src="{% static 'img/logo/google.svg' %}" />{% trans "Login via Google" %}</button>
+        </form>
+    </div>
+{% endblock %}
