@@ -1,0 +1,352 @@
+<?xml version="1.0"?>
+<contentrules>
+ <rule name="ims-workflow-change"
+    title="IMSv4: notify on workflow state change " cascading="False"
+    description="this rule sends and email when an indicator changes workflow status"
+    enabled="True" event="Products.CMFCore.interfaces.IActionSucceededEvent"
+    stop-after="False">
+   <conditions>
+      <condition type="plone.conditions.PortalType">
+      <property name="check_types">
+      <element>ims_indicator</element>
+      </property>
+      </condition>
+   </conditions>
+   <actions>
+   <action type="plone.actions.Mail">
+    <property name="source"/>
+    <property name="message">Dear IMS user,
+
+          Indicator with title ${title}
+          has changed state to ${review_state_title}
+
+          ${absolute_url}
+
+         You can access the workflow log at ${url}/history (login required)
+
+          Note, the following people have also received this mail:
+          Creators in IMS: ${creators_emails}
+          HoG: ${head_of_group_email}
+
+          -----------
+          EEA Web CMS
+          -----------</property>
+    <property
+       name="subject">[IMSv4] Indicator state change ${review_state_title} for ${title}</property>
+    <property
+       name="recipients">${creators_emails}, ${head_of_group_email}, demarinis@eea.europa.eu</property>
+    <property name="exclude_actor">False</property>
+   </action>
+  </actions>
+ </rule>
+ <rule name="ims-workflow-notify-hog" title="IMSv4: notify HoG for approval" cascading="False"
+    description="" enabled="True"
+    event="Products.CMFCore.interfaces.IActionSucceededEvent"
+    stop-after="False">
+  <conditions>
+   <condition type="plone.conditions.PortalType">
+    <property name="check_types">
+     <element>ims_indicator</element>
+    </property>
+   </condition>
+   <condition type="plone.conditions.WorkflowTransition">
+    <property name="wf_transitions">
+     <element>submitForHoGReview</element>
+    </property>
+   </condition>
+  </conditions>
+  <actions>
+   <action type="plone.actions.Mail">
+    <property name="source"/>
+    <property name="message">The following indicator
+     ${title}
+     ${url}
+     is now available for your review and approval.
+
+     Instructions:
+     If needed, modify the indicator together with the author of the indicator (${creators_emails}). Once finished please submit the indicator for consultation. Make sure the consultation emails are entered in the appropriate indicator metadata section.
+
+     You should complete this step *within 10 working days* (2 weeks) from the date of receipt of this mail.
+
+     if you think you are not the right person to review the indicator or have any other questions, please contact the indicator workflow manager Andy Martin.
+
+     ------
+     EEA Web CMS
+     -------</property>
+    <property name="subject">[IMSv4] Indicator ready for approval</property>
+    <property
+       name="recipients">${head_of_group_email}, demarinis@eea.europa.eu</property>
+    <property name="exclude_actor">False</property>
+   </action>
+  </actions>
+ </rule>
+ <rule name="ims-workflow-invite-for" title="IMSv4: invite for consultation" cascading="False"
+    description="open indicator for comments and sends invitation email for consultation"
+    enabled="True" event="Products.CMFCore.interfaces.IActionSucceededEvent"
+    stop-after="False">
+  <conditions>
+   <condition type="plone.conditions.PortalType">
+    <property name="check_types">
+     <element>ims_indicator</element>
+    </property>
+   </condition>
+   <condition type="plone.conditions.WorkflowTransition">
+    <property name="wf_transitions">
+     <element>submitForConsultation</element>
+    </property>
+   </condition>
+  </conditions>
+  <actions>
+   <action type="plone.actions.Mail">
+    <property name="source"/>
+    <property name="message">The following indicator
+     ${title}
+     ${url}
+     is now open for your feedback.
+
+     Instructions:
+     login and add your comments. An EEA expert will reply to your feedback.
+     You should complete this step within XY days.
+
+     </property>
+    <property name="subject">[IMSv4] Indicator open for comments</property>
+    <property
+       name="recipients">${consultation_members_emails}, demarinis@eea.europa.eu</property>
+    <property name="exclude_actor">False</property>
+   </action>
+  </actions>
+ </rule>
+ <rule name="ims-workflow-submit-qc" title="IMSv4: Submit to QC team - figures"
+    cascading="False"
+    description="notify indicators QC team to start figures finalisation."
+    enabled="True" event="Products.CMFCore.interfaces.IActionSucceededEvent"
+    stop-after="False">
+  <conditions>
+   <condition type="plone.conditions.PortalType">
+    <property name="check_types">
+     <element>ims_indicator</element>
+    </property>
+   </condition>
+   <condition type="plone.conditions.WorkflowTransition">
+    <property name="wf_transitions">
+     <element>submitForQC</element>
+    </property>
+   </condition>
+  </conditions>
+  <actions>
+   <action type="plone.actions.Mail">
+    <property name="source"/>
+    <property name="message">The following indicator
+     ${title}
+     ${url}
+     has been submitted for your finalisation of figures.
+
+     Instructions:
+     login and finalise the figures and their metadata.
+
+     you have XY-days to complete this task. You will not receive any automatic reminders.
+
+     Once you are done, change the state to "Figures finalised". This will submit an email to the other QC team members to finalise their part (copy editing and overall data and metadata check).
+     </property>
+    <property
+       name="subject">[IMSv4] Indicator's figures to be finalised</property>
+    <property name="recipients">demarinis@eea.europa.eu</property>
+    <property name="exclude_actor">False</property>
+   </action>
+  </actions>
+ </rule>
+ <rule name="ims-workflow-submit-publication" title="IMSv4: Submit indicator for publication"
+    cascading="False" description="" enabled="True"
+    event="Products.CMFCore.interfaces.IActionSucceededEvent"
+    stop-after="False">
+  <conditions>
+   <condition type="plone.conditions.PortalType">
+    <property name="check_types">
+     <element>ims_indicator</element>
+    </property>
+   </condition>
+   <condition type="plone.conditions.WorkflowTransition">
+    <property name="wf_transitions">
+     <element>markReadyForPublication</element>
+    </property>
+   </condition>
+  </conditions>
+  <actions>
+   <action type="plone.actions.Mail">
+    <property name="source"/>
+    <property name="message">The following indicator
+     ${title}
+     ${url}
+     is now ready for publication
+
+     Instructions:
+     You can now co-ordinate the publication of the indicator with other members of your team.
+     The indicator should be published preferably within XY days.
+     To publish: login and change the state to "publish".
+     to see all indicators pending publication go here  https://www.eea.europa.eu/ims/contents </property>
+    <property
+       name="subject">[IMSv4] Indicator ready for publication</property>
+    <property
+       name="recipients">demarinis@eea.europa.eu, andy.martin@eea.europa.eu</property>
+    <property name="exclude_actor">False</property>
+   </action>
+  </actions>
+ </rule>
+ <rule name="ims-workflow-notify-qc" title="IMSv4: notify on QC of data and metadata done"
+    cascading="False"
+    description="sends email notification when data and metadata QC is completed"
+    enabled="True" event="Products.CMFCore.interfaces.IActionSucceededEvent"
+    stop-after="False">
+  <conditions>
+   <condition type="plone.conditions.PortalType">
+    <property name="check_types">
+     <element>ims_indicator</element>
+    </property>
+   </condition>
+   <condition type="plone.conditions.WorkflowTransition">
+    <property name="wf_transitions">
+     <element>markDataMetadataDone</element>
+    </property>
+   </condition>
+  </conditions>
+  <actions>
+   <action type="plone.actions.Mail">
+    <property name="source"/>
+    <property name="message">The following indicator
+     ${title}
+     ${url}
+     has gone through data and metadata QC.
+
+     Instructions:
+     login and finalise copyediting.
+     You should complete this step within XY days. No more reminders will be sent.
+     when done you may submit for publication.</property>
+    <property
+       name="subject">[IMSv4] Data and metadata finalised for ${title}</property>
+    <property
+       name="recipients">demarinis@eea.europa.eu, andy.martin@eea.europa.eu</property>
+    <property name="exclude_actor">False</property>
+   </action>
+  </actions>
+ </rule>
+ <rule name="ims-workflow-notify-figures" title="IMSv4: Notify on figures finalised"
+    cascading="False"
+    description="Send a notification to Editor and Data  and metadata QC ."
+    enabled="True" event="Products.CMFCore.interfaces.IActionSucceededEvent"
+    stop-after="False">
+  <conditions>
+   <condition type="plone.conditions.PortalType">
+    <property name="check_types">
+     <element>ims_indicator</element>
+    </property>
+   </condition>
+   <condition type="plone.conditions.WorkflowTransition">
+    <property name="wf_transitions">
+     <element>finalVisualisationPhaseDone</element>
+    </property>
+   </condition>
+  </conditions>
+  <actions>
+   <action type="plone.actions.Mail">
+    <property name="source"/>
+    <property name="message">Figures in the following indicator
+     ${title}
+     ${url}
+     have been finalised.
+
+     You can access the workflow log at ${url}/history
+
+     Instructions:
+     login and start finalising copyediting.
+     You should complete this step within XY days.
+     NOTE: Please do not submit for publishing yet. You need to receive the notification about "Data and metadata QC is done".</property>
+    <property name="subject">[IMSv4] Figures finalised for ${title}</property>
+    <property
+       name="recipients">demarinis@eea.europa.eu, andy.martin@eea.europa.eu</property>
+    <property name="exclude_actor">False</property>
+   </action>
+   <action type="plone.actions.Mail">
+    <property name="source"/>
+    <property name="message">Figures in the following indicator
+     ${title}
+     ${url}
+     have been finalised.
+
+     You can access the workflow log at ${url}/history
+
+     Instructions:
+     login and do the QC on data and metadata.
+     when done please change the state of the indicator to "Data and metadata finalised".
+     You should complete this step within XY days.
+     this will notify the Editor (Andy) for finalising editing and send for publication.</property>
+    <property
+       name="subject">[IMSv4] Data and metadata finalised for ${title}</property>
+    <property
+       name="recipients">demarinis@eea.europa.eu, andy.martin@eea.europa.eu</property>
+    <property name="exclude_actor">False</property>
+   </action>
+  </actions>
+ </rule>
+ <rule name="ims-workflow-publish" title="IMSv4: Publish" cascading="False" description=""
+   enabled="True" event="Products.CMFCore.interfaces.IActionSucceededEvent"
+   stop-after="False">
+  <conditions>
+  <condition type="plone.conditions.PortalType">
+   <property name="check_types">
+   <element>ims_indicator</element>
+   </property>
+  </condition>
+  <condition type="plone.conditions.WorkflowTransition">
+   <property name="wf_transitions">
+   <element>publish</element>
+   </property>
+  </condition>
+  </conditions>
+  <actions>
+  <action type="eea.dexterity.indicators.retract_and_rename_old_version"/>
+  </actions>
+ </rule>
+ <rule name="ims-workflow-new-version" title="IMSv4: create new version" cascading="False"
+   description="this rule is run when a new version of indicator is triggered"
+   enabled="True" event="Products.CMFCore.interfaces.IActionSucceededEvent"
+   stop-after="False">
+  <conditions>
+  <condition type="plone.conditions.WorkflowTransition">
+   <property name="wf_transitions">
+   <element>createNewVersion</element>
+   </property>
+  </condition>
+  <condition type="plone.conditions.PortalType">
+   <property name="check_types">
+   <element>ims_indicator</element>
+   </property>
+  </condition>
+  </conditions>
+  <actions>
+  <!-- <action type="plone.actions.Copy">
+   <property name="target_folder">/SITE/ims</property>
+  </action> -->
+  <action type="plone.actions.Mail">
+   <property name="source"/>
+   <property name="message">
+   You can now start editing your new indicator version at:
+   ${url}.1
+
+
+   </property>
+   <property name="subject">[IMSv4] New indicator version created</property>
+   <property name="recipients">${user_email}</property>
+   <property name="exclude_actor">False</property>
+  </action>
+  </actions>
+ </rule>
+ <assignment name="ims-workflow-change" bubbles="True" enabled="True" location="/SITE/ims"/>
+ <assignment name="ims-workflow-notify-hog" bubbles="True" enabled="True" location="/SITE/ims"/>
+ <assignment name="ims-workflow-invite-for" bubbles="True" enabled="True" location="/SITE/ims"/>
+ <assignment name="ims-workflow-submit-qc" bubbles="True" enabled="True" location="/SITE/ims"/>
+ <assignment name="ims-workflow-submit-publication" bubbles="True" enabled="True" location="/SITE/ims"/>
+ <assignment name="ims-workflow-notify-qc" bubbles="True" enabled="True" location="/SITE/ims"/>
+ <assignment name="ims-workflow-notify-figures" bubbles="True" enabled="True" location="/SITE/ims"/>
+ <assignment name="ims-workflow-publish" bubbles="True" enabled="True" location="/SITE/ims"/>
+ <assignment name="ims-workflow-new-version" bubbles="True" enabled="True" location="/SITE/ims"/>
+</contentrules>

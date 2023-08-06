@@ -1,0 +1,57 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:genericsetup="http://namespaces.zope.org/genericsetup"
+    xmlns:five="http://namespaces.zope.org/five"
+    i18n_domain="eea">
+
+  <five:registerPackage package="." initialize=".initialize" />
+
+  <genericsetup:registerProfile
+      name="default"
+      title="eea.dexterity.indicators"
+      directory="profiles/default"
+      description="Installs the eea.dexterity.indicators add-on."
+      provides="Products.GenericSetup.interfaces.EXTENSION"
+      post_handler=".setuphandlers.post_install"
+      />
+
+  <genericsetup:registerProfile
+      name="uninstall"
+      title="eea.dexterity.indicators (uninstall)"
+      directory="profiles/uninstall"
+      description="Uninstalls the eea.dexterity.indicators add-on."
+      provides="Products.GenericSetup.interfaces.EXTENSION"
+      post_handler=".setuphandlers.uninstall"
+      />
+
+  <genericsetup:registerProfile
+    name="upgrade21"
+    title="Upgrade profile for eea.dexterity.indicators 2.1"
+    directory="profiles/upgrade/to_21"
+    description="This profile contains configuration changes from 1.0 to 2.1"
+    provides="Products.GenericSetup.interfaces.EXTENSION"
+    post_handler=".setuphandlers.post_upgrade" />
+
+  <genericsetup:registerProfile
+    name="upgrade33"
+    title="Upgrade profile for eea.dexterity.indicators 3.3"
+    directory="profiles/upgrade/to_33"
+    description="This profile contains configuration changes from 2.1 to 3.3"
+    provides="Products.GenericSetup.interfaces.EXTENSION"
+    post_handler=".setuphandlers.post_upgrade" />
+
+  <genericsetup:registerProfile
+    name="upgrade45"
+    title="Upgrade profile for eea.dexterity.indicators 4.5"
+    directory="profiles/upgrade/to_45"
+    description="This profile contains configuration changes from 4.3 to 4.5"
+    provides="Products.GenericSetup.interfaces.EXTENSION"
+    post_handler=".setuphandlers.post_upgrade" />
+
+  <utility
+      factory=".setuphandlers.HiddenProfiles"
+      name="eea.dexterity.indicators-hiddenprofiles"
+      />
+
+
+</configure>
