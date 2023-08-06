@@ -1,0 +1,3 @@
+"""
+chk command-line app
+"""
