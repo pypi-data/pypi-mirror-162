@@ -1,0 +1,86 @@
+Metadata-Version: 2.1
+Name: audioinfo
+Version: 0.1.0
+Summary: Count audio files in a directory.
+Author-email: HAO Xiang <haoxiangsnr@gmail.com>
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Development Status :: 2 - Pre-Alpha
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Environment :: GPU :: NVIDIA CUDA
+Classifier: Operating System :: OS Independent
+Requires-Dist: rich
+Requires-Dist: soundfile
+Requires-Dist: flit ; extra == "build"
+Requires-Dist: python-semantic-release ; extra == "build"
+Requires-Dist: importlib_metadata ; extra == "docs"
+Requires-Dist: sphinx-rtd-theme ; extra == "docs"
+Requires-Dist: myst-nb ; extra == "docs"
+Requires-Dist: pytest ; extra == "test"
+Requires-Dist: pytest-cov ; extra == "test"
+Project-URL: Documentation, https://audioinfo.readthedocs.io/en/latest/
+Project-URL: Source, https://github.com/haoxiangsnr/audioinfo
+Provides-Extra: build
+Provides-Extra: docs
+Provides-Extra: test
+
+# audioinfo
+
+A tool to check audio file durations in a directory.
+
+## Usage
+
+Install the audioinfo package with:
+
+```bash
+pip install audioinfo
+```
+
+Check the help with:
+
+```bash
+$ audioinfo --help
+
+usage: audioinfo [-h] [--directory DIRECTORY] [--ext EXT [EXT ...]] [--recurse] [--case-sensitive]
+
+A tool to check audio file durations in a directory.
+
+options:
+  -h, --help            show this help message and exit
+  --directory DIRECTORY, -d DIRECTORY
+                        The directory to search
+  --ext EXT [EXT ...], -e EXT [EXT ...]
+                        The extension to search for
+  --recurse, -r         Recurse into subdirectories
+  --case-sensitive, -c  Case sensitive search
+```
+
+## Examples
+
+
+Check all audio files with the ".wav" suffix in the directory "~/Music":
+
+```bash
+audioinfo --directory ~/Music --ext wav
+# or use the short form:
+audioinfo -d ~/Music -e wav
+```
+
+Check all audio files with ".wav" and ".flac" suffixes in the directory "~/Music":
+
+```bash
+audioinfo --directory ~/Music --ext wav flac
+```
+
+Check audio files with the ".wav" suffix in the directory "~/Music" and do not recurse into subdirectories:
+
+```bash
+audioinfo --directory ~/Music --ext wav --recurse=false
+```
+
+
+## License
+
+This software is licensed under the [MIT License](https://opensource.org/licenses/MIT).
+
