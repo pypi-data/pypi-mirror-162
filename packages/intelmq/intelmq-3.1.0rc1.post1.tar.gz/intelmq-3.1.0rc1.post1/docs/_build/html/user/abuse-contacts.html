@@ -1,0 +1,246 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Abuse-contact look-ups &#8212; intelmq 3.1.0.alpha1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Developers Guide" href="../dev/guide.html" />
+    <link rel="prev" title="EventDB" href="eventdb.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="abuse-contact-look-ups">
+<h1>Abuse-contact look-ups<a class="headerlink" href="#abuse-contact-look-ups" title="Permalink to this heading">¶</a></h1>
+<p>The right decision whom to contact about a specific incident is vital to get the
+incident resolved as quick as possible.
+Different types of events may required different abuse-contact to be selected.
+For example, issues about a device, e.g. a vulnerability in the operating system
+or an application, is better sent to the hoster which can inform the server
+administrator.
+For website-related issues, like defacements or phishing, the domain owner
+(maintaining the content of the website) could be the better and more direct
+contact.
+Additionally, different CERT’s have different approaches and different contact
+databases.
+Multiple information sources have different information, and some sources are
+more accurate than others.
+IntelMQ can query multiple sources of abuse-contacts and combine them.
+Internal databases, like a Constituency Portal (see <span class="xref std std-doc">ecosystem</span>)
+provide high-quality and first-hand contact information.
+The RIPE document <a class="reference external" href="https://www.ripe.net/publications/docs/ripe-658">Sources of Abuse Contact Information for Abuse Handlers</a>
+contains a good summary of the complex of themes.</p>
+<section id="sources-for-abuse-contacts">
+<h2>Sources for abuse-contacts<a class="headerlink" href="#sources-for-abuse-contacts" title="Permalink to this heading">¶</a></h2>
+<p>All these bots add the queried contacts to the IntelMQ events in the field
+<cite>source.abuse_contact</cite> if not state otherwise in the documentation.</p>
+</section>
+<section id="sources-for-domain-based-abuse-contacts">
+<h2>Sources for domain-based abuse-contacts<a class="headerlink" href="#sources-for-domain-based-abuse-contacts" title="Permalink to this heading">¶</a></h2>
+<p>These bots are suitable for domain-based abuse-contact look-ups.</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="bots.html#intelmq-bots-experts-rdap-expert"><span class="std std-ref">RDAP</span></a> expert queries private and public RDAP servers for <cite>source.fqdn</cite> and add the contact information to the event as <cite>source.abuse_contact</cite>.</p></li>
+<li><p><a class="reference internal" href="bots.html#intelmq-bots-experts-trusted-introducer-lookup-expert"><span class="std std-ref">Trusted Introducer Lookup Expert</span></a> expert
+queries a locally cached
+<a class="reference external" href="https://www.trusted-introducer.org/directory/teams.json">Trusted Introducer team directory</a>
+for the TLD or domain (first match) of <em>source.fqdn</em>.</p></li>
+</ul>
+</section>
+<section id="sources-for-ip-address-based-abuse-contacts">
+<h2>Sources for IP address-based abuse-contacts<a class="headerlink" href="#sources-for-ip-address-based-abuse-contacts" title="Permalink to this heading">¶</a></h2>
+<p>These bots are suitable for IP address- and ASN-based abuse-contact look-ups.</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="bots.html#intelmq-bots-experts-abusix-expert"><span class="std std-ref">Abusix</span></a> expert queries the online Abusix service.</p></li>
+<li><p><a class="reference internal" href="bots.html#intelmq-bots-experts-do-portal-expert"><span class="std std-ref">DO Portal Expert Bot</span></a> expert queries an instance of the do-portal software (deprecated).</p></li>
+<li><p><a class="reference internal" href="bots.html#intelmq-bots-experts-tuency-expert"><span class="std std-ref">Tuency</span></a> expert queries an instance of the
+<em>tuency</em> Constituency Portal for the IP address. The Portal also takes into
+account any notification rules, which are saved additionally in the event.</p></li>
+<li><p><a class="reference internal" href="bots.html#intelmq-bots-experts-ripe-expert"><span class="std std-ref">RIPE</span></a> expert queries the online RIPE database for IP-Address and AS contacts.</p></li>
+<li><p><a class="reference internal" href="bots.html#intelmq-bots-experts-trusted-introducer-lookup-expert"><span class="std std-ref">Trusted Introducer Lookup Expert</span></a> expert
+queries a locally cached
+<a class="reference external" href="https://www.trusted-introducer.org/directory/teams.json">Trusted Introducer team directory</a>
+for the Autonomous system <em>source.asn</em>.</p></li>
+</ul>
+</section>
+<section id="generic-sources-for-abuse-contacts">
+<h2>Generic sources for abuse-contacts<a class="headerlink" href="#generic-sources-for-abuse-contacts" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="bots.html#intelmq-bots-experts-generic-db-lookup-expert"><span class="std std-ref">Generic DB Lookup</span></a> expert for local data
+sources, like database tables mapping ASNs to abuse-contact or Country Codes
+to abuse-contact.</p></li>
+<li><p><a class="reference internal" href="bots.html#intelmq-bots-experts-uwhoisd-expert"><span class="std std-ref">uWhoisd</span></a> expert for fetching whois-data,
+not extracting abuse-contact information</p></li>
+</ul>
+</section>
+<section id="helpful-other-bots-for-pre-processing">
+<h2>Helpful other bots for pre-processing<a class="headerlink" href="#helpful-other-bots-for-pre-processing" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="bots.html#intelmq-bots-experts-asn-lookup-expert"><span class="std std-ref">ASN Lookup</span></a></p></li>
+<li><p><a class="reference internal" href="bots.html#intelmq-bots-experts-cymru-whois-expert"><span class="std std-ref">Cymru Whois</span></a> to lookup ASN, Geolocation, and BGP prefix for <code class="docutils literal notranslate"><span class="pre">*.ip</span></code>.</p></li>
+<li><p><a class="reference internal" href="bots.html#intelmq-bots-experts-domain-suffix-expert"><span class="std std-ref">Domain Suffix</span></a> to lookup the public suffix of the domain in <code class="docutils literal notranslate"><span class="pre">*.fqdn</span></code>.</p></li>
+<li><p><a class="reference internal" href="bots.html#intelmq-bots-experts-format-field-expert"><span class="std std-ref">Format Field</span></a></p></li>
+<li><p><a class="reference internal" href="bots.html#intelmq-bots-experts-gethostbyname-expert"><span class="std std-ref">Gethostbyname</span></a> resolve <code class="docutils literal notranslate"><span class="pre">*.ip</span></code> from <code class="docutils literal notranslate"><span class="pre">*.fqdn</span></code>.</p></li>
+<li><p><a class="reference internal" href="bots.html#intelmq-bots-experts-maxmind-geoip-expert"><span class="std std-ref">MaxMind GeoIP</span></a> to lookup Geolocation information for <code class="docutils literal notranslate"><span class="pre">*.ip</span></code>.</p></li>
+<li><p><a class="reference internal" href="bots.html#intelmq-bots-experts-reverse-dns-expert"><span class="std std-ref">Reverse DNS</span></a> to resolve <code class="docutils literal notranslate"><span class="pre">*.reverse_dns</span></code> from <code class="docutils literal notranslate"><span class="pre">*.ip</span></code>.</p></li>
+<li><p><a class="reference internal" href="bots.html#intelmq-bots-experts-ripe-expert"><span class="std std-ref">RIPE</span></a> to lookup <code class="docutils literal notranslate"><span class="pre">*.asn</span></code> and Geolocation information for <code class="docutils literal notranslate"><span class="pre">*.ip</span></code>.</p></li>
+<li><p><a class="reference internal" href="bots.html#intelmq-bots-experts-tor-nodes-expert"><span class="std std-ref">Tor Nodes</span></a> for filtering out TOR nodes.</p></li>
+<li><p><a class="reference internal" href="bots.html#intelmq-bots-experts-url2fqdn-expert"><span class="std std-ref">Url2FQDN</span></a> to extract <code class="docutils literal notranslate"><span class="pre">*.fqdn</span></code>/<code class="docutils literal notranslate"><span class="pre">*.ip</span></code> from <code class="docutils literal notranslate"><span class="pre">*.url</span></code>.</p></li>
+</ul>
+</section>
+<section id="combining-the-lookup-approaches">
+<h2>Combining the lookup approaches<a class="headerlink" href="#combining-the-lookup-approaches" title="Permalink to this heading">¶</a></h2>
+<p>In order to get the best contact, it may be necessary to combine multiple
+abuse-contact sources.
+IntelMQ’s modularity provides methods to arrange and configure the bots as
+needed.
+Among others, the following bots can help in getting the best result:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="bots.html#intelmq-bots-experts-filter-expert"><span class="std std-ref">Filter</span></a> expert: Your lookup process may be
+different for different types of data. E.g. website-related issues may be
+better addressed at the domain owner and device-related issues may be better
+addressed to the hoster.</p></li>
+<li><p><a class="reference internal" href="bots.html#intelmq-bots-experts-modify-expert"><span class="std std-ref">Modify</span></a> expert: Allows you to set values
+based on filter and also format values based on the value of other fields.</p></li>
+<li><p><a class="reference internal" href="bots.html#intelmq-bots-experts-sieve-expert"><span class="std std-ref">Sieve</span></a> expert: Very powerful expert which
+allows filtering, routing (to different subsequent bots) based on
+if-expressions . It support set-operations (field value is in list) as well as
+sub-network operations for IP address networks in CIDR notation for the
+expression-part. You can as well set the abuse-contact directly.</p></li>
+</ul>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/Logo_Intel_MQ.svg" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">IntelMQ is a solution for IT security teams for collecting and processing security feeds using a message queuing protocol.</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=certtools&repo=intelmq&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organization.html">IntelMQ Organizational Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="support.html">Getting support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="support.html#development">Development</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="hardware-requirements.html">Hardware Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="upgrade.html">Upgrade instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration-management.html">Configuration and Management</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bots.html">Bots inventory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="intelmqctl.html">intelmqctl documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="feeds.html">Data Feeds</a></li>
+<li class="toctree-l1"><a class="reference internal" href="intelmq-api.html">IntelMQ API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="intelmq-manager.html">IntelMQ Manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="FAQ.html">Frequently asked questions</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="universe.html">IntelMQ Universe</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ELK-Stack.html">ELK Stack</a></li>
+<li class="toctree-l1"><a class="reference internal" href="MISP-Integrations.html">MISP integrations in IntelMQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="n6-integrations.html">IntelMQ - n6 Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eventdb.html">EventDB</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Abuse-contact look-ups</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../dev/guide.html">Developers Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/data-format.html">Data Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/harmonization-fields.html">Harmonization field names</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/release-procedure.html">Release procedure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/feeds-wishlist.html">Feeds wishlist</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../source/modules.html">Code documentation</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="eventdb.html" title="previous chapter">EventDB</a></li>
+      <li>Next: <a href="../dev/guide.html" title="next chapter">Developers Guide</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2022, IntelMQ community.
+      
+      |
+      <a href="../_sources/user/abuse-contacts.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

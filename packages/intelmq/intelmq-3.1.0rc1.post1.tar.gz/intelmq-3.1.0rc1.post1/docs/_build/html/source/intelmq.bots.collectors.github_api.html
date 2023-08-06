@@ -1,0 +1,215 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>intelmq.bots.collectors.github_api package &#8212; intelmq 3.1.0.alpha1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="intelmq-bots-collectors-github-api-package">
+<h1>intelmq.bots.collectors.github_api package<a class="headerlink" href="#intelmq-bots-collectors-github-api-package" title="Permalink to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="intelmq-bots-collectors-github-api-collector-github-api-module">
+<h2>intelmq.bots.collectors.github_api.collector_github_api module<a class="headerlink" href="#intelmq-bots-collectors-github-api-collector-github-api-module" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="module-intelmq.bots.collectors.github_api.collector_github_contents_api">
+<span id="intelmq-bots-collectors-github-api-collector-github-contents-api-module"></span><h2>intelmq.bots.collectors.github_api.collector_github_contents_api module<a class="headerlink" href="#module-intelmq.bots.collectors.github_api.collector_github_contents_api" title="Permalink to this heading">¶</a></h2>
+<p>GITHUB contents API Collector bot</p>
+<dl class="field-list simple">
+<dt class="field-odd">param ‘basic_auth_username’</dt>
+<dd class="field-odd"><p>github Basic authentication username (REQUIRED)</p>
+</dd>
+<dt class="field-even">param ‘basic_auth_password’</dt>
+<dd class="field-even"><p>github Basic authentication password (REQUIRED)</p>
+</dd>
+<dt class="field-odd">param ‘repository’</dt>
+<dd class="field-odd"><p>only one format (‘&lt;author&gt;/&lt;repo&gt;’) is acceptable (REQUIRED)</p>
+</dd>
+<dt class="field-even">param ‘extra_fields’</dt>
+<dd class="field-even"><p>comma-separated list of fields to extract from file (DEFAULT = [])</p>
+</dd>
+<dt class="field-odd">param ‘regex’</dt>
+<dd class="field-odd"><p>file regex (DEFAULT = ‘<a href="#id1"><span class="problematic" id="id2">*</span></a>.json’)</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.github_api.collector_github_contents_api.BOT">
+<span class="sig-prename descclassname"><span class="pre">intelmq.bots.collectors.github_api.collector_github_contents_api.</span></span><span class="sig-name descname"><span class="pre">BOT</span></span><a class="headerlink" href="#intelmq.bots.collectors.github_api.collector_github_contents_api.BOT" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#intelmq.bots.collectors.github_api.collector_github_contents_api.GithubContentsAPICollectorBot" title="intelmq.bots.collectors.github_api.collector_github_contents_api.GithubContentsAPICollectorBot"><code class="xref py py-class docutils literal notranslate"><span class="pre">GithubContentsAPICollectorBot</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.github_api.collector_github_contents_api.GithubContentsAPICollectorBot">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">intelmq.bots.collectors.github_api.collector_github_contents_api.</span></span><span class="sig-name descname"><span class="pre">GithubContentsAPICollectorBot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bot_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sighup_event</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disable_multithreading</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#intelmq.bots.collectors.github_api.collector_github_contents_api.GithubContentsAPICollectorBot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">GithubAPICollectorBot</span></code></p>
+<p>Collect files from a GitHub repository via the API. Optionally with GitHub credentials.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.github_api.collector_github_contents_api.GithubContentsAPICollectorBot.extra_fields">
+<span class="sig-name descname"><span class="pre">extra_fields</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#intelmq.bots.collectors.github_api.collector_github_contents_api.GithubContentsAPICollectorBot.extra_fields" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.github_api.collector_github_contents_api.GithubContentsAPICollectorBot.init">
+<span class="sig-name descname"><span class="pre">init</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#intelmq.bots.collectors.github_api.collector_github_contents_api.GithubContentsAPICollectorBot.init" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.github_api.collector_github_contents_api.GithubContentsAPICollectorBot.process_request">
+<span class="sig-name descname"><span class="pre">process_request</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#intelmq.bots.collectors.github_api.collector_github_contents_api.GithubContentsAPICollectorBot.process_request" title="Permalink to this definition">¶</a></dt>
+<dd><p>Requests github API with specific path and functionality</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.github_api.collector_github_contents_api.GithubContentsAPICollectorBot.regex">
+<span class="sig-name descname"><span class="pre">regex</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#intelmq.bots.collectors.github_api.collector_github_contents_api.GithubContentsAPICollectorBot.regex" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.github_api.collector_github_contents_api.GithubContentsAPICollectorBot.repository">
+<span class="sig-name descname"><span class="pre">repository</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#intelmq.bots.collectors.github_api.collector_github_contents_api.GithubContentsAPICollectorBot.repository" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-intelmq.bots.collectors.github_api">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-intelmq.bots.collectors.github_api" title="Permalink to this heading">¶</a></h2>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/Logo_Intel_MQ.svg" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">IntelMQ is a solution for IT security teams for collecting and processing security feeds using a message queuing protocol.</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=certtools&repo=intelmq&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../user/introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/organization.html">IntelMQ Organizational Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/support.html">Getting support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/support.html#development">Development</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../user/hardware-requirements.html">Hardware Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/upgrade.html">Upgrade instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/configuration-management.html">Configuration and Management</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/bots.html">Bots inventory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/intelmqctl.html">intelmqctl documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/feeds.html">Data Feeds</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/intelmq-api.html">IntelMQ API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/intelmq-manager.html">IntelMQ Manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/FAQ.html">Frequently asked questions</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../user/universe.html">IntelMQ Universe</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/ELK-Stack.html">ELK Stack</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/MISP-Integrations.html">MISP integrations in IntelMQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/n6-integrations.html">IntelMQ - n6 Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/eventdb.html">EventDB</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/abuse-contacts.html">Abuse-contact look-ups</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../dev/guide.html">Developers Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/data-format.html">Data Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/harmonization-fields.html">Harmonization field names</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/release-procedure.html">Release procedure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/feeds-wishlist.html">Feeds wishlist</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">Code documentation</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2022, IntelMQ community.
+      
+      |
+      <a href="../_sources/source/intelmq.bots.collectors.github_api.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

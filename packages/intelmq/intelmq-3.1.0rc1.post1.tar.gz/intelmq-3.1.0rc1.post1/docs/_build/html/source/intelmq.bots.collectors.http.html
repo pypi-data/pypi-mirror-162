@@ -1,0 +1,422 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>intelmq.bots.collectors.http package &#8212; intelmq 3.1.0.alpha1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="intelmq-bots-collectors-http-package">
+<h1>intelmq.bots.collectors.http package<a class="headerlink" href="#intelmq-bots-collectors-http-package" title="Permalink to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="module-intelmq.bots.collectors.http.collector_http">
+<span id="intelmq-bots-collectors-http-collector-http-module"></span><h2>intelmq.bots.collectors.http.collector_http module<a class="headerlink" href="#module-intelmq.bots.collectors.http.collector_http" title="Permalink to this heading">¶</a></h2>
+<p>HTTP collector bot</p>
+<dl class="field-list simple">
+<dt class="field-odd">param http_url</dt>
+<dd class="field-odd"><p></p></dd>
+<dt class="field-even">type http_url</dt>
+<dd class="field-even"><p>string</p>
+</dd>
+<dt class="field-odd">param http_header</dt>
+<dd class="field-odd"><p>default: {}</p>
+</dd>
+<dt class="field-even">type http_header</dt>
+<dd class="field-even"><p>dictionary</p>
+</dd>
+<dt class="field-odd">param http_verify_cert</dt>
+<dd class="field-odd"><p>default: True</p>
+</dd>
+<dt class="field-even">type http_verify_cert</dt>
+<dd class="field-even"><p>boolean</p>
+</dd>
+<dt class="field-odd">param extract_files</dt>
+<dd class="field-odd"><p>value used to extract files from downloaded compressed file
+default: None
+all: True; some: string with file names separated by ,</p>
+</dd>
+<dt class="field-even">param http_url_formatting</dt>
+<dd class="field-even"><p>to turn on time formatting (and to specify delta to current time)</p>
+</dd>
+<dt class="field-odd">type http_url_formatting</dt>
+<dd class="field-odd"><p>bool|json</p>
+</dd>
+<dt class="field-even">param http_username</dt>
+<dd class="field-even"><p></p></dd>
+<dt class="field-odd">type http_username</dt>
+<dd class="field-odd"><p>string</p>
+</dd>
+<dt class="field-even">param http_password</dt>
+<dd class="field-even"><p></p></dd>
+<dt class="field-odd">type http_password</dt>
+<dd class="field-odd"><p>string</p>
+</dd>
+<dt class="field-even">param http_proxy</dt>
+<dd class="field-even"><p></p></dd>
+<dt class="field-odd">type http_proxy</dt>
+<dd class="field-odd"><p>string</p>
+</dd>
+<dt class="field-even">param https_proxy</dt>
+<dd class="field-even"><p></p></dd>
+<dt class="field-odd">type https_proxy</dt>
+<dd class="field-odd"><p>string</p>
+</dd>
+<dt class="field-even">param http_timeout_sec</dt>
+<dd class="field-even"><p>tuple of two floats or float</p>
+</dd>
+<dt class="field-odd">param http_timeout_max_tries</dt>
+<dd class="field-odd"><p>an integer depicting how often a connection attempt is retried</p>
+</dd>
+<dt class="field-even">type http_timeout_max_tries</dt>
+<dd class="field-even"><p>int</p>
+</dd>
+<dt class="field-odd">param verify_pgp_signatures</dt>
+<dd class="field-odd"><p>whether to download and check file signatures
+default: False</p>
+</dd>
+<dt class="field-even">type verify_pgp_signatures</dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+<dt class="field-odd">param signature_url</dt>
+<dd class="field-odd"><p></p></dd>
+<dt class="field-even">type signature_url</dt>
+<dd class="field-even"><p>string</p>
+</dd>
+<dt class="field-odd">param signature_url_formatting</dt>
+<dd class="field-odd"><p>the same as http_url_formatting</p>
+</dd>
+<dt class="field-even">param gpg_keyring</dt>
+<dd class="field-even"><p>none (defaults to user’s GPG keyring) or string (path to keyring file)</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.http.collector_http.BOT">
+<span class="sig-prename descclassname"><span class="pre">intelmq.bots.collectors.http.collector_http.</span></span><span class="sig-name descname"><span class="pre">BOT</span></span><a class="headerlink" href="#intelmq.bots.collectors.http.collector_http.BOT" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#intelmq.bots.collectors.http.collector_http.HTTPCollectorBot" title="intelmq.bots.collectors.http.collector_http.HTTPCollectorBot"><code class="xref py py-class docutils literal notranslate"><span class="pre">HTTPCollectorBot</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.http.collector_http.HTTPCollectorBot">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">intelmq.bots.collectors.http.collector_http.</span></span><span class="sig-name descname"><span class="pre">HTTPCollectorBot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bot_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sighup_event</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disable_multithreading</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#intelmq.bots.collectors.http.collector_http.HTTPCollectorBot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="intelmq.lib.html#intelmq.lib.bot.CollectorBot" title="intelmq.lib.bot.CollectorBot"><code class="xref py py-class docutils literal notranslate"><span class="pre">CollectorBot</span></code></a>, <a class="reference internal" href="intelmq.lib.mixins.html#intelmq.lib.mixins.http.HttpMixin" title="intelmq.lib.mixins.http.HttpMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">HttpMixin</span></code></a></p>
+<p>Fetch reports from an URL</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.http.collector_http.HTTPCollectorBot.extract_files">
+<span class="sig-name descname"><span class="pre">extract_files</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#intelmq.bots.collectors.http.collector_http.HTTPCollectorBot.extract_files" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.http.collector_http.HTTPCollectorBot.format_url">
+<span class="sig-name descname"><span class="pre">format_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">formatting</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#intelmq.bots.collectors.http.collector_http.HTTPCollectorBot.format_url" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.http.collector_http.HTTPCollectorBot.gpg_keyring">
+<span class="sig-name descname"><span class="pre">gpg_keyring</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#intelmq.bots.collectors.http.collector_http.HTTPCollectorBot.gpg_keyring" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.http.collector_http.HTTPCollectorBot.http_password">
+<span class="sig-name descname"><span class="pre">http_password</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#intelmq.bots.collectors.http.collector_http.HTTPCollectorBot.http_password" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.http.collector_http.HTTPCollectorBot.http_url">
+<span class="sig-name descname"><span class="pre">http_url</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'&lt;insert</span> <span class="pre">url</span> <span class="pre">of</span> <span class="pre">feed&gt;'</span></em><a class="headerlink" href="#intelmq.bots.collectors.http.collector_http.HTTPCollectorBot.http_url" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.http.collector_http.HTTPCollectorBot.http_url_formatting">
+<span class="sig-name descname"><span class="pre">http_url_formatting</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#intelmq.bots.collectors.http.collector_http.HTTPCollectorBot.http_url_formatting" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.http.collector_http.HTTPCollectorBot.http_username">
+<span class="sig-name descname"><span class="pre">http_username</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#intelmq.bots.collectors.http.collector_http.HTTPCollectorBot.http_username" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.http.collector_http.HTTPCollectorBot.init">
+<span class="sig-name descname"><span class="pre">init</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#intelmq.bots.collectors.http.collector_http.HTTPCollectorBot.init" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.http.collector_http.HTTPCollectorBot.process">
+<span class="sig-name descname"><span class="pre">process</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#intelmq.bots.collectors.http.collector_http.HTTPCollectorBot.process" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.http.collector_http.HTTPCollectorBot.rate_limit">
+<span class="sig-name descname"><span class="pre">rate_limit</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3600</span></em><a class="headerlink" href="#intelmq.bots.collectors.http.collector_http.HTTPCollectorBot.rate_limit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.http.collector_http.HTTPCollectorBot.signature_url">
+<span class="sig-name descname"><span class="pre">signature_url</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#intelmq.bots.collectors.http.collector_http.HTTPCollectorBot.signature_url" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.http.collector_http.HTTPCollectorBot.signature_url_formatting">
+<span class="sig-name descname"><span class="pre">signature_url_formatting</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#intelmq.bots.collectors.http.collector_http.HTTPCollectorBot.signature_url_formatting" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.http.collector_http.HTTPCollectorBot.ssl_client_certificate">
+<span class="sig-name descname"><span class="pre">ssl_client_certificate</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#intelmq.bots.collectors.http.collector_http.HTTPCollectorBot.ssl_client_certificate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.http.collector_http.HTTPCollectorBot.verify_pgp_signatures">
+<span class="sig-name descname"><span class="pre">verify_pgp_signatures</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#intelmq.bots.collectors.http.collector_http.HTTPCollectorBot.verify_pgp_signatures" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.http.collector_http.HTTPCollectorBot.verify_signature">
+<span class="sig-name descname"><span class="pre">verify_signature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#intelmq.bots.collectors.http.collector_http.HTTPCollectorBot.verify_signature" title="Permalink to this definition">¶</a></dt>
+<dd><p>Download signature file and verify the report data.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.http.collector_http.Time">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">intelmq.bots.collectors.http.collector_http.</span></span><span class="sig-name descname"><span class="pre">Time</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#intelmq.bots.collectors.http.collector_http.Time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.http.collector_http.Time.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#intelmq.bots.collectors.http.collector_http.Time.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delta is a datetime.timedelta JSON string, ex: ‘{“days”=-1}’.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-intelmq.bots.collectors.http.collector_http_stream">
+<span id="intelmq-bots-collectors-http-collector-http-stream-module"></span><h2>intelmq.bots.collectors.http.collector_http_stream module<a class="headerlink" href="#module-intelmq.bots.collectors.http.collector_http_stream" title="Permalink to this heading">¶</a></h2>
+<p>HTTP collector bot</p>
+<dl class="field-list simple">
+<dt class="field-odd">param http_url</dt>
+<dd class="field-odd"><p>string</p>
+</dd>
+<dt class="field-even">param http_header</dt>
+<dd class="field-even"><p>dictionary
+default: {}</p>
+</dd>
+<dt class="field-odd">param http_verify_cert</dt>
+<dd class="field-odd"><p>boolean
+default: True</p>
+</dd>
+<dt class="field-even">param http_username</dt>
+<dd class="field-even"><p>string</p>
+</dd>
+<dt class="field-odd">param http_password</dt>
+<dd class="field-odd"><p>string</p>
+</dd>
+<dt class="field-even">param http_proxy</dt>
+<dd class="field-even"><p>string</p>
+</dd>
+<dt class="field-odd">param https_proxy</dt>
+<dd class="field-odd"><p>string</p>
+</dd>
+<dt class="field-even">param strip_lines</dt>
+<dd class="field-even"><p>boolean</p>
+</dd>
+<dt class="field-odd">param http_timeout_sec</dt>
+<dd class="field-odd"><p>tuple of two floats or float</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.http.collector_http_stream.BOT">
+<span class="sig-prename descclassname"><span class="pre">intelmq.bots.collectors.http.collector_http_stream.</span></span><span class="sig-name descname"><span class="pre">BOT</span></span><a class="headerlink" href="#intelmq.bots.collectors.http.collector_http_stream.BOT" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#intelmq.bots.collectors.http.collector_http_stream.HTTPStreamCollectorBot" title="intelmq.bots.collectors.http.collector_http_stream.HTTPStreamCollectorBot"><code class="xref py py-class docutils literal notranslate"><span class="pre">HTTPStreamCollectorBot</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.http.collector_http_stream.HTTPStreamCollectorBot">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">intelmq.bots.collectors.http.collector_http_stream.</span></span><span class="sig-name descname"><span class="pre">HTTPStreamCollectorBot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bot_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sighup_event</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disable_multithreading</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#intelmq.bots.collectors.http.collector_http_stream.HTTPStreamCollectorBot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="intelmq.lib.html#intelmq.lib.bot.CollectorBot" title="intelmq.lib.bot.CollectorBot"><code class="xref py py-class docutils literal notranslate"><span class="pre">CollectorBot</span></code></a>, <a class="reference internal" href="intelmq.lib.mixins.html#intelmq.lib.mixins.http.HttpMixin" title="intelmq.lib.mixins.http.HttpMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">HttpMixin</span></code></a></p>
+<p>Open a streaming connection to the URL and process data per line</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.http.collector_http_stream.HTTPStreamCollectorBot.http_password">
+<span class="sig-name descname"><span class="pre">http_password</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#intelmq.bots.collectors.http.collector_http_stream.HTTPStreamCollectorBot.http_password" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.http.collector_http_stream.HTTPStreamCollectorBot.http_url">
+<span class="sig-name descname"><span class="pre">http_url</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'&lt;insert</span> <span class="pre">url</span> <span class="pre">of</span> <span class="pre">feed&gt;'</span></em><a class="headerlink" href="#intelmq.bots.collectors.http.collector_http_stream.HTTPStreamCollectorBot.http_url" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.http.collector_http_stream.HTTPStreamCollectorBot.http_username">
+<span class="sig-name descname"><span class="pre">http_username</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#intelmq.bots.collectors.http.collector_http_stream.HTTPStreamCollectorBot.http_username" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.http.collector_http_stream.HTTPStreamCollectorBot.init">
+<span class="sig-name descname"><span class="pre">init</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#intelmq.bots.collectors.http.collector_http_stream.HTTPStreamCollectorBot.init" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.http.collector_http_stream.HTTPStreamCollectorBot.process">
+<span class="sig-name descname"><span class="pre">process</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#intelmq.bots.collectors.http.collector_http_stream.HTTPStreamCollectorBot.process" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.http.collector_http_stream.HTTPStreamCollectorBot.rate_limit">
+<span class="sig-name descname"><span class="pre">rate_limit</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3600</span></em><a class="headerlink" href="#intelmq.bots.collectors.http.collector_http_stream.HTTPStreamCollectorBot.rate_limit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.http.collector_http_stream.HTTPStreamCollectorBot.ssl_client_certificate">
+<span class="sig-name descname"><span class="pre">ssl_client_certificate</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#intelmq.bots.collectors.http.collector_http_stream.HTTPStreamCollectorBot.ssl_client_certificate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.http.collector_http_stream.HTTPStreamCollectorBot.strip_lines">
+<span class="sig-name descname"><span class="pre">strip_lines</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#intelmq.bots.collectors.http.collector_http_stream.HTTPStreamCollectorBot.strip_lines" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-intelmq.bots.collectors.http">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-intelmq.bots.collectors.http" title="Permalink to this heading">¶</a></h2>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/Logo_Intel_MQ.svg" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">IntelMQ is a solution for IT security teams for collecting and processing security feeds using a message queuing protocol.</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=certtools&repo=intelmq&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../user/introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/organization.html">IntelMQ Organizational Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/support.html">Getting support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/support.html#development">Development</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../user/hardware-requirements.html">Hardware Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/upgrade.html">Upgrade instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/configuration-management.html">Configuration and Management</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/bots.html">Bots inventory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/intelmqctl.html">intelmqctl documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/feeds.html">Data Feeds</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/intelmq-api.html">IntelMQ API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/intelmq-manager.html">IntelMQ Manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/FAQ.html">Frequently asked questions</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../user/universe.html">IntelMQ Universe</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/ELK-Stack.html">ELK Stack</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/MISP-Integrations.html">MISP integrations in IntelMQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/n6-integrations.html">IntelMQ - n6 Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/eventdb.html">EventDB</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/abuse-contacts.html">Abuse-contact look-ups</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../dev/guide.html">Developers Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/data-format.html">Data Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/harmonization-fields.html">Harmonization field names</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/release-procedure.html">Release procedure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/feeds-wishlist.html">Feeds wishlist</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">Code documentation</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2022, IntelMQ community.
+      
+      |
+      <a href="../_sources/source/intelmq.bots.collectors.http.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

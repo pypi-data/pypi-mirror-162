@@ -1,0 +1,272 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>IntelMQ Universe &#8212; intelmq 3.1.0.alpha1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="ELK Stack" href="ELK-Stack.html" />
+    <link rel="prev" title="Frequently asked questions" href="FAQ.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="intelmq-universe">
+<h1><a class="toc-backref" href="#id6">IntelMQ Universe</a><a class="headerlink" href="#intelmq-universe" title="Permalink to this heading">¶</a></h1>
+<div class="contents topic" id="contents">
+<p class="topic-title">Contents</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#intelmq-universe" id="id6">IntelMQ Universe</a></p>
+<ul>
+<li><p><a class="reference internal" href="#intelmq-core" id="id7">IntelMQ Core</a></p></li>
+<li><p><a class="reference internal" href="#intelmq-manager" id="id8">IntelMQ Manager</a></p></li>
+<li><p><a class="reference internal" href="#intelmq-webinput-csv" id="id9">IntelMQ Webinput CSV</a></p></li>
+<li><p><a class="reference internal" href="#intelmq-mailgen" id="id10">IntelMQ Mailgen</a></p>
+<ul>
+<li><p><a class="reference internal" href="#intelmq-certbund-contact" id="id11">IntelMQ CertBUND Contact</a></p></li>
+<li><p><a class="reference internal" href="#intelmq-fody" id="id12">IntelMQ Fody</a></p></li>
+<li><p><a class="reference internal" href="#id1" id="id13">intelmq-mailgen</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#constituency-portal-tuency" id="id14">“Constituency Portal” tuency</a></p></li>
+<li><p><a class="reference internal" href="#constituency-portal-do-portal-not-developed-any-further" id="id15">“Constituency Portal” do-portal (not developed any further)</a></p></li>
+<li><p><a class="reference internal" href="#stats-portal" id="id16">stats-portal</a></p></li>
+<li><p><a class="reference internal" href="#malware-name-mapping" id="id17">Malware Name Mapping</a></p></li>
+<li><p><a class="reference internal" href="#intelmq-docker" id="id18">IntelMQ-Docker</a></p></li>
+</ul>
+</li>
+</ul>
+</div>
+<p>IntelMQ is more than a the core library itself and many programs are developed around in the IntelMQ universe.
+This document provides an overview of the ecosystem and all related tools. If you think something is missing, please let us know!</p>
+<p>Unless otherwise stated, the products are maintained by the IntelMQ community.</p>
+<section id="intelmq-core">
+<h2><a class="toc-backref" href="#id7">IntelMQ Core</a><a class="headerlink" href="#intelmq-core" title="Permalink to this heading">¶</a></h2>
+<p>This is IntelMQ itself, as it is available on <a class="reference external" href="https://github.com/certtools/intelmq">GitHub</a>.</p>
+<p>The Core includes all the components required for processing data feeds.
+This includes the bots, configuration, pipeline, the internal data format, management tools etc.</p>
+</section>
+<section id="intelmq-manager">
+<h2><a class="toc-backref" href="#id8">IntelMQ Manager</a><a class="headerlink" href="#intelmq-manager" title="Permalink to this heading">¶</a></h2>
+<p>The Manager is the most known software and can be seen as the face of IntelMQ.
+This software provides a graphical user interface to the management tool <cite>intelmqctl</cite>.</p>
+<p>→ <a class="reference external" href="https://github.com/certtools/intelmq-manager/">Repository: IntelMQ Manager</a></p>
+<img alt="IntelMQ Manager Landing page" src="../_images/landing_page.png" />
+</section>
+<section id="intelmq-webinput-csv">
+<h2><a class="toc-backref" href="#id9">IntelMQ Webinput CSV</a><a class="headerlink" href="#intelmq-webinput-csv" title="Permalink to this heading">¶</a></h2>
+<p>A web-based interface to ingest CSV data into IntelMQ with on-line validation and live feedback.</p>
+<p>This interface allows inserting “one-shot” data feeds into IntelMQ without the need to configure bots in IntelMQ.</p>
+<p>Developed and maintained by <a class="reference external" href="https://cert.at">CERT.at</a>.</p>
+<p>→ <a class="reference external" href="https://github.com/certat/intelmq-webinput-csv">Repository: intelmq-webinput-csv</a></p>
+<img alt="IntelMQ Webinput CSV Preview page" src="https://raw.githubusercontent.com/certat/intelmq-webinput-csv/master/docs/images/screenshot.png" />
+</section>
+<section id="intelmq-mailgen">
+<h2><a class="toc-backref" href="#id10">IntelMQ Mailgen</a><a class="headerlink" href="#intelmq-mailgen" title="Permalink to this heading">¶</a></h2>
+<p>A solution allowing an IntelMQ setup with a complex contact database,
+managed by a web interface and sending out aggregated email reports.
+In different words: To send grouped notifications to network owners using SMTP.</p>
+<p>Developed and maintained by <a class="reference external" href="https://intevation.de">Intevation</a>, initially funded by <a class="reference external" href="http://bsi.bund.de/">BSI</a>.</p>
+<p>It consists of these three components, which can also be used on their own.</p>
+<section id="intelmq-certbund-contact">
+<h3><a class="toc-backref" href="#id11">IntelMQ CertBUND Contact</a><a class="headerlink" href="#intelmq-certbund-contact" title="Permalink to this heading">¶</a></h3>
+<p>The certbund-contact consists of two IntelMQ expert bots, whcih fetch and process the information from the contact database, and scripts to import RIPE data into the contact database.
+Based on user-defined rules, the experts determine to which contact the event is to be sent to and which e-mail template and attachment format to use.</p>
+<p>→ <a class="reference external" href="https://github.com/Intevation/intelmq-certbund-contact">Repository: intelmq-certbund-contact</a></p>
+</section>
+<section id="intelmq-fody">
+<h3><a class="toc-backref" href="#id12">IntelMQ Fody</a><a class="headerlink" href="#intelmq-fody" title="Permalink to this heading">¶</a></h3>
+<p>Fody is a web based interface for Mailgen.
+It allows to read and edit contacts, query sent mails (tickets) and call up data from the <a class="reference internal" href="eventdb.html"><span class="doc">EventDB</span></a>.</p>
+<p>It can also be used to just query the <a class="reference internal" href="eventdb.html"><span class="doc">EventDB</span></a> without using Mailgen.</p>
+<img alt="IntelMQ Webinput CSV Preview page" src="https://user-images.githubusercontent.com/8190008/29128927-8ce8bac6-7d25-11e7-9994-ec0a46cd521d.png" />
+<p>→ <a class="reference external" href="https://github.com/Intevation/intelmq-fody">Repository: intelmq-fody</a></p>
+<p>→ <a class="reference external" href="https://github.com/Intevation/intelmq-fody-backend">Repository: intelmq-fody-backend</a></p>
+</section>
+<section id="id1">
+<h3><a class="toc-backref" href="#id13">intelmq-mailgen</a><a class="headerlink" href="#id1" title="Permalink to this heading">¶</a></h3>
+<p>Sends emails with grouped event data to the contacts determined by the certbund-contact.
+Mails can be encrypted with PGP.</p>
+<p>→ <a class="reference external" href="https://github.com/Intevation/intelmq-mailgen">Repository: intelmq-mailgen</a></p>
+</section>
+</section>
+<section id="constituency-portal-tuency">
+<h2><a class="toc-backref" href="#id14">“Constituency Portal” tuency</a><a class="headerlink" href="#constituency-portal-tuency" title="Permalink to this heading">¶</a></h2>
+<p>A web application helping CERTs to enable members of their constituency
+to self-administrate how they get warnings related to their network objects
+(IP addresses, IP ranges, autonomous systems, domains).
+<em>tuency</em> is developed by <a class="reference external" href="https://intevation.de/">Intevation</a> for
+<a class="reference external" href="https://cert.at">CERT.at</a>.</p>
+<p>If features organizational hierarchies, contact roles, self-administration
+and network objects per organization (Autonomous systems, network ranges,
+(sub-)domains, RIPE organization handles). A network object claiming and
+approval process prevents abuse.
+An hierarchical rule-system on the network objects allow fine-grained settings.
+The tagging system for contacts and organization complement the
+contact-management features of the portal.
+Authentication is based on keycloak, which enables the re-use of the user
+accounts in the portal.
+The integrated API enables IntelMQ to query the portal for the right abuse
+contact and notification settings with the
+<a class="reference internal" href="bots.html#intelmq-bots-experts-tuency-expert"><span class="std std-ref">Tuency</span></a> expert.</p>
+<p>→ <a class="reference external" href="https://gitlab.com/Intevation/tuency/tuency">Repository: tuency</a></p>
+</section>
+<section id="constituency-portal-do-portal-not-developed-any-further">
+<h2><a class="toc-backref" href="#id15">“Constituency Portal” do-portal (not developed any further)</a><a class="headerlink" href="#constituency-portal-do-portal-not-developed-any-further" title="Permalink to this heading">¶</a></h2>
+<p><em>Note:</em> The <em>do-portal</em> is deprecated and succeeded by <em>tuency</em>.</p>
+<p>A contact portal with organizational hierarchies, role functionality and network objects based on RIPE, allows self-administration by the contacts.
+Can be queried from IntelMQ and integrates the stats-portal.</p>
+<p>Originally developed by <a class="reference external" href="https://cert.europa.eu/">CERT-EU</a>, then adapted by <a class="reference external" href="https://cert.at">CERT.at</a>.</p>
+<p>→ <a class="reference external" href="https://github.com/certat/do-portal">Repository: do-portal</a></p>
+</section>
+<section id="stats-portal">
+<h2><a class="toc-backref" href="#id16">stats-portal</a><a class="headerlink" href="#stats-portal" title="Permalink to this heading">¶</a></h2>
+<p>A Grafana-based statistics portal for the <a class="reference internal" href="eventdb.html"><span class="doc">EventDB</span></a>. Integrated in do-portal.</p>
+<p>→ <a class="reference external" href="https://github.com/certtools/stats-portal">Repository: stats-portal</a></p>
+</section>
+<section id="malware-name-mapping">
+<h2><a class="toc-backref" href="#id17">Malware Name Mapping</a><a class="headerlink" href="#malware-name-mapping" title="Permalink to this heading">¶</a></h2>
+<p>A mapping for malware names of different feeds with different names to a common family name.</p>
+<p>→ <a class="reference external" href="https://github.com/certtools/malware_name_mapping">Repository: malware_name_mapping</a></p>
+</section>
+<section id="intelmq-docker">
+<h2><a class="toc-backref" href="#id18">IntelMQ-Docker</a><a class="headerlink" href="#intelmq-docker" title="Permalink to this heading">¶</a></h2>
+<p>A repository with tools for IntelMQ docker instance.</p>
+<p>Developed and maintained by <a class="reference external" href="https://cert.at">CERT.at</a>.</p>
+<p>→ <a class="reference external" href="https://github.com/certat/intelmq-docker">Repository: intelmq-docker</a></p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/Logo_Intel_MQ.svg" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">IntelMQ is a solution for IT security teams for collecting and processing security feeds using a message queuing protocol.</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=certtools&repo=intelmq&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organization.html">IntelMQ Organizational Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="support.html">Getting support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="support.html#development">Development</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="hardware-requirements.html">Hardware Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="upgrade.html">Upgrade instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration-management.html">Configuration and Management</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bots.html">Bots inventory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="intelmqctl.html">intelmqctl documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="feeds.html">Data Feeds</a></li>
+<li class="toctree-l1"><a class="reference internal" href="intelmq-api.html">IntelMQ API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="intelmq-manager.html">IntelMQ Manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="FAQ.html">Frequently asked questions</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">IntelMQ Universe</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ELK-Stack.html">ELK Stack</a></li>
+<li class="toctree-l1"><a class="reference internal" href="MISP-Integrations.html">MISP integrations in IntelMQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="n6-integrations.html">IntelMQ - n6 Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eventdb.html">EventDB</a></li>
+<li class="toctree-l1"><a class="reference internal" href="abuse-contacts.html">Abuse-contact look-ups</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../dev/guide.html">Developers Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/data-format.html">Data Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/harmonization-fields.html">Harmonization field names</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/release-procedure.html">Release procedure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/feeds-wishlist.html">Feeds wishlist</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../source/modules.html">Code documentation</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="FAQ.html" title="previous chapter">Frequently asked questions</a></li>
+      <li>Next: <a href="ELK-Stack.html" title="next chapter">ELK Stack</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2022, IntelMQ community.
+      
+      |
+      <a href="../_sources/user/universe.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

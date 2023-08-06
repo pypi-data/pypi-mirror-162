@@ -1,0 +1,327 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>intelmq.bots.outputs.templated_smtp package &#8212; intelmq 3.1.0.alpha1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="intelmq-bots-outputs-templated-smtp-package">
+<h1>intelmq.bots.outputs.templated_smtp package<a class="headerlink" href="#intelmq-bots-outputs-templated-smtp-package" title="Permalink to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="module-intelmq.bots.outputs.templated_smtp.output">
+<span id="intelmq-bots-outputs-templated-smtp-output-module"></span><h2>intelmq.bots.outputs.templated_smtp.output module<a class="headerlink" href="#module-intelmq.bots.outputs.templated_smtp.output" title="Permalink to this heading">¶</a></h2>
+<p>Templated SMTP output bot</p>
+<p>SPDX-FileCopyrightText: 2021 Linköping University &lt;<a class="reference external" href="https://liu.se/">https://liu.se/</a>&gt;
+SPDX-License-Identifier: AGPL-3.0-or-later</p>
+<p>Sends a MIME Multipart message built from an event and static text
+using Jinja2 templates.</p>
+<p>Templates are in Jinja2 format with the event provided in the variable
+“event”. E.g.:</p>
+<blockquote>
+<div><p>mail_to: “{{ event[‘source.abuse_contact’] }}”</p>
+</div></blockquote>
+<p>See the Jinja2 documentation at <a class="reference external" href="https://jinja.palletsprojects.com/">https://jinja.palletsprojects.com/</a> .</p>
+<p>As an extension to the Jinja2 environment, the function “from_json” is
+available for parsing JSON strings into Python structures. This is
+useful if you want to handle complicated structures in the “output”
+field of an event. In that case, you would start your template with a
+line like:</p>
+<blockquote>
+<div><p>{%- set output = from_json(event[‘output’]) %}</p>
+</div></blockquote>
+<p>and can then use “output” as a regular Python object in the rest of
+the template.</p>
+<p>Attachments are template strings, especially useful for sending
+structured data. E.g. to send a JSON document including “malware.name”
+and all other fields starting with “source.”:</p>
+<blockquote>
+<div><dl>
+<dt>attachments:</dt><dd><ul>
+<li><p>content-type: application/json
+text: |</p>
+<blockquote>
+<div><dl>
+<dt>{</dt><dd><p>“malware”: “{{ event[‘malware.name’] }}”,
+{%- set comma = joiner(”, “) %}
+{%- for key in event %}</p>
+<blockquote>
+<div><p>{%- if key.startswith(‘source.’) %}</p>
+</div></blockquote>
+<dl class="simple">
+<dt>{{ comma() }}”{{ key }}”: “{{ event[key] }}”</dt><dd><p>{%- endif %}</p>
+</dd>
+</dl>
+<p>{%- endfor %}</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
+<p>name: report.json</p>
+</li>
+</ul>
+</dd>
+</dl>
+</div></blockquote>
+<p>You are responsible for making sure that the text produced by the
+template is valid according to the content-type.</p>
+<p>SMTP authentication is attempted if both “smtp_username” and
+“smtp_password” are provided.</p>
+<p>Parameters:</p>
+<dl class="simple">
+<dt>attachments: list of objects with structure:</dt><dd><ul class="simple">
+<li><p>content-type: string, templated, content-type to use.
+text: string, templated, attachment text.
+name: string, templated, filename of attachment.</p></li>
+</ul>
+</dd>
+<dt>body: string, optional, default see below, templated, body text.</dt><dd><p>The default body template prints every field in the event except
+‘raw’, in undefined order, one field per line, as “field:
+value”.</p>
+</dd>
+</dl>
+<p>mail_from: string, templated, sender address.</p>
+<p>mail_to: string, templated, recipient addresses, comma-separated.</p>
+<dl class="simple">
+<dt>smtp_host: string, optional, default “localhost”, hostname of SMTP</dt><dd><p>server.</p>
+</dd>
+<dt>smtp_password: string, default null, password (if any) for</dt><dd><p>authenticated SMTP.</p>
+</dd>
+</dl>
+<p>smtp_port: integer, default 25, TCP port to connect to.</p>
+<dl class="simple">
+<dt>smtp_username: string, default null, username (if any) for</dt><dd><p>authenticated SMTP.</p>
+</dd>
+<dt>tls: boolean, default false, whether to use use SMTPS. If true, also</dt><dd><p>set smtp_port to the SMTPS port.</p>
+</dd>
+<dt>starttls: boolean, default true, whether to use opportunistic STARTTLS</dt><dd><p>over SMTP.</p>
+</dd>
+<dt>subject: string, optional, default “IntelMQ event”, templated, e-mail</dt><dd><p>subject line.</p>
+</dd>
+<dt>verify_cert: boolean, default true, whether to verify the server</dt><dd><p>certificate in STARTTLS or SMTPS.</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.outputs.templated_smtp.output.BOT">
+<span class="sig-prename descclassname"><span class="pre">intelmq.bots.outputs.templated_smtp.output.</span></span><span class="sig-name descname"><span class="pre">BOT</span></span><a class="headerlink" href="#intelmq.bots.outputs.templated_smtp.output.BOT" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#intelmq.bots.outputs.templated_smtp.output.TemplatedSMTPOutputBot" title="intelmq.bots.outputs.templated_smtp.output.TemplatedSMTPOutputBot"><code class="xref py py-class docutils literal notranslate"><span class="pre">TemplatedSMTPOutputBot</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="intelmq.bots.outputs.templated_smtp.output.TemplatedSMTPOutputBot">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">intelmq.bots.outputs.templated_smtp.output.</span></span><span class="sig-name descname"><span class="pre">TemplatedSMTPOutputBot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bot_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sighup_event</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disable_multithreading</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#intelmq.bots.outputs.templated_smtp.output.TemplatedSMTPOutputBot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="intelmq.lib.html#intelmq.lib.bot.OutputBot" title="intelmq.lib.bot.OutputBot"><code class="xref py py-class docutils literal notranslate"><span class="pre">OutputBot</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.outputs.templated_smtp.output.TemplatedSMTPOutputBot.attachments">
+<span class="sig-name descname"><span class="pre">attachments</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[]</span></em><a class="headerlink" href="#intelmq.bots.outputs.templated_smtp.output.TemplatedSMTPOutputBot.attachments" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.outputs.templated_smtp.output.TemplatedSMTPOutputBot.body">
+<span class="sig-name descname"><span class="pre">body</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&quot;{%-</span> <span class="pre">for</span> <span class="pre">field</span> <span class="pre">in</span> <span class="pre">event</span> <span class="pre">%}\n</span>&#160;&#160;&#160; <span class="pre">{%-</span> <span class="pre">if</span> <span class="pre">field</span> <span class="pre">!=</span> <span class="pre">'raw'</span> <span class="pre">%}\n{{</span> <span class="pre">field</span> <span class="pre">}}:</span> <span class="pre">{{</span> <span class="pre">event[field]</span> <span class="pre">}}\n</span>&#160;&#160;&#160; <span class="pre">{%-</span> <span class="pre">endif</span> <span class="pre">%}\n{%-</span> <span class="pre">endfor</span> <span class="pre">%}\n&quot;</span></em><a class="headerlink" href="#intelmq.bots.outputs.templated_smtp.output.TemplatedSMTPOutputBot.body" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="intelmq.bots.outputs.templated_smtp.output.TemplatedSMTPOutputBot.init">
+<span class="sig-name descname"><span class="pre">init</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#intelmq.bots.outputs.templated_smtp.output.TemplatedSMTPOutputBot.init" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.outputs.templated_smtp.output.TemplatedSMTPOutputBot.mail_from">
+<span class="sig-name descname"><span class="pre">mail_from</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#intelmq.bots.outputs.templated_smtp.output.TemplatedSMTPOutputBot.mail_from" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.outputs.templated_smtp.output.TemplatedSMTPOutputBot.mail_to">
+<span class="sig-name descname"><span class="pre">mail_to</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#intelmq.bots.outputs.templated_smtp.output.TemplatedSMTPOutputBot.mail_to" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.outputs.templated_smtp.output.TemplatedSMTPOutputBot.password">
+<span class="sig-name descname"><span class="pre">password</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#intelmq.bots.outputs.templated_smtp.output.TemplatedSMTPOutputBot.password" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="intelmq.bots.outputs.templated_smtp.output.TemplatedSMTPOutputBot.process">
+<span class="sig-name descname"><span class="pre">process</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#intelmq.bots.outputs.templated_smtp.output.TemplatedSMTPOutputBot.process" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.outputs.templated_smtp.output.TemplatedSMTPOutputBot.smtp_host">
+<span class="sig-name descname"><span class="pre">smtp_host</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'localhost'</span></em><a class="headerlink" href="#intelmq.bots.outputs.templated_smtp.output.TemplatedSMTPOutputBot.smtp_host" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.outputs.templated_smtp.output.TemplatedSMTPOutputBot.smtp_port">
+<span class="sig-name descname"><span class="pre">smtp_port</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">25</span></em><a class="headerlink" href="#intelmq.bots.outputs.templated_smtp.output.TemplatedSMTPOutputBot.smtp_port" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.outputs.templated_smtp.output.TemplatedSMTPOutputBot.ssl">
+<span class="sig-name descname"><span class="pre">ssl</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#intelmq.bots.outputs.templated_smtp.output.TemplatedSMTPOutputBot.ssl" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.outputs.templated_smtp.output.TemplatedSMTPOutputBot.starttls">
+<span class="sig-name descname"><span class="pre">starttls</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#intelmq.bots.outputs.templated_smtp.output.TemplatedSMTPOutputBot.starttls" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.outputs.templated_smtp.output.TemplatedSMTPOutputBot.subject">
+<span class="sig-name descname"><span class="pre">subject</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'IntelMQ</span> <span class="pre">event'</span></em><a class="headerlink" href="#intelmq.bots.outputs.templated_smtp.output.TemplatedSMTPOutputBot.subject" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.outputs.templated_smtp.output.TemplatedSMTPOutputBot.username">
+<span class="sig-name descname"><span class="pre">username</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#intelmq.bots.outputs.templated_smtp.output.TemplatedSMTPOutputBot.username" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.outputs.templated_smtp.output.TemplatedSMTPOutputBot.verify_cert">
+<span class="sig-name descname"><span class="pre">verify_cert</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#intelmq.bots.outputs.templated_smtp.output.TemplatedSMTPOutputBot.verify_cert" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-intelmq.bots.outputs.templated_smtp">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-intelmq.bots.outputs.templated_smtp" title="Permalink to this heading">¶</a></h2>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/Logo_Intel_MQ.svg" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">IntelMQ is a solution for IT security teams for collecting and processing security feeds using a message queuing protocol.</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=certtools&repo=intelmq&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../user/introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/organization.html">IntelMQ Organizational Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/support.html">Getting support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/support.html#development">Development</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../user/hardware-requirements.html">Hardware Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/upgrade.html">Upgrade instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/configuration-management.html">Configuration and Management</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/bots.html">Bots inventory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/intelmqctl.html">intelmqctl documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/feeds.html">Data Feeds</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/intelmq-api.html">IntelMQ API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/intelmq-manager.html">IntelMQ Manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/FAQ.html">Frequently asked questions</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../user/universe.html">IntelMQ Universe</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/ELK-Stack.html">ELK Stack</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/MISP-Integrations.html">MISP integrations in IntelMQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/n6-integrations.html">IntelMQ - n6 Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/eventdb.html">EventDB</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/abuse-contacts.html">Abuse-contact look-ups</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../dev/guide.html">Developers Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/data-format.html">Data Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/harmonization-fields.html">Harmonization field names</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/release-procedure.html">Release procedure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/feeds-wishlist.html">Feeds wishlist</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">Code documentation</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2022, IntelMQ community.
+      
+      |
+      <a href="../_sources/source/intelmq.bots.outputs.templated_smtp.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

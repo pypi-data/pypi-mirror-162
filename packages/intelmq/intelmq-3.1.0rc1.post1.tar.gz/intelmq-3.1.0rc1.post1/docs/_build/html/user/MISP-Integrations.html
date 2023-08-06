@@ -1,0 +1,180 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>MISP integrations in IntelMQ &#8212; intelmq 3.1.0.alpha1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="IntelMQ - n6 Integration" href="n6-integrations.html" />
+    <link rel="prev" title="ELK Stack" href="ELK-Stack.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="misp-integrations-in-intelmq">
+<h1>MISP integrations in IntelMQ<a class="headerlink" href="#misp-integrations-in-intelmq" title="Permalink to this heading">¶</a></h1>
+<p>While MISP and IntelMQ seem to solve similar problems in the first hindsight, their intentions and strengths differ significantly.</p>
+<p>In a nutshell, MISP <em>stores</em> manually curated indicators (called <em>attributes</em>) grouped in <em>events</em>. An event can have an arbitrary number of attributes.
+MISP correlates these indicators with each other and can synchronize the data between multiple MISP instances.</p>
+<p>On the other side, IntelMQ in it’s essence (not considering the <a class="reference internal" href="eventdb.html"><span class="doc">EventDB</span></a>) has no state or database, but is stream-oriented.
+IntelMQ acts as a toolbox which can be configured as needed to automate processes of mass data with little or no human interaction
+At the end of the processing the data may land in some database or be sent to other systems.</p>
+<p>Both systems do not intend to replace each other or do compete.
+They integrate seamless and combine each other enabling more use-cases and</p>
+<section id="misp-api-collector">
+<h2>MISP API Collector<a class="headerlink" href="#misp-api-collector" title="Permalink to this heading">¶</a></h2>
+<p>The MISP API Collector fetches data from MISP via the <a class="reference external" href="https://misp.gitbooks.io/misp-book/content/automation/">MISP API</a>.</p>
+<p>Look at the <a class="reference internal" href="bots.html#intelmq-bots-collectors-misp-collector"><span class="std std-ref">Bots’ documentation</span></a> for more information.</p>
+</section>
+<section id="misp-expert">
+<h2>MISP Expert<a class="headerlink" href="#misp-expert" title="Permalink to this heading">¶</a></h2>
+<p>The MISP Expert searches MISP by using the <a class="reference external" href="https://misp.gitbooks.io/misp-book/content/automation/">MISP API</a>
+for attributes/events matching the <code class="docutils literal notranslate"><span class="pre">source.ip</span></code> of the event.
+The MISP Attribute UUID and MISP Event ID of the newest attribute are added to the event.</p>
+<p>Look at the <a class="reference internal" href="bots.html#intelmq-bots-experts-misp-expert"><span class="std std-ref">Bots’ documentation</span></a> for more information.</p>
+</section>
+<section id="misp-feed-output">
+<h2>MISP Feed Output<a class="headerlink" href="#misp-feed-output" title="Permalink to this heading">¶</a></h2>
+<p>This bot creates a complete <a class="reference external" href="https://misp.gitbooks.io/misp-book/content/managing-feeds/">MISP feed</a> ready to be configured in MISP as incoming data source.</p>
+<p>Look at the <a class="reference internal" href="bots.html#intelmq-bots-outputs-misp-output-feed"><span class="std std-ref">Bots’ documentation</span></a> for more information.</p>
+</section>
+<section id="misp-api-output">
+<h2>MISP API Output<a class="headerlink" href="#misp-api-output" title="Permalink to this heading">¶</a></h2>
+<p>Can be used to directly create MISP events in a MISP instance by using the <a class="reference external" href="https://misp.gitbooks.io/misp-book/content/automation/">MISP API</a>.</p>
+<p>Look at the <a class="reference internal" href="bots.html#intelmq-bots-outputs-misp-output-api"><span class="std std-ref">Bots’ documentation</span></a> for more information.</p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/Logo_Intel_MQ.svg" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">IntelMQ is a solution for IT security teams for collecting and processing security feeds using a message queuing protocol.</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=certtools&repo=intelmq&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organization.html">IntelMQ Organizational Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="support.html">Getting support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="support.html#development">Development</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="hardware-requirements.html">Hardware Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="upgrade.html">Upgrade instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration-management.html">Configuration and Management</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bots.html">Bots inventory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="intelmqctl.html">intelmqctl documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="feeds.html">Data Feeds</a></li>
+<li class="toctree-l1"><a class="reference internal" href="intelmq-api.html">IntelMQ API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="intelmq-manager.html">IntelMQ Manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="FAQ.html">Frequently asked questions</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="universe.html">IntelMQ Universe</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ELK-Stack.html">ELK Stack</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">MISP integrations in IntelMQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="n6-integrations.html">IntelMQ - n6 Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eventdb.html">EventDB</a></li>
+<li class="toctree-l1"><a class="reference internal" href="abuse-contacts.html">Abuse-contact look-ups</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../dev/guide.html">Developers Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/data-format.html">Data Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/harmonization-fields.html">Harmonization field names</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/release-procedure.html">Release procedure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/feeds-wishlist.html">Feeds wishlist</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../source/modules.html">Code documentation</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="ELK-Stack.html" title="previous chapter">ELK Stack</a></li>
+      <li>Next: <a href="n6-integrations.html" title="next chapter">IntelMQ - n6 Integration</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2022, IntelMQ community.
+      
+      |
+      <a href="../_sources/user/MISP-Integrations.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

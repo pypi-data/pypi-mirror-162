@@ -1,0 +1,208 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>IntelMQ - n6 Integration &#8212; intelmq 3.1.0.alpha1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="EventDB" href="eventdb.html" />
+    <link rel="prev" title="MISP integrations in IntelMQ" href="MISP-Integrations.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="intelmq-n6-integration">
+<h1>IntelMQ - n6 Integration<a class="headerlink" href="#intelmq-n6-integration" title="Permalink to this heading">¶</a></h1>
+<p>n6 is an Open Source Tool with very similar aims as IntelMQ: processing and distributing IoC data.
+The use-cases, architecture and features differ and both tools have non-overlapping strengths.
+n6 is maintained and developed by <a class="reference external" href="https://www.cert.pl/">CERT.pl</a>.</p>
+<p>Information about n6 can be found here:</p>
+<ul class="simple">
+<li><p>Website: <a class="reference external" href="https://n6.cert.pl/en/">n6.cert.pl</a></p></li>
+<li><p>Source Code: <a class="reference external" href="https://github.com/CERT-Polska/n6/">github.com/CERT-Polska/n6</a></p></li>
+<li><p>n6 documentation: <a class="reference external" href="https://n6.readthedocs.io/">n6.readthedocs.io</a></p></li>
+<li><p>n6sdk developer documentation: <a class="reference external" href="https://n6sdk.readthedocs.io/">n6sdk.readthedocs.io</a></p></li>
+</ul>
+<img alt="n6 schema" src="../_images/n6-schemat2.png" />
+<img alt="n6 data flow" src="../_images/data-flow.png" />
+<section id="data-format">
+<h2>Data format<a class="headerlink" href="#data-format" title="Permalink to this heading">¶</a></h2>
+<p>The internal data representation differs between IntelMQ and n6, so any data exchange between the systems requires a format conversion.
+For example, in n6 one message can contain multiple IP addresses, but IntelMQ is intentionally restricted to one IP address per message.
+Therefore, one n6 event results in <em>one or more</em> IntelMQ events.
+Because of this, and some other naming differences and ambiguities, the format conversion is <em>not</em> bidirectional.</p>
+</section>
+<section id="data-exchange-interface">
+<h2>Data exchange interface<a class="headerlink" href="#data-exchange-interface" title="Permalink to this heading">¶</a></h2>
+<p>n6 offers a STOMP interface via the RabbitMQ broker, which can be used for both sending and receiving data.
+IntelMQ offers both a STOMP collector bot for receiving data from n6, as well as a STOMP output bot for sending data to n6 instances.</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="bots.html#stomp-collector-bot"><span class="std std-ref">IntelMQ’s Stomp collector bot</span></a></p></li>
+<li><p><a class="reference internal" href="bots.html#n6-parser-bot"><span class="std std-ref">IntelMQ’s n6 parser bot</span></a></p></li>
+<li><p><a class="reference internal" href="bots.html#stomp-output-bot"><span class="std std-ref">IntelMQ’s Stomp output bot</span></a></p></li>
+</ul>
+</section>
+<section id="data-conversion">
+<h2>Data conversion<a class="headerlink" href="#data-conversion" title="Permalink to this heading">¶</a></h2>
+<p>IntelMQ can parse n6 data using the n6 parser and n6 can parse IntelMQ data using the Intelmq2n6 parser.</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="bots.html#n6-parser-bot"><span class="std std-ref">IntelMQ’s n6 parser bot</span></a></p></li>
+</ul>
+</section>
+<section id="complete-example">
+<h2>Complete example<a class="headerlink" href="#complete-example" title="Permalink to this heading">¶</a></h2>
+<section id="data-flow-n6-to-intelmq">
+<h3>Data flow n6 to IntelMQ<a class="headerlink" href="#data-flow-n6-to-intelmq" title="Permalink to this heading">¶</a></h3>
+<img alt="dataflow from n6 to IntelMQ" src="../_images/n6-to-intelmq.png" />
+</section>
+<section id="data-flow-intelmq-to-n6">
+<h3>Data flow IntelMQ to n6<a class="headerlink" href="#data-flow-intelmq-to-n6" title="Permalink to this heading">¶</a></h3>
+<img alt="dataflow from IntelMQ to n6" src="../_images/intelmq-to-n6.png" />
+</section>
+<section id="cert-pl-data-feed">
+<h3>CERT.pl Data feed<a class="headerlink" href="#cert-pl-data-feed" title="Permalink to this heading">¶</a></h3>
+<p>CERT.pl offers data feed available to their partners through the STOMP interface.
+Our feeds documentation contains details how it can be enabled in IntelMQ: <a class="reference external" href="feeds.html#n6-stomp-stream">CERT.pl n6 STOMP stream</a></p>
+</section>
+</section>
+<section id="webinput-csv">
+<h2>Webinput CSV<a class="headerlink" href="#webinput-csv" title="Permalink to this heading">¶</a></h2>
+<p>The IntelMQ Webinput CSV software can also be used together with n6.
+The documentation on this component can be found in the software’s repository:
+<a class="reference external" href="https://github.com/certat/intelmq-webinput-csv/blob/master/docs/webinput-n6.md">https://github.com/certat/intelmq-webinput-csv/blob/master/docs/webinput-n6.md</a></p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/Logo_Intel_MQ.svg" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">IntelMQ is a solution for IT security teams for collecting and processing security feeds using a message queuing protocol.</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=certtools&repo=intelmq&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organization.html">IntelMQ Organizational Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="support.html">Getting support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="support.html#development">Development</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="hardware-requirements.html">Hardware Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="upgrade.html">Upgrade instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration-management.html">Configuration and Management</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bots.html">Bots inventory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="intelmqctl.html">intelmqctl documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="feeds.html">Data Feeds</a></li>
+<li class="toctree-l1"><a class="reference internal" href="intelmq-api.html">IntelMQ API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="intelmq-manager.html">IntelMQ Manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="FAQ.html">Frequently asked questions</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="universe.html">IntelMQ Universe</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ELK-Stack.html">ELK Stack</a></li>
+<li class="toctree-l1"><a class="reference internal" href="MISP-Integrations.html">MISP integrations in IntelMQ</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">IntelMQ - n6 Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eventdb.html">EventDB</a></li>
+<li class="toctree-l1"><a class="reference internal" href="abuse-contacts.html">Abuse-contact look-ups</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../dev/guide.html">Developers Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/data-format.html">Data Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/harmonization-fields.html">Harmonization field names</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/release-procedure.html">Release procedure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/feeds-wishlist.html">Feeds wishlist</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../source/modules.html">Code documentation</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="MISP-Integrations.html" title="previous chapter">MISP integrations in IntelMQ</a></li>
+      <li>Next: <a href="eventdb.html" title="next chapter">EventDB</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2022, IntelMQ community.
+      
+      |
+      <a href="../_sources/user/n6-integrations.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

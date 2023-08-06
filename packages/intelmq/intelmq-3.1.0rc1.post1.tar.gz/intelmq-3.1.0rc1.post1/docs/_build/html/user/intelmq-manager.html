@@ -1,0 +1,320 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>IntelMQ Manager &#8212; intelmq 3.1.0.alpha1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Frequently asked questions" href="FAQ.html" />
+    <link rel="prev" title="IntelMQ API" href="intelmq-api.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="intelmq-manager">
+<h1><a class="toc-backref" href="#id1">IntelMQ Manager</a><a class="headerlink" href="#intelmq-manager" title="Permalink to this heading">¶</a></h1>
+<p><strong>IntelMQ Manager</strong> is a graphical interface to manage configurations for IntelMQ.
+Its goal is to provide an intuitive tool to allow non-programmers to specify the data flow in IntelMQ.</p>
+<div class="contents topic" id="contents">
+<p class="topic-title">Contents</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#intelmq-manager" id="id1">IntelMQ Manager</a></p>
+<ul>
+<li><p><a class="reference internal" href="#installation" id="id2">Installation</a></p>
+<ul>
+<li><p><a class="reference internal" href="#native-packages" id="id3">Native Packages</a></p></li>
+<li><p><a class="reference internal" href="#docker" id="id4">Docker</a></p></li>
+<li><p><a class="reference internal" href="#installation-using-pip" id="id5">Installation using pip</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#security-considerations" id="id6">Security considerations</a></p></li>
+<li><p><a class="reference internal" href="#configuration" id="id7">Configuration</a></p>
+<ul>
+<li><p><a class="reference internal" href="#csp-headers" id="id8">CSP Headers</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#screenshots" id="id9">Screenshots</a></p>
+<ul>
+<li><p><a class="reference internal" href="#pipeline" id="id10">Pipeline</a></p></li>
+<li><p><a class="reference internal" href="#bots-configuration" id="id11">Bots Configuration</a></p></li>
+<li><p><a class="reference internal" href="#botnet-management" id="id12">Botnet Management</a></p></li>
+<li><p><a class="reference internal" href="#botnet-monitoring" id="id13">Botnet Monitoring</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#usage" id="id14">Usage</a></p>
+<ul>
+<li><p><a class="reference internal" href="#keyboard-shortcuts" id="id15">Keyboard Shortcuts</a></p></li>
+<li><p><a class="reference internal" href="#configuration-paths" id="id16">Configuration Paths</a></p></li>
+<li><p><a class="reference internal" href="#configuration-page" id="id17">Configuration page</a></p>
+<ul>
+<li><p><a class="reference internal" href="#named-queues-paths" id="id18">Named queues / paths</a></p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<section id="installation">
+<h2><a class="toc-backref" href="#id2">Installation</a><a class="headerlink" href="#installation" title="Permalink to this heading">¶</a></h2>
+<p>To use the <cite>intelmq-manager</cite> webinterface, a working <cite>intelmq</cite> installation which provides access to the <a class="reference internal" href="intelmq-api.html"><span class="doc">IntelMQ API</span></a> is required.
+Please refer to the IntelMQ <a class="reference internal" href="installation.html"><span class="doc">Installation</span></a> page.</p>
+<p><cite>intelmq-manager</cite> can be installed with different methods. Use the same one as you did for IntelMQ itself and the IntelMQ API.</p>
+<section id="native-packages">
+<h3><a class="toc-backref" href="#id3">Native Packages</a><a class="headerlink" href="#native-packages" title="Permalink to this heading">¶</a></h3>
+<p>As the repositories are already set-up on your system, you can simply install the package <code class="docutils literal notranslate"><span class="pre">intelmq-manager</span></code>.</p>
+<p>Our repository page gives <a class="reference external" href="https://software.opensuse.org/download.html?project=home:sebix:intelmq&amp;package=intelmq-manager">installation instructions for various operating systems</a>.
+No additional set-up steps are needed.</p>
+<p>The webserver configuration (which is also shown below) for Apache will be automatically installed and the HTML files are stored under <code class="docutils literal notranslate"><span class="pre">/usr/share/intelmq-manager/html</span></code>.
+The webinterface is then available at <code class="docutils literal notranslate"><span class="pre">http://localhost/intelmq-manager</span></code>.</p>
+</section>
+<section id="docker">
+<h3><a class="toc-backref" href="#id4">Docker</a><a class="headerlink" href="#docker" title="Permalink to this heading">¶</a></h3>
+<p>The IntelMQ Manager is included in our Docker-images. See the section <a class="reference internal" href="installation.html#installation-docker"><span class="std std-ref">Docker</span></a> in our installation guide.</p>
+</section>
+<section id="installation-using-pip">
+<h3><a class="toc-backref" href="#id5">Installation using pip</a><a class="headerlink" href="#installation-using-pip" title="Permalink to this heading">¶</a></h3>
+<p>For installation via pip, the situation is more complex.
+The intelmq-manager package does not contain ready-to-use files, they need to be built locally.
+First, lets install the Manager itself:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip3</span> <span class="n">install</span> <span class="n">intelmq</span><span class="o">-</span><span class="n">manager</span>
+</pre></div>
+</div>
+<p>If your system uses wheel-packages, not the source distribution, you can use the <code class="docutils literal notranslate"><span class="pre">intelmqsetup</span></code> tool.
+<code class="docutils literal notranslate"><span class="pre">intelmqsetup</span></code> which performs these set-up steps automatically but it may not detect all situations correctly.
+If it finds <cite>intelmq-manager</cite> installed, calls its build routine is called.
+The files are placed in <code class="docutils literal notranslate"><span class="pre">/usr/share/intelmq_manager/html</span></code>, where the default Apache configuration expect it.</p>
+<p>If your system used the dist-package or if you are using a local source, the tool may not do all required steps.
+To call the build routine manually, use <code class="docutils literal notranslate"><span class="pre">intelmq-manager-build</span> <span class="pre">--output-dir</span> <span class="pre">your/preferred/output/directory/</span></code>.</p>
+<p><cite>intelmq-manager</cite> ships with a default configuration for the Apache webserver (<code class="docutils literal notranslate"><span class="pre">manager-apache.conf</span></code>):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Alias</span> <span class="o">/</span><span class="n">intelmq</span><span class="o">-</span><span class="n">manager</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">intelmq_manager</span><span class="o">/</span><span class="n">html</span><span class="o">/</span>
+
+<span class="o">&lt;</span><span class="n">Directory</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">intelmq_manager</span><span class="o">/</span><span class="n">html</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="n">IfModule</span> <span class="n">mod_headers</span><span class="o">.</span><span class="n">c</span><span class="o">&gt;</span>
+    <span class="n">Header</span> <span class="nb">set</span> <span class="n">Content</span><span class="o">-</span><span class="n">Security</span><span class="o">-</span><span class="n">Policy</span> <span class="s2">&quot;script-src &#39;self&#39;&quot;</span>
+    <span class="n">Header</span> <span class="nb">set</span> <span class="n">X</span><span class="o">-</span><span class="n">Content</span><span class="o">-</span><span class="n">Security</span><span class="o">-</span><span class="n">Policy</span> <span class="s2">&quot;script-src &#39;self&#39;&quot;</span>
+    <span class="o">&lt;/</span><span class="n">IfModule</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">Directory</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>This file needs to be placed in the correct place for your Apache 2 installation.</p>
+<ul class="simple">
+<li><p>On Debian and Ubuntu, the file needs to be placed at <code class="docutils literal notranslate"><span class="pre">/etc/apache2/conf-available.d/manager-apache.conf</span></code> and then execute <code class="docutils literal notranslate"><span class="pre">a2enconf</span> <span class="pre">manager-apache</span></code>.</p></li>
+<li><p>On CentOS, RHEL and Fedora, the file needs to be placed at <code class="docutils literal notranslate"><span class="pre">/etc/httpd/conf.d/</span></code> and reload the webserver.</p></li>
+<li><p>On openSUSE, the file needs to be placed at <code class="docutils literal notranslate"><span class="pre">/etc/apache2/conf.d/</span></code> and reload the webserver.</p></li>
+</ul>
+</section>
+</section>
+<section id="security-considerations">
+<h2><a class="toc-backref" href="#id6">Security considerations</a><a class="headerlink" href="#security-considerations" title="Permalink to this heading">¶</a></h2>
+<p>Never ever run intelmq-manager on a public webserver without SSL and proper authentication!</p>
+<p>The way the current version is written, anyone can send a POST request and change intelmq’s configuration files via sending HTTP POST requests.
+Intelmq-manager will reject non JSON data but nevertheless, we don’t want anyone to be able to reconfigure an intelmq installation.</p>
+<p>Therefore you will need authentication and SSL. Authentication can be handled by the <a class="reference internal" href="intelmq-api.html"><span class="doc">IntelMQ API</span></a>.
+Please refer to its documentation on how to enable authentication and setup accounts.</p>
+<p>Never ever allow unencrypted, unauthenticated access to intelmq-manager!</p>
+</section>
+<section id="configuration">
+<h2><a class="toc-backref" href="#id7">Configuration</a><a class="headerlink" href="#configuration" title="Permalink to this heading">¶</a></h2>
+<p>In the file <code class="docutils literal notranslate"><span class="pre">/usr/share/intelmq-manager/html/js/vars.js</span></code> set <code class="docutils literal notranslate"><span class="pre">ROOT</span></code> to the URL of your <code class="docutils literal notranslate"><span class="pre">intelmq-api</span></code> installation- by default that’s on the same host as <code class="docutils literal notranslate"><span class="pre">intelmq-manager</span></code>.</p>
+<section id="csp-headers">
+<h3><a class="toc-backref" href="#id8">CSP Headers</a><a class="headerlink" href="#csp-headers" title="Permalink to this heading">¶</a></h3>
+<p>It is recommended to set these two headers for all requests:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Content</span><span class="o">-</span><span class="n">Security</span><span class="o">-</span><span class="n">Policy</span><span class="p">:</span> <span class="n">script</span><span class="o">-</span><span class="n">src</span> <span class="s1">&#39;self&#39;</span>
+<span class="n">X</span><span class="o">-</span><span class="n">Content</span><span class="o">-</span><span class="n">Security</span><span class="o">-</span><span class="n">Policy</span><span class="p">:</span> <span class="n">script</span><span class="o">-</span><span class="n">src</span> <span class="s1">&#39;self&#39;</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="screenshots">
+<h2><a class="toc-backref" href="#id9">Screenshots</a><a class="headerlink" href="#screenshots" title="Permalink to this heading">¶</a></h2>
+<section id="pipeline">
+<h3><a class="toc-backref" href="#id10">Pipeline</a><a class="headerlink" href="#pipeline" title="Permalink to this heading">¶</a></h3>
+<p>This interface lets you visually configure the whole IntelMQ pipeline and the parameters of every single bot.
+You will be able to see the pipeline in a graph-like visualisation similar to the following screenshot (click to enlarge):</p>
+<img alt="Main Interface" src="../_images/configuration.png" />
+</section>
+<section id="bots-configuration">
+<h3><a class="toc-backref" href="#id11">Bots Configuration</a><a class="headerlink" href="#bots-configuration" title="Permalink to this heading">¶</a></h3>
+<p>When you add a node or edit one you’ll be presented with a form with the available parameters for a bot. There you can easily change the parameters as shown in the screenshot:</p>
+<img alt="Parameter editing" src="../_images/configuration2.png" />
+<p>After editing the bots’ configuration and pipeline, simply click “Save Configuration” to automatically write the changes to the correct files.  The configurations are now ready to be deployed.</p>
+<p><strong>Note well</strong>: if you do not press “Save Configuration” your changes will be lost whenever you reload the web page or move between different tabs within the IntelMQ manager page.</p>
+</section>
+<section id="botnet-management">
+<h3><a class="toc-backref" href="#id12">Botnet Management</a><a class="headerlink" href="#botnet-management" title="Permalink to this heading">¶</a></h3>
+<p>When you save a configuration you can go to the ‘Management’ section to see what bots are running and start/stop the entire botnet, or a single bot.</p>
+<img alt="Botnet Management" src="../_images/management.png" />
+</section>
+<section id="botnet-monitoring">
+<h3><a class="toc-backref" href="#id13">Botnet Monitoring</a><a class="headerlink" href="#botnet-monitoring" title="Permalink to this heading">¶</a></h3>
+<p>You can also monitor the logs of individual bots or see the status of the queues for the entire system or for single bots.</p>
+<p>In this next example we can see the number of queued messages for all the queues in the system.</p>
+<img alt="Botnet Monitor" src="../_images/monitor.png" />
+<p>The following example we can see the status information of a single bot. Namely, the number of queued messages in the queues that are related to that bot and also the last 20 log lines of that single bot.</p>
+<img alt="Bot Monitor" src="../_images/monitor2.png" />
+</section>
+</section>
+<section id="usage">
+<h2><a class="toc-backref" href="#id14">Usage</a><a class="headerlink" href="#usage" title="Permalink to this heading">¶</a></h2>
+<section id="keyboard-shortcuts">
+<h3><a class="toc-backref" href="#id15">Keyboard Shortcuts</a><a class="headerlink" href="#keyboard-shortcuts" title="Permalink to this heading">¶</a></h3>
+<p>Any underscored letter denotes access key shortcut. The needed shortcut-keyboard is different per Browser:</p>
+<ul class="simple">
+<li><p>Firefox: &lt;kbd&gt;Alt + Shift + letter&lt;/kbd&gt;</p></li>
+<li><p>Chrome &amp; Chromium: &lt;kbd&gt;Alt + letter&lt;/kbd&gt;</p></li>
+</ul>
+</section>
+<section id="configuration-paths">
+<h3><a class="toc-backref" href="#id16">Configuration Paths</a><a class="headerlink" href="#configuration-paths" title="Permalink to this heading">¶</a></h3>
+<p>The IntelMQ Manager queries the configuration file paths and directory names from <code class="docutils literal notranslate"><span class="pre">intelmqctl</span></code> and therefore any global environment variables (if set) are effective in the Manager too.
+The interface for this query is <code class="docutils literal notranslate"><span class="pre">intelmqctl</span> <span class="pre">debug</span> <span class="pre">--get-paths</span></code>, the result is also shown in the <code class="docutils literal notranslate"><span class="pre">/about.html</span></code> page of your IntelMQ Manager installation.</p>
+<p>For more information on the ability to adapt paths, have a look at the <a class="reference internal" href="configuration-management.html#configuration"><span class="std std-ref">Configuration</span></a> section.</p>
+</section>
+<section id="configuration-page">
+<h3><a class="toc-backref" href="#id17">Configuration page</a><a class="headerlink" href="#configuration-page" title="Permalink to this heading">¶</a></h3>
+<section id="named-queues-paths">
+<h4><a class="toc-backref" href="#id18">Named queues / paths</a><a class="headerlink" href="#named-queues-paths" title="Permalink to this heading">¶</a></h4>
+<p>With IntelMQ Manager you can set the name of certain paths by double-clicking on the line which connects two bots:</p>
+<img alt="Enter path" src="../_images/configuration-path-form.png" />
+<p>The name is then displayed along the edge:</p>
+<img alt="Show path name" src="../_images/configuration-path-set.png" />
+</section>
+</section>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/Logo_Intel_MQ.svg" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">IntelMQ is a solution for IT security teams for collecting and processing security feeds using a message queuing protocol.</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=certtools&repo=intelmq&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organization.html">IntelMQ Organizational Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="support.html">Getting support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="support.html#development">Development</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="hardware-requirements.html">Hardware Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="upgrade.html">Upgrade instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration-management.html">Configuration and Management</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bots.html">Bots inventory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="intelmqctl.html">intelmqctl documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="feeds.html">Data Feeds</a></li>
+<li class="toctree-l1"><a class="reference internal" href="intelmq-api.html">IntelMQ API</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">IntelMQ Manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="FAQ.html">Frequently asked questions</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="universe.html">IntelMQ Universe</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ELK-Stack.html">ELK Stack</a></li>
+<li class="toctree-l1"><a class="reference internal" href="MISP-Integrations.html">MISP integrations in IntelMQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="n6-integrations.html">IntelMQ - n6 Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eventdb.html">EventDB</a></li>
+<li class="toctree-l1"><a class="reference internal" href="abuse-contacts.html">Abuse-contact look-ups</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../dev/guide.html">Developers Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/data-format.html">Data Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/harmonization-fields.html">Harmonization field names</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/release-procedure.html">Release procedure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/feeds-wishlist.html">Feeds wishlist</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../source/modules.html">Code documentation</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="intelmq-api.html" title="previous chapter">IntelMQ API</a></li>
+      <li>Next: <a href="FAQ.html" title="next chapter">Frequently asked questions</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2022, IntelMQ community.
+      
+      |
+      <a href="../_sources/user/intelmq-manager.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

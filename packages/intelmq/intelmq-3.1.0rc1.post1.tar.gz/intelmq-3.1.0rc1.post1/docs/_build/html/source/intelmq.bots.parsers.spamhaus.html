@@ -1,0 +1,238 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>intelmq.bots.parsers.spamhaus package &#8212; intelmq 3.1.0.alpha1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="intelmq.bots.parsers.sucuri package" href="intelmq.bots.parsers.sucuri.html" />
+    <link rel="prev" title="intelmq.bots.parsers.shodan package" href="intelmq.bots.parsers.shodan.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="intelmq-bots-parsers-spamhaus-package">
+<h1>intelmq.bots.parsers.spamhaus package<a class="headerlink" href="#intelmq-bots-parsers-spamhaus-package" title="Permalink to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="module-intelmq.bots.parsers.spamhaus.parser_cert">
+<span id="intelmq-bots-parsers-spamhaus-parser-cert-module"></span><h2>intelmq.bots.parsers.spamhaus.parser_cert module<a class="headerlink" href="#module-intelmq.bots.parsers.spamhaus.parser_cert" title="Permalink to this heading">¶</a></h2>
+<p>Header of the File:
+; Bots filtered by last 1 hours, prepared for &lt;CERTNAME&gt; on UTC = …
+; Copyright © 2015 The Spamhaus Project Ltd. All rights reserved.
+; No re-distribution or public access allowed without Spamhaus permission.
+; Fields description:
+;
+; 1 - Infected IP
+; 2 - ASN
+; 3 - Country Code
+; 4 - Lastseen Timestamp (in UTC)
+; 5 - Bot Name
+;   Command &amp; Control (C&amp;C) information, if available:
+; 6 - C&amp;C Domain
+; 7 - Remote IP (connecting to)
+; 8 - Remote Port (connecting to)
+; 9 - Local Port
+; 10 - Protocol
+;   Additional fields may be added in the future without notice
+;
+; ip, asn, country, lastseen, botname, domain, remote_ip, remote_port,
+local_port, protocol</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="intelmq.bots.parsers.spamhaus.parser_cert.SpamhausCERTParserBot">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">intelmq.bots.parsers.spamhaus.parser_cert.</span></span><span class="sig-name descname"><span class="pre">SpamhausCERTParserBot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bot_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sighup_event</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disable_multithreading</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#intelmq.bots.parsers.spamhaus.parser_cert.SpamhausCERTParserBot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="intelmq.lib.html#intelmq.lib.bot.ParserBot" title="intelmq.lib.bot.ParserBot"><code class="xref py py-class docutils literal notranslate"><span class="pre">ParserBot</span></code></a></p>
+<p>Parse the Spamhaus CERT feed</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="intelmq.bots.parsers.spamhaus.parser_cert.SpamhausCERTParserBot.parse_line">
+<span class="sig-name descname"><span class="pre">parse_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">row</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">report</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#intelmq.bots.parsers.spamhaus.parser_cert.SpamhausCERTParserBot.parse_line" title="Permalink to this definition">¶</a></dt>
+<dd><p>A generator which can yield one or more messages contained in line.</p>
+<p>Report has the full message, thus you can access some metadata.
+Override for your use.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-intelmq.bots.parsers.spamhaus.parser_drop">
+<span id="intelmq-bots-parsers-spamhaus-parser-drop-module"></span><h2>intelmq.bots.parsers.spamhaus.parser_drop module<a class="headerlink" href="#module-intelmq.bots.parsers.spamhaus.parser_drop" title="Permalink to this heading">¶</a></h2>
+<p>Single IntelMQ parser for Spamhaus drop feeds</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.parsers.spamhaus.parser_drop.BOT">
+<span class="sig-prename descclassname"><span class="pre">intelmq.bots.parsers.spamhaus.parser_drop.</span></span><span class="sig-name descname"><span class="pre">BOT</span></span><a class="headerlink" href="#intelmq.bots.parsers.spamhaus.parser_drop.BOT" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#intelmq.bots.parsers.spamhaus.parser_drop.SpamhausDropParserBot" title="intelmq.bots.parsers.spamhaus.parser_drop.SpamhausDropParserBot"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpamhausDropParserBot</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="intelmq.bots.parsers.spamhaus.parser_drop.SpamhausDropParserBot">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">intelmq.bots.parsers.spamhaus.parser_drop.</span></span><span class="sig-name descname"><span class="pre">SpamhausDropParserBot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bot_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sighup_event</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disable_multithreading</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#intelmq.bots.parsers.spamhaus.parser_drop.SpamhausDropParserBot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="intelmq.lib.html#intelmq.lib.bot.ParserBot" title="intelmq.lib.bot.ParserBot"><code class="xref py py-class docutils literal notranslate"><span class="pre">ParserBot</span></code></a></p>
+<p>Parse the Spamhaus DROP, EDROP, DROPv6, and ASN-DROP feeds</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.parsers.spamhaus.parser_drop.SpamhausDropParserBot.ASN_DROP_URLS">
+<span class="sig-name descname"><span class="pre">ASN_DROP_URLS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'https://www.spamhaus.org/drop/asndrop.txt'}</span></em><a class="headerlink" href="#intelmq.bots.parsers.spamhaus.parser_drop.SpamhausDropParserBot.ASN_DROP_URLS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.parsers.spamhaus.parser_drop.SpamhausDropParserBot.NETWORK_DROP_URLS">
+<span class="sig-name descname"><span class="pre">NETWORK_DROP_URLS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'https://www.spamhaus.org/drop/drop.lasso',</span> <span class="pre">'https://www.spamhaus.org/drop/drop.txt',</span> <span class="pre">'https://www.spamhaus.org/drop/dropv6.txt',</span> <span class="pre">'https://www.spamhaus.org/drop/edrop.txt'}</span></em><a class="headerlink" href="#intelmq.bots.parsers.spamhaus.parser_drop.SpamhausDropParserBot.NETWORK_DROP_URLS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="intelmq.bots.parsers.spamhaus.parser_drop.SpamhausDropParserBot.parse_line">
+<span class="sig-name descname"><span class="pre">parse_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">report</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#intelmq.bots.parsers.spamhaus.parser_drop.SpamhausDropParserBot.parse_line" title="Permalink to this definition">¶</a></dt>
+<dd><p>A generator which can yield one or more messages contained in line.</p>
+<p>Report has the full message, thus you can access some metadata.
+Override for your use.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-intelmq.bots.parsers.spamhaus">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-intelmq.bots.parsers.spamhaus" title="Permalink to this heading">¶</a></h2>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/Logo_Intel_MQ.svg" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">IntelMQ is a solution for IT security teams for collecting and processing security feeds using a message queuing protocol.</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=certtools&repo=intelmq&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../user/introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/organization.html">IntelMQ Organizational Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/support.html">Getting support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/support.html#development">Development</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../user/hardware-requirements.html">Hardware Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/upgrade.html">Upgrade instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/configuration-management.html">Configuration and Management</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/bots.html">Bots inventory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/intelmqctl.html">intelmqctl documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/feeds.html">Data Feeds</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/intelmq-api.html">IntelMQ API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/intelmq-manager.html">IntelMQ Manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/FAQ.html">Frequently asked questions</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../user/universe.html">IntelMQ Universe</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/ELK-Stack.html">ELK Stack</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/MISP-Integrations.html">MISP integrations in IntelMQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/n6-integrations.html">IntelMQ - n6 Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/eventdb.html">EventDB</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/abuse-contacts.html">Abuse-contact look-ups</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../dev/guide.html">Developers Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/data-format.html">Data Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/harmonization-fields.html">Harmonization field names</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/release-procedure.html">Release procedure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/feeds-wishlist.html">Feeds wishlist</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">Code documentation</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">intelmq</a><ul>
+  <li><a href="intelmq.html">intelmq package</a><ul>
+  <li><a href="intelmq.bots.html">intelmq.bots package</a><ul>
+  <li><a href="intelmq.bots.parsers.html">intelmq.bots.parsers package</a><ul>
+      <li>Previous: <a href="intelmq.bots.parsers.shodan.html" title="previous chapter">intelmq.bots.parsers.shodan package</a></li>
+      <li>Next: <a href="intelmq.bots.parsers.sucuri.html" title="next chapter">intelmq.bots.parsers.sucuri package</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2022, IntelMQ community.
+      
+      |
+      <a href="../_sources/source/intelmq.bots.parsers.spamhaus.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

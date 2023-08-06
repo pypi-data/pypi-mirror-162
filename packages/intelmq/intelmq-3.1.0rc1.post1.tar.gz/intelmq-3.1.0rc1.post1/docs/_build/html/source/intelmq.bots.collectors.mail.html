@@ -1,0 +1,413 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>intelmq.bots.collectors.mail package &#8212; intelmq 3.1.0.alpha1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="intelmq-bots-collectors-mail-package">
+<h1>intelmq.bots.collectors.mail package<a class="headerlink" href="#intelmq-bots-collectors-mail-package" title="Permalink to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="module-intelmq.bots.collectors.mail.collector_mail_attach">
+<span id="intelmq-bots-collectors-mail-collector-mail-attach-module"></span><h2>intelmq.bots.collectors.mail.collector_mail_attach module<a class="headerlink" href="#module-intelmq.bots.collectors.mail.collector_mail_attach" title="Permalink to this heading">¶</a></h2>
+<p>In Version 0.9.5 the attachment filename is no longer surrounded by double quotes, see for the discussion:
+<a class="reference external" href="https://github.com/certtools/intelmq/pull/1134">https://github.com/certtools/intelmq/pull/1134</a>
+<a class="reference external" href="https://github.com/martinrusev/imbox/commit/7c6cc2fb5f7e39c1496d68f3d432eec19517bf8e#diff-1ae09572064c2e7c225de54ad5b49154">https://github.com/martinrusev/imbox/commit/7c6cc2fb5f7e39c1496d68f3d432eec19517bf8e#diff-1ae09572064c2e7c225de54ad5b49154</a></p>
+<p>Uses the common mail iteration method from the lib file.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.mail.collector_mail_attach.BOT">
+<span class="sig-prename descclassname"><span class="pre">intelmq.bots.collectors.mail.collector_mail_attach.</span></span><span class="sig-name descname"><span class="pre">BOT</span></span><a class="headerlink" href="#intelmq.bots.collectors.mail.collector_mail_attach.BOT" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#intelmq.bots.collectors.mail.collector_mail_attach.MailAttachCollectorBot" title="intelmq.bots.collectors.mail.collector_mail_attach.MailAttachCollectorBot"><code class="xref py py-class docutils literal notranslate"><span class="pre">MailAttachCollectorBot</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.mail.collector_mail_attach.MailAttachCollectorBot">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">intelmq.bots.collectors.mail.collector_mail_attach.</span></span><span class="sig-name descname"><span class="pre">MailAttachCollectorBot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bot_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sighup_event</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disable_multithreading</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#intelmq.bots.collectors.mail.collector_mail_attach.MailAttachCollectorBot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">MailCollectorBot</span></code></p>
+<p>Monitor IMAP mailboxes and retrieve mail attachments</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.mail.collector_mail_attach.MailAttachCollectorBot.attach_regex">
+<span class="sig-name descname"><span class="pre">attach_regex</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'csv.zip'</span></em><a class="headerlink" href="#intelmq.bots.collectors.mail.collector_mail_attach.MailAttachCollectorBot.attach_regex" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.mail.collector_mail_attach.MailAttachCollectorBot.extract_files">
+<span class="sig-name descname"><span class="pre">extract_files</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#intelmq.bots.collectors.mail.collector_mail_attach.MailAttachCollectorBot.extract_files" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.mail.collector_mail_attach.MailAttachCollectorBot.folder">
+<span class="sig-name descname"><span class="pre">folder</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'INBOX'</span></em><a class="headerlink" href="#intelmq.bots.collectors.mail.collector_mail_attach.MailAttachCollectorBot.folder" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.mail.collector_mail_attach.MailAttachCollectorBot.init">
+<span class="sig-name descname"><span class="pre">init</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#intelmq.bots.collectors.mail.collector_mail_attach.MailAttachCollectorBot.init" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.mail.collector_mail_attach.MailAttachCollectorBot.mail_host">
+<span class="sig-name descname"><span class="pre">mail_host</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'&lt;host&gt;'</span></em><a class="headerlink" href="#intelmq.bots.collectors.mail.collector_mail_attach.MailAttachCollectorBot.mail_host" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.mail.collector_mail_attach.MailAttachCollectorBot.mail_password">
+<span class="sig-name descname"><span class="pre">mail_password</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'&lt;password&gt;'</span></em><a class="headerlink" href="#intelmq.bots.collectors.mail.collector_mail_attach.MailAttachCollectorBot.mail_password" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.mail.collector_mail_attach.MailAttachCollectorBot.mail_ssl">
+<span class="sig-name descname"><span class="pre">mail_ssl</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#intelmq.bots.collectors.mail.collector_mail_attach.MailAttachCollectorBot.mail_ssl" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.mail.collector_mail_attach.MailAttachCollectorBot.mail_user">
+<span class="sig-name descname"><span class="pre">mail_user</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'&lt;user&gt;'</span></em><a class="headerlink" href="#intelmq.bots.collectors.mail.collector_mail_attach.MailAttachCollectorBot.mail_user" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.mail.collector_mail_attach.MailAttachCollectorBot.process_message">
+<span class="sig-name descname"><span class="pre">process_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#intelmq.bots.collectors.mail.collector_mail_attach.MailAttachCollectorBot.process_message" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Mark the message as seen or not</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>seen</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.mail.collector_mail_attach.MailAttachCollectorBot.rate_limit">
+<span class="sig-name descname"><span class="pre">rate_limit</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">60</span></em><a class="headerlink" href="#intelmq.bots.collectors.mail.collector_mail_attach.MailAttachCollectorBot.rate_limit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.mail.collector_mail_attach.MailAttachCollectorBot.subject_regex">
+<span class="sig-name descname"><span class="pre">subject_regex</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'&lt;subject&gt;'</span></em><a class="headerlink" href="#intelmq.bots.collectors.mail.collector_mail_attach.MailAttachCollectorBot.subject_regex" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-intelmq.bots.collectors.mail.collector_mail_body">
+<span id="intelmq-bots-collectors-mail-collector-mail-body-module"></span><h2>intelmq.bots.collectors.mail.collector_mail_body module<a class="headerlink" href="#module-intelmq.bots.collectors.mail.collector_mail_body" title="Permalink to this heading">¶</a></h2>
+<p>Uses the common mail iteration method from the lib file.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.mail.collector_mail_body.BOT">
+<span class="sig-prename descclassname"><span class="pre">intelmq.bots.collectors.mail.collector_mail_body.</span></span><span class="sig-name descname"><span class="pre">BOT</span></span><a class="headerlink" href="#intelmq.bots.collectors.mail.collector_mail_body.BOT" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#intelmq.bots.collectors.mail.collector_mail_body.MailBodyCollectorBot" title="intelmq.bots.collectors.mail.collector_mail_body.MailBodyCollectorBot"><code class="xref py py-class docutils literal notranslate"><span class="pre">MailBodyCollectorBot</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.mail.collector_mail_body.MailBodyCollectorBot">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">intelmq.bots.collectors.mail.collector_mail_body.</span></span><span class="sig-name descname"><span class="pre">MailBodyCollectorBot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bot_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sighup_event</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disable_multithreading</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#intelmq.bots.collectors.mail.collector_mail_body.MailBodyCollectorBot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">MailCollectorBot</span></code></p>
+<p>Monitor IMAP mailboxes and fetch mail bodies</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.mail.collector_mail_body.MailBodyCollectorBot.content_types">
+<span class="sig-name descname"><span class="pre">content_types</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('plain',</span> <span class="pre">'html')</span></em><a class="headerlink" href="#intelmq.bots.collectors.mail.collector_mail_body.MailBodyCollectorBot.content_types" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.mail.collector_mail_body.MailBodyCollectorBot.folder">
+<span class="sig-name descname"><span class="pre">folder</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'INBOX'</span></em><a class="headerlink" href="#intelmq.bots.collectors.mail.collector_mail_body.MailBodyCollectorBot.folder" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.mail.collector_mail_body.MailBodyCollectorBot.init">
+<span class="sig-name descname"><span class="pre">init</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#intelmq.bots.collectors.mail.collector_mail_body.MailBodyCollectorBot.init" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.mail.collector_mail_body.MailBodyCollectorBot.mail_host">
+<span class="sig-name descname"><span class="pre">mail_host</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'&lt;host&gt;'</span></em><a class="headerlink" href="#intelmq.bots.collectors.mail.collector_mail_body.MailBodyCollectorBot.mail_host" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.mail.collector_mail_body.MailBodyCollectorBot.mail_password">
+<span class="sig-name descname"><span class="pre">mail_password</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'&lt;password&gt;'</span></em><a class="headerlink" href="#intelmq.bots.collectors.mail.collector_mail_body.MailBodyCollectorBot.mail_password" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.mail.collector_mail_body.MailBodyCollectorBot.mail_ssl">
+<span class="sig-name descname"><span class="pre">mail_ssl</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#intelmq.bots.collectors.mail.collector_mail_body.MailBodyCollectorBot.mail_ssl" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.mail.collector_mail_body.MailBodyCollectorBot.mail_user">
+<span class="sig-name descname"><span class="pre">mail_user</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'&lt;user&gt;'</span></em><a class="headerlink" href="#intelmq.bots.collectors.mail.collector_mail_body.MailBodyCollectorBot.mail_user" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.mail.collector_mail_body.MailBodyCollectorBot.process_message">
+<span class="sig-name descname"><span class="pre">process_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#intelmq.bots.collectors.mail.collector_mail_body.MailBodyCollectorBot.process_message" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Mark the message as seen or not</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>seen</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.mail.collector_mail_body.MailBodyCollectorBot.rate_limit">
+<span class="sig-name descname"><span class="pre">rate_limit</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">60</span></em><a class="headerlink" href="#intelmq.bots.collectors.mail.collector_mail_body.MailBodyCollectorBot.rate_limit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.mail.collector_mail_body.MailBodyCollectorBot.subject_regex">
+<span class="sig-name descname"><span class="pre">subject_regex</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'&lt;subject&gt;'</span></em><a class="headerlink" href="#intelmq.bots.collectors.mail.collector_mail_body.MailBodyCollectorBot.subject_regex" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-intelmq.bots.collectors.mail.collector_mail_url">
+<span id="intelmq-bots-collectors-mail-collector-mail-url-module"></span><h2>intelmq.bots.collectors.mail.collector_mail_url module<a class="headerlink" href="#module-intelmq.bots.collectors.mail.collector_mail_url" title="Permalink to this heading">¶</a></h2>
+<p>Uses the common mail iteration method from the lib file.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.mail.collector_mail_url.BOT">
+<span class="sig-prename descclassname"><span class="pre">intelmq.bots.collectors.mail.collector_mail_url.</span></span><span class="sig-name descname"><span class="pre">BOT</span></span><a class="headerlink" href="#intelmq.bots.collectors.mail.collector_mail_url.BOT" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <a class="reference internal" href="#intelmq.bots.collectors.mail.collector_mail_url.MailURLCollectorBot" title="intelmq.bots.collectors.mail.collector_mail_url.MailURLCollectorBot"><code class="xref py py-class docutils literal notranslate"><span class="pre">MailURLCollectorBot</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.mail.collector_mail_url.MailURLCollectorBot">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">intelmq.bots.collectors.mail.collector_mail_url.</span></span><span class="sig-name descname"><span class="pre">MailURLCollectorBot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bot_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sighup_event</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disable_multithreading</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#intelmq.bots.collectors.mail.collector_mail_url.MailURLCollectorBot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">MailCollectorBot</span></code>, <a class="reference internal" href="intelmq.lib.mixins.html#intelmq.lib.mixins.http.HttpMixin" title="intelmq.lib.mixins.http.HttpMixin"><code class="xref py py-class docutils literal notranslate"><span class="pre">HttpMixin</span></code></a></p>
+<p>Monitor IMAP mailboxes and fetch files from URLs contained in mail bodies</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.mail.collector_mail_url.MailURLCollectorBot.chunk_replicate_header">
+<span class="sig-name descname"><span class="pre">chunk_replicate_header</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#intelmq.bots.collectors.mail.collector_mail_url.MailURLCollectorBot.chunk_replicate_header" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.mail.collector_mail_url.MailURLCollectorBot.chunk_size">
+<span class="sig-name descname"><span class="pre">chunk_size</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#intelmq.bots.collectors.mail.collector_mail_url.MailURLCollectorBot.chunk_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.mail.collector_mail_url.MailURLCollectorBot.folder">
+<span class="sig-name descname"><span class="pre">folder</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'INBOX'</span></em><a class="headerlink" href="#intelmq.bots.collectors.mail.collector_mail_url.MailURLCollectorBot.folder" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.mail.collector_mail_url.MailURLCollectorBot.http_password">
+<span class="sig-name descname"><span class="pre">http_password</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#intelmq.bots.collectors.mail.collector_mail_url.MailURLCollectorBot.http_password" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.mail.collector_mail_url.MailURLCollectorBot.http_username">
+<span class="sig-name descname"><span class="pre">http_username</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#intelmq.bots.collectors.mail.collector_mail_url.MailURLCollectorBot.http_username" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.mail.collector_mail_url.MailURLCollectorBot.init">
+<span class="sig-name descname"><span class="pre">init</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#intelmq.bots.collectors.mail.collector_mail_url.MailURLCollectorBot.init" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.mail.collector_mail_url.MailURLCollectorBot.mail_host">
+<span class="sig-name descname"><span class="pre">mail_host</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'&lt;host&gt;'</span></em><a class="headerlink" href="#intelmq.bots.collectors.mail.collector_mail_url.MailURLCollectorBot.mail_host" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.mail.collector_mail_url.MailURLCollectorBot.mail_password">
+<span class="sig-name descname"><span class="pre">mail_password</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'&lt;password&gt;'</span></em><a class="headerlink" href="#intelmq.bots.collectors.mail.collector_mail_url.MailURLCollectorBot.mail_password" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.mail.collector_mail_url.MailURLCollectorBot.mail_ssl">
+<span class="sig-name descname"><span class="pre">mail_ssl</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#intelmq.bots.collectors.mail.collector_mail_url.MailURLCollectorBot.mail_ssl" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.mail.collector_mail_url.MailURLCollectorBot.mail_user">
+<span class="sig-name descname"><span class="pre">mail_user</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'&lt;user&gt;'</span></em><a class="headerlink" href="#intelmq.bots.collectors.mail.collector_mail_url.MailURLCollectorBot.mail_user" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.mail.collector_mail_url.MailURLCollectorBot.process_message">
+<span class="sig-name descname"><span class="pre">process_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">uid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#intelmq.bots.collectors.mail.collector_mail_url.MailURLCollectorBot.process_message" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Mark the message as seen or not</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>seen</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.mail.collector_mail_url.MailURLCollectorBot.rate_limit">
+<span class="sig-name descname"><span class="pre">rate_limit</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">60</span></em><a class="headerlink" href="#intelmq.bots.collectors.mail.collector_mail_url.MailURLCollectorBot.rate_limit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.mail.collector_mail_url.MailURLCollectorBot.ssl_client_certificate">
+<span class="sig-name descname"><span class="pre">ssl_client_certificate</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#intelmq.bots.collectors.mail.collector_mail_url.MailURLCollectorBot.ssl_client_certificate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.mail.collector_mail_url.MailURLCollectorBot.subject_regex">
+<span class="sig-name descname"><span class="pre">subject_regex</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'&lt;subject&gt;'</span></em><a class="headerlink" href="#intelmq.bots.collectors.mail.collector_mail_url.MailURLCollectorBot.subject_regex" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="intelmq.bots.collectors.mail.collector_mail_url.MailURLCollectorBot.url_regex">
+<span class="sig-name descname"><span class="pre">url_regex</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'http://'</span></em><a class="headerlink" href="#intelmq.bots.collectors.mail.collector_mail_url.MailURLCollectorBot.url_regex" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="intelmq-bots-collectors-mail-lib-module">
+<h2>intelmq.bots.collectors.mail.lib module<a class="headerlink" href="#intelmq-bots-collectors-mail-lib-module" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="module-intelmq.bots.collectors.mail">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-intelmq.bots.collectors.mail" title="Permalink to this heading">¶</a></h2>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/Logo_Intel_MQ.svg" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">IntelMQ is a solution for IT security teams for collecting and processing security feeds using a message queuing protocol.</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=certtools&repo=intelmq&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../user/introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/organization.html">IntelMQ Organizational Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/support.html">Getting support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/support.html#development">Development</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../user/hardware-requirements.html">Hardware Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/upgrade.html">Upgrade instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/configuration-management.html">Configuration and Management</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/bots.html">Bots inventory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/intelmqctl.html">intelmqctl documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/feeds.html">Data Feeds</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/intelmq-api.html">IntelMQ API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/intelmq-manager.html">IntelMQ Manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/FAQ.html">Frequently asked questions</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../user/universe.html">IntelMQ Universe</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/ELK-Stack.html">ELK Stack</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/MISP-Integrations.html">MISP integrations in IntelMQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/n6-integrations.html">IntelMQ - n6 Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/eventdb.html">EventDB</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user/abuse-contacts.html">Abuse-contact look-ups</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../dev/guide.html">Developers Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/data-format.html">Data Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/harmonization-fields.html">Harmonization field names</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/release-procedure.html">Release procedure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/feeds-wishlist.html">Feeds wishlist</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">Code documentation</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2022, IntelMQ community.
+      
+      |
+      <a href="../_sources/source/intelmq.bots.collectors.mail.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

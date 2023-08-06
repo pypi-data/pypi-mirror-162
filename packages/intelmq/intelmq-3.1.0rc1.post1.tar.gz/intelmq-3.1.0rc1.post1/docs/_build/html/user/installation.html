@@ -1,0 +1,332 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Installation &#8212; intelmq 3.1.0.alpha1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Upgrade instructions" href="upgrade.html" />
+    <link rel="prev" title="Hardware Requirements" href="hardware-requirements.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="installation">
+<h1><a class="toc-backref" href="#id3">Installation</a><a class="headerlink" href="#installation" title="Permalink to this heading">¶</a></h1>
+<div class="contents topic" id="contents">
+<p class="topic-title">Contents</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#installation" id="id3">Installation</a></p>
+<ul>
+<li><p><a class="reference internal" href="#base-requirements" id="id4">Base Requirements</a></p></li>
+<li><p><a class="reference internal" href="#native-deb-rpm-packages" id="id5">Native deb/rpm packages</a></p></li>
+<li><p><a class="reference internal" href="#docker" id="id6">Docker</a></p></li>
+<li><p><a class="reference internal" href="#with-pip-from-pypi" id="id7">With pip from PyPI</a></p>
+<ul>
+<li><p><a class="reference internal" href="#requirements" id="id8">Requirements</a></p></li>
+<li><p><a class="reference internal" href="#id1" id="id9">Installation</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#docker-without-docker-compose" id="id10">Docker without docker-compose</a></p></li>
+</ul>
+</li>
+</ul>
+</div>
+<p>Please report any errors an suggest improvements at <a class="reference external" href="https://github.com/certtools/intelmq/issues">IntelMQ Issues</a>. Thanks!</p>
+<p>For upgrade instructions, see <a class="reference internal" href="upgrade.html"><span class="doc">Upgrade instructions</span></a>.
+For testing pre-releases see also <a class="reference internal" href="../dev/guide.html#id4"><span class="std std-ref">Testing Pre-releases</span></a>.</p>
+<p>Following any one of the installation methods will setup the IntelMQ base.
+Some bots may have additional special dependencies which are mentioned in their <a class="reference internal" href="bots.html"><span class="doc">own documentation</span></a>.</p>
+<p>The following installation methods are available:</p>
+<ul class="simple">
+<li><p>native <cite>.deb</cite>/<cite>.rpm</cite> packages</p></li>
+<li><p>Docker, with and without docker-compose</p></li>
+<li><p>Python package from PyPI</p></li>
+<li><p>From the git-repository, see <a class="reference internal" href="../dev/guide.html#development-environment"><span class="std std-ref">Development Environment</span></a></p></li>
+</ul>
+<section id="base-requirements">
+<h2><a class="toc-backref" href="#id4">Base Requirements</a><a class="headerlink" href="#base-requirements" title="Permalink to this heading">¶</a></h2>
+<p>The following instructions assume the following requirements. Python versions &gt;= 3.6 are supported.</p>
+<p>Supported and recommended operating systems are:</p>
+<ul class="simple">
+<li><p>CentOS 7 and 8</p></li>
+<li><p>Debian 10 Buster and 11 Bullseye</p></li>
+<li><p>openSUSE Leap 15.2, 15.13 and Tumbleweed</p></li>
+<li><p>Ubuntu: 18.04, 20.04</p></li>
+<li><p>For the Docker-installation: Docker Engine: 18.x and higher</p></li>
+</ul>
+<p>Other distributions which are (most probably) supported include RHEL, Fedora and FreeBSD 12.</p>
+<p>A short guide on hardware requirements can be found on the page <a class="reference internal" href="hardware-requirements.html"><span class="doc">Hardware Requirements</span></a>.</p>
+</section>
+<section id="native-deb-rpm-packages">
+<h2><a class="toc-backref" href="#id5">Native deb/rpm packages</a><a class="headerlink" href="#native-deb-rpm-packages" title="Permalink to this heading">¶</a></h2>
+<p>These are the operating systems which are currently supported by packages:</p>
+<ul class="simple">
+<li><p><strong>CentOS 7</strong> (run <code class="docutils literal notranslate"><span class="pre">yum</span> <span class="pre">install</span> <span class="pre">epel-release</span></code> first)</p></li>
+<li><p><strong>CentOS 8</strong> (run <code class="docutils literal notranslate"><span class="pre">dnf</span> <span class="pre">install</span> <span class="pre">epel-release</span></code> first)</p></li>
+<li><p><strong>Debian 10</strong> Buster</p></li>
+<li><p><strong>Debian 11</strong> Bullseye</p></li>
+<li><p><strong>openSUSE Leap 15.2</strong></p></li>
+<li><p><strong>openSUSE Leap 15.3</strong> (make sure the <code class="docutils literal notranslate"><span class="pre">openSUSE:Backports:SLE-15-SP3</span></code> repository is enabled)</p></li>
+<li><p><strong>openSUSE Tumbleweed</strong></p></li>
+<li><p><strong>Ubuntu 18.04</strong> Bionic Beaver (enable the universe repositories by appending <code class="docutils literal notranslate"><span class="pre">universe</span></code> in <code class="docutils literal notranslate"><span class="pre">/etc/apt/sources.list</span></code> to <code class="docutils literal notranslate"><span class="pre">deb</span> <span class="pre">http://[...].archive.ubuntu.com/ubuntu/</span> <span class="pre">bionic</span> <span class="pre">main</span></code> first)</p></li>
+<li><p><strong>Ubuntu 20.04</strong> Focal Fossa (enable the universe repositories by appending <code class="docutils literal notranslate"><span class="pre">universe</span></code> in <code class="docutils literal notranslate"><span class="pre">/etc/apt/sources.list</span></code> to <code class="docutils literal notranslate"><span class="pre">deb</span> <span class="pre">http://[...].archive.ubuntu.com/ubuntu/</span> <span class="pre">focal</span> <span class="pre">main</span></code> first)</p></li>
+</ul>
+<p>Get the installation instructions for your operating system here: <a class="reference external" href="https://software.opensuse.org/download.html?project=home:sebix:intelmq&amp;package=intelmq">Installation Native Packages</a>.
+The instructions show how to add the repository and install the <cite>intelmq</cite> package. You can also install the <cite>intelmq-manager</cite> package to get the <a class="reference external" href="https://github.com/certtools/intelmq-manager/">Web-Frontend IntelMQ Manager</a>.</p>
+</section>
+<section id="docker">
+<span id="installation-docker"></span><h2><a class="toc-backref" href="#id6">Docker</a><a class="headerlink" href="#docker" title="Permalink to this heading">¶</a></h2>
+<p>Attention: Currently you can’t manage your botnet via <a class="reference internal" href="intelmqctl.html"><span class="doc">intelmqctl documentation</span></a>. You need to use <a class="reference external" href="https://github.com/certtools/intelmq-manager">IntelMQ-Manager</a> currently!</p>
+<p>The latest IntelMQ image is hosted on <a class="reference external" href="https://hub.docker.com/r/certat/intelmq-full">Docker Hub</a> and the image build instructions are in our <cite>intelmq-docker repository &lt;https://github.com/certat/intelmq-docker&gt;</cite>.</p>
+<p>Follow <a class="reference external" href="https://docs.docker.com/engine/install/">Docker Install</a> and
+<a class="reference external" href="https://docs.docker.com/compose/install/">Docker-Compose Install</a> instructions.</p>
+<p>Before you start using docker-compose or any docker related tools, make sure docker is running:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># To start the docker daemon</span>
+systemctl start docker.service
+<span class="c1"># To enable the docker daemon for the future</span>
+systemctl <span class="nb">enable</span> docker.service
+</pre></div>
+</div>
+<p>Now we can download IntelMQ and start the containers.
+Navigate to your preferred installation directory and run the following commands:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/certat/intelmq-docker.git --recursive
+<span class="nb">cd</span> intelmq-docker
+sudo docker-compose pull
+sudo docker-compose up
+</pre></div>
+</div>
+<p>Your installation should be successful now. You’re now able to visit <code class="docutils literal notranslate"><span class="pre">http://127.0.0.1:1337/</span></code> to access the intelmq-manager.
+You have to login with the username <code class="docutils literal notranslate"><span class="pre">intelmq</span></code> and the password <code class="docutils literal notranslate"><span class="pre">intelmq</span></code>, if you want to change the username or password,
+you can do this by adding the environment variables <code class="docutils literal notranslate"><span class="pre">INTELMQ_API_USER</span></code> for the username and <code class="docutils literal notranslate"><span class="pre">INTELMQ_API_PASS</span></code> for the
+password.</p>
+<p>NOTE: If you get an <cite>Permission denied</cite>, you should use <code class="docutils literal notranslate"><span class="pre">chown</span> <span class="pre">-R</span> <span class="pre">$USER:$USER</span> <span class="pre">example_config</span></code>.</p>
+</section>
+<section id="with-pip-from-pypi">
+<h2><a class="toc-backref" href="#id7">With pip from PyPI</a><a class="headerlink" href="#with-pip-from-pypi" title="Permalink to this heading">¶</a></h2>
+<section id="requirements">
+<h3><a class="toc-backref" href="#id8">Requirements</a><a class="headerlink" href="#requirements" title="Permalink to this heading">¶</a></h3>
+<p>Ubuntu / Debian</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>apt install python3-pip python3-dnspython python3-psutil python3-redis python3-requests python3-termstyle python3-tz python3-dateutil redis-server bash-completion jq
+<span class="c1"># optional dependencies</span>
+apt install python3-pymongo python3-psycopg2
+</pre></div>
+</div>
+<p>CentOS 7 / RHEL 7:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>yum install epel-release
+yum install python36 python36-dns python36-pytz python36-requests python3-setuptools redis bash-completion jq
+yum install gcc gcc-c++ python36-devel
+<span class="c1"># optional dependencies</span>
+yum install python3-psycopg2
+</pre></div>
+</div>
+<p>CentOS 8:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>dnf install epel-release
+dnf install python3-dateutil python3-dns python3-pip python3-psutil python3-pytz python3-redis python3-requests redis bash-completion jq
+<span class="c1"># optional dependencies</span>
+dnf install python3-psycopg2 python3-pymongo
+</pre></div>
+</div>
+<p>openSUSE:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>zypper install python3-dateutil python3-dnspython python3-psutil python3-pytz python3-redis python3-requests python3-python-termstyle redis bash-completion jq
+<span class="c1"># optional dependencies</span>
+zypper <span class="k">in</span> python3-psycopg2 python3-pymongo
+</pre></div>
+</div>
+</section>
+<section id="id1">
+<h3><a class="toc-backref" href="#id9">Installation</a><a class="headerlink" href="#id1" title="Permalink to this heading">¶</a></h3>
+<p>The base directory is <code class="docutils literal notranslate"><span class="pre">/opt/intelmq/</span></code>, if the environment variable <code class="docutils literal notranslate"><span class="pre">INTELMQ_ROOT_DIR</span></code> is not set to something else, see <a class="reference internal" href="configuration-management.html#configuration-paths"><span class="std std-ref">/opt and LSB paths</span></a> for more information.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo -i
+pip3 install intelmq
+useradd -d /opt/intelmq -U -s /bin/bash intelmq
+sudo intelmqsetup
+</pre></div>
+</div>
+<p><cite>intelmqsetup</cite> will create all necessary directories, provides a default configuration for new setups. See the <a class="reference internal" href="configuration-management.html#configuration"><span class="std std-ref">Configuration</span></a> for more information on them and how to influence them.</p>
+</section>
+</section>
+<section id="docker-without-docker-compose">
+<h2><a class="toc-backref" href="#id10">Docker without docker-compose</a><a class="headerlink" href="#docker-without-docker-compose" title="Permalink to this heading">¶</a></h2>
+<p>If not already installed, please install <a class="reference external" href="https://docs.docker.com/get-docker/">Docker</a>.</p>
+<p>Navigate to your preferred installation directory and run <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">clone</span> <span class="pre">https://github.com/certat/intelmq-docker.git</span> <span class="pre">--recursive</span></code>.</p>
+<p>You need to prepare some volumes &amp; configs. Edit the left-side after -v, to change paths.</p>
+<p>Change <code class="docutils literal notranslate"><span class="pre">redis_host</span></code> to a running redis-instance. Docker will resolve it automatically.
+All containers are connected using <a class="reference external" href="https://docs.docker.com/engine/tutorials/networkingcontainers/">Docker Networks</a>.</p>
+<p>In order to work with your current infrastructure, you need to specify some environment variables</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo docker pull redis:latest
+
+sudo docker pull certat/intelmq-full:latest
+
+sudo docker pull certat/intelmq-nginx:latest
+
+sudo docker network create intelmq-internal
+
+sudo docker run -v ~/intelmq/example_config/redis/redis.conf:/redis.conf <span class="se">\</span>
+                --network intelmq-internal <span class="se">\</span>
+                --name redis <span class="se">\</span>
+                redis:latest
+
+sudo docker run --network intelmq-internal <span class="se">\</span>
+                --name nginx <span class="se">\</span>
+                certat/intelmq-nginx:latest
+
+sudo docker run -e <span class="nv">INTELMQ_IS_DOCKER</span><span class="o">=</span><span class="s2">&quot;true&quot;</span> <span class="se">\</span>
+                -e INTELMQ_SOURCE_PIPELINE_BROKER: <span class="s2">&quot;redis&quot;</span> <span class="se">\</span>
+                -e INTELMQ_PIPELINE_BROKER: <span class="s2">&quot;redis&quot;</span> <span class="se">\</span>
+                -e INTELMQ_DESTIONATION_PIPELINE_BROKER: <span class="s2">&quot;redis&quot;</span> <span class="se">\</span>
+                -e INTELMQ_PIPELINE_HOST: redis <span class="se">\</span>
+                -e INTELMQ_SOURCE_PIPELINE_HOST: redis <span class="se">\</span>
+                -e INTELMQ_DESTINATION_PIPELINE_HOST: redis <span class="se">\</span>
+                -e INTELMQ_REDIS_CACHE_HOST: redis <span class="se">\</span>
+                -v <span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/example_config/intelmq/etc/:/etc/intelmq/etc/ <span class="se">\</span>
+                -v <span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/example_config/intelmq-api/config.json:/etc/intelmq/api-config.json <span class="se">\</span>
+                -v <span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/intelmq_logs:/etc/intelmq/var/log <span class="se">\</span>
+                -v <span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>/intelmq_output:/etc/intelmq/var/lib/bots <span class="se">\</span>
+                -v ~/intelmq/lib:/etc/intelmq/var/lib <span class="se">\</span>
+                --network intelmq-internal <span class="se">\</span>
+                --name intelmq <span class="se">\</span>
+                certat/intelmq-full:latest
+</pre></div>
+</div>
+<p>If you want to use another username and password for the intelmq-manager / api login, additionally add two new environment variables.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>-e INTELMQ_API_USER: <span class="s2">&quot;your username&quot;</span>
+-e INTELMQ_API_PASS: <span class="s2">&quot;your password&quot;</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/Logo_Intel_MQ.svg" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">IntelMQ is a solution for IT security teams for collecting and processing security feeds using a message queuing protocol.</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=certtools&repo=intelmq&type=watch&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="organization.html">IntelMQ Organizational Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="support.html">Getting support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="support.html#development">Development</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="hardware-requirements.html">Hardware Requirements</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="upgrade.html">Upgrade instructions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration-management.html">Configuration and Management</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bots.html">Bots inventory</a></li>
+<li class="toctree-l1"><a class="reference internal" href="intelmqctl.html">intelmqctl documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="feeds.html">Data Feeds</a></li>
+<li class="toctree-l1"><a class="reference internal" href="intelmq-api.html">IntelMQ API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="intelmq-manager.html">IntelMQ Manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="FAQ.html">Frequently asked questions</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="universe.html">IntelMQ Universe</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ELK-Stack.html">ELK Stack</a></li>
+<li class="toctree-l1"><a class="reference internal" href="MISP-Integrations.html">MISP integrations in IntelMQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="n6-integrations.html">IntelMQ - n6 Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eventdb.html">EventDB</a></li>
+<li class="toctree-l1"><a class="reference internal" href="abuse-contacts.html">Abuse-contact look-ups</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../dev/guide.html">Developers Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/data-format.html">Data Format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/harmonization-fields.html">Harmonization field names</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/release-procedure.html">Release procedure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../dev/feeds-wishlist.html">Feeds wishlist</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../source/modules.html">Code documentation</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="hardware-requirements.html" title="previous chapter">Hardware Requirements</a></li>
+      <li>Next: <a href="upgrade.html" title="next chapter">Upgrade instructions</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2022, IntelMQ community.
+      
+      |
+      <a href="../_sources/user/installation.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
