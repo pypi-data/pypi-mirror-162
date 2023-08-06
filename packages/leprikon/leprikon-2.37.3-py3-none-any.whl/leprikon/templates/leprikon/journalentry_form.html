@@ -1,0 +1,71 @@
+{% extends 'leprikon/form.html' %}
+{% load i18n sekizai_tags staticfiles %}
+
+{% block content %}
+{{ block.super }}
+
+{% include 'leprikon/static/bootstrap-datetimepicker.html' %}
+{% include 'leprikon/static/bootstrap-multiselect.html' %}
+
+{% addtoblock "js" %}
+<script type="text/javascript">
+
+$(document).ready(function() {
+    $('#id_leaders').multiselect({
+        includeSelectAllOption: true,
+        includeSelectAllIfMoreThan: 3,
+        selectAllText: '{% trans 'select all' %}',
+        nonSelectedText: '',
+        allSelectedText: '{% trans 'all' %}',
+        numberDisplayed: 4,
+        nSelectedText: '{% trans 'selected' %}',
+    });
+
+    $('#id_alternates').multiselect({
+        enableFiltering: true,
+        filterPlaceholder: '{% trans 'Search' %}',
+        includeSelectAllIfMoreThan: 3,
+        selectAllText: '{% trans 'select all' %}',
+        nonSelectedText: '',
+        allSelectedText: '{% trans 'all' %}',
+        numberDisplayed: 4,
+        nSelectedText: '{% trans 'selected' %}',
+    });
+
+    $('#id_participants').multiselect({
+        enableFiltering: true,
+        filterPlaceholder: '{% trans 'Search' %}',
+        includeSelectAllOption: true,
+        includeSelectAllIfMoreThan: 3,
+        selectAllText: '{% trans 'select all' %}',
+        nonSelectedText: '',
+        allSelectedText: '{% trans 'all' %}',
+        numberDisplayed: 4,
+        nSelectedText: '{% trans 'selected' %}',
+    });
+
+    $('#id_participants_instructed').multiselect({
+        enableFiltering: true,
+        filterPlaceholder: '{% trans 'Search' %}',
+        includeSelectAllOption: true,
+        includeSelectAllIfMoreThan: 3,
+        selectAllText: '{% trans 'select all' %}',
+        nonSelectedText: '',
+        allSelectedText: '{% trans 'all' %}',
+        numberDisplayed: 4,
+        nSelectedText: '{% trans 'selected' %}',
+    });
+
+    $('#id_date').on('dp.change', function(e) {
+        $.getJSON('{% url 'leprikon:api:participants' form.instance.journal.id %}?date='+(e.date/1000), function(result) {
+            $('#id_participants').multiselect('dataprovider', result['participants']);
+            $('#id_participants_instructed').multiselect('dataprovider', result['participants']);
+        });
+    });
+
+});
+
+</script>
+{% endaddtoblock %}
+
+{% endblock %}
