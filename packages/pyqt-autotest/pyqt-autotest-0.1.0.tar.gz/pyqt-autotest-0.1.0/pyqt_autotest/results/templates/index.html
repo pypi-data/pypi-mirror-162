@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html class="background-grey font min-height-100">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
+  <link rel="stylesheet" type="text/css" href="{{ css_style_sheet }}" />
+  <head>
+    <title>PyQtAutoTest Results</title>
+  </head>
+  <br><br>
+  <body class="margin-0">
+    <div class="grid-col">
+      <div class="grid-col-center shadow-box">
+        <h1 class="page-title">
+          PyQt AutoTest Results &nbsp
+          <div class="float-right">
+            <span class="color-success">{{ number_of_successes }}</span>&nbsp|&nbsp<span class="color-warning">{{ number_of_warnings }}</span>&nbsp|&nbsp<span class="color-error">{{ number_of_errors }}</span>
+          </div>
+        </h1>
+        <hr><br>
+        <span>
+          For help interpreting these results, please see the documentation on our <a class="plain-link" href="https://github.com/robertapplin/pyqt-autotest">github page</a>.<br><br><br>
+          Showing <b>{{ run_list | length }}</b> runs<br><br>
+        </span>
+        <div>
+          {% for run, page_link in run_list %}
+            <a href="{{ page_link }}" {% if run != run_list[-1] %}class="grid-col record-list-item plain-link {{ run.background_class }}"{% else %}class="grid-col record-list-item record-list-item-bottom plain-link {{ run.background_class }}"{% endif %}>
+              <i class="full-grid-col-item {{ run.icon_class }} icon"></i>
+              <span class="full-grid-col-item">
+                <b>{{ run.title }}</b><br>
+                <span class="text-summary">{{ run.brief_message }}</span><br>
+              </span>
+            </a>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    <br><br>
+  </body>
+</html>

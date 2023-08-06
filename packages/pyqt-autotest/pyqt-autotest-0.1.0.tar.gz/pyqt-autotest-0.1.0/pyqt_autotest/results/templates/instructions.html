@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html class="background-grey font min-height-100">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
+  <link rel="stylesheet" type="text/css" href="{{ css_style_sheet }}" />
+  <script type="text/javascript" src="{{ js_file }}"></script>
+  <head>
+    <title>PyQtAutoTest Results</title>
+  </head>
+  <br><br>
+  <body class="margin-0">
+    <div class="grid-col">
+      <div class="grid-col-center shadow-box">
+        <h1 class="page-title vertical-center">
+          <i class="{{ event_list.icon_class }} font-size-3"></i> &nbsp {{ event_list.title }}
+        </h1>
+        <hr><br>
+        <h2>Instructions</h2>
+        <ol class="copy-box" id="instructions">
+          <button class="copy-button float-right" onclick="copy_to_clipboard('instructions')" title="Copy to clipboard"><i class="fa-regular fa-copy"></i></button>
+          {% for widget_name, event_name in event_list.events %}
+            <li class="padding-left-1">
+              {{ event_name }} the `{{ widget_name }}` widget.
+            </li>
+          {% endfor %}
+        </ol>
+        <h2>Output</h2>
+        <div class="copy-box {{ event_list.color_class }}" id="message">
+          <button class="copy-button float-right" onclick="copy_to_clipboard('message')" title="Copy to clipboard"><i class="fa-regular fa-copy"></i></button>
+          <b>{{ event_list.message }}</b>
+        </div>
+      </div>
+    </div>
+    <br><br>
+  </body>
+</html>
