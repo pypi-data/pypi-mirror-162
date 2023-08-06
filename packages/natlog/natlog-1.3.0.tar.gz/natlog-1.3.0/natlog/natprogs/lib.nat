@@ -1,0 +1,152 @@
+true.
+
+eq X X.
+
+member X (X _).
+member X (_ Xs) : member X Xs.
+
+append () Xs Xs.
+append (X Xs) Ys (X Zs) : append Xs Ys Zs.
+
+permute () ().
+permute (X Xs) Zs : permute Xs Ys, insert X Ys Zs.
+
+insert X Xs (X Xs).
+insert X (Y Xs) (Y Ys) : insert X Xs Ys.
+
+select X Xs Ys : insert X Ys Xs.
+
+
+% metacall operations require arguments parenthesized.
+
+or X _ : call X.
+or _ Y : call Y.
+
+and X Y: call X, call Y.
+
+not X : if X (fail) (true).
+
+once X : if X (true) (fail).
+
+maplist _ ().
+maplist F (X Xs) : call F X , maplist F Xs.
+
+maplist _ () ().
+maplist F (X Xs) (Y Ys) : call F X Y, maplist F Xs Ys.
+
+maplist _ () () ().
+maplist F (X Xs) (Y Ys) (Z Zs) : call F X Y Z, maplist F Xs Ys Zs.
+
+nth 0 (X _) X .
+nth N (_ Xs) R : @ N > 0, - N 1 M , nth M Xs R.
+
+max X Y Z : `max X Y Z.
+min X Y Z : `min X Y Z.
+sum X Y Z : `add X Y Z.
+
+between A B X : + B 1 SB, `` range A SB X.
+
+arg I T X : `arg T I X.
+tuple Xs T : `from_goal Xs T.
+list T Xs : `to_goal T Xs.
+
+stop E : # stop_engine E.
+
+findall X G Xs : eng X G E, ask E Y, collect E Y Xs.
+
+collect _ no ().
+collect E (the X) (X Xs) : ask E Y, collect E Y Xs.
+
+copy_term T CT : eng T (true) E, ask E (the CT), stop E.
+
+in E X : ask E A, more in E A X.
+
+more in E (the X) X.
+more in E (the _) X : in E X.
+
+
+enum X G (N R) : eng X G E, enum from E R -1 N.
+
+enum from E R I1 I3 : ask E A, + I1 1 I2, enum more E A R I2 I3.
+
+enum more E (the X) X I I.
+enum more E (the _) X I1 I2 : enum from E X I1 I2.
+
+
+first_sols N G R: eng G G E, enum from E R 0 K, if (@K<N) (true) (stop E).
+
+
++ X Y Z  : `add X Y Z.
+- X Y Z  : `sub X Y Z.
+* X Y Z  : `mul X Y Z.
+/ X  Y Z : `truediv X Y Z.
+// Z X Y : `floordiv X Y Z.
+
+take 0 E () : stop E.
+take K E XXs : @K>0, ask E X, - K 1 K1, take_more X K1 E XXs.
+
+take_more no _K E () : stop E.
+take_more (the X) K E (X Xs) : take K E Xs.
+
+
+% defs that have a var as 1-st arg should start with @ .
+
+@ X < Y  : `lt X Y R, `int R 1.
+@ X > Y  : `gt X Y R, `int R 1.
+@ X <= Y : `le X Y R, `int R 1.
+@ X >= Y : `ge X Y R, `int R 1.
+@ X <> Y : `ne X Y R, `int R 1.
+@ X == Y : `eq X Y R, `int R 1.
+
+writeln X : #print X.
+nl : #print.
+
+t0: `numlist 1 3 Xs, maplist (+ 10) Xs Ys, #print Ys, fail.
+t1 : `numlist 1 3 Xs, maplist (permute) (Xs (Xs ())) Yss, #print Yss, fail.
+t2 : `numlist 1 5 X, `numlist 11 15 Y, maplist (sum) X Y Z, #print Z, fail.
+t3 : `numlist 1 5 X, nth 2 X R, #print R ,fail.
+t4 : list (1 2 3) Xs, permute Xs Ys, tuple Ys T, #print T, fail.
+
+t5 : list (1 2 3) Xs, #print Xs, eng X (member X Xs) E,  #print E,
+     ask E R1, ask E R2, ask E R3, ask E R4, #print R1 R2 R3 R4, fail.
+
+p 1.
+p 2.
+p 3.
+p 4.
+
+
+t6 : eng X (p X) E, #print engine  E,
+     ask E R1, ask E R2, ask E R3, ask E R4, #print results R1 R2 R3 R4, fail.
+
+t7: eng X (between 1 5 X) E, in E A , writeln A, fail.
+
+t8: eng X true E, ask E R, writeln R, fail.
+
+t9: eq G (p X), eng G G E, ask E A, ask E B, #print A B, fail.
+
+t10: eq G (p X), eng G G E, in E A, #print answer A, fail.
+
+if_ C Y N : eng C C E, ask E R, stop E, pick_ R C Y N.
+
+pick_ (the C)  C Y _N : call Y.
+pick_ no _C _Y N : call N.
+
+
+t11: if_ (eq X 1) (eq Y X) (eq Y 42), # print X Y, fail.
+
+t12 :
+  eng X (between 1 5 X) E, stop E, ask E A, #print here A, fail.
+
+
+loop N N.
+loop N X : + N 1 M, ^trust loop M X.
+
+t13 : eng X (loop 0 X) E, ask E A, ask E B, #print A B, fail.
+
+
+t14: eng X (loop 0 X) E, take 5 E Xs, tuple Xs T,  #print T, fail.
+
+t15: eq N 10, eng X (loop 0 X) E, take N E Xs, nth 5 Xs X, #print X,fail ?
+
+t16 : first_sols 5 (loop 0 X) R, #print R, fail.
