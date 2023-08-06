@@ -1,0 +1,36 @@
+# -*- coding: utf-8 -*-
+from setuptools import setup
+
+packages = \
+['memmod', 'memmod.scripts']
+
+package_data = \
+{'': ['*']}
+
+install_requires = \
+['capstone==4.0.2', 'pyelftools>=0.28,<0.29']
+
+entry_points = \
+{'console_scripts': ['accessanalyzer = memmod.scripts.accessanalyzer:main',
+                     'loadshared = memmod.scripts.loadshared:main',
+                     'pointerscanner = memmod.scripts.pointerscanner:main']}
+
+setup_kwargs = {
+    'name': 'libmemmod',
+    'version': '0.0.3',
+    'description': "A library to modify another program's memory.",
+    'long_description': '# memmod\nA library to modify another program\'s memory on linux x64. The goal of this library is to provide easy\nfunctions to modify the memory of another application externaly. Additionaly creating a program like\n[CheatEngine](https://cheatengine.org/) that runs natively on Linux with many features that CheatEngine provides.\n\n## Examples\nA basic example on how to use memmod, for more examples look [here](examples).\n```py\nfrom memmod import Process\n\n# opens a process with the name "supertux2" \nproc = Process(name="supertux2")\n\n# get the puts function and execute it inside the process\nputs = proc.get_libc_function("puts")\nputs("Hello World!")\n\n# Find a module by name\nmodulebase = proc.find_module(proc.name)\nassert modulebase != None, "Failed to find module base"\n\n# Search ingame coin address by resolving a pointer chain \nstatic_ptr = modulebase.start + 0x6CBC40\ncoin_ptr_addr = proc.resolve_pointer_chain(static_ptr, [0x28, 0x20, 0x0])\n\n# Write to address a number\nproc.write(coin_ptr_addr, 9999)\n```\n\n\n## Features\n* read/write to a process\n* inject breakpoints and listen to them\n* execute functions within the target process\n* find modules from `/proc/pid/maps` by name, mode, offset or address\n* inject `.so` into target process with `load_shaderd_library()`\n* create function detours with an optional trampoline\n* bindings for ptrace\n* get path to binary file with `get_path_to_executable()`\n* search pattern in a module with a signature\n* resolve a pointerchain to find addresses, can be used with the [Pointer Scanner](memmod/scripts/pointerscanner.py).\n* supports mono specific calls, [see here](memmod/monomanager.py)\n* find symbol and relocation offsets within a module\n* get X11 window id with `get_x11_window()`\n* send key presses to the process `send_key()`\n* search for data or addresses in a specified range with `scan()` \n\n## How it works\n### Finding processes and reading/writing to them\nWe use the `/proc/` folder that "stores" all processes in separate folders with their Process-ID (pid) as the folder name.\nEach process has a `/proc/pid/status` file that contains the process name, a `/proc/pid/maps` file with all the memory regions\nlisted, a `/proc/pid/mem` "file" in which we can read/write in to the memory of the process (with the necessary permissions).\nFor reading and writting use the functions `read()` and `write()`, searching for a module can be done by using the functions\n`find_module()` and `find_module_with_address()`.\n\n### Debugging\nFor debugging we use the ptrace systemcall that allows us to stop a process, read its registers and continue until it reaches\na breakpoint. A breakpoint in x64 linux is the hex number 0xCC and we can simply write this byte into the process as explained\nin the previous section. To use the debugger with this library run `with proc.ptrace() as ptrace:`, when running this, it will\nautomatically attach to the process and stops, after that it will NOT detach, but instead just continue! If you want it to detach\nyou will need todo it manually with `ptrace.detach()`.\nFor easier handling with debugging and breakpoints you can use `add_breakpoint()`, it will take an `address` and a `handler` that\nis being executed as soon as the target process reaches the breakpoint. Optionaly you can provide it with data that can be used\nint the handler. The handler will receive the registers and the data if provided. The handler must return a boolean, if it returns\n`False` the breakpoint will be removed, to keep the breakpoint return `True`. But to start listening to the breakpoints you will\nneed to run the `listen()` function. Note that the breakpoints are not being written into the memory by `add_breakpoint()` but by\n`listen()`. Listen will stop when all breakpoints have been deleted or the user interrupts it with ctrl+c, which will lead to the\nautomatic removal of all breakpoints. Look [here](/examples/) for examples on how to use it.\n\n### Function execution\nWe use ptrace to stop the application and write the `call rax` instruction at the current `rip` location and a breakpoint after \nthat. We load into the `rax` register the address to the function we want to execute and the other register are being set to the \narguments we want to pass to the function. After setting the registers, we continue the process flow and will reset the registers \nand the overwritten binary as soon as we reach the breakpoint. To use this feature use the function `run_function()`.\nFor more information see [this](https://ancat.github.io/python/2019/01/01/python-ptrace.html) article.\n\n\n\n## Scripts\nTo show the capabilities of this library I programmed a few scripts that can be helpful when searching for addresses and are \nalso being installed when installing this library. These scripts where inspired by the functionalities of [CheatEngine](https://cheatengine.org/).\n* [Access Analyzer](memmod/scripts/accessanalyzer.py)\n* [Pointer Scanner](memmod/scripts/pointerscanner.py)\n* [Load Shared Library](memmod/scripts/loadshared.py)\n\n\n## Resources\nHere are some useful links to websites that helped me making this library and the scripts.\n* [Guided Hacking - Read / Write to memory](https://www.youtube.com/watch?v=VMlW7BoI_IQ)\n* [Linux-Inject](https://github.com/gaffe23/linux-inject)\n* [ELF-Structure](https://uclibc.org/docs/elf-64-gen.pdf)\n* [Injecting Code with Ptrace](https://ancat.github.io/python/2019/01/01/python-ptrace.html)\n* [BananaBot - CSGO hacking](https://bananamafia.dev/post/bananabot/)\n* [C++ vtables](https://defuse.ca/exploiting-cpp-vtables.htm)\n* [LD_PRELOAD and Symbols](http://www.goldsborough.me/c/low-level/kernel/2016/08/29/16-48-53-the_-ld_preload-_trick/)\n* [Guided Hacking - Function hooking](https://guidedhacking.com/threads/how-to-hook-functions-code-detouring-guide.14185/)\n* [Guided Hacking - Unity / Mono](https://www.youtube.com/watch?v=e7cCus-LfBo)\n* [Mono API Documentation](http://docs.go-mono.com/?link=root:/embed)\n* [Sendkeys (X11)](https://github.com/kyoto/sendkeys)\n\n\n## Tools\nSome tools and programs that I used when testing and debugging the library and it\'s scripts.\n* readelf (read symbols from binary file)\n* objdump (assembler code of binary file)\n* gdb (for debugging the target process)\n* monodis\n',
+    'author': 'DanielFvM',
+    'author_email': 'ds@xxxmail.eu',
+    'maintainer': None,
+    'maintainer_email': None,
+    'url': 'https://github.com/danielfvm/memmod',
+    'packages': packages,
+    'package_data': package_data,
+    'install_requires': install_requires,
+    'entry_points': entry_points,
+}
+from build import *
+build(setup_kwargs)
+
+setup(**setup_kwargs)
