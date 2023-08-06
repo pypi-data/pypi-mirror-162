@@ -1,0 +1,144 @@
+Metadata-Version: 2.1
+Name: async-cloud-tasks
+Version: 0.0.3
+Summary: Use Cloud Tasks to easily defer functions executions
+Author-email: Everton Castro <evertoncastro.sp@gmail.com>
+License: The MIT License
+        
+        Copyright (c) Everton Castro
+        
+        Permission is hereby granted, free of charge, to any person obtaining a copy
+        of this software and associated documentation files (the "Software"), to deal
+        in the Software without restriction, including without limitation the rights
+        to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+        copies of the Software, and to permit persons to whom the Software is
+        furnished to do so, subject to the following conditions:
+        
+        The above copyright notice and this permission notice shall be included in
+        all copies or substantial portions of the Software.
+        
+        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+        IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+        FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+        AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+        LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+        OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+        THE SOFTWARE.
+Project-URL: Homepage, https://github.com/evertoncastro/async-cloud-tasks
+Keywords: cloudtasks,cloud,tasks,async,defer
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.7
+Requires-Python: >=3.7
+Description-Content-Type: text/markdown
+Provides-Extra: dev
+License-File: LICENSE
+
+# Async Cloud Tasks
+## Use Cloud Tasks to easily defer functions executions in your web applications 🍯
+
+### Inspired by [django-cloud-tasks](https://github.com/GeorgeLubaretsi/django-cloud-tasks), thanks to GeorgeLubaretsi 👏🏻👏🏻👏🏻
+
+
+Integrate [Google Cloud Tasks](https://cloud.google.com/tasks/docs/add-task-queue) with web applications without the need to create an exclusive endpoint to handle tasks.
+The package provides easy to use decorator to create task handlers.
+App looks for tasks in ``cloud_tasks.py`` files in your installed applications and auto-registers them.
+
+
+## Prerequisites
+- Python 3.7+
+
+## Dependencies
+- [google-cloud-tasks](https://pypi.org/project/google-cloud-tasks/)
+
+## Support
+
+- IMPORTANT: Now it is only giving support for **Django** framework.
+
+## Installation
+
+Install the package from PyPi
+
+```sh
+pip install async-cloud-tasks
+```
+
+Add ``async_cloud_tasks`` to ``INSTALLED_APPS``:
+
+```python
+INSTALLED_APPS = (
+    # ...
+    'async_cloud_tasks',
+    # ...
+)
+```
+
+Add configuration to your settings
+
+```python
+ASYNC_CLOUD_TASKS={
+    'gcp_location': '<GCP TASK QUEUE LOCATION>',
+    'gcp_project_name': '<GCP TASK QUEUE PROJECT NAME>',
+    'task_handler_root_url': '_tasks/',
+    'service_url': '<BASE SERVICE URL>',
+    'handler_secret': '<SECRET KEY TO BE USED FOR TASK HANDLER AUTHENTICATION>'
+}
+
+# This setting allows you to debug your cloud tasks by running actual task handler function locally
+# instead of sending them to the task queue. Default: False
+ASYNC_CLOUD_TASKS_EXECUTE_LOCALLY = False
+```
+
+Add cloud task views to your urls.py (must resolve to the same url as ``task_handler_root_url``)
+
+```python
+# urls.py
+# ...
+from django.urls import path, include
+from async_cloud_tasks import urls as dct_urls
+
+urlpatterns = [
+    # ...
+    path('_tasks/', include(dct_urls)),
+]
+```
+
+
+## Quick start (only for Django)
+
+Simply import the task decorator and define the task inside ``cloud_tasks.py`` in your app.
+First parameter should always be ``request`` which is populated after task is executed by Cloud Task service.
+
+You can get actual request coming from Cloud Task service by accessing `request.request` in your task body and
+additional attributes such as: `request.task_id`, `request.request_headers`
+
+```python
+# cloud_tasks.py
+# ...
+from async_cloud_tasks.decorators import task
+
+@task(queue='default')
+def example_task(request, p1, p2):
+    print(p1, p2)
+    print(request.task_id)
+```
+
+Pushing the task to the queue:
+
+```python
+from my_app.cloud_tasks import example_task
+
+example_task(p1='1', p2='2').defer()
+```
+
+It is also possible to run an actual function using `run` method of `CloudTaskWrapper` object instance that is returned after task is called (this can be useful for debugging):
+
+```python
+task = example_task(p1=i, p2=i)
+task.run()
+```
+
+
+## References
+- [CloudTasksClient](https://cloud.google.com/python/docs/reference/cloudtasks/latest/google.cloud.tasks_v2.services.cloud_tasks.CloudTasksClient)
