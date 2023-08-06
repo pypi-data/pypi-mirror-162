@@ -1,0 +1,17 @@
+{% extends "wagtailadmin/shared/header.html" %}
+{% load i18n wagtailadmin_tags %}
+
+{% block right_column %}
+<div style="display:flex">
+    {% if second_btn %}
+        <div class="actionbutton" style="margin-right:15px">
+            <a href="{{second_btn}}" class="button">{{second_btn_text}}</a>
+        </div>
+    {% endif %}
+    <div class="actionbutton">
+        {% with action_icon as action_icon_name %}
+        <a href="{{ action_url }}{% if group %}?group={{group.id}}{% endif %}" class="button {%if action_icon%}bicolor button--icon{%endif%}">{%if action_icon%}{% icon name=action_icon_name wrapped=1 %}{%endif%}{{ action_text }}</a>
+        {% endwith %}
+    </div>
+</div>
+{% endblock %}

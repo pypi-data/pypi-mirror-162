@@ -1,0 +1,88 @@
+<!-- @usefull main icon page -->
+{% extends "wagtailadmin/base.html" %}
+{% load static wagtailadmin_tags i18n %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'wagtail_icons/style/groups.css' %}" type="text/css" />
+{% endblock %}
+
+
+{% block content %}
+
+    {% url "wagtailicons:add_group" as add_group %}
+    {% url "wagtailicons:index" as icons_index %}
+    {% include "wagtail_icons/icons_page/icons_header.html" with search_url="wagtailicons:groups" title="Icon Groups" second_btn=icons_index second_btn_text='Icons' action_url=add_group action_text='Add Group' icon="tick-inverse" action_icon='plus' %}
+
+
+    {% if groups %}
+        <div class="groups-box">
+            <table class="groups-table">
+                <tr class="groups-table-header">
+                    <th></th>
+                    <th><h4 class="group_sort_option {% if 'title' in ordering %}active{%endif%}" data-cur_ordering="{{ordering}}" data-ordering="title">TITLE <span class="{% if 'title' in ordering and ordering|first == '-' %}reverse{%endif%}">&#8250;</span></h4></th>
+                    <th><h4 class="group_sort_option {% if 'slug' in ordering %}active{%endif%}" data-cur_ordering="{{ordering}}" data-ordering="slug">SLUG <span class="{% if 'slug' in ordering and ordering|first == '-' %}reverse{%endif%}">&#8250;</span></h4></th>
+                    <th><h4 class="group_sort_option {% if 'edited' in ordering %}active{%endif%}" data-cur_ordering="{{ordering}}" data-ordering="edited">UPDATED <span class="{% if 'edited' in ordering and ordering|first == '-' %}reverse{%endif%}">&#8250;</span></h4></th>
+                    <th><h4 class="group_sort_option {% if 'icons_num' in ordering %}active{%endif%}" data-cur_ordering="{{ordering}}" data-ordering="icons_num">ICONS NUBMER <span class="{% if 'icons_num' in ordering and ordering|first == '-' %}reverse{%endif%}">&#8250;</span></h4></th>
+                    <!-- hidden sort form -->
+                    <form action="{% url 'wagtailicons:groups'%}" id="group_sort_form" method="GET"></form>
+                </tr>
+                <form action="{% url 'wagtailicons:groups' %}" id="groups_form" method="POST">
+                    {% csrf_token %}
+                    {% for group in groups %}
+                    <tr class="group">
+                        <td>
+                            <input class="group-checkbox" type="checkbox" name="groups" value="{{group.id}}">
+                        </td>
+                        <td>
+                            <p class="group-title">
+                                {{group.title}}
+                            </p>
+                            <div class="actions">
+                                <a href="{% url 'wagtailicons:add' %}?group={{group.id}}">
+                                    <div class="content-button">Add Icons</div>
+                                </a>
+                                <a href="{% url 'wagtailicons:index' %}?group={{group.id}}">
+                                    <div class="content-button">View</div>
+                                </a>
+                            </div>
+                        </td>
+                        <td style="width:15%; padding-right:1rem">
+                            {{group.slug}}
+                        </td>
+                        <td style="width:15%; padding-right:1rem">
+                            {{group.edited}}
+                        </td>
+                        <td style="width:15%; padding-right:1rem">
+                            {{group.icons.count}}
+                        </td>
+                        <td>
+                            <a href="{% url 'wagtailicons:index' %}?group={{group.id}}">
+                                <div class="right-angel-box">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 512"><!--! Font Awesome Pro 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path d="M64 448c-8.188 0-16.38-3.125-22.62-9.375c-12.5-12.5-12.5-32.75 0-45.25L178.8 256L41.38 118.6c-12.5-12.5-12.5-32.75 0-45.25s32.75-12.5 45.25 0l160 160c12.5 12.5 12.5 32.75 0 45.25l-160 160C80.38 444.9 72.19 448 64 448z"/></svg>
+                                </div>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    <input type="hidden" name="type" class="group_form_type">
+                </form>
+            </table>
+        </div>
+
+        {% include 'wagtail_icons/pagination.html' with objects=groups %}
+    {% elif query_string %}
+        <h2 style="text-align:center">Sorry, no groups match <b>"{{query_string}}"</b></h2>
+    {% else %}
+        <h2 style="text-align:center">You haven't created any groups</h2>
+    {% endif %}
+
+    <div class="delete-btn-box">
+        <button class="group_button" id="delete_btn" type="submit" data-type='delete' value="{% url 'wagtailicons:groups' %}">Delete</button>
+    </div>
+
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'wagtail_icons/js/groups.js' %}"></script>
+{% endblock %}
