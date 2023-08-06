@@ -1,0 +1,67 @@
+Metadata-Version: 2.1
+Name: elan-vad
+Version: 0.2.0
+Summary: A utility library to perform Voice Audio Detection on .wav files, write these sections to an elan file, and optionally cluster annotations on a given tier based on the VAD sections.
+Home-page: https://github.com/CoEDL/elan-vad
+Keywords: Elan,VAD,Voice,Audio,Detection
+Author: Harry Keightley
+Author-email: harrykeightley@outlook.com
+Requires-Python: >=3.9,<4.0
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.9
+Requires-Dist: numpy (>=1.23.1,<2.0.0)
+Requires-Dist: pympi-ling (>=1.70.2,<2.0.0)
+Requires-Dist: torch (>=1.12.0,<2.0.0)
+Requires-Dist: torchaudio (>=0.12.0,<0.13.0)
+Project-URL: Repository, https://github.com/CoEDL/elan-vad
+Description-Content-Type: text/markdown
+
+# Elan-vad 
+Elan vad is a tool to perform Voice Activity Detection related tasks on Elan files
+
+## Installation
+You can install the package with `pip install elan-vad` (or `pip3` on macs).
+
+After installation, you can import the utilities into your python program with:
+```python
+from elan_vad import *
+```
+
+The package additionally comes with two CLI programs: `vad` and `cluster`, which
+can be used to perform the utilities from the terminal. 
+
+## Usage
+### As a Library
+The example below: 
+  - Performs VAD on an audio file, 
+  - Adds these detected sections to an elan file (under the tier "\_vad"),
+  - And then clusters the annotations within an existing tier ("Phrase") to be 
+    constrained within the VAD sections.
+
+```python
+from pathlib import Path
+from pympi.Elan import Eaf
+from elan_vad import detect_voice, add_vad_tier, cluster_tier_by_vad
+
+# Replace these paths with the correct values for your application
+sound_file: Path = 'audio.wav'
+elan_file: Path = 'test.eaf'
+
+# Open up the Elan file for modification.
+elan = Eaf(elan_file)
+
+# Perform VAD on the sound_file
+speech = detect_voice(sound_file)
+add_vad_tier(elan, speech, '_vad')
+
+# Cluster annotations within a 'Phrase' tier by the VAD sections
+cluster_tier_by_vad(elan, 'Phrase', '_vad', 'vad_cluster')
+
+# Replace the elan file with the new data
+elan.to_file(elan_file)
+```
+
+### From the terminal
+todo 
+
