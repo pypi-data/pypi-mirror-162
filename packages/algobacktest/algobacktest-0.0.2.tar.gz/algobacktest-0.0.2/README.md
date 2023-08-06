@@ -1,0 +1,1 @@
+## Algo Backtest PackageA simple package to apply statistical backtesting methodology.
