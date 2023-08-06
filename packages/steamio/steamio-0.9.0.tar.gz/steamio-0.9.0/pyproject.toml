@@ -1,0 +1,138 @@
+[tool.poetry]
+name = "steamio"
+version = "0.9.0"
+description = "A Python wrapper for the Steam API"
+authors = ["Gobot1234"]
+license = "MIT"
+readme = "README.md"
+keywords = ["steam.py", "steam", "steamio", "steam-api"]
+classifiers=[
+    "Development Status :: 5 - Production/Stable",
+    "Framework :: AsyncIO",
+    "Intended Audience :: Developers",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
+]
+include = [
+    "LICENSE",
+    "steam/__metadata__.py",
+    "steam/py.typed",
+    "steam/ext/__init__.pyi",
+]
+packages = [
+    {include = "steam"},
+]
+
+[tool.poetry.build]
+script = "build.py"
+generate-setup-file = false
+
+[tool.poetry.urls]
+"Documentation" = "https://steam-py.github.io/docs/latest"
+"Code" = "https://github.com/Gobot1234/steam.py"
+"Bug Tracker" = "https://github.com/Gobot1234/steam.py/issues"
+
+[tool.poetry.dependencies]
+python = "^3.7"
+aiohttp = ">=3.7,<3.9"
+beautifulsoup4 = "^4.10"
+cryptography = "^37.0"
+betterproto = "2.0.0b4"
+typing-extensions = "4.2.0"
+vdf = "^3.4"
+tomli = {version = "~2", optional = true, python = "<3.11"}
+
+[tool.poetry.group.speedups.dependencies]
+aiohttp = {version = ">=3.7,<3.9", extras = ["speedups"]}
+lxml = "^4.8.0"
+# orvdf = "^1.0.0"
+orjson = "^3.6.8"
+
+[tool.poetry.group.docs.dependencies]
+sphinx = "^5.0"
+myst-parser = "^0.18"
+mypy = "^0.961"
+sphinxcontrib_trio = "^1.1.2"
+sphinx-copybutton = "^0.5.0"
+sphinx-codeautolink = "^0.10.0"
+csscompressor = "^0.9.5"
+htmlmin = "^0.1.12"
+rjsmin = "^1.2.0"
+
+[tool.poetry.group.dev.dependencies]
+black = "^22.1"
+isort = "^5.10"
+#flake8 = "^4.0"
+pytest = "^7.1"
+pytest-asyncio = "^0.18"
+mypy = "^0.961"
+pre-commit = "^2.18"
+poethepoet = {version="^0.13"}  #, extras=["poetry_plugin"]}
+blacken-docs = "^1.12"
+
+[tool.poe.tasks]
+test = {cmd = "pytest tests", help = "Run the tests"}
+_blacken_docs = {script = "scripts.blacken_docs_correctly:main"}
+_black = "black ."
+_isort = "isort ."
+fmt = {sequence = ["_blacken_docs", "_black", "_isort"], help = "Format the code"}
+doc = {cmd = "sphinx-build -b html -T -W --keep-going docs/ docs/_build", help = "Build the documentation"}  # TODO -n
+add-cms = {script = "scripts.add_cms:main", help = "Add a default list of CMs for when the API is down"}
+
+[tool.poe.tasks.decode]
+script = "scripts.decode:main"
+help = "Decode a recieved message from the Steam WS"
+[tool.poe.tasks.decode.args.input]
+required = true
+positional = true
+help = "A base64 encoded protobufs message from Steam to decode"
+
+[tool.black]
+line-length = 120
+
+[tool.isort]
+profile = "black"
+line_length = 120
+combine_as_imports = true
+atomic = true
+ensure_newline_before_comments = true
+
+[tool.blacken-docs]
+line-length = 120
+target-version = ["py37"]
+
+[tool.mypy]
+ignore_missing_imports = true
+strict_optional = false
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+allow_redefinition = true
+show_error_codes = true
+warn_no_return = false
+pretty = true
+files = "steam/*.py, steam/ext/commands/*.py, steam/protobufs/__init__.py, steam/protobufs/headers.py"
+exclude = "venv, .venv"
+
+[tool.pyright]
+typeCheckingMode = "basic"
+reportSelfClsParameterName = "none"
+reportUntypedFunctionDecorator = "error"
+reportUntypedClassDecorator = "error"
+reportUntypedNamedTuple = "error"
+reportImplicitStringConcatenation = "none"  # I like to use this a fair bit
+reportOverlappingOverload = "error"
+reportMissingTypeArgument = "error"
+venv = ".venv"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "strict"
+
+[build-system]
+requires = ["poetry-core==1.1.0b2", "tomli; python_version < '3.11'"]
+build-backend = "poetry.core.masonry.api"
