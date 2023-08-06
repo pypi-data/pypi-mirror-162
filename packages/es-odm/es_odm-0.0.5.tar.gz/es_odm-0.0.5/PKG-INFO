@@ -1,0 +1,148 @@
+Metadata-Version: 2.1
+Name: es_odm
+Version: 0.0.5
+Summary: ODM (Object Document Mapper) for Elasticsearch based on Elasticsearch_dsl and Pydantic
+Home-page: https://github.com/lstk520/es_odm
+Author: leon
+Author-email: lstk520@qq.com
+License: UNKNOWN
+Platform: UNKNOWN
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Other Audience
+Classifier: Intended Audience :: Science/Research
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Natural Language :: English
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Topic :: Scientific/Engineering
+Classifier: Topic :: Software Development :: Libraries
+Classifier: Topic :: Utilities
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
+# es_odm
+
+ODM (Object Document Mapper) for Elasticsearch based on Elasticsearch_dsl and Pydantic.
+It's also a bridge connecting Mysql and Elasticsearch when using Sqlmodel, which also based on Pydantic.
+
+
+## Installation
+
+Install using `pip install -U es_odm`.
+
+
+## A Simple Example
+
+```py
+import typing
+
+from es_odm import InnerESModel, ESModel, Field, ObjectField
+
+
+class UserProfileODM(InnerESModel):
+    """user profile document"""
+    user_id: int = Field(None, description="user id")
+    nickname: str = Field(None, description="user nickname", keyword=True)
+    avatar_url: str = Field(None, description="user avatar url", keyword=True)
+    gender: int = Field(None, description="gender")
+    address: str = Field(None, description="address", keyword=True)
+
+
+class UserODM(ESModel):
+    """user document"""
+    id: int = Field(None, primary_key=True, description="ID")
+    username: str = Field(None, description="login name", keyword=True)
+
+    profile: typing.Union[ObjectField[UserProfileODM], dict] = Field(
+        None,
+        description="user profile",
+    )
+
+    class Config:
+        """pydantic BaseModel Config"""
+        arbitrary_types_allowed = True
+
+    class Index:
+        """elasticsearch_dsl Document Index config"""
+        name = 'test-index-name'
+        settings = {
+            "number_of_shards": 1,
+        }
+
+
+def test_odm_doc():
+    doc_example = {
+        "id": 1,
+        "username": "test_username",
+        "profile": {
+            "user_id": 100,
+            "nickname": "test_nickname",
+            "gender": 1,
+            "address": "test address"
+        }
+    }
+    doc = UserODM(**doc_example)
+    assert doc_example == doc.to_dict()
+
+
+def test_odm_mapping():
+    cls = UserODM
+    cls_mapping = cls._index.to_dict()
+
+    es_mapping = {
+        "settings": {
+            "number_of_shards": 1
+        },
+        "mappings": {
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "username": {
+                    "fields": {"keyword": {"type": "keyword"}},
+                    "type": "text"
+                },
+                "last_login": {
+                    "type": "date"
+                },
+                "profile": {
+                    "properties": {
+                        "user_id": {
+                            "type": "integer"
+                        },
+                        "nickname": {
+                            "fields": {
+                                "keyword": {
+                                    "type": "keyword"
+                                }
+                            },
+                            "type": "text"
+                        },
+                        "avatar_url": {
+                            "fields": {
+                                "keyword": {
+                                    "type": "keyword"
+                                }
+                            },
+                            "type": "text"
+                        },
+                        "gender": {
+                            "type": "integer"
+                        },
+                        "address": {
+                            "fields": {
+                                "keyword": {
+                                    "type": "keyword"
+                                }
+                            },
+                            "type": "text"
+                        }
+                    },
+                    "type": "object"
+                }
+            }
+        }
+    }
+    assert es_mapping == cls_mapping
+```
+
+
