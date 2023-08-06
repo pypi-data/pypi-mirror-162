@@ -1,0 +1,34 @@
+
+[package]
+name = "quest-sys"
+version = "0.7.1"
+authors = ["HQS Quantum Simulations <info@quantumsimulations.de>"]
+license = "Apache-2.0 AND MIT AND BSD-3-Clause"
+edition = "2021"
+rust-version = "1.56"
+categories = ["science", "simulation"]
+readme = "../README.md"
+repository = "https://github.com/HQSquantumsimulations/qoqo-quest"
+homepage = "https://github.com/HQSquantumsimulations/qoqo-quest"
+documentation = "https://docs.rs/quest-sys/"
+description = "Bindings to the QuEST quantum computer simulator C library"
+include = ["src*", "QuEST*", "build.rs", "Cargo.toml", "wrapper.h", "LICENSE", "MIT_LICENSE", "BSD_LICENSE"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "quest_sys"
+path = "src/lib.rs"
+doctest = false
+
+[dependencies]
+openmp-sys ={version = "1.2.0", features=["static"], optional=true}
+
+[build-dependencies]
+cmake = {version ="0.1", features=[]}
+bindgen = {version="0.60", optional=true}
+
+[features]
+default = []
+openmp = ["openmp-sys"]
+rebuild = ["bindgen"]
