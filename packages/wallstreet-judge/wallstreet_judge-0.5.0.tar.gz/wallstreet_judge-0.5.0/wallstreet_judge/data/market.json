@@ -1,0 +1,174 @@
+{
+    "name": "Market Layer",
+    "total_points": 10,
+    "tests": [
+        {
+            "name": "Market 1 - OHLCV",
+            "request": {
+                "method": "get",
+                "path": "market/ohlc",
+                "headers": {"Authorization": "$kushal_token"},
+                "body": {},
+                "query": {
+                    "day": 1
+                }
+            },
+            "response": {
+                "type": "array",
+                "validations": [
+                    {
+                        "key": "open",
+                        "value": "1100.00"
+                    },
+                    {
+                        "key": "low",
+                        "value": "1100.00"
+                    },
+                    {
+                        "key": "close",
+                        "value": "1200.00"
+                    },
+                    {
+                        "key": "high",
+                        "value": "1200.00"
+                    },
+                    {
+                        "key": "volume",
+                        "value": 12
+                    }
+                ]
+            },
+            "store" : [],
+            "status_code": 200,
+            "points": 2
+        },
+        {
+            "name": "Market 2 - Close",
+            "request": {
+                "method": "post",
+                "path": "market/close/",
+                "headers": {},
+                "body": {}
+            },
+            "response": {
+                "type": "object",
+                "validations": []
+            },
+            "store": [],
+            "status_code": 401,
+            "points": 1
+        },
+        {
+            "name": "Market 3 - Close",
+            "request": {
+                "method": "post",
+                "path": "market/close/",
+                "headers": {"Authorization": "$kushal_token"},
+                "body": {}
+            },
+            "response": {
+                "type": "object",
+                "validations": []
+            },
+            "store": [],
+            "status_code": 204,
+            "points": 0
+        },
+        {
+            "name":"Market 4 - Check",
+            "request": {
+                "method": "post",
+                "path": "orders/",
+                "headers": {"Authorization": "$kushal_token"},
+                "body": {
+                    "type": "BUY", 
+                    "stock": "$google_id",
+                    "bid_price": "1200.00", 
+                    "bid_volume": 5
+                }
+            },
+            "response": {
+                "type": "object",
+                "validations": []
+            },
+            "store": [],
+            "status_code": 403,
+            "points": 2
+        },
+        {
+            "name": "Market 5 - Open",
+            "request": {
+                "method": "get",
+                "path": "market/open/",
+                "headers": {"Authorization":"$kushal_token"},
+                "body": {}
+            },
+            "response": {
+                "type": "object",
+                "validations": []
+            },
+            "store": [],
+            "status_code": 204,
+            "points": 0
+        },
+        {
+            "name": "Market 6 - OHLCV",
+            "request": {
+                "method": "get",
+                "path": "market/ohlc/",
+                "headers": {"Authorization": "$kushal_token"},
+                "body": {},
+                "query": {
+                    "day": 2
+                }
+            },
+            "response": {
+                "type": "array",
+                "validations": [
+                    {
+                        "key": "open",
+                        "value": "-1.00"
+                    },
+                    {
+                        "key": "low",
+                        "value": "-1.00"
+                    },
+                    {
+                        "key": "close",
+                        "value": "-1.00"
+                    },
+                    {
+                        "key": "high",
+                        "value": "-1.00"
+                    },
+                    {
+                        "key": "volume",
+                        "value": 0
+                    }
+                ]
+            },
+            "store": [],
+            "status_code": 200,
+            "points": 2
+        },
+        {
+            "name": "Market 7 - OHLCV",
+            "request": {
+                "method": "get",
+                "path": "market/ohlc/",
+                "headers": {"Authorization": "$kushal_token"},
+                "body": {},
+                "query": {
+                    "day": 3
+                }
+            },
+            "response": {
+                "type": "array",
+                "validations": []
+            },
+            "store": [],
+            "status_code": 404,
+            "points": 2
+        }
+    ]
+}
