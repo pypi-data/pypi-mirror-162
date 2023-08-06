@@ -1,0 +1,45 @@
+Metadata-Version: 2.1
+Name: raruscloud
+Version: 1.0.1
+Summary: connector to rarus-cloud ESB
+Home-page: UNKNOWN
+Author: Serloz (Sergey Lozovskoy)
+Author-email: <serloz@rarus.ru>
+License: UNKNOWN
+Keywords: python,esb,rarus
+Platform: UNKNOWN
+Classifier: Development Status :: 1 - Planning
+Classifier: Intended Audience :: Developers
+Classifier: Programming Language :: Python :: 3
+Classifier: Operating System :: Unix
+Classifier: Operating System :: MacOS :: MacOS X
+Classifier: Operating System :: Microsoft :: Windows
+Description-Content-Type: text/markdown
+Requires-Dist: loguru
+Requires-Dist: requests
+
+
+# Esb Connect
+
+
+Developed by mr. Lozovskoy Sergey from RarusCloud (c) 2022
+
+## Examples of How execute workflow
+
+
+
+```python
+from raruscloud import EsbConnect
+
+# creating connection to ESB
+user = 'username'
+password = 'password'
+esb = EsbConnect(user=user, password=password, esb_prod=True)
+# Other Code
+esb.execute_workflow(request_data={}, workflow_name='workflow', workflow_group='group', workflow_subgroup='subgroup')
+# When You Are Done
+print(esb.result)
+print(esb.task_result)
+```
+Have questions? [serloz@rarus.ru](mailto:serloz@rarus.ru)
+
