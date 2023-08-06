@@ -1,0 +1,51 @@
+[project]
+name = "graiax-silkcoder"
+version = "0.3.1"
+description = "transform audio file to silk"
+keywords = [
+    "silkv3",
+]
+authors = [
+    { name = "I Love Study", email = "1450069615@qq.com" },
+]
+dependencies = []
+readme = "README.md"
+requires-python = ">=3.8"
+
+[project.license]
+text = "BSD-3-Clause"
+
+[project.optional-dependencies]
+libsndfile = [
+    "soundfile",
+    "soxr>=0.3.0a2",
+]
+ffmpeg = [
+    "imageio-ffmpeg",
+]
+
+[project.urls]
+repository = "https://github.com/I-love-study/graiax-silkcoder"
+
+[tool.pdm]
+package-dir = "src"
+includes = [
+    "src/graiax",
+]
+source-includes = [
+    "src/c_silkv3",
+]
+
+[tool.pdm.build]
+setup-script = "build.py"
+run-setuptools = true
+
+[tool.cibuildwheel]
+skip = "pp*"
+
+[build-system]
+requires = [
+    "pdm-pep517",
+    "setuptools",
+]
+build-backend = "pdm.pep517.api"
