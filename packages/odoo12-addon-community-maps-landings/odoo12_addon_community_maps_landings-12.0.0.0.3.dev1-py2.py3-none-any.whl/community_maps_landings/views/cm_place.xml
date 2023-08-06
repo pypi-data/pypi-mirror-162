@@ -1,0 +1,32 @@
+<odoo>
+  <data>
+    <record id="view_place_form_inherit" model="ir.ui.view">
+      <field name="name">cm.place.form.inherit</field>
+      <field name="model">crm.team</field>
+      <field name="inherit_id" ref="community_maps.view_place_form"/>
+      <field name="arch" type="xml">
+        <xpath
+          expr="//field[@name='presenter_model_id']"
+          position="after">
+          <field name="landing_presenter_model_id"/>
+        </xpath>
+        <xpath
+          expr="//page[@id='presenterMetas']"
+          position="after">
+          <page id="landingPresenterMetas" string="Landing Presenter" attrs="{'invisible': ['|',('landing_presenter_model_id', '=', False),('team_type', 'not in', ['map_place','map_place_proposal'])]}">
+            <group>
+              <field name="place_landing_presenter_metadata_ids" widget="one2many_list">
+                <tree create="false" edit="true" delete="false" open="false" editable="top">
+                  <field name="key" readonly="True"/>
+                  <field name="type" readonly="True"/>
+                  <field name="format" readonly="True"/>
+                  <field name="value"/>
+                </tree>
+              </field>
+            </group>
+          </page>
+        </xpath>
+      </field>
+    </record>
+  </data>
+</odoo>

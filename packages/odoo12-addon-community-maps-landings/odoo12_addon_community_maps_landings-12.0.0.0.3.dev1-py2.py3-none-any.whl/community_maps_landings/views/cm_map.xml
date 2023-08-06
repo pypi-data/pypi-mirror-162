@@ -1,0 +1,26 @@
+<odoo>
+  <data>
+    <record id="view_map_form_inherit" model="ir.ui.view">
+      <field name="name">cm.map.form.inherit</field>
+      <field name="model">cm.map</field>
+      <field name="inherit_id" ref="community_maps.view_map_form"/>
+      <field name="arch" type="xml">
+        <xpath
+          expr="//field[@name='privacy_link']"
+          position="before">
+          <field name="landing_base_url"/>
+        </xpath>
+        <xpath
+          expr="//field[@name='allowed_presenter_model_mids']"
+          position="after">
+          <field name="allowed_landing_presenter_model_mids" widget="many2many_list">
+            <tree create="true" edit="false" delete="true" open="false">
+              <field name="name"/>
+            </tree>
+          </field>
+        </xpath>
+      </field>
+    </record>
+  </data>
+</odoo>
+
