@@ -1,0 +1,35 @@
+[tool.poetry]
+name = "nerualpha"
+version = "3.0.0"
+description = "neru-sdk for python developers"
+authors = ["Sergei Rastrigin <sergei.rastrigin@vonage.com>"]
+readme = "README.md"
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "*"
+pendulum = "*"
+requests = "*"
+aiohttp = "*"
+PyJWT = {extras = ["crypto"], version = "*"}
+
+[tool.poetry.dev-dependencies]
+bumpver = "^2022.1118"
+
+[bdist_wheel]
+universal=1
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.bumpver]
+current_version = "3.0.0"
+version_pattern = "MAJOR.MINOR.PATCH"
+commit_message  = "Bump version {old_version} -> {new_version}"
+commit          = true
+tag             = true
+push            = false
+
+[tool.bumpver.file_patterns]
+"pyproject.toml" = ['current_version = "{version}"', 'version = "{version}"']
