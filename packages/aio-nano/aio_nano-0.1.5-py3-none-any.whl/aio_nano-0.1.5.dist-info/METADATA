@@ -1,0 +1,50 @@
+Metadata-Version: 2.1
+Name: aio-nano
+Version: 0.1.5
+Summary: An asynchronous nano currency library
+Home-page: https://github.com/ogtega/aio-nano
+License: MIT
+Keywords: nano,currency,async,crypto,python
+Author: Teslim Olunlade
+Author-email: tolunlade@outlook.com
+Requires-Python: >=3.10,<4.0
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.10
+Requires-Dist: aiohttp (>=3.8.1,<4.0.0)
+Requires-Dist: pydantic (>=1.9.1,<2.0.0)
+Project-URL: Repository, https://github.com/ogtega/aio-nano
+Description-Content-Type: text/markdown
+
+# aio-nano
+
+## Overview
+
+This library contains an asynchronous python RPC client for Nano nodes, allowing you to more easily develop on the Nano network with with fully type annnotated methods and responses.
+
+## Installation
+
+### PIP
+
+`pip install aio-nano`
+
+### Poetry
+
+`poetry add aio-nano`
+
+## Example
+
+```python
+from aio_nano import Client
+import asyncio
+
+async def main():
+  api_key = ...
+  client = Client('https://mynano.ninja/api/node', {'Authorization': api_key})
+
+  supply = await client.available_supply()
+  print(supply)
+
+asyncio.run(main())
+```
+
