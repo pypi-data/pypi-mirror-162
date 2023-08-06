@@ -1,0 +1,65 @@
+
+
+
+## 示例
+
+
+#### 1. 准备数据和处理输入输出的函数
+```python
+# a. 输入数据 (DataFrame格式)
+L = [{"user_id": i, "algo": 0, "position": i % 5} for i in range(50)]
+df = pd.DataFrame(L)
+
+# b. 处理输入的函数
+import json
+def makeReqData(json_str):
+    # json_str: row.to_json()
+    json_str = json.loads(json_str)
+    return json_str
+
+# c. 处理输出的函数
+def makeResult(r):
+    # r: res.json()
+    data = r.get("data")
+    return data
+```
+
+
+#### 2. 多线程调用接口保存文件
+
+
+```python
+# 方法一
+from multi_request import mreq
+
+m = mreq.MultiRequest()
+m.url = "http://127.0.0.1:8080/hello"  # 请求接口, 目前只支持 POST 方法
+m.makeReqData = makeReqData  # 你的生成一次请求数据的函数
+m.makeResult = makeResult  # (可选) 处理一次返回数据的函数, 生成最终结果字典
+m.input_data = df  # 原始请求数据， pandas的 DataFrame 格式
+m.parallel_batch_size = 20  # (可选) 并发数，默认: 100
+m.save_batch_size = 12  # (可选) 每几个保存一个文件，默认: 5000
+m.res_format = "fth"  # (可选) 默认: fth, 支持格式: fth, csv, xlsx
+m.res_dir = "data"  # (可选) 保存结果的目录, 默认: ./data
+m.run()
+```
+
+
+```python
+# 方法二
+from multi_request import mreq
+
+params = {
+    "url": "http://127.0.0.1:8080/hello",
+    "makeReqData": makeReqData,
+    "makeResult": makeResult,
+    "input_data": df,
+    "parallel_batch_size": 20,
+    "save_batch_size": 8,
+    "res_format": "csv",
+    "res_dir": "tmp_csv",
+}
+m = mreq.MultiRequest(**params)
+m.run()
+```
+
