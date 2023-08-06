@@ -1,0 +1,282 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+env:
+  POETRY_VIRTUALENVS_CREATE: false
+  GIT_USER: ${{ secrets.GIT_USER }}
+  GIT_EMAIL: ${{ secrets.GIT_EMAIL }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  check-and-lint-rust:
+    name: "[Rust] Check and Lint"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+          components: rustfmt, clippy
+      - name: Rustfmt
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
+      - name: Clippy
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: --all-targets --all-features -- -D warnings
+
+  check-and-lint-python:
+    name: "[Python] Check and Lint"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.10'
+      - name: Install poetry
+        run: pip install poetry
+      - name: Install dependencies
+        run: poetry install
+      - name: flake8
+        run: flake8 python/ --statistics;
+
+  test-rust:
+    name: "[Rust] Test on ${{ matrix.os }}"
+    needs: [check-and-lint-rust]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+          # TODO: Temporary disabled to save minutes. Re-enable once public.
+          # - os: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - name: Tests
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --all-features
+
+  test-python:
+    name: "[Python] Test on ${{ matrix.os }} (${{ matrix.python-version }})"
+    needs: [check-and-lint-python]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          # TODO: Temporary disabled to save minutes. Re-enable once public.
+          # - os: ubuntu-latest
+          #   python-version: '3.8'
+          # - os: ubuntu-latest
+          #   python-version: '3.9'
+          - os: ubuntu-latest
+            python-version: '3.10'
+          # TODO: Temporary disabled to save minutes. Re-enable once public.
+          # - os: macos-latest
+          #   python-version: '3.8'
+          # - os: macos-latest
+          #   python-version: '3.9'
+          # - os: macos-latest
+          #   python-version: '3.10'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install poetry
+        run: pip install poetry
+      - name: Install dependencies
+        run: poetry install
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - uses: messense/maturin-action@v1
+        with:
+          command: build
+          args: --interpreter ${{ matrix.python-version }} --no-sdist -o dist
+      - name: Install wheel
+        run: pip install dist/*
+      - name: pytest
+        run: pytest -vv --cov python/ohmyfpg/ python/tests/
+
+  tag:
+    name: Tag
+    needs: [test-rust, test-python]
+    runs-on: ubuntu-latest
+    if: (github.event_name != 'pull_request') && (github.ref == 'refs/heads/master')
+    outputs:
+      version: ${{ steps.bump_version.outputs.tag_version }}
+      prerelease: ${{ steps.bump_version.outputs.prerelease }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Setup git
+        run: |
+          set -eo pipefail
+          git config --global user.name "${GIT_USER}"
+          git config --global user.email "${GIT_EMAIL}"
+          git remote remove origin
+          git remote add origin "https://$(echo ${GITHUB_REPOSITORY} | cut -d "/" -f1):${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          set +eo pipefail
+      - name: Download semver
+        run: |
+          set -eo pipefail
+          curl \
+            -JLo semver.tar.gz \
+            "https://github.com/se7entyse7en/semver/releases/latest/download/ubuntu-latest.tar.gz"
+          mkdir semver && tar -xzvf semver.tar.gz -C semver
+          echo "${GITHUB_WORKSPACE}/semver/target/bins/ubuntu-latest" >> $GITHUB_PATH
+          set +eo pipefail
+      - name: Bump version
+        id: bump_version
+        run: |
+          set -eo pipefail
+          tags=$(git tag | wc -l)
+          if [ "$tags" -eq "0" ]; then
+            current_version="0.0.0"
+            echo "No tags available, bumping version ${current_version}!"
+            echo "::set-output name=tag_version::${current_version}"
+            echo "::set-output name=prerelease::false"
+          else
+            current_version=$(cat .semver.toml | grep current_version | head -n 1 | cut -c 20- | rev | cut -c 2- | rev)
+            latest_tag=$(git describe --tags --abbrev=0)
+            if [ "v${current_version}" != "${latest_tag}" ]; then
+              echo "Found new bumped version ${current_version}!"
+              echo "::set-output name=tag_version::${current_version}"
+              echo "::set-output name=prerelease::false"
+            else
+              echo "No new version found: bumping current one as a dev version"
+              current_is_dev=$(echo "${current_version}" | { grep dev || true; })
+              if [ "${current_is_dev}" == "" ]; then
+                semver bump -c .semver.toml --new-prerelease
+                new_version=$(cat .semver.toml | grep current_version | head -n 1 | cut -c 20- | rev | cut -c 2- | rev)
+                echo "Started a new prerelease: ${new_version}"
+              else
+                semver bump -c .semver.toml --part prerelease
+                new_version=$(cat .semver.toml | grep current_version | head -n 1 | cut -c 20- | rev | cut -c 2- | rev)
+                echo "Bumped to next prerelease: ${new_version}"
+              fi
+
+              git commit -asm "Bump version: ${current_version} → ${new_version}"
+              echo "::set-output name=tag_version::${new_version}"
+              echo "::set-output name=prerelease::true"
+            fi
+          fi
+          set +eo pipefail
+      - name: Create Tag
+        run: |
+          set -eo pipefail
+          new_version="${{steps.bump_version.outputs.tag_version}}"
+          git tag -a "v${new_version}" -m "Version ${new_version}";
+          set +eo pipefail
+      - name: Publish Branch and Tag
+        run: git push origin master && git push origin --tags
+
+  build-linux:
+    name: "Build for linux (${{ matrix.python-version }})"
+    needs: [tag]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          # TODO: Temporary disabled to save minutes. Re-enable once public.
+          # - python-version: '3.8'
+          # - python-version: '3.9'
+          - python-version: '3.10'
+    if: (github.event_name != 'pull_request') && (github.ref == 'refs/heads/master')
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        ref: 'master'
+    - name: Setup python
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - uses: messense/maturin-action@v1
+      with:
+        manylinux: auto
+        command: build
+        args: --interpreter ${{ matrix.python-version }} --release -o dist
+    - name: Upload wheels
+      uses: actions/upload-artifact@v2
+      with:
+        name: wheels
+        path: dist
+
+  # TODO: Temporary disabled to save minutes. Re-enable once public.
+  # build-macos:
+  #   name: "Build for macos (${{ matrix.python-version }})"
+  #   needs: [tag]
+  #   runs-on: macos-latest
+  #   strategy:
+  #     matrix:
+  #       include:
+  #         - python-version: '3.8'
+  #         - python-version: '3.9'
+  #         - python-version: '3.10'
+  #   if: (github.event_name != 'pull_request') && (github.ref == 'refs/heads/master')
+  #   steps:
+  #   - uses: actions/checkout@v3
+  #     with:
+  #       ref: 'master'
+  #   - name: Setup python
+  #     uses: actions/setup-python@v2
+  #     with:
+  #       python-version: ${{ matrix.python-version }}
+  #   - uses: messense/maturin-action@v1
+  #     with:
+  #       command: build
+  #       args: --interpreter ${{ matrix.python-version }} --release --no-sdist -o dist
+  #   - name: Upload wheels
+  #     uses: actions/upload-artifact@v2
+  #     with:
+  #       name: wheels
+  #       path: dist
+
+  publish:
+    name: Publish
+    runs-on: ubuntu-latest
+    if: (github.event_name != 'pull_request') && (github.ref == 'refs/heads/master')
+    # TODO: Temporary disabled to save minutes. Re-enable once public.
+    # needs: [build-macos, build-linux]
+    needs: [build-linux]
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: wheels
+      - name: Publish to PyPI
+        uses: messense/maturin-action@v1
+        env:
+          MATURIN_PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
+        with:
+          command: upload
+          args: --skip-existing *
