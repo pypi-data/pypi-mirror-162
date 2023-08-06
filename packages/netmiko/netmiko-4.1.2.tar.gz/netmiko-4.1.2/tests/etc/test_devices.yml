@@ -1,0 +1,214 @@
+---
+
+cisco1:
+  device_type: cisco_ios
+  host: cisco1.lasthop.io
+  username: pyclass
+  password: 88newclass
+
+cisco3: &cisco3-ref
+  device_type: cisco_xe
+  host: cisco3.lasthop.io
+  username: pyclass
+  password: 88newclass
+  conn_timeout: 40
+
+cisco3_long_name: *cisco3-ref
+
+cisco881_fast:
+  device_type: cisco_ios
+  ip: 184.105.247.70
+  username: pyclass
+  password: 88newclass
+  fast_cli: True
+
+cisco881_slog:
+  device_type: cisco_ios
+  ip: 184.105.247.70
+  username: test9
+  password: 88newclass
+  secret: 88newclass
+  session_log: "SLOG/cisco881_slog.log"
+  session_log_file_mode: write
+
+cisco881_telnet:
+  device_type: cisco_ios_telnet
+  ip: 184.105.247.70
+  username: pyclass
+  password: 88newclass
+
+cisco881_key:
+  device_type: cisco_ios
+  host: cisco1.lasthop.io
+  username: testuser 
+  use_keys: True
+  key_file: /home/ktbyers/.ssh/test_rsa
+  global_delay_factor: 2
+  port: 22
+  disabled_algorithms:
+    pubkeys:
+      - rsa-sha2-256
+      - rsa-sha2-512
+
+cisco881_ssh_config:
+  device_type: cisco_ios
+  host: cisco1.lasthop.io
+  username: pyclass
+  password: 88newclass
+  port: 22
+  ssh_config_file: '/home/ktbyers/.ssh/ssh_config'
+
+cisco881_ssh_proxyjump:
+  device_type: cisco_ios
+  host: cisco1.lasthop.io
+  username: pyclass
+  password: 88newclass
+  port: 22
+  ssh_config_file: '/home/ktbyers/.ssh/ssh_config_proxyjump'
+
+cisco_s300:
+  device_type: cisco_s300
+  ip: 184.105.247.67
+  username: admin
+  password: '{g76l%m30WlJ'
+
+cisco_asa:
+  device_type: cisco_asa
+  ip: 184.105.247.88
+  username: pyclass
+  password: 88newclass
+  secret: 88newclass
+  allow_auto_change: True
+  session_log: asa1.out
+
+cisco_asa_login:
+  device_type: cisco_asa
+  ip: 184.105.247.88
+  username: pyclass
+  password: 88newclass
+  secret: 88newclass
+  allow_auto_change: True
+  session_log: asa1.out
+
+arista_sw:
+  device_type: arista_eos
+  host: arista9-napalm.lasthop.io
+  username: admin1
+  password: 99saturday
+  secret: ""
+  session_log: arista9.out
+  conn_timeout: 20
+
+hp_procurve:
+  device_type: hp_procurve
+  ip: 184.105.247.68
+  username: admin
+  password: '{g76l%m30WlJ'
+  session_log: hpe.out
+  secret: ""
+
+juniper_srx:
+  device_type: juniper_junos
+  host: srx1.lasthop.io
+  username: pyclass
+  password: 88newclass
+  secret: ''
+
+juniper_vmx:
+  device_type: juniper_junos
+  host: vmx1.lasthop.io
+  username: pyclass
+  password: 88newclass
+  session_log: vmx1.out
+
+cisco_xrv:
+  device_type: cisco_xr
+  ip: 184.105.247.77
+  username: admin1
+  password: 8monday0X
+  secret: ''
+  banner_timeout: 40
+
+cisco_xr_azure: &cisco-xr-ref
+  device_type: cisco_xr
+  host: iosxr3.lasthop.io
+  username: pyclass
+  password: 88newclass
+  secret: ''
+  conn_timeout: 30
+  banner_timeout: 30
+  session_log: xr.out
+
+cisco_xr_long_name: *cisco-xr-ref
+
+linux_srv1:
+  device_type: linux
+  host: 3.15.148.177
+  username: gituser
+  use_keys: True
+  key_file: /home/ktbyers/.ssh/test_rsa
+
+linux_srv1_onechar_prompt:
+  device_type: linux
+  host: 3.15.148.177
+  username: testuser
+  use_keys: True
+  key_file: /home/ktbyers/.ssh/test_rsa
+
+cisco881_ssh_config:
+  device_type: cisco_ios
+  host: cisco1.lasthop.io
+  username: pyclass
+  password: 88newclass
+  port: 22
+  ssh_config_file: '/home/ktbyers/.ssh/ssh_config'
+
+cisco881_ssh_proxyjump:
+  device_type: cisco_ios
+  host: cisco1.lasthop.io
+  username: pyclass
+  password: 88newclass
+  port: 22
+  ssh_config_file: '/home/ktbyers/.ssh/ssh_config_proxyjump'
+
+cisco_s300:
+  device_type: cisco_s300
+  ip: 184.105.247.67
+  username: admin
+  password: '{g76l%m30WlJ'
+
+nxos1:
+  device_type: cisco_nxos 
+  host: nxos1.lasthop.io
+  username: pyclass
+  password: 88newclass
+
+sros2:
+  device_type: nokia_sros
+  host: sros.lasthop.io
+  username: admin
+  password: admin
+  secret: 88newclass
+  port: 2212
+
+sros1_md:
+  device_type: nokia_sros
+  host: sros.lasthop.io
+  username: admin
+  password: admin
+  secret: 88newclass
+  port: 2211
+
+mtik:
+  device_type: mikrotik_routeros
+  host: demo.mt.lv
+  username: demo
+  password: ""
+  session_log: mtik.out
+
+pan_device:
+  device_type: paloalto_panos
+  host: 3.87.170.48
+  username: kirk
+  password: TbWDD2zeuVBURJzV
+  session_log: pan.out

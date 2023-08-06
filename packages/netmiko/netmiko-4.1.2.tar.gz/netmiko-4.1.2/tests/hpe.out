@@ -1,0 +1,393 @@
+ProCurve J9019A Switch 2510-24
+
+Software revision Q.10.01
+
+
+Copyright (C) 1991-2006 Hewlett-Packard Co.  All Rights Reserved.
+
+                           RESTRICTED RIGHTS LEGEND
+
+ Use, duplication, or disclosure by the Government is subject to restrictions
+ as set forth in subdivision (b) (3) (ii) of the Rights in Technical Data and
+ Computer Software clause at 52.227-7013.
+
+         HEWLETT-PACKARD COMPANY, 3000 Hanover St., Palo Alto, CA 94303
+
+Press any key to continuetwb-sf-hpsw1# 
+twb-sf-hpsw1# 
+twb-sf-hpsw1# 
+twb-sf-hpsw1# terminal width 511
+twb-sf-hpsw1# 
+twb-sf-hpsw1# no page
+twb-sf-hpsw1# 
+twb-sf-hpsw1# show version
+Image stamp:    /sw/code/build/harp(harp)
+                Aug  4 2006 09:22:11
+                Q.10.01
+                158
+Boot Image:     Primary
+twb-sf-hpsw1# 
+twb-sf-hpsw1# 
+twb-sf-hpsw1# 
+twb-sf-hpsw1# configure terminal
+twb-sf-hpsw1(config)# 
+twb-sf-hpsw1(config)# 
+twb-sf-hpsw1(config)# 
+twb-sf-hpsw1(config)# end
+twb-sf-hpsw1# 
+twb-sf-hpsw1# 
+twb-sf-hpsw1# 
+twb-sf-hpsw1# configure terminal
+twb-sf-hpsw1(config)# 
+twb-sf-hpsw1(config)# time timezone -420
+twb-sf-hpsw1(config)# 
+twb-sf-hpsw1(config)# end
+twb-sf-hpsw1# 
+twb-sf-hpsw1# 
+twb-sf-hpsw1# show run
+
+Running configuration:
+
+; J9019A Configuration Editor; Created on release #Q.10.01
+
+hostname "twb-sf-hpsw1" 
+max-vlans 64 
+time timezone -420 
+time daylight-time-rule Continental-US-and-Canada 
+console inactivity-timer 20 
+no web-management 
+no telnet-server 
+ip default-gateway 10.220.90.1 
+sntp server 130.126.24.24 
+sntp server 128.118.25.3 
+snmp-server community "newString10" Operator 
+vlan 1 
+   name "DEFAULT_VLAN" 
+   untagged 25-26 
+   no ip address 
+   no untagged 1-24 
+   exit 
+vlan 88 
+   name "lab1" 
+   untagged 13-24 
+   no ip address 
+   tagged 26 
+   exit 
+vlan 90 
+   name "mgmt" 
+   untagged 1-12 
+   ip address 10.220.90.21 255.255.255.0 
+   tagged 26 
+   exit 
+ip authorized-managers 54.214.14.39 
+ip authorized-managers 10.220.90.0 255.255.255.0 
+ip authorized-managers 50.18.50.95 
+ip authorized-managers 52.53.155.196 255.255.255.255 
+ip authorized-managers 13.57.229.17 
+ip authorized-managers 54.219.111.164 
+no stack 
+spanning-tree
+spanning-tree 1 edge-port
+spanning-tree 2 edge-port
+spanning-tree 3 edge-port
+spanning-tree 4 edge-port
+spanning-tree 5 edge-port
+spanning-tree 6 edge-port
+spanning-tree 7 edge-port
+spanning-tree 8 edge-port
+spanning-tree 9 edge-port
+spanning-tree 10 edge-port
+spanning-tree 11 edge-port
+spanning-tree 12 edge-port
+spanning-tree 13 edge-port
+spanning-tree 14 edge-port
+spanning-tree 15 edge-port
+spanning-tree 16 edge-port
+spanning-tree 17 edge-port
+spanning-tree 18 edge-port
+spanning-tree 19 edge-port
+spanning-tree 20 edge-port
+spanning-tree 21 edge-port
+spanning-tree 22 edge-port
+spanning-tree 23 edge-port
+spanning-tree 24 edge-port
+spanning-tree 25 edge-port
+spanning-tree config-name "mstp1"
+spanning-tree config-revision 1
+spanning-tree instance 1 vlan 1 88 90
+spanning-tree instance 1 priority 4
+spanning-tree priority 4
+ip ssh
+ip ssh filetransfer
+no tftp-enable
+password manager
+password operator
+
+twb-sf-hpsw1# 
+twb-sf-hpsw1# configure terminal
+twb-sf-hpsw1(config)# 
+twb-sf-hpsw1(config)# time timezone -420
+twb-sf-hpsw1(config)# time daylight-time-rule Continental-US-and-Canada
+twb-sf-hpsw1(config)# time timezone -480
+twb-sf-hpsw1(config)# 
+twb-sf-hpsw1(config)# end
+twb-sf-hpsw1# 
+twb-sf-hpsw1# 
+twb-sf-hpsw1# show run
+
+Running configuration:
+
+; J9019A Configuration Editor; Created on release #Q.10.01
+
+hostname "twb-sf-hpsw1" 
+max-vlans 64 
+time timezone -480 
+time daylight-time-rule Continental-US-and-Canada 
+console inactivity-timer 20 
+no web-management 
+no telnet-server 
+ip default-gateway 10.220.90.1 
+sntp server 130.126.24.24 
+sntp server 128.118.25.3 
+snmp-server community "newString10" Operator 
+vlan 1 
+   name "DEFAULT_VLAN" 
+   untagged 25-26 
+   no ip address 
+   no untagged 1-24 
+   exit 
+vlan 88 
+   name "lab1" 
+   untagged 13-24 
+   no ip address 
+   tagged 26 
+   exit 
+vlan 90 
+   name "mgmt" 
+   untagged 1-12 
+   ip address 10.220.90.21 255.255.255.0 
+   tagged 26 
+   exit 
+ip authorized-managers 54.214.14.39 
+ip authorized-managers 10.220.90.0 255.255.255.0 
+ip authorized-managers 50.18.50.95 
+ip authorized-managers 52.53.155.196 255.255.255.255 
+ip authorized-managers 13.57.229.17 
+ip authorized-managers 54.219.111.164 
+no stack 
+spanning-tree
+spanning-tree 1 edge-port
+spanning-tree 2 edge-port
+spanning-tree 3 edge-port
+spanning-tree 4 edge-port
+spanning-tree 5 edge-port
+spanning-tree 6 edge-port
+spanning-tree 7 edge-port
+spanning-tree 8 edge-port
+spanning-tree 9 edge-port
+spanning-tree 10 edge-port
+spanning-tree 11 edge-port
+spanning-tree 12 edge-port
+spanning-tree 13 edge-port
+spanning-tree 14 edge-port
+spanning-tree 15 edge-port
+spanning-tree 16 edge-port
+spanning-tree 17 edge-port
+spanning-tree 18 edge-port
+spanning-tree 19 edge-port
+spanning-tree 20 edge-port
+spanning-tree 21 edge-port
+spanning-tree 22 edge-port
+spanning-tree 23 edge-port
+spanning-tree 24 edge-port
+spanning-tree 25 edge-port
+spanning-tree config-name "mstp1"
+spanning-tree config-revision 1
+spanning-tree instance 1 vlan 1 88 90
+spanning-tree instance 1 priority 4
+spanning-tree priority 4
+ip ssh
+ip ssh filetransfer
+no tftp-enable
+password manager
+password operator
+
+twb-sf-hpsw1# 
+twb-sf-hpsw1# configure terminal
+twb-sf-hpsw1(config)# 
+twb-sf-hpsw1(config)# time timezone -420
+twb-sf-hpsw1(config)# 
+twb-sf-hpsw1(config)# end
+twb-sf-hpsw1# 
+twb-sf-hpsw1# 
+twb-sf-hpsw1# show run
+
+Running configuration:
+
+; J9019A Configuration Editor; Created on release #Q.10.01
+
+hostname "twb-sf-hpsw1" 
+max-vlans 64 
+time timezone -420 
+time daylight-time-rule Continental-US-and-Canada 
+console inactivity-timer 20 
+no web-management 
+no telnet-server 
+ip default-gateway 10.220.90.1 
+sntp server 130.126.24.24 
+sntp server 128.118.25.3 
+snmp-server community "newString10" Operator 
+vlan 1 
+   name "DEFAULT_VLAN" 
+   untagged 25-26 
+   no ip address 
+   no untagged 1-24 
+   exit 
+vlan 88 
+   name "lab1" 
+   untagged 13-24 
+   no ip address 
+   tagged 26 
+   exit 
+vlan 90 
+   name "mgmt" 
+   untagged 1-12 
+   ip address 10.220.90.21 255.255.255.0 
+   tagged 26 
+   exit 
+ip authorized-managers 54.214.14.39 
+ip authorized-managers 10.220.90.0 255.255.255.0 
+ip authorized-managers 50.18.50.95 
+ip authorized-managers 52.53.155.196 255.255.255.255 
+ip authorized-managers 13.57.229.17 
+ip authorized-managers 54.219.111.164 
+no stack 
+spanning-tree
+spanning-tree 1 edge-port
+spanning-tree 2 edge-port
+spanning-tree 3 edge-port
+spanning-tree 4 edge-port
+spanning-tree 5 edge-port
+spanning-tree 6 edge-port
+spanning-tree 7 edge-port
+spanning-tree 8 edge-port
+spanning-tree 9 edge-port
+spanning-tree 10 edge-port
+spanning-tree 11 edge-port
+spanning-tree 12 edge-port
+spanning-tree 13 edge-port
+spanning-tree 14 edge-port
+spanning-tree 15 edge-port
+spanning-tree 16 edge-port
+spanning-tree 17 edge-port
+spanning-tree 18 edge-port
+spanning-tree 19 edge-port
+spanning-tree 20 edge-port
+spanning-tree 21 edge-port
+spanning-tree 22 edge-port
+spanning-tree 23 edge-port
+spanning-tree 24 edge-port
+spanning-tree 25 edge-port
+spanning-tree config-name "mstp1"
+spanning-tree config-revision 1
+spanning-tree instance 1 vlan 1 88 90
+spanning-tree instance 1 priority 4
+spanning-tree priority 4
+ip ssh
+ip ssh filetransfer
+no tftp-enable
+password manager
+password operator
+
+twb-sf-hpsw1# 
+twb-sf-hpsw1# configure terminal
+twb-sf-hpsw1(config)# 
+twb-sf-hpsw1(config)# time timezone -420
+twb-sf-hpsw1(config)# time daylight-time-rule Continental-US-and-Canada
+twb-sf-hpsw1(config)# time timezone -480
+twb-sf-hpsw1(config)# 
+twb-sf-hpsw1(config)# end
+twb-sf-hpsw1# 
+twb-sf-hpsw1# 
+twb-sf-hpsw1# show run
+
+Running configuration:
+
+; J9019A Configuration Editor; Created on release #Q.10.01
+
+hostname "twb-sf-hpsw1" 
+max-vlans 64 
+time timezone -480 
+time daylight-time-rule Continental-US-and-Canada 
+console inactivity-timer 20 
+no web-management 
+no telnet-server 
+ip default-gateway 10.220.90.1 
+sntp server 130.126.24.24 
+sntp server 128.118.25.3 
+snmp-server community "newString10" Operator 
+vlan 1 
+   name "DEFAULT_VLAN" 
+   untagged 25-26 
+   no ip address 
+   no untagged 1-24 
+   exit 
+vlan 88 
+   name "lab1" 
+   untagged 13-24 
+   no ip address 
+   tagged 26 
+   exit 
+vlan 90 
+   name "mgmt" 
+   untagged 1-12 
+   ip address 10.220.90.21 255.255.255.0 
+   tagged 26 
+   exit 
+ip authorized-managers 54.214.14.39 
+ip authorized-managers 10.220.90.0 255.255.255.0 
+ip authorized-managers 50.18.50.95 
+ip authorized-managers 52.53.155.196 255.255.255.255 
+ip authorized-managers 13.57.229.17 
+ip authorized-managers 54.219.111.164 
+no stack 
+spanning-tree
+spanning-tree 1 edge-port
+spanning-tree 2 edge-port
+spanning-tree 3 edge-port
+spanning-tree 4 edge-port
+spanning-tree 5 edge-port
+spanning-tree 6 edge-port
+spanning-tree 7 edge-port
+spanning-tree 8 edge-port
+spanning-tree 9 edge-port
+spanning-tree 10 edge-port
+spanning-tree 11 edge-port
+spanning-tree 12 edge-port
+spanning-tree 13 edge-port
+spanning-tree 14 edge-port
+spanning-tree 15 edge-port
+spanning-tree 16 edge-port
+spanning-tree 17 edge-port
+spanning-tree 18 edge-port
+spanning-tree 19 edge-port
+spanning-tree 20 edge-port
+spanning-tree 21 edge-port
+spanning-tree 22 edge-port
+spanning-tree 23 edge-port
+spanning-tree 24 edge-port
+spanning-tree 25 edge-port
+spanning-tree config-name "mstp1"
+spanning-tree config-revision 1
+spanning-tree instance 1 vlan 1 88 90
+spanning-tree instance 1 priority 4
+spanning-tree priority 4
+ip ssh
+ip ssh filetransfer
+no tftp-enable
+password manager
+password operator
+
+twb-sf-hpsw1# 
+twb-sf-hpsw1# logout
+Do you want to log out [y/n]? 
