@@ -1,0 +1,26 @@
+__author__ = "Vanessa Sochat"
+__copyright__ = "Copyright 2020-2022, Vanessa Sochat"
+__license__ = "MPL 2.0"
+
+from watchme import get_watcher
+
+
+def main(args, extra):
+    """run a watcher, optionally supplying one or more regular expressions to
+    check for.
+    """
+    # Required - will print help if not provided
+    name = args.watcher[0]
+    watcher = get_watcher(name, base=args.base, create=False)
+
+    # If a set of task names or regular expressions are provided:
+    if extra is not None:
+        extra = "(%s)" % "|".join(extra)
+
+    # Run the watcher, providing regular expressions to match tasks
+    watcher.run(
+        regexp=extra,
+        parallel=not args.serial,
+        test=args.test,
+        show_progress=not args.no_progress,
+    )
