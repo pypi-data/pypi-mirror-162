@@ -1,0 +1,68 @@
+Metadata-Version: 2.1
+Name: aa_theme_slate
+Version: 1.5.0
+Summary: Bootstrap Theme "Slate" for Alliance Auth
+Home-page: https://github.com/ppfeufer/aa-theme-slate
+Author: Peter Pfeufer
+Author-email: develop@ppfeufer.de
+Maintainer: Peter Pfeufer
+Maintainer-email: develop@ppfeufer.de
+License: GPL-3.0
+Project-URL: Issue / Bug Reports, https://github.com/ppfeufer/aa-theme-slate/issues
+Project-URL: Changelog, https://github.com/ppfeufer/aa-theme-slate/blob/master/CHANGELOG.md
+Keywords: allianceauth,eveonline,theme,template
+Classifier: Environment :: Web Environment
+Classifier: Framework :: Django
+Classifier: Framework :: Django :: 3.2
+Classifier: Framework :: Django :: 4.0
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: GNU General Public License v3 (GPLv3)
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Topic :: Internet :: WWW/HTTP
+Classifier: Topic :: Internet :: WWW/HTTP :: Dynamic Content
+Requires-Python: ~=3.7
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
+# Alliance Auth Theme: Slate
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/N4N8CL1BY)
+
+This is the [Bootstrap theme Slate](https://bootswatch.com/3/slate/) converted into
+a theme for Alliance auth.
+
+![AA Theme: Slate](https://raw.githubusercontent.com/ppfeufer/aa-theme-slate/master/aa_theme_slate/images/aa_theme_slate.jpg)
+
+## Installation
+
+```shell
+pip install aa-theme-slate
+```
+
+Now open your `local.py` and add the following right below your `INSTALLED_APPS`:
+```python
+# Slate Thame - https://github.com/ppfeufer/aa-theme-slate
+INSTALLED_APPS.insert(0, "aa_theme_slate")
+```
+
+**Important**
+
+If you are using `AA-GDPR`, the template stuff needs to be **after** the `AA_GDPR`
+entry, like this:
+
+```python
+# GDPR Compliance
+INSTALLED_APPS.insert(0, "aagdpr")
+AVOID_CDN = True
+
+
+# Slate Thame - https://github.com/ppfeufer/aa-theme-slate
+INSTALLED_APPS.insert(0, "aa_theme_slate")
+```
