@@ -1,0 +1,42 @@
+@prefix fibo-fnd-acc-4217: <https://spec.edmcouncil.org/fibo/ontology/FND/Accounting/ISO4217-CurrencyCodes/> .
+@prefix lcc-lr: <https://www.omg.org/spec/LCC/Languages/LanguageRepresentation/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sfo-cmn: <https://nzsuperfund.co.nz/ontology/CLS/> .
+@prefix sfo-cmn-ind-cur: <https://nzsuperfund.co.nz/ontology/CMN/Ind/Currency/> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix sm: <http://www.omg.org/techprocess/ab/SpecificationMetadata/> .
+@prefix sfo-cmn-ind-cur: <https://nzsuperfund.co.nz/ontology/CMN/Ind/Currency/> .
+
+sfo-cmn-ind-cur: a owl:Ontology ;
+    rdfs:label "ISO4217 Currency code extensions" ;
+    dcterms:abstract "Currency codes not defined in the ISO4217 namespace." ;
+    sm:fileAbbreviation "sfo-cmn-ind-cur" ;
+    sm:filename "Currency.ttl" ;
+    owl:imports dcterms:,
+        skos: ,
+        sfo-cmn: .
+
+#################################################################
+#    Individuals
+#################################################################
+
+
+sfo-cmn-ind-cur:ISO4217-CodeSetExtension a owl:NamedIndividual,
+        lcc-lr:CodeSet,
+        lcc-lr:IdentificationScheme ;
+    rdfs:label "NZSF extensions to the ISO 4217 code set" ;
+    rdfs:isDefinedBy sfo-cmn-ind-cur: ;
+    skos:definition "the set of currency identifiers which extend the ISO 4217 specification" .
+
+
+sfo-cmn-ind-cur:CNH a owl:NamedIndividual,
+                    sfo-cmn:NonISO4217CurrencyIdentifier ;
+                    rdfs:label "CNH" ;
+                    rdfs:isDefinedBy fibo-fnd-acc-4217: ;
+                    skos:definition "the currency identifier for Yuan Renminbi"@en ;
+                    lcc-lr:denotes fibo-fnd-acc-4217:YuanRenminbi ;
+                    lcc-lr:hasTag "CNH" ;
+                    lcc-lr:identifies fibo-fnd-acc-4217:YuanRenminbi ;
+                    lcc-lr:isMemberOf fibo-fnd-acc-4217:ISO4217-CodeSet .
