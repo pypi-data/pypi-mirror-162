@@ -1,0 +1,53 @@
+[tool.poetry]
+name = "nornir_cli"
+version = "1.1.1"
+description = "Nornir CLI"
+license = "MIT"
+readme = "README.md"
+keywords = ["nornir", "click", "nornir cli", "nornir-plugin"] 
+repository = "https://github.com/timeforplanb123/nornir_cli"
+documentation = "https://timeforplanb123.github.io/nornir_cli/"
+authors = ["Pavel Shemetov <timeforplanb123@gmail.com>"]
+classifiers = [
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+]
+
+[tool.poetry.dependencies]
+python = ">=3.8,<4.0.0"
+click = "8.1.3"
+nornir = "3.3.0"
+nornir-utils = "0.2.0"
+nornir-jinja2 = "0.2.0"
+nornir-netmiko = "0.2.0"
+netmiko = "4.1.2"
+nornir-scrapli = "2022.07.30"
+scrapli = "2022.07.30"
+scrapli-netconf = "2022.07.30"
+scrapli-community = "2022.07.30"
+nornir-napalm = "0.3.0"
+ttp = "^0.9.1"
+# initially, nornir_cli was created to work with NetBox inventory ^_-
+nornir-netbox = "0.3.0"
+nornir-pyez = "0.2.4"
+nornir-f5 = "0.5.1"
+nornir-routeros = "0.4.0"
+nornir-paramiko = "0.2.0"
+nornir-http = "0.1.1"
+nornir-pyxl = "1.0.1"
+nornir-netconf = "1.0.1"
+tqdm = "^4.64.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.1.2"
+black = "^22.6.0"
+flake8 = "^5.0.4"
+flake8-import-order = "^0.18.1"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+nornir_cli = 'nornir_cli.nornir_cli:init_nornir_cli'
