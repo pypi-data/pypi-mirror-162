@@ -1,0 +1,32 @@
+# This is meant to turn pyproject.toml/poetry.lock files into a container. To be used like:
+# docker build -t image_name:tag --build-arg PYTHON_IMAGE=python:3.10-slim-bullseye -f src/meadowrun/docker_files/PoetryDockerfile .
+# This assumes that ./pyproject.toml and ./poetry.lock exist
+
+ARG PYTHON_IMAGE
+
+FROM $PYTHON_IMAGE
+
+ENV PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+# - curl/wget isn't available, but we can just use python
+# - TODO ideally we (or someone) would pre-build a bunch of versions python with poetry already installed
+# - When we actually run jobs, we will copy code for those jobs into paths like
+#   /meadowrun/code0 and we'll want to run with the working directory as one of those
+#   directories. But we're putting the pyproject.toml/project.lock files in /tmp and
+#   poetry doesn't natively support running from a different working directory. Setting
+#   virtualenvs.in-project means that poetry will create the virtual env in /tmp/.venv
+#   and we'll just add this to our path. We could switch to using `poetry run` if
+#   something like https://github.com/python-poetry/poetry/issues/2179 gets implemented
+RUN python -c 'import urllib.request; urllib.request.urlretrieve("https://install.python-poetry.org", "poetry_install.py")' && \
+    python poetry_install.py && \
+    /root/.local/bin/poetry config virtualenvs.in-project true
+
+
+WORKDIR /tmp/
+COPY pyproject.toml ./
+COPY poetry.lock ./
+
+RUN /root/.local/bin/poetry install --no-root
+
+ENV PATH /tmp/.venv/bin:$PATH
