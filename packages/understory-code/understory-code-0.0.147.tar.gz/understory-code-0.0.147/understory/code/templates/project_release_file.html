@@ -1,0 +1,10 @@
+$def with (project, release, filename, content)
+$var title: $project's file: $filename
+
+$if isinstance(content, str):
+    <pre>$content</pre>
+$else:
+    <ul>
+    $for file in content:
+        <li><a href=/$project/releases/$release/files/$filename/$file.name>$file.name</a></li>
+    </ul>
