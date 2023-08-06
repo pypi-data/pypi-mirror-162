@@ -1,0 +1,61 @@
+Metadata-Version: 2.1
+Name: habana-tensorflow
+Version: 1.6.0.439
+Summary: This package contains Habana® TensorFlow bridge that allows to work with Habana® Gaudi®
+Home-page: https://habana.ai/
+Author: Habana Labs, Ltd. an Intel Company
+Author-email: support@habana.ai
+License: See LICENSE.txt and third-party-programs.txt
+Platform: UNKNOWN
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Science/Research
+Classifier: License :: Other/Proprietary License
+Classifier: Operating System :: Unix
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Topic :: Scientific/Engineering
+Classifier: Topic :: Scientific/Engineering :: Mathematics
+Classifier: Topic :: Scientific/Engineering :: Artificial Intelligence
+Classifier: Topic :: Software Development
+Classifier: Topic :: Software Development :: Libraries
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Description-Content-Type: text/markdown
+License-File: ../LICENSE.txt
+License-File: ../third-party-programs.txt
+Provides-Extra: media
+Requires-Dist: hpu-media-loader ; extra == 'media'
+
+# Habana TensorFlow Python package
+
+`habana-tensorflow` is a package designed for easy integration of Gaudi bridge to Tensorflow topologies.
+Main entry point (Python import) is `habana_frameworks.tensorflow` module that contains all the necessary functions to work with Gaudi.
+
+## Structure
+
+Properly built wheel contains:
+- `habana_frameworks` python namespace (with all the folder structure inside)
+- libraries for all supported versions of TF (see `habana_frameworks.tensorflow.sysconfig._supported_tf_versions`) located in `habana_frameworks/tensorflow/tf<version_with_underscores>/lib/habanalabs/`
+- proper licensing
+
+When loading `habana_tensorflow`, there is sanity check for currently installed TF version in the system, to match libraries found in the module.
+
+## TensorFlow package (habana_frameworks.tensorflow)
+
+Most important module inside is ``library_loader`` and function `load_habana_module()`, that is exposed directly after import.
+It initializes the module properly.
+
+Example:
+
+```python
+import habana_frameworks.tensorflow as htf
+htf.load_habana_module()
+```
+
+### List of modules inside ``habana_frameworks.tensorflow``
+
+All modules are described in [official docs](https://docs.habana.ai/en/latest/Tensorflow_User_Guide/Tensorflow_User_Guide.html#python-package-habana-frameworks-tensorflow).
+
+
