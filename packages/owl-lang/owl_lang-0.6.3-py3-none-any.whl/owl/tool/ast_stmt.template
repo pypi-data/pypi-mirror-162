@@ -1,0 +1,29 @@
+from __future__ import annotations
+from dataclasses import dataclass
+from abc import ABC, abstractmethod
+from .expr import Expr
+from owl.owl_token import Token
+from typing import List, Optional
+
+
+class {{ base_name }}(ABC):
+    @abstractmethod
+    def accept(self, visitor: Visitor):
+        pass
+
+{% for ast_node in ast_nodes %}
+@dataclass
+class {{ ast_node.class_name }}({{ base_name }}):
+    {% for field in ast_node.fields -%}
+    {{ field[1] }}: {{ field[0] }}
+    {% endfor %}
+    def accept(self, visitor: Visitor):
+        return visitor.visit_{{ ast_node.method_class_name }}(self)
+
+{% endfor %}
+class Visitor(ABC):
+    {% for ast_node in ast_nodes %}
+    @abstractmethod
+    def visit_{{ ast_node.method_class_name }}(self, stmt: {{ ast_node.class_name }}) -> None:
+        pass
+    {% endfor %}
