@@ -1,0 +1,586 @@
+version: 10
+engine_version: 3
+name: pipedrive
+tables:
+  _dlt_version:
+    columns:
+      version:
+        data_type: bigint
+        nullable: false
+      engine_version:
+        data_type: bigint
+        nullable: false
+      inserted_at:
+        data_type: timestamp
+        nullable: false
+    write_disposition: skip
+    description: Created by DLT. Tracks schema updates
+  _dlt_loads:
+    columns:
+      load_id:
+        data_type: text
+        nullable: false
+      status:
+        data_type: bigint
+        nullable: false
+      inserted_at:
+        data_type: timestamp
+        nullable: false
+    write_disposition: skip
+    description: Created by DLT. Tracks completed loads
+  deal:
+    columns:
+      id:
+        data_type: bigint
+        nullable: true
+      creator_user_id__id:
+        data_type: bigint
+        nullable: true
+      creator_user_id__name:
+        data_type: text
+        nullable: true
+      creator_user_id__email:
+        data_type: text
+        nullable: true
+      creator_user_id__has_pic:
+        data_type: bigint
+        nullable: true
+      creator_user_id__active_flag:
+        data_type: bool
+        nullable: true
+      creator_user_id__value:
+        data_type: bigint
+        nullable: true
+      user_id__id:
+        data_type: bigint
+        nullable: true
+      user_id__name:
+        data_type: text
+        nullable: true
+      user_id__email:
+        data_type: text
+        nullable: true
+      user_id__has_pic:
+        data_type: bigint
+        nullable: true
+      user_id__active_flag:
+        data_type: bool
+        nullable: true
+      user_id__value:
+        data_type: bigint
+        nullable: true
+      person_id__active_flag:
+        data_type: bool
+        nullable: true
+      person_id__name:
+        data_type: text
+        nullable: true
+      person_id__owner_id:
+        data_type: bigint
+        nullable: true
+      person_id__value:
+        data_type: bigint
+        nullable: true
+      org_id__name:
+        data_type: text
+        nullable: true
+      org_id__people_count:
+        data_type: bigint
+        nullable: true
+      org_id__owner_id:
+        data_type: bigint
+        nullable: true
+      org_id__active_flag:
+        data_type: bool
+        nullable: true
+      org_id__cc_email:
+        data_type: text
+        nullable: true
+      org_id__value:
+        data_type: bigint
+        nullable: true
+      stage_id:
+        data_type: bigint
+        nullable: true
+      title:
+        data_type: text
+        nullable: true
+      value:
+        data_type: bigint
+        nullable: true
+      currency:
+        data_type: text
+        nullable: true
+      add_time:
+        data_type: timestamp
+        nullable: true
+      update_time:
+        data_type: timestamp
+        nullable: true
+      stage_change_time:
+        data_type: timestamp
+        nullable: true
+      active:
+        data_type: bool
+        nullable: true
+      deleted:
+        data_type: bool
+        nullable: true
+      status:
+        data_type: text
+        nullable: true
+      visible_to:
+        data_type: text
+        nullable: true
+      pipeline_id:
+        data_type: bigint
+        nullable: true
+      products_count:
+        data_type: bigint
+        nullable: true
+      files_count:
+        data_type: bigint
+        nullable: true
+      notes_count:
+        data_type: bigint
+        nullable: true
+      followers_count:
+        data_type: bigint
+        nullable: true
+      email_messages_count:
+        data_type: bigint
+        nullable: true
+      activities_count:
+        data_type: bigint
+        nullable: true
+      done_activities_count:
+        data_type: bigint
+        nullable: true
+      undone_activities_count:
+        data_type: bigint
+        nullable: true
+      participants_count:
+        data_type: bigint
+        nullable: true
+      expected_close_date:
+        data_type: text
+        nullable: true
+      renewal_type:
+        data_type: text
+        nullable: true
+      stage_order_nr:
+        data_type: bigint
+        nullable: true
+      person_name:
+        data_type: text
+        nullable: true
+      org_name:
+        data_type: text
+        nullable: true
+      formatted_value:
+        data_type: text
+        nullable: true
+      weighted_value:
+        data_type: bigint
+        nullable: true
+      formatted_weighted_value:
+        data_type: text
+        nullable: true
+      weighted_value_currency:
+        data_type: text
+        nullable: true
+      owner_name:
+        data_type: text
+        nullable: true
+      cc_email:
+        data_type: text
+        nullable: true
+      org_hidden:
+        data_type: bool
+        nullable: true
+      person_hidden:
+        data_type: bool
+        nullable: true
+      _dlt_load_id:
+        data_type: text
+        nullable: false
+      _dlt_id:
+        unique: true
+        data_type: text
+        nullable: false
+    write_disposition: replace
+  deal__person_id__email:
+    columns:
+      value:
+        data_type: text
+        nullable: true
+      primary:
+        data_type: bool
+        nullable: true
+      _dlt_parent_id:
+        foreign_key: true
+        data_type: text
+        nullable: false
+      _dlt_list_idx:
+        data_type: bigint
+        nullable: false
+      _dlt_id:
+        unique: true
+        data_type: text
+        nullable: false
+    parent: deal
+  deal__person_id__phone:
+    columns:
+      value:
+        data_type: text
+        nullable: true
+      primary:
+        data_type: bool
+        nullable: true
+      _dlt_parent_id:
+        foreign_key: true
+        data_type: text
+        nullable: false
+      _dlt_list_idx:
+        data_type: bigint
+        nullable: false
+      _dlt_id:
+        unique: true
+        data_type: text
+        nullable: false
+    parent: deal
+  deal_participant:
+    columns:
+      id:
+        data_type: bigint
+        nullable: true
+      person_id__active_flag:
+        data_type: bool
+        nullable: true
+      person_id__name:
+        data_type: text
+        nullable: true
+      person_id__owner_id:
+        data_type: bigint
+        nullable: true
+      person_id__value:
+        data_type: bigint
+        nullable: true
+      add_time:
+        data_type: timestamp
+        nullable: true
+      active_flag:
+        data_type: bool
+        nullable: true
+      related_item_data__deal_id:
+        data_type: bigint
+        nullable: true
+      related_item_data__title:
+        data_type: text
+        nullable: true
+      person__id:
+        data_type: bigint
+        nullable: true
+      person__company_id:
+        data_type: bigint
+        nullable: true
+      person__owner_id__id:
+        data_type: bigint
+        nullable: true
+      person__owner_id__name:
+        data_type: text
+        nullable: true
+      person__owner_id__email:
+        data_type: text
+        nullable: true
+      person__owner_id__has_pic:
+        data_type: bigint
+        nullable: true
+      person__owner_id__active_flag:
+        data_type: bool
+        nullable: true
+      person__owner_id__value:
+        data_type: bigint
+        nullable: true
+      person__org_id__name:
+        data_type: text
+        nullable: true
+      person__org_id__people_count:
+        data_type: bigint
+        nullable: true
+      person__org_id__owner_id:
+        data_type: bigint
+        nullable: true
+      person__org_id__active_flag:
+        data_type: bool
+        nullable: true
+      person__org_id__cc_email:
+        data_type: text
+        nullable: true
+      person__org_id__value:
+        data_type: bigint
+        nullable: true
+      person__name:
+        data_type: text
+        nullable: true
+      person__first_name:
+        data_type: text
+        nullable: true
+      person__open_deals_count:
+        data_type: bigint
+        nullable: true
+      person__related_open_deals_count:
+        data_type: bigint
+        nullable: true
+      person__closed_deals_count:
+        data_type: bigint
+        nullable: true
+      person__related_closed_deals_count:
+        data_type: bigint
+        nullable: true
+      person__participant_open_deals_count:
+        data_type: bigint
+        nullable: true
+      person__participant_closed_deals_count:
+        data_type: bigint
+        nullable: true
+      person__email_messages_count:
+        data_type: bigint
+        nullable: true
+      person__activities_count:
+        data_type: bigint
+        nullable: true
+      person__done_activities_count:
+        data_type: bigint
+        nullable: true
+      person__undone_activities_count:
+        data_type: bigint
+        nullable: true
+      person__files_count:
+        data_type: bigint
+        nullable: true
+      person__notes_count:
+        data_type: bigint
+        nullable: true
+      person__followers_count:
+        data_type: bigint
+        nullable: true
+      person__won_deals_count:
+        data_type: bigint
+        nullable: true
+      person__related_won_deals_count:
+        data_type: bigint
+        nullable: true
+      person__lost_deals_count:
+        data_type: bigint
+        nullable: true
+      person__related_lost_deals_count:
+        data_type: bigint
+        nullable: true
+      person__active_flag:
+        data_type: bool
+        nullable: true
+      person__first_char:
+        data_type: text
+        nullable: true
+      person__update_time:
+        data_type: timestamp
+        nullable: true
+      person__add_time:
+        data_type: timestamp
+        nullable: true
+      person__visible_to:
+        data_type: text
+        nullable: true
+      person__sync_needed:
+        data_type: bool
+        nullable: true
+      person__org_name:
+        data_type: text
+        nullable: true
+      person__owner_name:
+        data_type: text
+        nullable: true
+      person__cc_email:
+        data_type: text
+        nullable: true
+      added_by_user_id__id:
+        data_type: bigint
+        nullable: true
+      added_by_user_id__name:
+        data_type: text
+        nullable: true
+      added_by_user_id__email:
+        data_type: text
+        nullable: true
+      added_by_user_id__has_pic:
+        data_type: bigint
+        nullable: true
+      added_by_user_id__active_flag:
+        data_type: bool
+        nullable: true
+      added_by_user_id__value:
+        data_type: bigint
+        nullable: true
+      related_item_type:
+        data_type: text
+        nullable: true
+      related_item_id:
+        data_type: bigint
+        nullable: true
+      _dlt_load_id:
+        data_type: text
+        nullable: false
+      _dlt_id:
+        unique: true
+        data_type: text
+        nullable: false
+    write_disposition: replace
+  deal_participant__person_id__email:
+    columns:
+      value:
+        data_type: text
+        nullable: true
+      primary:
+        data_type: bool
+        nullable: true
+      _dlt_parent_id:
+        foreign_key: true
+        data_type: text
+        nullable: false
+      _dlt_list_idx:
+        data_type: bigint
+        nullable: false
+      _dlt_id:
+        unique: true
+        data_type: text
+        nullable: false
+    parent: deal_participant
+  deal_participant__person_id__phone:
+    columns:
+      value:
+        data_type: text
+        nullable: true
+      primary:
+        data_type: bool
+        nullable: true
+      _dlt_parent_id:
+        foreign_key: true
+        data_type: text
+        nullable: false
+      _dlt_list_idx:
+        data_type: bigint
+        nullable: false
+      _dlt_id:
+        unique: true
+        data_type: text
+        nullable: false
+    parent: deal_participant
+  deal_participant__person__phone:
+    columns:
+      value:
+        data_type: text
+        nullable: true
+      primary:
+        data_type: bool
+        nullable: true
+      _dlt_parent_id:
+        foreign_key: true
+        data_type: text
+        nullable: false
+      _dlt_list_idx:
+        data_type: bigint
+        nullable: false
+      _dlt_id:
+        unique: true
+        data_type: text
+        nullable: false
+    parent: deal_participant
+  deal_participant__person__email:
+    columns:
+      value:
+        data_type: text
+        nullable: true
+      primary:
+        data_type: bool
+        nullable: true
+      _dlt_parent_id:
+        foreign_key: true
+        data_type: text
+        nullable: false
+      _dlt_list_idx:
+        data_type: bigint
+        nullable: false
+      _dlt_id:
+        unique: true
+        data_type: text
+        nullable: false
+    parent: deal_participant
+  deal_flow:
+    columns:
+      object:
+        data_type: text
+        nullable: true
+      timestamp:
+        data_type: timestamp
+        nullable: true
+      data__id:
+        data_type: bigint
+        nullable: true
+      data__item_id:
+        data_type: bigint
+        nullable: true
+      data__user_id:
+        data_type: bigint
+        nullable: true
+      data__field_key:
+        data_type: text
+        nullable: true
+      data__old_value:
+        data_type: text
+        nullable: true
+      data__new_value:
+        data_type: text
+        nullable: true
+      data__log_time:
+        data_type: timestamp
+        nullable: true
+      data__change_source:
+        data_type: text
+        nullable: true
+      data__change_source_user_agent:
+        data_type: text
+        nullable: true
+      data__additional_data__old_value_formatted:
+        data_type: text
+        nullable: true
+      data__additional_data__new_value_formatted:
+        data_type: text
+        nullable: true
+      _dlt_load_id:
+        data_type: text
+        nullable: false
+      _dlt_id:
+        unique: true
+        data_type: text
+        nullable: false
+    write_disposition: replace
+settings:
+  default_hints:
+    not_null:
+    - _dlt_id
+    - _dlt_root_id
+    - _dlt_parent_id
+    - _dlt_list_idx
+    - _dlt_load_id
+    foreign_key:
+    - _dlt_parent_id
+    unique:
+    - _dlt_id
+normalizers:
+  detections:
+  - timestamp
+  - iso_timestamp
+  names: dlt.common.normalizers.names.snake_case
+  json:
+    module: dlt.common.normalizers.json.relational
