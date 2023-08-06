@@ -1,0 +1,53 @@
+[tool.poetry]
+name = "bumbag"
+version = "2.0.0"
+description = "A package for Python utility functions."
+authors = ["BumBag Developers"]
+license = "BSD-3-Clause"
+readme = "README.md"
+repository = "https://github.com/estripling/bumbag"
+documentation = "https://bumbag.readthedocs.io/en/stable/"
+include = ["LICENSES/"]
+keywords = ["utility functions", "bumbag"]
+classifiers = [
+    "Topic :: Utilities",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+toolz = "^0.11.2"
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.1.2"
+pytest-cov = "^3.0.0"
+black = {extras = ["jupyter"], version = "^22.3.0"}
+isort = "^5.10.1"
+flake8 = "^4.0.1"
+python-semantic-release = "^7.29.0"
+jupyter = "^1.0.0"
+myst-nb = "^0.15.0"
+sphinx-autoapi = "^1.8.4"
+pandas = "^1.4.2"
+matplotlib = "^3.5.2"
+watermark = "^2.3.1"
+sphinx-copybutton = "^0.5.0"
+furo = "^2022.6.21"
+
+[tool.semantic_release]
+version_variable = "pyproject.toml:version"
+branch = "main"
+changelog_file = "CHANGELOG.md"
+build_command = "poetry build"
+dist_path = "dist/"
+upload_to_release = true
+upload_to_pypi = false
+remove_dist = false
+patch_without_tag = true
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
