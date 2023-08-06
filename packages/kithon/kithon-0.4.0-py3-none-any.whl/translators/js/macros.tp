@@ -1,0 +1,82 @@
+min:
+  alt_name: "Math.min"
+  ret_type: float
+
+max:
+  alt_name: "Math.max"
+  ret_type: float
+
+sum:
+  code: "{{args[0]}}.reduce((a, b)=>a+b)"
+  ret_type: "{{args[0].type}}"
+
+round:
+  args: [num, ndigits]
+  code: "+{{num}}.toFixed({{ndigits}})"
+
+print:
+  alt_name: "console.log"
+  ret_type: "None"
+
+input:
+  alt_name: "prompt"
+  type: "func"
+  ret_type: "str"
+
+len:
+  code: "{{args[0]}}.length"
+  ret_type: int
+
+interval:
+  alt_name: "setInterval"
+  type: "Func"
+  ret_type: "None"
+
+any:
+  "//.any":
+    code: "Math.floor({{left}}/{{right}})"
+    type: "int"
+
+  "**.any":
+    code: "Math.pow({{left}}, {{right}})"
+    type: "float"
+
+setattr:
+  args: ["obj", "name", "val"]
+  code: |-
+    {%-if parent.name == 'expr'-%}
+      {{obj}}[{{name}}] = {{val}}
+    {%-else-%}
+      (()=>{{obj}}[{{name}}] = {{val}})
+    {%-endif-%}
+
+int:
+  code: "parseInt({{args|join(', ')}})"
+
+float:
+  code: "parseFloat({{args|join(', ')}})"
+
+str:
+  code: '({{args[0]}}).toString()'
+
+map:
+  code: "{{args[1]}}.map({{args[0]}})"
+
+filter:
+  code: "{{args[1]}}.filter({{args[0]}})"
+
+require:
+  ret_type: {module: ["{{args[0].parts.val}}"]}
+
+js:
+  code: "{{args[0].parts.val}}"
+
+# unpacking fields function a({f1, f2}){...}
+do:
+  code: "{{'{'}}{{args|join(', ')}}}"
+  decorate: >-
+    {%if env.mod_name != '__main__'%}export {%endif%}let
+    {{name}} = {{(decorators[1:] + [''])|join('(')}}({{'{'}}{{args|join(', ')}}{{'}'}}) => {{body}}{{')' * (decorators|length - 1)}};
+
+getattr:
+  code: "{{args[0]}}[{{args[1]}}]"

@@ -1,0 +1,37 @@
+Elem:
+  code: |-
+    React.createElement(
+    {%-for a in args-%}
+    {{'\n' + '    ' * (nl + 1)}}
+    {%- if '\n' not in a|string-%}
+      {{a}}
+    {%- else -%}
+    {%- set strs = (a|string).split('\n') -%}
+    {{strs[0]}}
+    {{'    ' * nl}}{{strs[1:-1]|join('\n' + '    ' * nl)}}
+    {{'    ' * nl}}{{strs[-1]}}
+    {%- endif -%},
+    {%-endfor-%}{{'\n' + '    ' * nl }})
+  ret_type: react_el
+
+react_render:
+  alt_name: "ReactDOM.render"
+
+ReactDOM:
+  import_code: "import ReactDOM from 'react-dom';"
+  type: {module: [React]}
+
+React:
+  import_code: "import React from 'react';"
+  type: {module: [React]}
+
+  use_state: &use_state
+    import_code: "import {useState} from 'react';"
+    alt_name: "useState"
+    ret_type:
+      - '{{args[0].type}}'
+      - callable
+  useState: *use_state
+
+style:
+  code: "import {{args[0]}};"

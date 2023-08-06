@@ -1,0 +1,55 @@
+list[any]:
+  append:
+    alt_name: 'push'
+
+  extend:
+    alt_name: 'push'
+    code: "{{obj}}.push(...{{args[0]}})"
+
+  insert:
+    code: "{{obj}}.splice({{args[0]}}, 0, {{args[1]}})"
+
+  index:
+    alt_name: indexOf
+    ret_type: int
+
+  pop:
+    code: |-
+      {{obj}}
+      {%- if args|length > 0 -%}
+      .splice({{args[0]}}, 1)
+      {%- else -%}
+      .pop()
+      {%- endif -%}
+    ret_type: "{{obj.type.el_type}}"
+
+  clear:
+    code: "{{obj}}.splice(0,{{obj}}.length)"
+
+  count:
+    code: "{{obj}}.filter(_ => _ == {{args[0]}}).length"
+
+  remove:
+    code: "{{obj}}.splice(...((i)=>i==-1?[i, 0]:[i, 1])({{obj}}.indexOf({{args[0]}})))"
+
+list[any].*.int:
+  code: 'Array({{right}}).fill({{left}}).flat()'
+  type: '{{left.type}}'
+
+list[any].==.list[any]:
+  code: |-
+    {%- if left() == right()-%}
+      true
+    {%- else -%}
+      (JSON.stringify({{left}})==JSON.stringify({{right}}))
+    {%- endif -%}
+  type: bool
+
+
+list[any].+.list[any]:
+  code: "{{left}}.concat({{right}})"
+  type: "{{left.type}}"
+
+any.in.list[any]:
+  code: "{{right}}.includes({{left}})"
+  type: bool

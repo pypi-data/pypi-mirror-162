@@ -1,0 +1,9 @@
+dict[any]any.get:
+  code: |-
+    {%- if args|length == 2 -%}
+      ({{func.parts.obj}}[{{args[0]}}] == undefined?{{args[1]}}:{{func.parts.obj}}[{{args[0]}}])
+    {%- else -%}
+      {{func.parts.obj}}[{{args[0]}}]
+    {%- endif -%}
+  ret_type: "{{func.parts.obj.el_type}}"
+
