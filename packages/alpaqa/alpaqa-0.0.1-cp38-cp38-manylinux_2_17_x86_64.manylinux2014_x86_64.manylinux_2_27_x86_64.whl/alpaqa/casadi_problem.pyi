@@ -1,0 +1,6 @@
+import casadi as cs
+import alpaqa as pa
+from typing import Tuple, Union
+
+def generate_casadi_problem(f: cs.Function, g: cs.Function, second_order: bool = ..., name: str = ...) -> Tuple[cs.CodeGenerator, int, int, int]: ...
+def generate_and_compile_casadi_problem(f: cs.Function, g: cs.Function, second_order: bool = ..., name: str = ...) -> Union[pa.Problem, pa.ProblemWithParam]: ...
