@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "network3_perseus"
+version = "0.1.94"
+description = "Generating and applying intent-based Network configuration from Hedera"
+authors = ["John Capobianco <ptcapo@gmail.com>"]
+packages = [{ include = "network3_perseus", from = "src"}]
+readme = "README.md"
+include = ['src/network3_perseus/intended_config.j2']
+
+[tool.poetry.scripts]
+network3_perseus = 'network3_perseus.script:run'
+
+[tool.poetry.dependencies]
+python = "^3.8"
+hedera-sdk-py = "^2.15.0"
+Jinja2 = "^3.1.2"
+PyYAML = "^6.0"
+requests = "^2.28.1"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
