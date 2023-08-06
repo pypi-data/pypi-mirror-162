@@ -1,0 +1,557 @@
+Metadata-Version: 2.1
+Name: synchronizer-framework
+Version: 0.0.21
+Summary: Bi-directional synchronization of CRUD data sources
+Home-page: https://gitlab.com/sebastianspies9/synchronizer-framework
+Author: Sebastian Spies
+Author-email: s+gitlab@sloc.de
+License: UNKNOWN
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+
+# Synchronizer Framework
+
+This framework provides a data synchronization pattern based on a declarative bi-directional definition. The definition
+is a mapping of entity types with identity keys and non-key attributes which support CRUD operations and a
+synchronization strategy. The data sources may be arbitrarily implemented as long as they inherit from `sync.base.Base`.
+Common data sources like ORMs (django-orm, sqlalchemy) or REST APIs may be used as long as they support CRUD.
+
+Data sources may mixin `sync.base.Timestamped` to apply a last-write wins synchronization strategy based on
+the `updated_at` field.
+
+The project targets audiences which have chosen data synchronization as a primary integration method for microservices.
+Inspiration has been taken from projects Kubernetes and Chef.
+
+Disclaimer: The demo and README mentions systems like Desire and Daphne. Those are no open source projects, but some
+target audience will understand them. The definition is supposed to cover all use-cases of the Desire architecture.
+
+### Features
+
+* Adding missing objects
+* Defer adding objects, which miss required foreign keys, because they do not exist or which are not synchronized yet
+* Linking synchronized objects with each other to track them subsequently
+* Many objects contributing to a single synchronized object on the remote side
+* Updating non-key attributes
+* Last write wins (entity needs to support `sync.base.Timestamped`)
+* Deep-join attribute sourcing
+* Abstract data access to make the pattern work with any CRUD data source (like Microsoft Dynamics, ldap, REST APIs,
+  netconf, gNMI, CSP SDKs)
+    * i.e. AWS SDK Create as `AllocateHostedConnection`, Read as `DescribeConnections`, ...
+    * Data sources need to implement crud operations as defined in `sync.datasource.DataSource`
+* pre-load/include for deep joins
+* Optional deletion based on orphaned entities
+* Possibility to expedite single object synchronization based on an event stream
+    * Celery support
+* SQLAlchemy backend support
+* Redis linking backend support
+* dockerized
+
+More details about the pattern can be found in the `tests` path.
+
+### Missing/TODO
+
+* Deletion based on intent (with cryptographic verification) 
+
+### Known Limitations
+
+1. Cannot synchronize three-way at once.
+
+   *Example:*
+
+   Assume entities `PA` required parent of `A`, `BA` required parent of `B`, `CA` required parent of `C`. Mappings are
+   defined as `M1: A -> B` and `M2: B <- C`. The pattern prevents each `M1` and `M2` to progress independently. For `M1`
+   , information about `PC` is missing and for `M2` information about `PA` is missing. Further, assume `x(e)` to denote
+   an entity `e`
+   transformed to the namespace of `x`.
+
+   *Solution:*
+    * Introduce an intermediary entity `I` which accepts optional parents `I(PA)` and `I(PC)`
+    * remove `M1` and `M2`
+    * create `M3: A -> I`, `M4: I <- C`
+    * create `M5: I -> B`
+
+   The sequence of `M3, M4, M5` leads to a synchronized `B` containing both parents `B(PA)` and `B(PC)`. The order of
+   events always keeps consistent states. For example, `M5` may never progress before `M4` even if it is executed
+   before.
+
+   The solution is *not* limited to uni-directional mappings, but the author chose demonstrating uni-directional
+   mappings for easier understanding of how data flows.
+
+1. The orphan deletion may be counter-intuitive and will be changed in a future version. Refrain from using it, if you
+   do not understand the consequences.
+
+## Define Entities
+
+Entities below resemble the desire and daphne entity hierarchy and deviate to some extent. The intention is to
+demonstrate the synchronization pattern instead of resembling existing models accurately. The details which are left out
+of consideration seem to be straight-forward to implement.
+
+### Base
+
+
+```python
+class DemoBase(InMemoryLinks, Hierarchical, InMemoryTimestamp):
+    ...
+```
+
+### Daphne
+
+```python
+class VlanServiceProvider(DemoBase):
+    def __init__(self, name=None, children=set()):
+        super().__init__()
+        self.name = name
+        self.children = children
+
+
+class VlanServiceConnection(DemoBase):
+    def __init__(self, name, region, pop):
+        super().__init__()
+        self.name = name
+        self.region = region
+        self.pop = pop
+```
+
+### Desire
+
+```python
+class CloudServiceProvider(DemoBase):
+    def __init__(self, name=None, children=None):
+        super().__init__()
+        self.name = name
+        self.children = children or set()
+
+
+class CloudRegion(DemoBase):
+    def __init__(self, name=None, children=None):
+        super().__init__()
+        self.name = name
+        self.children = children or set()
+
+
+class CloudHandover(DemoBase):
+    def __init__(self, name=None, children=None):
+        super().__init__()
+        self.name = name
+        self.children = children or set()
+
+
+class NIC(DemoBase):
+    def __init__(self, name=None):
+        super().__init__()
+        self.name = name
+```
+
+## Define Mapping
+
+```python
+mappings = [
+   Mapping(
+      entity_types=(VlanServiceConnection, CloudRegion),
+      modes={Mode.LEFT_TO_RIGHT},
+      keys={
+         AttributeMap("region", "name"),
+         AttributeMap(
+            "parent", "parent", VlanServiceProvider, CloudServiceProvider
+         ),
+      },
+      attributes={AttributeMap("externalRef", "external_ref")},
+   ),
+   Mapping(
+      entity_types=(VlanServiceProvider, CloudServiceProvider),
+      modes={Mode.LEFT_TO_RIGHT, Mode.RIGHT_TO_LEFT},
+      keys={AttributeMap("name", "name")},
+      attributes={AttributeMap("canUpgrade", "upgrade_allowed")},
+   ),
+   Mapping(
+      entity_types=(VlanServiceConnection, CloudHandover),
+      modes={Mode.LEFT_TO_RIGHT},
+      keys={
+         AttributeMap("pop", "name"),
+         AttributeMap("__self__", "parent", VlanServiceConnection, CloudRegion),
+      },
+      attributes={AttributeMap("externalRef", "external_ref")},
+   ),
+   Mapping(
+      entity_types=(VlanServiceConnection, NIC),
+      modes={Mode.RIGHT_TO_LEFT},
+      keys={
+         AttributeMap("name", "name"),
+         AttributeMap("region", ("parent", "parent", "name")),
+         AttributeMap("pop", ("parent", "name")),
+         AttributeMap(
+            "parent",
+            ("parent", "parent", "parent"),
+            VlanServiceProvider,
+            CloudServiceProvider,
+         ),
+      },
+      attributes={AttributeMap("externalRef", "external_ref")},
+   ),
+   Mapping(
+      entity_types=(VlanServiceConnection, NIC),
+      modes={Mode.LEFT_TO_RIGHT},
+      keys={
+         AttributeMap("name", "name"),
+         AttributeMap(
+            "__self__", "parent", VlanServiceConnection, CloudHandover
+         ),
+      },
+      attributes={AttributeMap("externalRef", "external_ref")},
+   ),
+]
+
+```
+
+## Define some objects
+
+```python
+daphne_db = Db.from_collection(
+    {
+        VlanServiceProvider(
+            name="AWS",
+            children={
+                VlanServiceConnection("nic-1", "eu-central-1", "INX6"),
+                VlanServiceConnection("nic-2", "eu-central-1", "EqFA5"),
+                VlanServiceConnection("nic-3", "eu-west-2", "EqFA5"),
+            },
+        ),
+        VlanServiceProvider(name="AZURE", children=set()),
+    }
+)
+
+desire_db = Db.from_collection(
+    {
+        CloudServiceProvider(
+            name="AWS",
+            children={
+                CloudRegion(
+                    name="eu-central-1",
+                    children={
+                        CloudHandover(name="INX6", children={NIC("nic-1")}),
+                        CloudHandover(name="EqFA5", children={NIC("nic-2a")}),
+                    },
+                ),
+                CloudRegion(
+                    name="eu-west-1",
+                    children={
+                        CloudHandover(name="LON1", children={NIC(name="nic-3a")})
+                    },
+                ),
+                CloudRegion(
+                    name="eu-west-2",
+                    children={
+                        CloudHandover(
+                            name="EqFA5",
+                            children={NIC(name="nic-3", external_ref="nic3-eref")},
+                        )
+                    },
+                ),
+            },
+        ),
+        CloudServiceProvider(
+            name="IBM",
+            children={
+                CloudRegion(
+                    name="EU-Frankfurt",
+                    children={CloudHandover(name="fra03", children={NIC("nic-4")})},
+                )
+            },
+        ),
+    }
+)
+
+```
+
+## Plug it together
+
+```python
+sync(daphne_db, desire_db, mappings)
+```
+
+## Demo Output
+
+```shell
+$ python src/demo/main.py
+/home/sspies/git/sync-poc/venv/bin/python3 /home/sspies/git/sync-poc/src/demo/main.py
+INFO:root:Initial DB states
+INFO:root:{<class 'demo.desire.CloudServiceProvider'>: [CloudServiceProvider(name=IBM),
+                                              CloudServiceProvider(name=AWS)],
+ <class 'demo.desire.CloudRegion'>: [CloudRegion(name=EU-Frankfurt, parent=CloudServiceProvider(name=IBM)),
+                                     CloudRegion(name=eu-west-2, parent=CloudServiceProvider(name=AWS)),
+                                     CloudRegion(name=eu-central-1, parent=CloudServiceProvider(name=AWS)),
+                                     CloudRegion(name=eu-west-1, parent=CloudServiceProvider(name=AWS))],
+ <class 'demo.desire.CloudHandover'>: [CloudHandover(name=fra03, parent=CloudRegion(name=EU-Frankfurt)),
+                                       CloudHandover(name=EqFA5, parent=CloudRegion(name=eu-west-2)),
+                                       CloudHandover(name=INX6, parent=CloudRegion(name=eu-central-1)),
+                                       CloudHandover(name=EqFA5, parent=CloudRegion(name=eu-central-1)),
+                                       CloudHandover(name=LON1, parent=CloudRegion(name=eu-west-1))],
+ <class 'demo.desire.NIC'>: [NIC(name=nic-4, parent=CloudHandover(name=fra03)),
+                             NIC(name=nic-3, parent=CloudHandover(name=EqFA5)),
+                             NIC(name=nic-1, parent=CloudHandover(name=INX6)),
+                             NIC(name=nic-2a, parent=CloudHandover(name=EqFA5)),
+                             NIC(name=nic-3a, parent=CloudHandover(name=LON1))]}
+INFO:root:{<class 'demo.daphne.VlanServiceProvider'>: [VlanServiceProvider(name=AZURE),
+                                             VlanServiceProvider(name=AWS)],
+ <class 'demo.daphne.VlanServiceConnection'>: [VlanServiceConnection(name=nic-1, parent=VlanServiceProvider(name=AWS), region=eu-central-1, pop=INX6),
+                                               VlanServiceConnection(name=nic-3, parent=VlanServiceProvider(name=AWS), region=eu-west-2, pop=EqFA5),
+                                               VlanServiceConnection(name=nic-2, parent=VlanServiceProvider(name=AWS), region=eu-central-1, pop=EqFA5)]}
+WARNING:root:Cannot find linked entity of VlanServiceConnection(name=nic-1, parent=VlanServiceProvider(name=AWS), region=eu-central-1, pop=INX6).parent. VlanServiceProvider(name=AWS) not in CloudServiceProvider
+WARNING:root:Cannot find linked entity of VlanServiceConnection(name=nic-3, parent=VlanServiceProvider(name=AWS), region=eu-west-2, pop=EqFA5).parent. VlanServiceProvider(name=AWS) not in CloudServiceProvider
+WARNING:root:Cannot find linked entity of VlanServiceConnection(name=nic-2, parent=VlanServiceProvider(name=AWS), region=eu-central-1, pop=EqFA5).parent. VlanServiceProvider(name=AWS) not in CloudServiceProvider
+INFO:root:✨ Adding CloudServiceProvider(name=AZURE)
+INFO:root:✨ Adding VlanServiceProvider(name=IBM)
+WARNING:root:Cannot find linked entity of VlanServiceConnection(name=nic-1, parent=VlanServiceProvider(name=AWS), region=eu-central-1, pop=INX6).__self__. VlanServiceConnection(name=nic-1, parent=VlanServiceProvider(name=AWS), region=eu-central-1, pop=INX6) not in CloudRegion
+WARNING:root:Cannot find linked entity of VlanServiceConnection(name=nic-3, parent=VlanServiceProvider(name=AWS), region=eu-west-2, pop=EqFA5).__self__. VlanServiceConnection(name=nic-3, parent=VlanServiceProvider(name=AWS), region=eu-west-2, pop=EqFA5) not in CloudRegion
+WARNING:root:Cannot find linked entity of VlanServiceConnection(name=nic-2, parent=VlanServiceProvider(name=AWS), region=eu-central-1, pop=EqFA5).__self__. VlanServiceConnection(name=nic-2, parent=VlanServiceProvider(name=AWS), region=eu-central-1, pop=EqFA5) not in CloudRegion
+INFO:root:✨ Adding VlanServiceConnection(name=nic-4, parent=VlanServiceProvider(name=IBM), region=EU-Frankfurt, pop=fra03)
+INFO:root:✨ Adding VlanServiceConnection(name=nic-2a, parent=VlanServiceProvider(name=AWS), region=eu-central-1, pop=EqFA5)
+INFO:root:✨ Adding VlanServiceConnection(name=nic-3a, parent=VlanServiceProvider(name=AWS), region=eu-west-1, pop=LON1)
+WARNING:root:Cannot find linked entity of VlanServiceConnection(name=nic-1, parent=VlanServiceProvider(name=AWS), region=eu-central-1, pop=INX6).__self__. VlanServiceConnection(name=nic-1, parent=VlanServiceProvider(name=AWS), region=eu-central-1, pop=INX6) not in CloudHandover
+WARNING:root:Cannot find linked entity of VlanServiceConnection(name=nic-3, parent=VlanServiceProvider(name=AWS), region=eu-west-2, pop=EqFA5).__self__. VlanServiceConnection(name=nic-3, parent=VlanServiceProvider(name=AWS), region=eu-west-2, pop=EqFA5) not in CloudHandover
+WARNING:root:Cannot find linked entity of VlanServiceConnection(name=nic-2, parent=VlanServiceProvider(name=AWS), region=eu-central-1, pop=EqFA5).__self__. VlanServiceConnection(name=nic-2, parent=VlanServiceProvider(name=AWS), region=eu-central-1, pop=EqFA5) not in CloudHandover
+WARNING:root:Cannot find linked entity of VlanServiceConnection(name=nic-4, parent=VlanServiceProvider(name=IBM), region=EU-Frankfurt, pop=fra03).__self__. VlanServiceConnection(name=nic-4, parent=VlanServiceProvider(name=IBM), region=EU-Frankfurt, pop=fra03) not in CloudHandover
+WARNING:root:Cannot find linked entity of VlanServiceConnection(name=nic-2a, parent=VlanServiceProvider(name=AWS), region=eu-central-1, pop=EqFA5).__self__. VlanServiceConnection(name=nic-2a, parent=VlanServiceProvider(name=AWS), region=eu-central-1, pop=EqFA5) not in CloudHandover
+WARNING:root:Cannot find linked entity of VlanServiceConnection(name=nic-3a, parent=VlanServiceProvider(name=AWS), region=eu-west-1, pop=LON1).__self__. VlanServiceConnection(name=nic-3a, parent=VlanServiceProvider(name=AWS), region=eu-west-1, pop=LON1) not in CloudHandover
+INFO:root:27 operation(s) made
+INFO:root:Operations: [SkipMissingLink(VlanServiceConnection -> CloudRegion),
+ SkipMissingLink(VlanServiceConnection -> CloudRegion),
+ SkipMissingLink(VlanServiceConnection -> CloudRegion),
+ Addition(CloudServiceProvider(name=AZURE)),
+ Linking(frozenset({VlanServiceProvider(name=AZURE), CloudServiceProvider(name=AZURE)})),
+ Linking(frozenset({VlanServiceProvider(name=AWS), CloudServiceProvider(name=AWS)})),
+ AttributeUpdated(CloudServiceProvider(name=AWS).upgrade_allowed: True -> False from VlanServiceProvider(name=AWS)),
+ Addition(VlanServiceProvider(name=IBM)),
+ Linking(frozenset({VlanServiceProvider(name=IBM), CloudServiceProvider(name=IBM)})),
+ SkipMissingLink(VlanServiceConnection -> CloudHandover),
+ SkipMissingLink(VlanServiceConnection -> CloudHandover),
+ SkipMissingLink(VlanServiceConnection -> CloudHandover),
+ Addition(VlanServiceConnection(name=nic-4, parent=VlanServiceProvider(name=IBM), region=EU-Frankfurt, pop=fra03)),
+ Linking(frozenset({NIC(name=nic-4, parent=CloudHandover(name=fra03)), VlanServiceConnection(name=nic-4, parent=VlanServiceProvider(name=IBM), region=EU-Frankfurt, pop=fra03)})),
+ Linking(frozenset({NIC(name=nic-3, parent=CloudHandover(name=EqFA5)), VlanServiceConnection(name=nic-3, parent=VlanServiceProvider(name=AWS), region=eu-west-2, pop=EqFA5)})),
+ AttributeUpdated(VlanServiceConnection(name=nic-3, parent=VlanServiceProvider(name=AWS), region=eu-west-2, pop=EqFA5).externalRef:  -> nic3-eref from NIC(name=nic-3, parent=CloudHandover(name=EqFA5))),
+ Linking(frozenset({VlanServiceConnection(name=nic-1, parent=VlanServiceProvider(name=AWS), region=eu-central-1, pop=INX6), NIC(name=nic-1, parent=CloudHandover(name=INX6))})),
+ Addition(VlanServiceConnection(name=nic-2a, parent=VlanServiceProvider(name=AWS), region=eu-central-1, pop=EqFA5)),
+ Linking(frozenset({NIC(name=nic-2a, parent=CloudHandover(name=EqFA5)), VlanServiceConnection(name=nic-2a, parent=VlanServiceProvider(name=AWS), region=eu-central-1, pop=EqFA5)})),
+ Addition(VlanServiceConnection(name=nic-3a, parent=VlanServiceProvider(name=AWS), region=eu-west-1, pop=LON1)),
+ Linking(frozenset({NIC(name=nic-3a, parent=CloudHandover(name=LON1)), VlanServiceConnection(name=nic-3a, parent=VlanServiceProvider(name=AWS), region=eu-west-1, pop=LON1)})),
+ SkipMissingLink(VlanServiceConnection -> NIC),
+ SkipMissingLink(VlanServiceConnection -> NIC),
+ SkipMissingLink(VlanServiceConnection -> NIC),
+ SkipMissingLink(VlanServiceConnection -> NIC),
+ SkipMissingLink(VlanServiceConnection -> NIC),
+ SkipMissingLink(VlanServiceConnection -> NIC)]
+INFO:root:DB states after first and before second run
+INFO:root:{<class 'demo.desire.CloudServiceProvider'>: [CloudServiceProvider(name=IBM),
+                                              CloudServiceProvider(name=AWS),
+                                              CloudServiceProvider(name=AZURE)],
+ <class 'demo.desire.CloudRegion'>: [CloudRegion(name=EU-Frankfurt, parent=CloudServiceProvider(name=IBM)),
+                                     CloudRegion(name=eu-west-2, parent=CloudServiceProvider(name=AWS)),
+                                     CloudRegion(name=eu-central-1, parent=CloudServiceProvider(name=AWS)),
+                                     CloudRegion(name=eu-west-1, parent=CloudServiceProvider(name=AWS))],
+ <class 'demo.desire.CloudHandover'>: [CloudHandover(name=fra03, parent=CloudRegion(name=EU-Frankfurt)),
+                                       CloudHandover(name=EqFA5, parent=CloudRegion(name=eu-west-2)),
+                                       CloudHandover(name=INX6, parent=CloudRegion(name=eu-central-1)),
+                                       CloudHandover(name=EqFA5, parent=CloudRegion(name=eu-central-1)),
+                                       CloudHandover(name=LON1, parent=CloudRegion(name=eu-west-1))],
+ <class 'demo.desire.NIC'>: [NIC(name=nic-4, parent=CloudHandover(name=fra03)),
+                             NIC(name=nic-3, parent=CloudHandover(name=EqFA5)),
+                             NIC(name=nic-1, parent=CloudHandover(name=INX6)),
+                             NIC(name=nic-2a, parent=CloudHandover(name=EqFA5)),
+                             NIC(name=nic-3a, parent=CloudHandover(name=LON1))]}
+INFO:root:{<class 'demo.daphne.VlanServiceProvider'>: [VlanServiceProvider(name=AZURE),
+                                             VlanServiceProvider(name=AWS),
+                                             VlanServiceProvider(name=IBM)],
+ <class 'demo.daphne.VlanServiceConnection'>: [VlanServiceConnection(name=nic-1, parent=VlanServiceProvider(name=AWS), region=eu-central-1, pop=INX6),
+                                               VlanServiceConnection(name=nic-3, parent=VlanServiceProvider(name=AWS), region=eu-west-2, pop=EqFA5),
+                                               VlanServiceConnection(name=nic-2, parent=VlanServiceProvider(name=AWS), region=eu-central-1, pop=EqFA5),
+                                               VlanServiceConnection(name=nic-4, parent=VlanServiceProvider(name=IBM), region=EU-Frankfurt, pop=fra03),
+                                               VlanServiceConnection(name=nic-2a, parent=VlanServiceProvider(name=AWS), region=eu-central-1, pop=EqFA5),
+                                               VlanServiceConnection(name=nic-3a, parent=VlanServiceProvider(name=AWS), region=eu-west-1, pop=LON1)]}
+INFO:root:✨ Adding NIC(name=nic-2, parent=CloudHandover(name=EqFA5))
+INFO:root:Sync with 16 operation(s) made
+INFO:root:Operations: [Linking(frozenset({VlanServiceConnection(name=nic-1, parent=VlanServiceProvider(name=AWS), region=eu-central-1, pop=INX6), CloudRegion(name=eu-central-1, parent=CloudServiceProvider(name=AWS))})),
+ Linking(frozenset({CloudRegion(name=eu-west-2, parent=CloudServiceProvider(name=AWS)), VlanServiceConnection(name=nic-3, parent=VlanServiceProvider(name=AWS), region=eu-west-2, pop=EqFA5)})),
+ AttributeUpdated(CloudRegion(name=eu-west-2, parent=CloudServiceProvider(name=AWS)).external_ref:  -> nic3-eref from VlanServiceConnection(name=nic-3, parent=VlanServiceProvider(name=AWS), region=eu-west-2, pop=EqFA5)),
+ Linking(frozenset({CloudRegion(name=eu-central-1, parent=CloudServiceProvider(name=AWS)), VlanServiceConnection(name=nic-2, parent=VlanServiceProvider(name=AWS), region=eu-central-1, pop=EqFA5)})),
+ Linking(frozenset({CloudRegion(name=EU-Frankfurt, parent=CloudServiceProvider(name=IBM)), VlanServiceConnection(name=nic-4, parent=VlanServiceProvider(name=IBM), region=EU-Frankfurt, pop=fra03)})),
+ Linking(frozenset({VlanServiceConnection(name=nic-2a, parent=VlanServiceProvider(name=AWS), region=eu-central-1, pop=EqFA5), CloudRegion(name=eu-central-1, parent=CloudServiceProvider(name=AWS))})),
+ Linking(frozenset({VlanServiceConnection(name=nic-3a, parent=VlanServiceProvider(name=AWS), region=eu-west-1, pop=LON1), CloudRegion(name=eu-west-1, parent=CloudServiceProvider(name=AWS))})),
+ Linking(frozenset({VlanServiceConnection(name=nic-1, parent=VlanServiceProvider(name=AWS), region=eu-central-1, pop=INX6), CloudHandover(name=INX6, parent=CloudRegion(name=eu-central-1))})),
+ Linking(frozenset({CloudHandover(name=EqFA5, parent=CloudRegion(name=eu-west-2)), VlanServiceConnection(name=nic-3, parent=VlanServiceProvider(name=AWS), region=eu-west-2, pop=EqFA5)})),
+ AttributeUpdated(CloudHandover(name=EqFA5, parent=CloudRegion(name=eu-west-2)).external_ref:  -> nic3-eref from VlanServiceConnection(name=nic-3, parent=VlanServiceProvider(name=AWS), region=eu-west-2, pop=EqFA5)),
+ Linking(frozenset({CloudHandover(name=EqFA5, parent=CloudRegion(name=eu-central-1)), VlanServiceConnection(name=nic-2, parent=VlanServiceProvider(name=AWS), region=eu-central-1, pop=EqFA5)})),
+ Linking(frozenset({CloudHandover(name=fra03, parent=CloudRegion(name=EU-Frankfurt)), VlanServiceConnection(name=nic-4, parent=VlanServiceProvider(name=IBM), region=EU-Frankfurt, pop=fra03)})),
+ Linking(frozenset({VlanServiceConnection(name=nic-2a, parent=VlanServiceProvider(name=AWS), region=eu-central-1, pop=EqFA5), CloudHandover(name=EqFA5, parent=CloudRegion(name=eu-central-1))})),
+ Linking(frozenset({CloudHandover(name=LON1, parent=CloudRegion(name=eu-west-1)), VlanServiceConnection(name=nic-3a, parent=VlanServiceProvider(name=AWS), region=eu-west-1, pop=LON1)})),
+ Addition(NIC(name=nic-2, parent=CloudHandover(name=EqFA5))),
+ Linking(frozenset({NIC(name=nic-2, parent=CloudHandover(name=EqFA5)), VlanServiceConnection(name=nic-2, parent=VlanServiceProvider(name=AWS), region=eu-central-1, pop=EqFA5)}))]
+INFO:root:🙌 Final DB states
+INFO:root:{<class 'demo.desire.CloudServiceProvider'>: [CloudServiceProvider(name=IBM),
+                                              CloudServiceProvider(name=AWS),
+                                              CloudServiceProvider(name=AZURE)],
+ <class 'demo.desire.CloudRegion'>: [CloudRegion(name=EU-Frankfurt, parent=CloudServiceProvider(name=IBM)),
+                                     CloudRegion(name=eu-west-2, parent=CloudServiceProvider(name=AWS)),
+                                     CloudRegion(name=eu-central-1, parent=CloudServiceProvider(name=AWS)),
+                                     CloudRegion(name=eu-west-1, parent=CloudServiceProvider(name=AWS))],
+ <class 'demo.desire.CloudHandover'>: [CloudHandover(name=fra03, parent=CloudRegion(name=EU-Frankfurt)),
+                                       CloudHandover(name=EqFA5, parent=CloudRegion(name=eu-west-2)),
+                                       CloudHandover(name=INX6, parent=CloudRegion(name=eu-central-1)),
+                                       CloudHandover(name=EqFA5, parent=CloudRegion(name=eu-central-1)),
+                                       CloudHandover(name=LON1, parent=CloudRegion(name=eu-west-1))],
+ <class 'demo.desire.NIC'>: [NIC(name=nic-4, parent=CloudHandover(name=fra03)),
+                             NIC(name=nic-3, parent=CloudHandover(name=EqFA5)),
+                             NIC(name=nic-1, parent=CloudHandover(name=INX6)),
+                             NIC(name=nic-2a, parent=CloudHandover(name=EqFA5)),
+                             NIC(name=nic-3a, parent=CloudHandover(name=LON1)),
+                             NIC(name=nic-2, parent=CloudHandover(name=EqFA5))]}
+INFO:root:{<class 'demo.daphne.VlanServiceProvider'>: [VlanServiceProvider(name=AZURE),
+                                             VlanServiceProvider(name=AWS),
+                                             VlanServiceProvider(name=IBM)],
+ <class 'demo.daphne.VlanServiceConnection'>: [VlanServiceConnection(name=nic-1, parent=VlanServiceProvider(name=AWS), region=eu-central-1, pop=INX6),
+                                               VlanServiceConnection(name=nic-3, parent=VlanServiceProvider(name=AWS), region=eu-west-2, pop=EqFA5),
+                                               VlanServiceConnection(name=nic-2, parent=VlanServiceProvider(name=AWS), region=eu-central-1, pop=EqFA5),
+                                               VlanServiceConnection(name=nic-4, parent=VlanServiceProvider(name=IBM), region=EU-Frankfurt, pop=fra03),
+                                               VlanServiceConnection(name=nic-2a, parent=VlanServiceProvider(name=AWS), region=eu-central-1, pop=EqFA5),
+                                               VlanServiceConnection(name=nic-3a, parent=VlanServiceProvider(name=AWS), region=eu-west-1, pop=LON1)]}
+INFO:root:🎉🥳 Sync with 0 operations made. Synchronization has converged
+INFO:root:Operations: []
+
+Process finished with exit code 0
+
+```
+
+# Celery Demo
+
+## Start the compose setup
+
+``` shell
+❯ docker-compose up -d --build
+Creating network "synchronizer-framework_default" with the default driver
+Building worker
+Step 1/11 : FROM python:3.8-slim
+ ---> b281745b6df9
+Step 2/11 : RUN apt-get update ; apt-get install -y sqlite3 vim ; apt-get clean
+ ---> Using cache
+ ---> 25b681e3e49c
+Step 3/11 : WORKDIR /app/synchronizer-framework
+ ---> Using cache
+ ---> 20c652ac628d
+Step 4/11 : COPY ./requirements.txt .
+ ---> Using cache
+ ---> 9a1f9aa5c9a4
+Step 5/11 : RUN pip install -r requirements.txt
+ ---> Using cache
+ ---> ae9c400626e5
+Step 6/11 : COPY src/ ./src
+ ---> Using cache
+ ---> be73849dfe6f
+Step 7/11 : COPY tests ./tests
+ ---> Using cache
+ ---> 3e59bd21b326
+Step 8/11 : COPY conftest.py .
+ ---> Using cache
+ ---> 3c06b0dcc7f9
+Step 9/11 : ENV C_FORCE_ROOT=true
+ ---> Using cache
+ ---> 2a187de06fcd
+Step 10/11 : ENV PYTHONPATH="src/"
+ ---> Using cache
+ ---> 027396f1f6f9
+Step 11/11 : CMD [ "python", "-m", "demo.main"]
+ ---> Using cache
+ ---> b8b1c92054b7
+Successfully built b8b1c92054b7
+Successfully tagged synchronizer-framework_worker:latest
+Building beat
+Step 1/11 : FROM python:3.8-slim
+ ---> b281745b6df9
+Step 2/11 : RUN apt-get update ; apt-get install -y sqlite3 vim ; apt-get clean
+ ---> Using cache
+ ---> 25b681e3e49c
+Step 3/11 : WORKDIR /app/synchronizer-framework
+ ---> Using cache
+ ---> 20c652ac628d
+Step 4/11 : COPY ./requirements.txt .
+ ---> Using cache
+ ---> 9a1f9aa5c9a4
+Step 5/11 : RUN pip install -r requirements.txt
+ ---> Using cache
+ ---> ae9c400626e5
+Step 6/11 : COPY src/ ./src
+ ---> Using cache
+ ---> be73849dfe6f
+Step 7/11 : COPY tests ./tests
+ ---> Using cache
+ ---> 3e59bd21b326
+Step 8/11 : COPY conftest.py .
+ ---> Using cache
+ ---> 3c06b0dcc7f9
+Step 9/11 : ENV C_FORCE_ROOT=true
+ ---> Using cache
+ ---> 2a187de06fcd
+Step 10/11 : ENV PYTHONPATH="src/"
+ ---> Using cache
+ ---> 027396f1f6f9
+Step 11/11 : CMD [ "python", "-m", "demo.main"]
+ ---> Using cache
+ ---> b8b1c92054b7
+Successfully built b8b1c92054b7
+Successfully tagged synchronizer-framework_beat:latest
+Creating synchronizer-framework_worker_1   ... done
+Creating synchronizer-framework_beat_1     ... done
+Creating synchronizer-framework_redis_1    ... done
+Creating synchronizer-framework_rabbitmq_1 ... done
+```
+
+## Show worker logs
+```shell
+worker_1    | [2021-04-21 18:16:06,166: INFO/MainProcess] Received task: sync.tasks.sync_all[281f9bc5-6ac8-4355-864e-692995abca5c]  
+worker_1    | [2021-04-21 18:16:06,341: INFO/ForkPoolWorker-2] Task sync.tasks.sync_all[281f9bc5-6ac8-4355-864e-692995abca5c] succeeded in 0.17173888799879933s: [Linking(frozenset({VlanServiceConnection(id=1, name=nic-1, region=eu-central-1, pop=INX6, externalRef=None, parent=VlanServiceProvider(id=2, name=AWS, canUpgrade=False)), CloudRegion(id=2, name=eu-central-1, external_ref=None, parent=CloudServiceProvider(id=2, name=AWS, upgrade_allowed=False))})), Linking(frozenset({CloudRegion(id=2, name=eu-central-1, external_ref=None, parent=CloudServiceProvider(id=2, name=AWS, upgrade_allowed=False)), VlanServiceConnection(id=2, name=nic-2, region=eu-central-1, pop=EqFA5, externalRef=None, parent=VlanServiceProvider(id=2, name=AWS, canUpgrade=False))})), Linking(frozenset({VlanServiceConnection(id=3, name=nic-3, region=eu-west-2, pop=EqFA5, externalRef=nic3-eref, parent=VlanServiceProvider(id=2, name=AWS, canUpgrade=False)), CloudRegion(id=4, name=eu-west-2, external_ref=None, parent=CloudServiceProvider(id=2, name=AWS, upgrade_allowed=False))})), Linking(frozenset({CloudRegion(id=1, name=EU-Frankfurt, external_ref=None, parent=CloudServiceProvider(id=1, name=IBM,..., Li..., ...]
+worker_1    | [2021-04-21 18:16:16,165: INFO/MainProcess] Received task: sync.tasks.sync_all[64b780e0-b5e3-4771-913d-de3f54b2ccec]  
+worker_1    | [2021-04-21 18:16:16,300: INFO/ForkPoolWorker-2] Task sync.tasks.sync_all[64b780e0-b5e3-4771-913d-de3f54b2ccec] succeeded in 0.13250631099799648s: []
+```
+
+## Issue a new object and synchronize it immediately
+
+```python
+from demo.daphne import VlanServiceProvider
+from demo.fixtures import daphne_sqa_ds, desire_sqa_ds, make_mappings
+from demo.celery import tasks
+
+if __name__ == "__main__":
+   ds = daphne_sqa_ds()
+   vlsp = VlanServiceProvider(name="test")
+   ds.create(vlsp)
+
+   tasks.sync_one.delay(
+      daphne_sqa_ds, desire_sqa_ds, make_mappings(), vlsp.__class__, vlsp.id
+   )
+```
+
+
+```shell
+ docker-compose exec worker python src/demo/create_and_sync.py
+```  
+
+## Worker log
+
+```shell
+worker_1    | [2021-04-21 18:22:12,938: INFO/MainProcess] Received task: sync.tasks.sync_one[11dfd53a-1198-47e8-b624-25218b463660]  
+worker_1    | [2021-04-21 18:22:12,957: INFO/ForkPoolWorker-2] ✨ Adding CloudServiceProvider(id=4, name=test, upgrade_allowed=None)
+worker_1    | [2021-04-21 18:22:12,959: INFO/ForkPoolWorker-2] Task sync.tasks.sync_one[11dfd53a-1198-47e8-b624-25218b463660] succeeded in 0.02017242200236069s: [Addition(CloudServiceProvider(id=4, name=test, upgrade_allowed=None)), Linking(frozenset({CloudServiceProvider(id=4, name=test, upgrade_allowed=None), VlanServiceProvider(id=4, name=test, canUpgrade=None)}))]
+```
+
+## Show link and synchronized entry
+```shell
+❯ docker-compose exec redis redis-cli smembers VlanServiceProvider:4:CloudServiceProvider
+1) "CloudServiceProvider:4"
+❯ docker-compose exec worker sqlite3 /tmp/desire.sqlite "SELECT * FROM cloud_service_providers where id = 4;"
+4|test|
+``` 
+
+
