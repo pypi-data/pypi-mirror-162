@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
+
+    <title>Fast Matched Filter &#8212; EQcorrscan 0.4.3 documentation</title>
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="shortcut icon" href="../_static/EQcorrscan_logo.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../_static/js/jquery-1.12.4.min.js "></script>
+<script type="text/javascript" src="../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../_static/bootstrap-3.4.1/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html"><span><img src="../_static/EQcorrscan_logo.jpg"></span>
+          EQcorrscan</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.4</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">1. Introduction to the EQcorrscan package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">2. EQcorrscan installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../updates.html">3. What’s new</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">4. EQcorrscan tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">5. EQcorrscan API</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">Fast Matched Filter</a><ul>
+<li><a class="reference internal" href="#install">Install</a></li>
+<li><a class="reference internal" href="#usage">Usage</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="../_sources/submodules/utils.correlate.fast_matched_filter.rst.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <section id="fast-matched-filter">
+<h1>Fast Matched Filter<a class="headerlink" href="#fast-matched-filter" title="Permalink to this headline">¶</a></h1>
+<p>For those of you looking to combine the best of time-domain correlations, GPUs and
+EQcorrscan, the developers of Fast Matched Filter have written some very fast, very
+parallel correlation routines.  These can be plugged into EQcorrscan to allow you
+to use the EQcorrscan front-end and the Fast Matched Filter backend.</p>
+<p>For information on the Fast Matched Filter project see their <a href="https://github.com/beridel/fast_matched_filter" target="_blank">github</a> page.  If
+you do use their codes, please cite the paper they recommend (at the time of writing,
+this is <a href="https://doi.org/10.1785/0220170181" target="_blank">Beaucé, Eric, W. B. Frank, and Alexey Romanenko (2017). Fast matched-filter (FMF):
+ an efficient seismic matched-filter search for both CPU and GPU architectures. Seismological
+ Research Letters, doi: 10.1785/0220170181</a>).</p>
+<p>Fast Matched Filter is most useful on massively multi-threaded systems, such as those with more
+than 40 CPU cores, or NVIDIA GPU cards (other vendors GPU cards are not supported by Fast
+Matched Filter as of 12/06/2018). It is fast, and very light on memory compared to
+EQcorrscan’s frequency domain calculations. For smaller, CPU-only machines, the frequency domain
+wins out though.</p>
+<section id="install">
+<h2>Install<a class="headerlink" href="#install" title="Permalink to this headline">¶</a></h2>
+<p>Fast Matched Milter is currently only distributed on github.  You can either, follow
+the install instructions on the Fast Matched Filter <a href="https://github.com/beridel/fast_matched_filter" target="_blank">github</a> page, or, if you
+have the pre-requisite compilers (gcc and a recent CUDA C library), install via pip:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install git+https://github.com/beridel/fast_matched_filter
+</pre></div>
+</div>
+<p>This should compile the libraries, and install them on your python path along with
+the python wrappers.  Fast Matched Filter also comes with Matlab wrappers, but… Matlab.
+The install process checks to see if it can compile the CUDA (GPU) version of the
+code as well as the CPU version.  If both can be compiled, they will both be available
+in the next step.</p>
+</section>
+<section id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+<p>To use the Fast Matched Filter correlation routines in EQcorrscan you need to
+wrap their functions to provide the expected input and output.  Note that
+Fast Matched Filter allows weighting of the correlations by channel, which
+is (as of EQcorrscan v.0.3.0) not supported for native correlation functions. In
+this example we set the weights to one for all traces. To wrap Fast Matched Filter
+write a function like:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">eqcorrscan.utils.correlate</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">register_array_xcorr</span><span class="p">,</span> <span class="n">numpy_normxcorr</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">flatten_data</span><span class="p">(</span><span class="n">templates</span><span class="p">,</span> <span class="n">stream</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Helper function to convert to fast-matched-filter&#39;s</span>
+<span class="sd">    require input shapes.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Use channel_weights to define relative weighting</span>
+    <span class="c1"># for specific channel ID&#39;s</span>
+    <span class="c1"># channel_weights = {&#39;NZ.FOZ.10.HHZ&#39;: 0.5}</span>
+    <span class="n">channel_weights</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="c1"># Set a default weight for everything else.</span>
+    <span class="n">default_weight</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+    <span class="c1"># Ensure stream is zero mean</span>
+    <span class="n">stream</span><span class="o">.</span><span class="n">detrend</span><span class="p">()</span>
+    <span class="c1"># Do some reshaping</span>
+    <span class="n">stream</span><span class="o">.</span><span class="n">sort</span><span class="p">([</span><span class="s1">&#39;network&#39;</span><span class="p">,</span> <span class="s1">&#39;station&#39;</span><span class="p">,</span> <span class="s1">&#39;location&#39;</span><span class="p">,</span> <span class="s1">&#39;channel&#39;</span><span class="p">])</span>
+    <span class="n">t_starts</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">template</span> <span class="ow">in</span> <span class="n">templates</span><span class="p">:</span>
+        <span class="n">template</span><span class="o">.</span><span class="n">sort</span><span class="p">([</span><span class="s1">&#39;network&#39;</span><span class="p">,</span> <span class="s1">&#39;station&#39;</span><span class="p">,</span> <span class="s1">&#39;location&#39;</span><span class="p">,</span> <span class="s1">&#39;channel&#39;</span><span class="p">])</span>
+        <span class="n">t_starts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">min</span><span class="p">([</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span> <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">template</span><span class="p">]))</span>
+    <span class="n">stations</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">([</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">station</span> <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">template</span>
+                         <span class="k">for</span> <span class="n">template</span> <span class="ow">in</span> <span class="n">templates</span><span class="p">]))</span>
+    <span class="n">channels</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">n_components</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">station</span> <span class="ow">in</span> <span class="n">stations</span><span class="p">:</span>
+        <span class="n">n_station_components</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">template</span> <span class="ow">in</span> <span class="n">templates</span><span class="p">:</span>
+            <span class="n">unique_station_channels</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span>
+                <span class="p">[</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">channel</span> <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">template</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">station</span><span class="o">=</span><span class="n">station</span><span class="p">)])</span>
+            <span class="c1"># Need to do this to allow for multiple template waveforms from</span>
+            <span class="c1"># the same chanel</span>
+            <span class="n">station_channels</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">channel</span> <span class="ow">in</span> <span class="n">unique_station_channels</span><span class="p">:</span>
+                <span class="n">_st</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">station</span><span class="o">=</span><span class="n">station</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="n">channel</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">_tr</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">_st</span><span class="p">):</span>
+                    <span class="n">station_channels</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">_tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">channel</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">station_channels</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">n_station_components</span><span class="p">:</span>
+                <span class="n">channels</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">station</span><span class="p">:</span> <span class="n">station_channels</span><span class="p">})</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">station_channels</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">n_components</span><span class="p">:</span>
+                <span class="n">n_components</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">station_channels</span><span class="p">)</span>
+    <span class="n">template_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span>
+        <span class="nb">len</span><span class="p">(</span><span class="n">templates</span><span class="p">),</span>
+        <span class="nb">len</span><span class="p">(</span><span class="n">stations</span><span class="p">),</span>
+        <span class="n">n_components</span><span class="p">,</span>
+        <span class="n">templates</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">npts</span><span class="p">))</span>
+    <span class="n">stream_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span>
+        <span class="nb">len</span><span class="p">(</span><span class="n">stations</span><span class="p">),</span>
+        <span class="n">n_components</span><span class="p">,</span>
+        <span class="n">stream</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">npts</span><span class="p">))</span>
+    <span class="n">pad_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span>
+        <span class="nb">len</span><span class="p">(</span><span class="n">templates</span><span class="p">),</span>
+        <span class="nb">len</span><span class="p">(</span><span class="n">stations</span><span class="p">),</span>
+        <span class="n">n_components</span><span class="p">))</span>
+    <span class="n">weight_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">pad_array</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">template</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">templates</span><span class="p">):</span>
+        <span class="n">t_start</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">sort</span><span class="p">([</span><span class="s1">&#39;starttime&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span>
+        <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">station</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">stations</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">channel</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">channels</span><span class="p">[</span><span class="n">station</span><span class="p">]):</span>
+                <span class="n">chan</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+                    <span class="n">station</span><span class="o">=</span><span class="n">station</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="n">channel</span><span class="p">[</span><span class="mi">0</span><span class="p">])[</span><span class="n">channel</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+                <span class="n">template_array</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">chan</span><span class="o">.</span><span class="n">data</span> <span class="o">-</span> <span class="n">chan</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+                <span class="n">pad_array</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
+                    <span class="p">(</span><span class="n">chan</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span> <span class="o">-</span> <span class="n">t_start</span><span class="p">)</span> <span class="o">*</span>
+                    <span class="n">chan</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">)</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">weight</span> <span class="o">=</span> <span class="n">channel_weights</span><span class="p">[</span><span class="n">chan</span><span class="o">.</span><span class="n">id</span><span class="p">]</span>
+                <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                    <span class="n">weight</span> <span class="o">=</span> <span class="n">default_weight</span>
+                <span class="n">weight_array</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">weight</span>
+    <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">station</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">stations</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">channel</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">channels</span><span class="p">[</span><span class="n">station</span><span class="p">]):</span>
+            <span class="n">chan</span> <span class="o">=</span> <span class="n">stream</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+                <span class="n">station</span><span class="o">=</span><span class="n">station</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="n">channel</span><span class="p">[</span><span class="mi">0</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">stream_array</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">chan</span><span class="o">.</span><span class="n">data</span> <span class="o">-</span> <span class="n">chan</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+    <span class="n">template_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span>
+        <span class="n">template_array</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="n">stream_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">stream_array</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="n">pad_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">pad_array</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+    <span class="n">weight_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">weight_array</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">template_array</span><span class="p">,</span> <span class="n">stream_array</span><span class="p">,</span> <span class="n">pad_array</span><span class="p">,</span> <span class="n">weight_array</span>
+
+
+<span class="nd">@register_array_xcorr</span><span class="p">(</span><span class="s2">&quot;fmf&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">fmf_xcorr</span><span class="p">(</span><span class="n">templates</span><span class="p">,</span> <span class="n">stream</span><span class="p">,</span> <span class="n">pads</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;This function is just here as a mapper and does nothing.&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">numpy_normxcorr</span><span class="p">(</span><span class="n">templates</span><span class="p">,</span> <span class="n">stream</span><span class="p">,</span> <span class="n">pads</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+
+<span class="nd">@fmf_xcorr</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s2">&quot;stream_xcorr&quot;</span><span class="p">)</span>
+<span class="nd">@fmf_xcorr</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s2">&quot;concurrent&quot;</span><span class="p">)</span>
+<span class="nd">@fmf_xcorr</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s2">&quot;multiprocess&quot;</span><span class="p">)</span>
+<span class="nd">@fmf_xcorr</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s2">&quot;multithread&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">fmf_multi_xcorr</span><span class="p">(</span><span class="n">templates</span><span class="p">,</span> <span class="n">stream</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Apply FastMatchedFilter routine concurrently.</span>
+
+<span class="sd">    :type templates: list</span>
+<span class="sd">    :param templates:</span>
+<span class="sd">        A list of templates, where each one should be an obspy.Stream object</span>
+<span class="sd">        containing multiple traces of seismic data and the relevant header</span>
+<span class="sd">        information.</span>
+<span class="sd">    :type stream: obspy.core.stream.Stream</span>
+<span class="sd">    :param stream:</span>
+<span class="sd">        A single Stream object to be correlated with the templates.</span>
+
+<span class="sd">    :returns:</span>
+<span class="sd">        New list of :class:`numpy.ndarray` objects.  These will contain</span>
+<span class="sd">        the correlation sums for each template for this day of data.</span>
+<span class="sd">    :rtype: list</span>
+<span class="sd">    :returns:</span>
+<span class="sd">        list of ints as number of channels used for each cross-correlation.</span>
+<span class="sd">    :rtype: list</span>
+<span class="sd">    :returns:</span>
+<span class="sd">        list of list of tuples of station, channel for all cross-correlations.</span>
+<span class="sd">    :rtype: list</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">fast_matched_filter</span> <span class="kn">import</span> <span class="n">matched_filter</span> <span class="k">as</span> <span class="n">fmf</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;FastMatchedFilter is not available&quot;</span><span class="p">)</span>
+
+    <span class="n">Logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Flattening data&quot;</span><span class="p">)</span>
+    <span class="n">t_arr</span><span class="p">,</span> <span class="n">d_arr</span><span class="p">,</span> <span class="n">pads</span><span class="p">,</span> <span class="n">weights</span> <span class="o">=</span> <span class="n">flatten_data</span><span class="p">(</span><span class="n">templates</span><span class="p">,</span> <span class="n">stream</span><span class="p">)</span>
+    <span class="n">Logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Running cross-correlations&quot;</span><span class="p">)</span>
+    <span class="n">cccsums</span> <span class="o">=</span> <span class="n">fmf</span><span class="p">(</span>
+        <span class="n">templates</span><span class="o">=</span><span class="n">t_arr</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">weights</span><span class="p">,</span> <span class="n">moveouts</span><span class="o">=</span><span class="n">pads</span><span class="p">,</span>
+        <span class="n">data</span><span class="o">=</span><span class="n">d_arr</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">arch</span><span class="o">=</span><span class="s1">&#39;gpu&#39;</span><span class="p">)</span>
+    <span class="n">Logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Correlations finished&quot;</span><span class="p">)</span>
+    <span class="c1"># set arch=&#39;gpu&#39; if you want to use the gpu and it</span>
+    <span class="c1"># is available.</span>
+    <span class="n">no_chans</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">chans</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">template</span> <span class="ow">in</span> <span class="n">templates</span><span class="p">:</span>
+        <span class="n">no_chans</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">template</span><span class="p">))</span>
+        <span class="n">chans</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">tr</span><span class="o">.</span><span class="n">id</span> <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">template</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">cccsums</span><span class="p">,</span> <span class="n">no_chans</span><span class="p">,</span> <span class="n">chans</span>
+</pre></div>
+</div>
+<p>This function-name (“fmf”) can then either be passed to any of the <a class="reference external" href="core.match_filter.html">matched_filter</a> functions
+and methods, or set as a default correlation routine as shown in <a class="reference external" href="utils.correlate.html#switching-which-correlation-function-is-used">set_correlation</a>.</p>
+</section>
+</section>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2015-2021: EQcorrscan developers.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.2.1.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

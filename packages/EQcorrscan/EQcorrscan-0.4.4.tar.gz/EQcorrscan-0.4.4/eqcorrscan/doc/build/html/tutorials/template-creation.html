@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
+
+    <title>4.4. Template creation (old API) &#8212; EQcorrscan 0.4.3 documentation</title>
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="shortcut icon" href="../_static/EQcorrscan_logo.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="4.5. Subspace Detection" href="subspace.html" />
+    <link rel="prev" title="4.3. Matched-filter detection" href="matched-filter.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../_static/js/jquery-1.12.4.min.js "></script>
+<script type="text/javascript" src="../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../_static/bootstrap-3.4.1/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html"><span><img src="../_static/EQcorrscan_logo.jpg"></span>
+          EQcorrscan</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.4</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">1. Introduction to the EQcorrscan package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">2. EQcorrscan installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../updates.html">3. What’s new</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../tutorial.html">4. EQcorrscan tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">5. EQcorrscan API</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">4.4. Template creation (old API)</a><ul>
+<li><a class="reference internal" href="#simple-example">4.4.1. Simple example</a></li>
+<li><a class="reference internal" href="#useful-considerations">4.4.2. Useful considerations</a></li>
+<li><a class="reference internal" href="#storing-templates">4.4.3. Storing templates</a></li>
+<li><a class="reference internal" href="#advanced-example">4.4.4. Advanced example</a></li>
+<li><a class="reference internal" href="#converting-from-templates-to-template-and-tribe-objects">4.4.5. Converting from templates to Template and Tribe objects</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="matched-filter.html" title="Previous Chapter: 4.3. Matched-filter detection"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; 4.3. Matched-...</span>
+    </a>
+  </li>
+  <li>
+    <a href="subspace.html" title="Next Chapter: 4.5. Subspace Detection"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">4.5. Subspace... &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="../_sources/tutorials/template-creation.rst.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <section id="template-creation-old-api">
+<h1><span class="section-number">4.4. </span>Template creation (old API)<a class="headerlink" href="#template-creation-old-api" title="Permalink to this headline">¶</a></h1>
+<p>Note: These tutorials are for the functional workflow - for details on creating
+Template and Tribe objects see the <a class="reference internal" href="matched-filter.html"><span class="doc">matched filter</span></a> docs
+page.</p>
+<section id="simple-example">
+<h2><span class="section-number">4.4.1. </span>Simple example<a class="headerlink" href="#simple-example" title="Permalink to this headline">¶</a></h2>
+<p>Within <a class="reference internal" href="../submodules/core.template_gen.html"><span class="doc">template_gen</span></a> there are lots
+of methods for generating templates depending on the type of pick data and
+waveform data you are using.  Have a look at those to check their simple
+examples.</p>
+<p>Example of how to generate a useful template from data available via
+FDSN (see <a href="http://docs.obspy.org/packages/obspy.clients.fdsn.html#module-obspy.clients.fdsn" target="_blank">obspy.clients.fdsn</a> for a list of possible clients):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">obspy.clients.fdsn</span> <span class="kn">import</span> <span class="n">Client</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">obspy.core.event</span> <span class="kn">import</span> <span class="n">Catalog</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">eqcorrscan.core.template_gen</span> <span class="kn">import</span> <span class="n">template_gen</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s1">&#39;NCEDC&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">catalog</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_events</span><span class="p">(</span><span class="n">eventid</span><span class="o">=</span><span class="s1">&#39;72572665&#39;</span><span class="p">,</span> <span class="n">includearrivals</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">templates</span> <span class="o">=</span> <span class="n">template_gen</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s2">&quot;from_client&quot;</span><span class="p">,</span> <span class="n">catalog</span><span class="o">=</span><span class="n">catalog</span><span class="p">,</span>
+<span class="gp">... </span>                         <span class="n">client_id</span><span class="o">=</span><span class="s1">&#39;NCEDC&#39;</span><span class="p">,</span> <span class="n">lowcut</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">highcut</span><span class="o">=</span><span class="mf">9.0</span><span class="p">,</span>
+<span class="gp">... </span>                         <span class="n">samp_rate</span><span class="o">=</span><span class="mf">20.0</span><span class="p">,</span> <span class="n">filt_order</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span>
+<span class="gp">... </span>                         <span class="n">prepick</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span> <span class="n">swin</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">process_len</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This will download data for a single event (given by eventid) from the NCEDC
+database, then use that information to download relevant waveform data.  These
+data will then be filtered and cut according the parameters set.</p>
+<p>It is often wise to set these parameters once as variables at the start of your
+scripts to ensure that the same parameters are used for both template creation and
+matched-filtering.</p>
+<p>The method <em>from_client</em> can cope with multiple events (hence the use of a
+Catalog object), so you can download a lot of events from your chosen client and
+generate templates for them all.</p>
+</section>
+<section id="useful-considerations">
+<h2><span class="section-number">4.4.2. </span>Useful considerations<a class="headerlink" href="#useful-considerations" title="Permalink to this headline">¶</a></h2>
+<p>With these data-mining techniques, memory consumption is often an issue, as well
+as speed.  To reduce memory consumption and increase efficiency it is often
+worth using a subset of picks.  The advanced example below shows one way to do
+this.  In practice, five picks (and therefore traces in a template) is often
+sufficient for matched-filter detections.  However, you should test this on your
+own data.</p>
+<p>Some other things that you might want to consider when generating templates
+include:</p>
+<ul class="simple">
+<li><p>Template-length, you probably only want to include the real earthquake signal in your template,
+so really long templates are probably not the best idea.</p></li>
+<li><p>On the same note, don’t include much (if any) data before the P-phase, unless you have
+good reason to - assuming your noise is random, including noise will reduce the
+correlations.</p></li>
+<li><p>Consider your frequency band - look for peak power in the chosen waveform
+<strong>relative to the noise</strong>.</p></li>
+<li><p>Coda waves often describe scatterers - scattered waves are very interesting,
+but may reduce the generality of your templates.  If this is what you want, include
+coda, if you want a more general template, I would suggest not including coda.
+For examples of this you could try generating a lot of templates from a sequence
+and computing the SVD of the templates to see where the most coherent energy is
+(in the first basis vector), or just computing the stack of the waveforms.</p></li>
+</ul>
+</section>
+<section id="storing-templates">
+<h2><span class="section-number">4.4.3. </span>Storing templates<a class="headerlink" href="#storing-templates" title="Permalink to this headline">¶</a></h2>
+<p>Templates are returned as obspy Stream objects.  You will likely want to store
+these templates on disk.  This is usually best done by saving them as miniseed
+files.  Miniseed uses an efficient compression algorithm and allows multiplexing,
+which is useful for template storage.  However we do not constrain you to this.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">templates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;template.ms&#39;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;MSEED&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="advanced-example">
+<h2><span class="section-number">4.4.4. </span>Advanced example<a class="headerlink" href="#advanced-example" title="Permalink to this headline">¶</a></h2>
+<p>In this example we will download some data and picks from the New Zealand GeoNet
+database and make use of the functions in EQcorrscan to quickly and simply
+generate templates for use in matched-filter detection.  In the example we
+are looking at an earthquake sequence on the east coast of New Zealand’s North
+Island that occurred on the 4th of January 2016.  We will take a set of four
+template events from the sequence that have been picked by GeoNet, of a range
+of magnitudes.  You can decide if these were <em>good</em> templates or not.  You could
+easily extend this by choosing more template events (the mainshock in the
+sequence is a M 5 and you can get the information by clicking <a href="http://www.geonet.org.nz/quakes/region/newzealand/2016p008122" target="_blank">here</a>).</p>
+<p>You do not need to use data from an online server, many pick formats can be
+parsed, either by obspy, or (for seisan pick files) through the Sfile_utils
+module in EQcorrscan.</p>
+<p>This template script is written to be general, so you should be able to give
+command line arguments to the script to generate templates from other
+FDSN databases.  Note that some data-centers do not support full FDSN quakeml
+files, and working out which do is quite painful.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Simple tutorial detailing how to generate a series of templates from catalog\</span>
+<span class="sd">data available online.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">obspy.clients.fdsn</span> <span class="kn">import</span> <span class="n">Client</span>
+<span class="kn">from</span> <span class="nn">obspy.core.event</span> <span class="kn">import</span> <span class="n">Catalog</span>
+
+<span class="kn">from</span> <span class="nn">eqcorrscan.utils.catalog_utils</span> <span class="kn">import</span> <span class="n">filter_picks</span>
+<span class="kn">from</span> <span class="nn">eqcorrscan.core</span> <span class="kn">import</span> <span class="n">template_gen</span>
+
+<span class="c1"># Set up logging</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span>
+    <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span>
+    <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%(asctime)s</span><span class="se">\t</span><span class="si">%(name)s</span><span class="se">\t</span><span class="si">%(levelname)s</span><span class="se">\t</span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">mktemplates</span><span class="p">(</span>
+        <span class="n">network_code</span><span class="o">=</span><span class="s1">&#39;GEONET&#39;</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">public_ids</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Functional wrapper to make templates&quot;&quot;&quot;</span>
+    <span class="n">public_ids</span> <span class="o">=</span> <span class="n">public_ids</span> <span class="ow">or</span> <span class="p">[</span>
+        <span class="s1">&#39;2016p008122&#39;</span><span class="p">,</span> <span class="s1">&#39;2016p008353&#39;</span><span class="p">,</span> <span class="s1">&#39;2016p008155&#39;</span><span class="p">,</span> <span class="s1">&#39;2016p008194&#39;</span><span class="p">]</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="n">network_code</span><span class="p">)</span>
+    <span class="c1"># We want to download a few events from an earthquake sequence, these are</span>
+    <span class="c1"># identified by publiID numbers, given as arguments</span>
+
+    <span class="n">catalog</span> <span class="o">=</span> <span class="n">Catalog</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">public_id</span> <span class="ow">in</span> <span class="n">public_ids</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">catalog</span> <span class="o">+=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_events</span><span class="p">(</span>
+                <span class="n">eventid</span><span class="o">=</span><span class="n">public_id</span><span class="p">,</span> <span class="n">includearrivals</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="c1"># Cope with some FDSN services not implementing includearrivals</span>
+            <span class="n">catalog</span> <span class="o">+=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_events</span><span class="p">(</span><span class="n">eventid</span><span class="o">=</span><span class="n">public_id</span><span class="p">)</span>
+
+    <span class="c1"># Lets plot the catalog to see what we have</span>
+    <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
+        <span class="n">catalog</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">projection</span><span class="o">=</span><span class="s1">&#39;local&#39;</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="s1">&#39;h&#39;</span><span class="p">)</span>
+
+    <span class="c1"># We don&#39;t need all the picks, lets take the information from the</span>
+    <span class="c1"># five most used stations - note that this is done to reduce computational</span>
+    <span class="c1"># costs.</span>
+    <span class="n">catalog</span> <span class="o">=</span> <span class="n">filter_picks</span><span class="p">(</span><span class="n">catalog</span><span class="p">,</span> <span class="n">top_n_picks</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+    <span class="c1"># We only want the P picks in this example, but you can use others or all</span>
+    <span class="c1">#  picks if you want.</span>
+    <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">catalog</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">pick</span> <span class="ow">in</span> <span class="n">event</span><span class="o">.</span><span class="n">picks</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">pick</span><span class="o">.</span><span class="n">phase_hint</span> <span class="o">==</span> <span class="s1">&#39;S&#39;</span><span class="p">:</span>
+                <span class="n">event</span><span class="o">.</span><span class="n">picks</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">pick</span><span class="p">)</span>
+
+    <span class="c1"># Now we can generate the templates</span>
+    <span class="n">templates</span> <span class="o">=</span> <span class="n">template_gen</span><span class="o">.</span><span class="n">template_gen</span><span class="p">(</span>
+        <span class="n">method</span><span class="o">=</span><span class="s1">&#39;from_client&#39;</span><span class="p">,</span> <span class="n">catalog</span><span class="o">=</span><span class="n">catalog</span><span class="p">,</span> <span class="n">client_id</span><span class="o">=</span><span class="n">network_code</span><span class="p">,</span>
+        <span class="n">lowcut</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">highcut</span><span class="o">=</span><span class="mf">9.0</span><span class="p">,</span> <span class="n">samp_rate</span><span class="o">=</span><span class="mf">20.0</span><span class="p">,</span> <span class="n">filt_order</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span>
+        <span class="n">prepick</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span> <span class="n">swin</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="n">process_len</span><span class="o">=</span><span class="mi">3600</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="n">plot</span><span class="p">)</span>
+
+    <span class="c1"># We now have a series of templates! Using Obspy&#39;s Stream.write() method we</span>
+    <span class="c1"># can save these to disk for later use.  We will do that now for use in the</span>
+    <span class="c1"># following tutorials.</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">template</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">templates</span><span class="p">):</span>
+        <span class="n">template</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;tutorial_template_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;.ms&#39;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;MSEED&#39;</span><span class="p">)</span>
+        <span class="c1"># Note that this will warn you about data types.  As we don&#39;t care</span>
+        <span class="c1"># at the moment, whatever obspy chooses is fine.</span>
+    <span class="k">return</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Wrapper for template creation&quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">sys</span>
+    <span class="kn">import</span> <span class="nn">warnings</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Needs a network ID followed by a list of event IDs, &#39;</span> <span class="o">+</span>
+                      <span class="s1">&#39;will run the test case instead&#39;</span><span class="p">)</span>
+        <span class="n">mktemplates</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">net_code</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">idlist</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)[</span><span class="mi">2</span><span class="p">:]</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">idlist</span><span class="p">)</span>
+        <span class="n">mktemplates</span><span class="p">(</span><span class="n">network_code</span><span class="o">=</span><span class="n">net_code</span><span class="p">,</span> <span class="n">public_ids</span><span class="o">=</span><span class="n">idlist</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Try this example for another, Northern California Data Center earthquake:</p>
+<p><code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">template_creation.py</span> <span class="pre">NCEDC</span> <span class="pre">72572665</span></code></p>
+<p>This will (unfortunately for you) generate a warning about un-labelled picks,
+as many data-centers do not provide phase-hints with their picks.  We care about
+which phase is which when we have to run our cross-correlation re-picker
+(yet to be completed), which means that we, by convention, assign P-picks
+to the vertical channel and S-picks to both horizontal channels.</p>
+<p>This will also show template waveforms for both the automatic and the manual
+picks - you can change this by removing either automatic or manual picks
+y setting the <em>evaluation_mode</em> flag in <a class="reference internal" href="../submodules/autogen/eqcorrscan.utils.catalog_utils.filter_picks.html#eqcorrscan.utils.catalog_utils.filter_picks" title="eqcorrscan.utils.catalog_utils.filter_picks"><code class="xref py py-func docutils literal notranslate"><span class="pre">eqcorrscan.utils.catalog_utils.filter_picks()</span></code></a>.</p>
+<p><strong>Note:</strong> To run this script and for all map plotting you will need to install
+matplotlib-toolkits basemap package.  Install instructions and a link to the
+download are <a href="http://matplotlib.org/basemap/users/installing.html" target="_blank">here</a>. We recommend that you install the package using
+your system package manager if it is available.</p>
+<p><strong>Important considerations</strong></p>
+<p>In this tutorial we enforce downloading of day-long data for the template
+generation.  This is to ensure that the data we make the template from, and
+the data we use for detection are processed in exactly the same way.  If we
+were to only download a short segment of data around the event and process this
+we would find that the resampling process would result in minor differences
+between the templates and the continuous data.  This has the effect that, for
+self-detections, the cross-correlation values are less than 1.</p>
+<p>This is an important effect and something that you should consider when generating
+your own templates.  You <strong>MUST</strong> process your templates in the exact same way
+(using the same routines, same filters, same resampling, and same data length)
+as your continuous data.  It can have a very significant impact to your results.</p>
+<p>The functions provided in <a class="reference internal" href="../submodules/core.template_gen.html"><span class="doc">template_gen</span></a>
+are there to aid you, but if you look at the source code, all they are doing is:</p>
+<ul class="simple">
+<li><p>Detrending;</p></li>
+<li><p>Resampling;</p></li>
+<li><p>Filtering;</p></li>
+<li><p>and cutting.</p></li>
+</ul>
+<p>If you want to do these things another way you are more then welcome to!</p>
+</section>
+<section id="converting-from-templates-to-template-and-tribe-objects">
+<h2><span class="section-number">4.4.5. </span>Converting from templates to Template and Tribe objects<a class="headerlink" href="#converting-from-templates-to-template-and-tribe-objects" title="Permalink to this headline">¶</a></h2>
+<p>This section should guide you through generating
+<code class="xref py py-class docutils literal notranslate"><span class="pre">eqcorrscan.core.match_filter.Template</span></code> and
+<code class="xref py py-class docutils literal notranslate"><span class="pre">eqcorrscan.core.match_filter.Tribe</span></code> objects from the simple templates
+created above.  This should provide you with a means to migrate from older
+scripts to the more modern, object-oriented workflows in
+<a class="reference internal" href="matched-filter.html"><span class="doc">matched filter</span></a>.</p>
+<p>To generate a <code class="xref py py-class docutils literal notranslate"><span class="pre">eqcorrscan.core.match_filter.Template</span></code> from a cut, processed
+waveform generated by the <a class="reference internal" href="../submodules/core.template_gen.html"><span class="doc">template_gen</span></a> functions
+you must fill all the attributes of the <code class="xref py py-class docutils literal notranslate"><span class="pre">eqcorrscan.core.match_filter.Template</span></code>
+object. You must use the parameters you used when generating the template
+waveform.  Note that you do not need to include an <cite>event</cite> to make a complete
+<code class="xref py py-class docutils literal notranslate"><span class="pre">eqcorrscan.core.match_filter.Template</span></code> object, but it will be benficial
+for further location of detected events.</p>
+<p>In the following example we take a cut-waveform and convert it to a
+<code class="xref py py-class docutils literal notranslate"><span class="pre">eqcorrscan.core.match_filter.Template</span></code> object using the parameters we
+used to generate the waveform:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">eqcorrscan.core.match_filter</span> <span class="kn">import</span> <span class="n">Template</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">template</span> <span class="o">=</span> <span class="n">Template</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;test_template&#39;</span><span class="p">,</span> <span class="n">st</span><span class="o">=</span><span class="n">templates</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">lowcut</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">highcut</span><span class="o">=</span><span class="mf">9.0</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">samp_rate</span><span class="o">=</span><span class="mf">20.0</span><span class="p">,</span> <span class="n">filt_order</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">prepick</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span> <span class="n">process_length</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You can then make a <code class="xref py py-class docutils literal notranslate"><span class="pre">eqcorrscan.core.match_filter.Tribe</span></code> from a list of
+<code class="xref py py-class docutils literal notranslate"><span class="pre">eqcorrscan.core.match_filter.Template</span></code> objects as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">eqcorrscan.core.match_filter</span> <span class="kn">import</span> <span class="n">Tribe</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tribe</span> <span class="o">=</span> <span class="n">Tribe</span><span class="p">(</span><span class="n">templates</span><span class="o">=</span><span class="p">[</span><span class="n">template</span><span class="p">])</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2015-2021: EQcorrscan developers.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.2.1.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

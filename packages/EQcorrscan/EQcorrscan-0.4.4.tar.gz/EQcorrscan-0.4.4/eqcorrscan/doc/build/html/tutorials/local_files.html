@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
+
+    <title>4.2. Local File Tutorial &#8212; EQcorrscan 0.4.3 documentation</title>
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="shortcut icon" href="../_static/EQcorrscan_logo.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="4.3. Matched-filter detection" href="matched-filter.html" />
+    <link rel="prev" title="4.1. Quick Start" href="quick_start.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../_static/js/jquery-1.12.4.min.js "></script>
+<script type="text/javascript" src="../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../_static/bootstrap-3.4.1/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html"><span><img src="../_static/EQcorrscan_logo.jpg"></span>
+          EQcorrscan</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.4</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">1. Introduction to the EQcorrscan package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">2. EQcorrscan installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../updates.html">3. What’s new</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../tutorial.html">4. EQcorrscan tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">5. EQcorrscan API</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">4.2. Local File Tutorial</a><ul>
+<li><a class="reference internal" href="#Matched-filter-signal-detection-on-local-files-with-EQcorrscan">4.2.1. Matched-filter signal detection on local files with EQcorrscan</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="quick_start.html" title="Previous Chapter: 4.1. Quick Start"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; 4.1. Quick Start</span>
+    </a>
+  </li>
+  <li>
+    <a href="matched-filter.html" title="Next Chapter: 4.3. Matched-filter detection"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">4.3. Matched-... &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="../_sources/tutorials/local_files.ipynb.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput.container,
+div.nbinput.container div.prompt,
+div.nbinput.container div.input_area,
+div.nbinput.container div[class*=highlight],
+div.nbinput.container div[class*=highlight] pre,
+div.nboutput.container,
+div.nboutput.container div.prompt,
+div.nboutput.container div.output_area,
+div.nboutput.container div[class*=highlight],
+div.nboutput.container div[class*=highlight] pre {
+    background: none;
+    border: none;
+    padding: 0 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+/* avoid gaps between output lines */
+div.nboutput.container div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput.container,
+div.nboutput.container {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput.container,
+    div.nboutput.container {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput.container {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast.container {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput.container div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput.container div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput.container div.prompt,
+div.nboutput.container div.prompt {
+    width: 4.5ex;
+    padding-top: 5px;
+    position: relative;
+    user-select: none;
+}
+
+div.nbinput.container div.prompt > div,
+div.nboutput.container div.prompt > div {
+    position: absolute;
+    right: 0;
+    margin-right: 0.3ex;
+}
+
+@media (max-width: 540px) {
+    div.nbinput.container div.prompt,
+    div.nboutput.container div.prompt {
+        width: unset;
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput.container div.prompt.empty {
+        padding: 0;
+    }
+
+    div.nbinput.container div.prompt > div,
+    div.nboutput.container div.prompt > div {
+        position: unset;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput.container div.prompt pre,
+div.nboutput.container div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput.container div.input_area,
+div.nboutput.container div.output_area {
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput.container div.input_area,
+    div.nboutput.container div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput.container div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    background: #f5f5f5;
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput.container div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput.container div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput.container div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+
+div.nbinput.container div.input_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight].math,
+div.nboutput.container div.output_area.rendered_html,
+div.nboutput.container div.output_area > div.output_javascript,
+div.nboutput.container div.output_area:not(.rendered_html) > img{
+    padding: 5px;
+}
+
+/* fix copybtn overflow problem in chromium (needed for 'sphinx_copybutton') */
+div.nbinput.container div.input_area > div[class^='highlight'],
+div.nboutput.container div.output_area > div[class^='highlight']{
+    overflow-y: hidden;
+}
+
+/* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
+.prompt a.copybtn {
+    display: none;
+}
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+</style>
+<section id="Local-File-Tutorial">
+<h1><span class="section-number">4.2. </span>Local File Tutorial<a class="headerlink" href="#Local-File-Tutorial" title="Permalink to this headline">¶</a></h1>
+<p>The goal of this notebook is to provide a tutorial for working with local files and custom event catalogs. See the <a class="reference internal" href="quick_start.html"><span class="doc">quick_start</span></a> tutorial for working with event catalogs and data retrieved from a <code class="docutils literal notranslate"><span class="pre">Client</span></code>.</p>
+<section id="Matched-filter-signal-detection-on-local-files-with-EQcorrscan">
+<h2><span class="section-number">4.2.1. </span>Matched-filter signal detection on local files with EQcorrscan<a class="headerlink" href="#Matched-filter-signal-detection-on-local-files-with-EQcorrscan" title="Permalink to this headline">¶</a></h2>
+<p>One of the main applications of EQcorrscan is to detect earthquakes or other seimic signals using matched-filters (aka template-matching). To undertake matched-filtering templates are required. Templates are simply processed waveforms. In EQcorrscan templates are realised as <code class="docutils literal notranslate"><span class="pre">Template</span></code> objects, which contain the waveform data and meta-data associated with their creation. Groups of <code class="docutils literal notranslate"><span class="pre">Template</span></code> objects are stored in <code class="docutils literal notranslate"><span class="pre">Tribe</span></code> objects. To demonstrate this, we will create a <code class="docutils literal notranslate"><span class="pre">Tribe</span></code> for a M1.1
+event in Southern Alaska.</p>
+<p>Before we begin we will set up logging - EQcorrscan provides textual output through the native Python <a class="reference external" href="https://docs.python.org/3/library/logging.html">logging library</a>. The standard <code class="docutils literal notranslate"><span class="pre">DEBUG</span></code>, <code class="docutils literal notranslate"><span class="pre">INFO</span></code>, <code class="docutils literal notranslate"><span class="pre">WARNING</span></code>, <code class="docutils literal notranslate"><span class="pre">ERROR</span></code> and <code class="docutils literal notranslate"><span class="pre">CRITICAL</span></code> levels are supported. For this we will set to <code class="docutils literal notranslate"><span class="pre">ERROR</span></code> to reduce the output. When starting off you might want to set to <code class="docutils literal notranslate"><span class="pre">INFO</span></code>, or if something is happening that you don’t expect, <code class="docutils literal notranslate"><span class="pre">DEBUG</span></code> will give you much more output.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># set up logging</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span>
+    <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">,</span>
+    <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%(asctime)s</span><span class="se">\t</span><span class="si">%(name)s</span><span class="se">\t</span><span class="si">%(levelname)s</span><span class="se">\t</span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Now we need a catalog of events. You can either download a catalog using <code class="docutils literal notranslate"><span class="pre">client.get_events</span></code> as shown in the quick start tutorial, or you can build your own catalog following the example below. To build a custom event catalog compatible with EQcorrscan the phase arrival times need to be stored in a Obspy catalog complete with network and channel information for each station. First we generate a HYPODD format file, then read it into an Obspy catalog, then complete the catalog with missing
+network and channel information.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># build catalog of events to use as templates</span>
+
+<span class="kn">from</span> <span class="nn">obspy</span> <span class="kn">import</span> <span class="n">UTCDateTime</span><span class="p">,</span> <span class="n">Stream</span><span class="p">,</span> <span class="n">read</span><span class="p">,</span> <span class="n">read_events</span>
+
+<span class="c1"># create HYPODD format file with template events to import them into EQcorrscan</span>
+<span class="c1"># entries are: #, YR, MO, DY, HR, MN, SC, LAT, LON, DEP, MAG, EH, EZ, RMS, ID</span>
+<span class="c1">#              followed by lines of observations: STA, TT, WGHT, PHA</span>
+<span class="c1"># as specified here: https://www.ldeo.columbia.edu/~felixw/papers/Waldhauser_OFR2001.pdf</span>
+<span class="n">templates</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;# 2016  9 26  8 52 40.00  61.9833 -144.0437   1.70  1.10  0.0  0.0  0.00  1</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+             <span class="s2">&quot;RH08    5.180  1       P</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+             <span class="s2">&quot;NEB1    5.809  1       P</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+             <span class="s2">&quot;NEB3    5.661  1       P</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">]</span>
+
+<span class="c1"># now write to Obspy readable catalog file</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;templates.pha&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">templates</span><span class="p">:</span>
+        <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+
+<span class="c1"># read the file into an Obspy catalog</span>
+<span class="n">catalog</span> <span class="o">=</span> <span class="n">read_events</span><span class="p">(</span><span class="s2">&quot;templates.pha&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;HYPODDPHA&quot;</span><span class="p">)</span>
+
+<span class="c1"># complete missing catalog info (information required by EQcorrscan)</span>
+<span class="c1"># station dict to add data needed by EQcorrscan</span>
+<span class="n">station_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;RH08&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;network&quot;</span><span class="p">:</span> <span class="s2">&quot;YG&quot;</span><span class="p">,</span> <span class="s2">&quot;channel&quot;</span><span class="p">:</span> <span class="s2">&quot;BHZ&quot;</span><span class="p">},</span>
+                <span class="s2">&quot;NEB1&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;network&quot;</span><span class="p">:</span> <span class="s2">&quot;YG&quot;</span><span class="p">,</span> <span class="s2">&quot;channel&quot;</span><span class="p">:</span> <span class="s2">&quot;BHZ&quot;</span><span class="p">},</span>
+                <span class="s2">&quot;NEB3&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;network&quot;</span><span class="p">:</span> <span class="s2">&quot;YG&quot;</span><span class="p">,</span> <span class="s2">&quot;channel&quot;</span><span class="p">:</span> <span class="s2">&quot;BHZ&quot;</span><span class="p">}}</span>
+<span class="c1"># assign network and channel to catalog</span>
+<span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">catalog</span><span class="o">.</span><span class="n">events</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">pick</span> <span class="ow">in</span> <span class="n">event</span><span class="o">.</span><span class="n">picks</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">pick</span><span class="o">.</span><span class="n">waveform_id</span><span class="o">.</span><span class="n">station_code</span> <span class="ow">in</span> <span class="n">station_dict</span><span class="p">:</span>
+            <span class="n">pick</span><span class="o">.</span><span class="n">waveform_id</span><span class="o">.</span><span class="n">network_code</span> <span class="o">=</span> <span class="n">station_dict</span><span class="p">[</span><span class="n">pick</span><span class="o">.</span><span class="n">waveform_id</span><span class="o">.</span><span class="n">station_code</span><span class="p">][</span><span class="s2">&quot;network&quot;</span><span class="p">]</span>
+            <span class="n">pick</span><span class="o">.</span><span class="n">waveform_id</span><span class="o">.</span><span class="n">channel_code</span> <span class="o">=</span> <span class="n">station_dict</span><span class="p">[</span><span class="n">pick</span><span class="o">.</span><span class="n">waveform_id</span><span class="o">.</span><span class="n">station_code</span><span class="p">][</span><span class="s2">&quot;channel&quot;</span><span class="p">]</span>
+
+<span class="c1"># inspect the contents</span>
+<span class="n">catalog</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">picks</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[Pick
+         resource_id: ResourceIdentifier(id=&#34;smi:local/ea3eb3f5-a380-4841-8a6f-05e49bc13083&#34;)
+                time: UTCDateTime(2016, 9, 26, 8, 52, 45, 180000)
+         waveform_id: WaveformStreamID(network_code=&#39;YG&#39;, station_code=&#39;RH08&#39;, channel_code=&#39;BHZ&#39;, location_code=&#39;&#39;)
+          phase_hint: &#39;P&#39;,
+ Pick
+         resource_id: ResourceIdentifier(id=&#34;smi:local/91501389-693d-4b71-81d5-9f76c1dffeec&#34;)
+                time: UTCDateTime(2016, 9, 26, 8, 52, 45, 809000)
+         waveform_id: WaveformStreamID(network_code=&#39;YG&#39;, station_code=&#39;NEB1&#39;, channel_code=&#39;BHZ&#39;, location_code=&#39;&#39;)
+          phase_hint: &#39;P&#39;,
+ Pick
+         resource_id: ResourceIdentifier(id=&#34;smi:local/00f1ddc9-a89d-42fc-a7c2-a25ddff68ce4&#34;)
+                time: UTCDateTime(2016, 9, 26, 8, 52, 45, 661000)
+         waveform_id: WaveformStreamID(network_code=&#39;YG&#39;, station_code=&#39;NEB3&#39;, channel_code=&#39;BHZ&#39;, location_code=&#39;&#39;)
+          phase_hint: &#39;P&#39;]
+</pre></div></div>
+</div>
+<p>EQcorrscan can be used with data directly from a <code class="docutils literal notranslate"><span class="pre">Client</span></code> or local data. In the cell below, data is downloaded locally to the ‘data’ directory, and later used for event detection.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># download data for specified stations locally to the &#39;data&#39; directory</span>
+<span class="kn">from</span> <span class="nn">obspy.clients.fdsn</span> <span class="kn">import</span> <span class="n">Client</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="c1"># make directory for data</span>
+<span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="s2">&quot;./data&quot;</span><span class="p">)</span>
+
+<span class="c1"># helper function to download data from IRIS DMC via Obspy</span>
+<span class="k">def</span> <span class="nf">download_Waveforms</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">stations</span><span class="p">,</span> <span class="n">location</span><span class="p">,</span> <span class="n">channels</span><span class="p">,</span> <span class="n">start_Time</span><span class="p">,</span> <span class="n">end_Time</span><span class="p">):</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;IRIS&quot;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">station</span> <span class="ow">in</span> <span class="n">stations</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">channel</span> <span class="ow">in</span> <span class="n">channels</span><span class="p">:</span>
+            <span class="n">st</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_waveforms</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">station</span><span class="p">,</span> <span class="n">location</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span>
+                                      <span class="n">start_Time</span><span class="p">,</span> <span class="n">end_Time</span><span class="p">)</span>
+            <span class="c1"># fix rounding errors in sampling rate before merging</span>
+            <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">trace</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">st</span><span class="p">):</span>
+                <span class="n">st</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">trace</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">)</span>
+
+            <span class="c1"># do not fill with 0&#39;s when using EQcorrscan</span>
+            <span class="n">st</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+            <span class="n">filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">network</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">station</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">channel</span><span class="si">}</span><span class="s2">&quot;</span> \
+                           <span class="sa">f</span><span class="s2">&quot;.</span><span class="si">{</span><span class="n">start_Time</span><span class="o">.</span><span class="n">year</span><span class="si">}</span><span class="s2">&quot;</span> \
+                           <span class="sa">f</span><span class="s2">&quot;-</span><span class="si">{</span><span class="n">start_Time</span><span class="o">.</span><span class="n">month</span><span class="si">:</span><span class="s2">02</span><span class="si">}</span><span class="s2">-&quot;</span> \
+                           <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">start_Time</span><span class="o">.</span><span class="n">day</span><span class="si">:</span><span class="s2">02</span><span class="si">}</span><span class="s2">.ms&quot;</span>
+
+            <span class="n">st</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;./data/</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;MSEED&quot;</span><span class="p">)</span>
+
+<span class="c1"># 1 day of data downloaded for three stations in the YG network</span>
+<span class="n">network</span> <span class="o">=</span> <span class="s2">&quot;YG&quot;</span>
+<span class="n">stations</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;RH08&quot;</span><span class="p">,</span> <span class="s2">&quot;NEB1&quot;</span><span class="p">,</span> <span class="s2">&quot;NEB3&quot;</span><span class="p">]</span>
+<span class="n">location</span> <span class="o">=</span> <span class="s2">&quot;**&quot;</span>
+<span class="n">channels</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;BHZ&quot;</span><span class="p">,</span> <span class="s2">&quot;BHN&quot;</span><span class="p">,</span> <span class="s2">&quot;BHE&quot;</span><span class="p">]</span>
+<span class="c1"># the date range</span>
+<span class="n">start_Time</span> <span class="o">=</span> <span class="n">UTCDateTime</span><span class="p">(</span><span class="s2">&quot;2016-09-26T00:00:00.0Z&quot;</span><span class="p">)</span>
+<span class="n">end_Time</span> <span class="o">=</span>   <span class="n">UTCDateTime</span><span class="p">(</span><span class="s2">&quot;2016-09-26T23:59:59.999999Z&quot;</span><span class="p">)</span>
+<span class="c1"># download the files</span>
+<span class="n">download_Waveforms</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">stations</span><span class="p">,</span> <span class="n">location</span><span class="p">,</span> <span class="n">channels</span><span class="p">,</span> <span class="n">start_Time</span><span class="p">,</span> <span class="n">end_Time</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># load templates from local data and catalog generated above</span>
+
+<span class="kn">from</span> <span class="nn">eqcorrscan</span> <span class="kn">import</span> <span class="n">Tribe</span>
+
+<span class="c1"># build stream of all stations for detection from &#39;data&#39; directory</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="n">files_path</span> <span class="o">=</span> <span class="s2">&quot;./data&quot;</span>
+<span class="n">file_list</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">files_path</span><span class="si">}</span><span class="s2">/*.ms&quot;</span><span class="p">)</span>
+
+<span class="c1"># load files into stream</span>
+<span class="n">st</span> <span class="o">=</span> <span class="n">Stream</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">file_list</span><span class="p">:</span>
+    <span class="n">st</span> <span class="o">+=</span> <span class="n">read</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+
+<span class="c1"># update process_len to the duration in seconds</span>
+<span class="n">process_len</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">end_Time</span> <span class="o">-</span> <span class="n">start_Time</span><span class="p">)</span>
+
+<span class="c1"># bandpass 1-15 Hz, 5.0 second template + 1.0 s prepick = 6.0 second template</span>
+<span class="n">tribe</span> <span class="o">=</span> <span class="n">Tribe</span><span class="p">()</span><span class="o">.</span><span class="n">construct</span><span class="p">(</span>
+    <span class="n">method</span><span class="o">=</span><span class="s2">&quot;from_meta_file&quot;</span><span class="p">,</span> <span class="n">meta_file</span><span class="o">=</span><span class="n">catalog</span><span class="p">,</span> <span class="n">st</span><span class="o">=</span><span class="n">st</span><span class="p">,</span> <span class="n">lowcut</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">highcut</span><span class="o">=</span><span class="mf">15.0</span><span class="p">,</span>
+    <span class="n">samp_rate</span><span class="o">=</span><span class="mf">40.0</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">filt_order</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">prepick</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">swin</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span>
+    <span class="n">process_len</span><span class="o">=</span><span class="n">process_len</span><span class="p">,</span> <span class="n">parallel</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">tribe</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Tribe of 1 templates
+</pre></div></div>
+</div>
+<p>This makes a tribe by:</p>
+<ol class="arabic simple">
+<li><p>Loading data from the Stream built from local files;</p></li>
+<li><p>Detrending, filtering and resampling the data;</p></li>
+<li><p>Trimming the data around picks within each event in the catalog.</p></li>
+</ol>
+<p>To make this <code class="docutils literal notranslate"><span class="pre">Tribe</span></code> we used a few different arguments:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">method</span></code>: The ‘from_meta_file’ method specifies to load a catalog from a file or Obspy catalog object.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">meta_file</span></code>: The file or Obspy catalog object to load the event catalog from.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">st</span></code>: The Stream containing the local data.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">lowcut</span></code>: This controls the lower corner frequency of a filter in Hz. EQcorrscan natively uses Obspy’s butterworth filter functions. For more details, see the <a class="reference external" href="https://docs.obspy.org/packages/autogen/obspy.core.stream.Stream.filter.html">Obspy docs</a>. This can optionally be set to <code class="docutils literal notranslate"><span class="pre">None</span></code> to not apply filtering at low frequencies.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">highcut</span></code>: This controls the upper corner frequency of a filter in Hz. It is applied in tandem with lowcut, or can be set to <code class="docutils literal notranslate"><span class="pre">None</span></code> to not apply filtering at high frequencies.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">samp_rate</span></code>: The desired sampling-rate of the templates in Hz. EQcorrscan requires that templates and continuous data be sampled at the same rate. In this case we are downsampling data from 100.0 Hz to 50.0 Hz. We do this to reduce memory-load. EQcorrscan uses Obspy’s <a class="reference external" href="https://docs.obspy.org/packages/autogen/obspy.core.stream.Stream.resample.html#obspy.core.stream.Stream.resample">resampling method</a></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">length</span></code>: This is the length of the template waveform on each channel in seconds.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">filt_order</span></code>: This sets the number of corners/order of the filter applied using <code class="docutils literal notranslate"><span class="pre">highcut</span></code> and <code class="docutils literal notranslate"><span class="pre">lowcut</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">prepick</span></code>: The number of seconds prior to a phase-pick to start a template waveform.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">catalog</span></code>: The catalog of events to generate templates for.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">process_len</span></code>: The length of data to download in seconds for each template. This should be the same as the length of your continuous data, e.g. if you data are in day-long files, this should be set to <code class="docutils literal notranslate"><span class="pre">86400</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">parallel</span></code>: Whether to process the data in parallel or not. This will increase memory load, if you find yourself running out of memory, set <code class="docutils literal notranslate"><span class="pre">parallel=False</span></code> for these template construction methods.</p></li>
+</ul>
+<p>Lets have a quick look at the attributes of a <code class="docutils literal notranslate"><span class="pre">Template</span></code>:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># inspect first template</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">tribe</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">tribe</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">st</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">equal_scale</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">800</span><span class="p">,</span> <span class="mi">600</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Template 2016_09_26t08_52_44:
+         3 channels;
+         lowcut: 1.0 Hz;
+         highcut: 15.0 Hz;
+         sampling rate 40.0 Hz;
+         filter order: 4;
+         process length: 86400.0 s
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/tutorials_local_files_8_1.png" src="../_images/tutorials_local_files_8_1.png" />
+</div>
+</div>
+<p>We can see that this template has data from multiple stations, and that our processing parameters are stored alongside the template waveform. This means that we can ensure that when we work on continuous data to run matched-filtering the data are processed in the same way.</p>
+<p>Next we use this tribe to detect earthquakes within one day of data from Southern Alaska. We utilize the same Stream object built above, which contains data for September 26, 2016.</p>
+<p>This next cell will:</p>
+<ol class="arabic simple">
+<li><p>Process the data in the same way as the templates in the <code class="docutils literal notranslate"><span class="pre">Tribe</span></code> (note that your tribe can contain templates processed in different ways: these will be grouped into similarly processed templates and the matched-filter process will be run multiple times; once for each group of similar templates);</p></li>
+<li><p>Cross-correlate the templates with the processed data and stack the correlations;</p></li>
+<li><p>Detect within each templates stacked cross-correlation array based on a given threshold;</p></li>
+<li><p>Generate <code class="docutils literal notranslate"><span class="pre">Detection</span></code> objects with Obspy events and meta-data</p></li>
+</ol>
+<p>Again, we use a few arguments here:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">st</span></code>: This again is the stream of data built from local files;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">threshold</span></code>: The threshold for detection: note that the correlation sum is both positive and negative valued. Detections are made based on the absolute of the correlation vector, so both postively and negatively correlated detections are made;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">daylong</span></code>: Uses efficient preprocessing for files that span 1 day;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">threshold_type</span></code>: The type of threshold to use, in this case we used <code class="docutils literal notranslate"><span class="pre">&quot;MAD&quot;</span></code>, the median absolute deviation, our <code class="docutils literal notranslate"><span class="pre">threshold</span></code> is the MAD multiplier;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">trig_int</span></code>: The minimum time (in seconds) between triggers. The highest absolute correlation value will be used within this window if multiple possible triggers occur. Note that this only applies within the detections from one template.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">plot</span></code>: We turned plotting off in this case;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">return_stream</span></code>: Setting this to <code class="docutils literal notranslate"><span class="pre">True</span></code> will return the pre-processed stream, allowing us to reuse this stream for later processing.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">parallel_process</span></code>: Utilize parallel processing;</p></li>
+</ul>
+<p>A <code class="docutils literal notranslate"><span class="pre">Party</span></code> will be returned after detection. The <code class="docutils literal notranslate"><span class="pre">Party</span></code> is a container for <code class="docutils literal notranslate"><span class="pre">Family</span></code> objects. Each <code class="docutils literal notranslate"><span class="pre">Family</span></code> contains a <code class="docutils literal notranslate"><span class="pre">Template</span></code> and all the detections associated with that <code class="docutils literal notranslate"><span class="pre">Template</span></code>. Detections are stored as <code class="docutils literal notranslate"><span class="pre">Detection</span></code> objects.</p>
+<p>Lets run the detection and have a look at the cumulative detections we made.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># use tribe to detect events in local data</span>
+
+<span class="c1"># detect instances above 8.0x MAD</span>
+<span class="n">party</span> <span class="o">=</span> <span class="n">tribe</span><span class="o">.</span><span class="n">detect</span><span class="p">(</span><span class="n">stream</span><span class="o">=</span><span class="n">st</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">8.0</span><span class="p">,</span> <span class="n">daylong</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">threshold_type</span><span class="o">=</span><span class="s2">&quot;MAD&quot;</span><span class="p">,</span> <span class="n">trig_int</span><span class="o">=</span><span class="mf">8.0</span><span class="p">,</span>
+                     <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">return_stream</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">parallel_process</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># inspect the party detections</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">party</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">plot_grouped</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># peek at most productive family</span>
+<span class="n">family</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">party</span><span class="o">.</span><span class="n">families</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">f</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">f</span><span class="p">))[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">family</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/tutorials_local_files_10_0.png" src="../_images/tutorials_local_files_10_0.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Family of 5 detections from template 2016_09_26t08_52_44
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># get a dict of streams for each detection in a family and plot the first detection</span>
+
+<span class="n">streams</span> <span class="o">=</span> <span class="n">family</span><span class="o">.</span><span class="n">extract_streams</span><span class="p">(</span><span class="n">stream</span><span class="o">=</span><span class="n">st</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">prepick</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">family</span><span class="o">.</span><span class="n">detections</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">streams</span><span class="p">[</span><span class="n">family</span><span class="o">.</span><span class="n">detections</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">id</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">equal_scale</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">800</span><span class="p">,</span> <span class="mi">600</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Detection on template: 2016_09_26t08_52_44 at: 2016-09-26T00:07:29.200001Z with 3 channels: [(&#39;NEB1&#39;, &#39;BHZ&#39;), (&#39;NEB3&#39;, &#39;BHZ&#39;), (&#39;RH08&#39;, &#39;BHZ&#39;)]
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/tutorials_local_files_11_1.png" src="../_images/tutorials_local_files_11_1.png" />
+</div>
+</div>
+</section>
+</section>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2015-2021: EQcorrscan developers.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.2.1.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

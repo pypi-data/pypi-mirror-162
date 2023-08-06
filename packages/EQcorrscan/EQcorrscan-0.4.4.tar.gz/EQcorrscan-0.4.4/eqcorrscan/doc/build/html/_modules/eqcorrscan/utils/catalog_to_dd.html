@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>eqcorrscan.utils.catalog_to_dd &#8212; EQcorrscan 0.4.3 documentation</title>
+    <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="shortcut icon" href="../../../_static/EQcorrscan_logo.ico"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../../_static/js/jquery-1.12.4.min.js "></script>
+<script type="text/javascript" src="../../../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../../../_static/bootstrap-3.4.1/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../../../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../index.html"><span><img src="../../../_static/EQcorrscan_logo.jpg"></span>
+          EQcorrscan</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.4</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../intro.html">1. Introduction to the EQcorrscan package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">2. EQcorrscan installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../updates.html">3. What’s new</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorial.html">4. EQcorrscan tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">5. EQcorrscan API</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"></ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+              <li class="hidden-sm"></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <h1>Source code for eqcorrscan.utils.catalog_to_dd</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Functions to generate hypoDD input files from catalogs.</span>
+
+<span class="sd">:copyright:</span>
+<span class="sd">    EQcorrscan developers.</span>
+
+<span class="sd">:license:</span>
+<span class="sd">    GNU Lesser General Public License, Version 3</span>
+<span class="sd">    (https://www.gnu.org/copyleft/lesser.html)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">namedtuple</span><span class="p">,</span> <span class="n">defaultdict</span><span class="p">,</span> <span class="n">Counter</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">from</span> <span class="nn">multiprocessing</span> <span class="kn">import</span> <span class="n">cpu_count</span><span class="p">,</span> <span class="n">Pool</span>
+
+<span class="kn">from</span> <span class="nn">obspy</span> <span class="kn">import</span> <span class="n">UTCDateTime</span><span class="p">,</span> <span class="n">Stream</span>
+<span class="kn">from</span> <span class="nn">obspy.core.event</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Catalog</span><span class="p">,</span> <span class="n">Event</span><span class="p">,</span> <span class="n">Origin</span><span class="p">,</span> <span class="n">Magnitude</span><span class="p">,</span> <span class="n">Pick</span><span class="p">,</span> <span class="n">WaveformStreamID</span><span class="p">,</span> <span class="n">Arrival</span><span class="p">,</span>
+    <span class="n">OriginQuality</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">eqcorrscan.utils.clustering</span> <span class="kn">import</span> <span class="n">dist_mat_km</span>
+<span class="kn">from</span> <span class="nn">eqcorrscan.core.lag_calc</span> <span class="kn">import</span> <span class="n">_concatenate_and_correlate</span><span class="p">,</span> <span class="n">_xcorr_interp</span>
+<span class="kn">from</span> <span class="nn">eqcorrscan.utils.correlate</span> <span class="kn">import</span> <span class="n">pool_boy</span>
+
+<span class="n">Logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+<span class="n">SeedPickID</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s2">&quot;SeedPickID&quot;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;seed_id&quot;</span><span class="p">,</span> <span class="s2">&quot;phase_hint&quot;</span><span class="p">])</span>
+
+
+<span class="c1"># Some hypoDD specific event holders - classes were faster than named-tuples</span>
+
+<span class="k">class</span> <span class="nc">SparseEvent</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resource_id</span><span class="p">,</span> <span class="n">picks</span><span class="p">,</span> <span class="n">origin_time</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resource_id</span> <span class="o">=</span> <span class="n">resource_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">picks</span> <span class="o">=</span> <span class="n">picks</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">origin_time</span> <span class="o">=</span> <span class="n">origin_time</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s2">&quot;SparseEvent(resource_id=</span><span class="si">{0}</span><span class="s2">, origin_time=</span><span class="si">{1}</span><span class="s2">, picks=[</span><span class="si">{2}</span><span class="s2"> &quot;</span>
+                <span class="s2">&quot;picks])&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">resource_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">origin_time</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">picks</span><span class="p">)))</span>
+
+
+<span class="k">class</span> <span class="nc">SparsePick</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tt</span><span class="p">,</span> <span class="n">time_weight</span><span class="p">,</span> <span class="n">seed_id</span><span class="p">,</span> <span class="n">phase</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tt</span> <span class="o">=</span> <span class="n">tt</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_weight</span> <span class="o">=</span> <span class="n">time_weight</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">seed_id</span> <span class="o">=</span> <span class="n">seed_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">phase</span> <span class="o">=</span> <span class="n">phase</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s2">&quot;SparsePick(seed_id=</span><span class="si">{0}</span><span class="s2">, phase=</span><span class="si">{1}</span><span class="s2">, tt=</span><span class="si">{2:.2f}</span><span class="s2">, &quot;</span>
+                <span class="s2">&quot;time_weight</span><span class="si">{3}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">seed_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">phase</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tt</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_weight</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">station</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">seed_id</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">channel</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">seed_id</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+
+<span class="c1"># Generic helpers</span>
+
+<span class="k">class</span> <span class="nc">_DTObs</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Holder for phase observations &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">station</span><span class="p">,</span> <span class="n">tt1</span><span class="p">,</span> <span class="n">tt2</span><span class="p">,</span> <span class="n">weight</span><span class="p">,</span> <span class="n">phase</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">station</span> <span class="o">=</span> <span class="n">station</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">station</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">7</span><span class="p">,</span> <span class="s2">&quot;Station must be &lt;= five characters&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tt1</span> <span class="o">=</span> <span class="n">tt1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tt2</span> <span class="o">=</span> <span class="n">tt2</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">weight</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">phase</span> <span class="o">=</span> <span class="n">phase</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">phase</span> <span class="ow">in</span> <span class="s2">&quot;PS&quot;</span><span class="p">,</span> <span class="s2">&quot;Only P or S phases accepted&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s2">&quot;_DTObs(station=</span><span class="si">{0}</span><span class="s2">, tt1=</span><span class="si">{1:.2f}</span><span class="s2">, tt2=</span><span class="si">{2:.2f}</span><span class="s2">, weight=</span><span class="si">{3:.2f}</span><span class="s2">,&quot;</span>
+                <span class="s2">&quot; phase=</span><span class="si">{4}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">station</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tt1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tt2</span><span class="p">,</span>
+                                     <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">phase</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">ct_string</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">{sta:&lt;7s}</span><span class="s2"> </span><span class="si">{tt1:7.3f}</span><span class="s2"> </span><span class="si">{tt2:7.3f}</span><span class="s2"> </span><span class="si">{weight:6.4f}</span><span class="s2"> </span><span class="si">{phase}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">sta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">station</span><span class="p">,</span> <span class="n">tt1</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tt1</span><span class="p">,</span> <span class="n">tt2</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tt2</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span>
+            <span class="n">phase</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">phase</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">cc_string</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">{sta:&lt;7s}</span><span class="s2"> </span><span class="si">{dt:7.3f}</span><span class="s2"> </span><span class="si">{weight:6.4f}</span><span class="s2"> </span><span class="si">{phase}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">sta</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">station</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tt1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">tt2</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span>
+            <span class="n">phase</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">phase</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">_EventPair</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Holder for event paid observations. &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event_id_1</span><span class="p">,</span> <span class="n">event_id_2</span><span class="p">,</span> <span class="n">obs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">event_id_1</span> <span class="o">=</span> <span class="n">event_id_1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">event_id_2</span> <span class="o">=</span> <span class="n">event_id_2</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obs</span> <span class="o">=</span> <span class="n">obs</span> <span class="ow">or</span> <span class="nb">list</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="s2">&quot;_EventPair(event_id_1=</span><span class="si">{0}</span><span class="s2">, event_id_2=</span><span class="si">{1}</span><span class="s2">, obs=[</span><span class="si">{2}</span><span class="s2"> &quot;</span>
+                <span class="s2">&quot;observations])&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">event_id_1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">event_id_2</span><span class="p">,</span>
+                                        <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">obs</span><span class="p">)))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_header</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;# </span><span class="si">{event_id_1:&gt;9d}</span><span class="s2"> </span><span class="si">{event_id_2:&gt;9d}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">event_id_1</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">event_id_1</span><span class="p">,</span> <span class="n">event_id_2</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">event_id_2</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">ct_string</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">parts</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_header</span><span class="p">]</span>
+        <span class="n">parts</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">obs</span><span class="o">.</span><span class="n">ct_string</span> <span class="k">for</span> <span class="n">obs</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs</span><span class="p">])</span>
+        <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">cc_string</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">parts</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_header</span> <span class="o">+</span> <span class="s2">&quot; 0.0&quot;</span><span class="p">]</span>  <span class="c1"># No origin time correction</span>
+        <span class="n">parts</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">obs</span><span class="o">.</span><span class="n">cc_string</span> <span class="k">for</span> <span class="n">obs</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs</span><span class="p">])</span>
+        <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_generate_event_id_mapper</span><span class="p">(</span><span class="n">catalog</span><span class="p">,</span> <span class="n">event_id_mapper</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate or fill an event_id_mapper mapping event resource id to integer id</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">event_id_mapper</span> <span class="o">=</span> <span class="n">event_id_mapper</span> <span class="ow">or</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">largest_event_id</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">event_id_mapper</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="n">largest_event_id</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">catalog</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">resource_id</span><span class="o">.</span><span class="n">id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">event_id_mapper</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">event_id</span> <span class="o">=</span> <span class="n">largest_event_id</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="n">largest_event_id</span> <span class="o">=</span> <span class="n">event_id</span>
+            <span class="n">event_id_mapper</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">event</span><span class="o">.</span><span class="n">resource_id</span><span class="o">.</span><span class="n">id</span><span class="p">:</span> <span class="n">event_id</span><span class="p">})</span>
+    <span class="k">return</span> <span class="n">event_id_mapper</span>
+
+
+<span class="k">def</span> <span class="nf">_make_sparse_event</span><span class="p">(</span><span class="n">event</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Make a sparse event with just the info hypoDD needs. &quot;&quot;&quot;</span>
+    <span class="n">origin_time</span> <span class="o">=</span> <span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">preferred_origin</span><span class="p">()</span> <span class="ow">or</span> <span class="n">event</span><span class="o">.</span><span class="n">origins</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">time</span>
+    <span class="n">time_weight_dict</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">arr</span><span class="o">.</span><span class="n">pick_id</span><span class="p">:</span> <span class="n">arr</span><span class="o">.</span><span class="n">time_weight</span> <span class="ow">or</span> <span class="mf">1.0</span> <span class="k">for</span> <span class="n">origin</span> <span class="ow">in</span> <span class="n">event</span><span class="o">.</span><span class="n">origins</span>
+        <span class="k">for</span> <span class="n">arr</span> <span class="ow">in</span> <span class="n">origin</span><span class="o">.</span><span class="n">arrivals</span><span class="p">}</span>
+    <span class="n">sparse_event</span> <span class="o">=</span> <span class="n">SparseEvent</span><span class="p">(</span>
+        <span class="n">resource_id</span><span class="o">=</span><span class="n">event</span><span class="o">.</span><span class="n">resource_id</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+        <span class="n">origin_time</span><span class="o">=</span><span class="n">origin_time</span><span class="p">,</span>
+        <span class="n">picks</span><span class="o">=</span><span class="p">[</span><span class="n">SparsePick</span><span class="p">(</span>
+            <span class="n">tt</span><span class="o">=</span><span class="n">pick</span><span class="o">.</span><span class="n">time</span> <span class="o">-</span> <span class="n">origin_time</span><span class="p">,</span>
+            <span class="n">seed_id</span><span class="o">=</span><span class="n">pick</span><span class="o">.</span><span class="n">waveform_id</span><span class="o">.</span><span class="n">get_seed_string</span><span class="p">(),</span>
+            <span class="n">phase</span><span class="o">=</span><span class="n">pick</span><span class="o">.</span><span class="n">phase_hint</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>  <span class="c1"># Only use P or S hints.</span>
+            <span class="n">time_weight</span><span class="o">=</span><span class="n">time_weight_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pick</span><span class="o">.</span><span class="n">resource_id</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">pick</span> <span class="ow">in</span> <span class="n">event</span><span class="o">.</span><span class="n">picks</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">sparse_event</span>
+
+
+<span class="k">def</span> <span class="nf">_prepare_stream</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">extract_len</span><span class="p">,</span> <span class="n">pre_pick</span><span class="p">,</span> <span class="n">seed_pick_ids</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Slice stream around picks</span>
+
+<span class="sd">    returns a dictionary of traces keyed by phase_hint.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">seed_pick_ids</span> <span class="o">=</span> <span class="n">seed_pick_ids</span> <span class="ow">or</span> <span class="p">{</span>
+        <span class="n">SeedPickID</span><span class="p">(</span><span class="n">pick</span><span class="o">.</span><span class="n">waveform_id</span><span class="o">.</span><span class="n">get_seed_string</span><span class="p">(),</span> <span class="n">pick</span><span class="o">.</span><span class="n">phase_hint</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">pick</span> <span class="ow">in</span> <span class="n">event</span><span class="o">.</span><span class="n">picks</span> <span class="k">if</span> <span class="n">pick</span><span class="o">.</span><span class="n">phase_hint</span><span class="o">.</span><span class="n">startswith</span><span class="p">((</span><span class="s2">&quot;P&quot;</span><span class="p">,</span> <span class="s2">&quot;S&quot;</span><span class="p">))}</span>
+    <span class="n">stream_sliced</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">Stream</span><span class="p">())</span>
+    <span class="k">for</span> <span class="n">seed_pick_id</span> <span class="ow">in</span> <span class="n">seed_pick_ids</span><span class="p">:</span>
+        <span class="n">pick</span> <span class="o">=</span> <span class="p">[</span><span class="n">pick</span> <span class="k">for</span> <span class="n">pick</span> <span class="ow">in</span> <span class="n">event</span><span class="o">.</span><span class="n">picks</span>
+                <span class="k">if</span> <span class="n">pick</span><span class="o">.</span><span class="n">waveform_id</span><span class="o">.</span><span class="n">get_seed_string</span><span class="p">()</span> <span class="o">==</span> <span class="n">seed_pick_id</span><span class="o">.</span><span class="n">seed_id</span>
+                <span class="ow">and</span> <span class="n">pick</span><span class="o">.</span><span class="n">phase_hint</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">seed_pick_id</span><span class="o">.</span><span class="n">phase_hint</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">pick</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">Logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">&quot;Multiple picks for </span><span class="si">{seed_id}</span><span class="s2">, phase-hint </span><span class="si">{phase_hint}</span><span class="s2">, using &quot;</span>
+                <span class="s2">&quot;the earliest&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">seed_id</span><span class="o">=</span><span class="n">seed_pick_id</span><span class="o">.</span><span class="n">seed_id</span><span class="p">,</span>
+                    <span class="n">phase_hint</span><span class="o">=</span><span class="n">seed_pick_id</span><span class="o">.</span><span class="n">phase_hint</span><span class="p">))</span>
+            <span class="n">pick</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">pick</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">time</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">pick</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">pick</span> <span class="o">=</span> <span class="n">pick</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">tr</span> <span class="o">=</span> <span class="n">stream</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">seed_pick_id</span><span class="o">.</span><span class="n">seed_id</span><span class="p">)</span><span class="o">.</span><span class="n">merge</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tr</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">tr</span> <span class="o">=</span> <span class="n">tr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">Logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Trimming trace on </span><span class="si">{</span><span class="n">tr</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2"> between </span><span class="si">{</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span><span class="si">}</span><span class="s2"> - &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">endtime</span><span class="si">}</span><span class="s2"> to </span><span class="si">{</span><span class="n">pick</span><span class="o">.</span><span class="n">time</span> <span class="o">-</span> <span class="n">pre_pick</span><span class="si">}</span><span class="s2"> - &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="p">(</span><span class="n">pick</span><span class="o">.</span><span class="n">time</span> <span class="o">-</span> <span class="n">pre_pick</span><span class="p">)</span> <span class="o">+</span> <span class="n">extract_len</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">tr</span> <span class="o">=</span> <span class="n">stream</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">seed_pick_id</span><span class="o">.</span><span class="n">seed_id</span><span class="p">)</span><span class="o">.</span><span class="n">slice</span><span class="p">(</span>
+            <span class="n">starttime</span><span class="o">=</span><span class="n">pick</span><span class="o">.</span><span class="n">time</span> <span class="o">-</span> <span class="n">pre_pick</span><span class="p">,</span>
+            <span class="n">endtime</span><span class="o">=</span><span class="p">(</span><span class="n">pick</span><span class="o">.</span><span class="n">time</span> <span class="o">-</span> <span class="n">pre_pick</span><span class="p">)</span> <span class="o">+</span> <span class="n">extract_len</span><span class="p">)</span><span class="o">.</span><span class="n">merge</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tr</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tr</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">Logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Multiple traces for </span><span class="si">{seed_id}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">seed_id</span><span class="o">=</span><span class="n">seed_pick_id</span><span class="o">.</span><span class="n">seed_id</span><span class="p">))</span>
+            <span class="k">continue</span>
+        <span class="n">tr</span> <span class="o">=</span> <span class="n">tr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">endtime</span> <span class="o">-</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span> <span class="o">!=</span> <span class="n">extract_len</span><span class="p">:</span>
+            <span class="n">Logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Insufficient data for </span><span class="si">{</span><span class="n">tr</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">, discarding&quot;</span><span class="p">)</span>
+            <span class="k">continue</span>
+        <span class="n">stream_sliced</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="p">{</span><span class="n">seed_pick_id</span><span class="o">.</span><span class="n">phase_hint</span><span class="p">:</span>
+             <span class="n">stream_sliced</span><span class="p">[</span><span class="n">seed_pick_id</span><span class="o">.</span><span class="n">phase_hint</span><span class="p">]</span> <span class="o">+</span> <span class="n">tr</span><span class="p">})</span>
+    <span class="k">return</span> <span class="n">stream_sliced</span>
+
+
+<span class="c1"># Time calculators</span>
+
+<span class="k">def</span> <span class="nf">_compute_dt_correlations</span><span class="p">(</span><span class="n">catalog</span><span class="p">,</span> <span class="n">master</span><span class="p">,</span> <span class="n">min_link</span><span class="p">,</span> <span class="n">event_id_mapper</span><span class="p">,</span>
+                             <span class="n">stream_dict</span><span class="p">,</span> <span class="n">min_cc</span><span class="p">,</span> <span class="n">extract_len</span><span class="p">,</span> <span class="n">pre_pick</span><span class="p">,</span>
+                             <span class="n">shift_len</span><span class="p">,</span> <span class="n">interpolate</span><span class="p">,</span> <span class="n">max_workers</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Compute cross-correlation delay times. &quot;&quot;&quot;</span>
+    <span class="n">max_workers</span> <span class="o">=</span> <span class="n">max_workers</span> <span class="ow">or</span> <span class="mi">1</span>
+    <span class="n">Logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;Correlating </span><span class="si">{</span><span class="n">master</span><span class="o">.</span><span class="n">resource_id</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2"> with </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">catalog</span><span class="p">)</span><span class="si">}</span><span class="s2"> events&quot;</span><span class="p">)</span>
+    <span class="n">differential_times_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="n">master_stream</span> <span class="o">=</span> <span class="n">_prepare_stream</span><span class="p">(</span>
+        <span class="n">stream</span><span class="o">=</span><span class="n">stream_dict</span><span class="p">[</span><span class="n">master</span><span class="o">.</span><span class="n">resource_id</span><span class="o">.</span><span class="n">id</span><span class="p">],</span> <span class="n">event</span><span class="o">=</span><span class="n">master</span><span class="p">,</span>
+        <span class="n">extract_len</span><span class="o">=</span><span class="n">extract_len</span><span class="p">,</span> <span class="n">pre_pick</span><span class="o">=</span><span class="n">pre_pick</span><span class="p">)</span>
+    <span class="n">available_seed_ids</span> <span class="o">=</span> <span class="p">{</span><span class="n">tr</span><span class="o">.</span><span class="n">id</span> <span class="k">for</span> <span class="n">st</span> <span class="ow">in</span> <span class="n">master_stream</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">st</span><span class="p">}</span>
+    <span class="n">Logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The channels provided are: </span><span class="si">{</span><span class="n">available_seed_ids</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">master_seed_ids</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">SeedPickID</span><span class="p">(</span><span class="n">pick</span><span class="o">.</span><span class="n">waveform_id</span><span class="o">.</span><span class="n">get_seed_string</span><span class="p">(),</span> <span class="n">pick</span><span class="o">.</span><span class="n">phase_hint</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">pick</span> <span class="ow">in</span> <span class="n">master</span><span class="o">.</span><span class="n">picks</span> <span class="k">if</span>
+        <span class="n">pick</span><span class="o">.</span><span class="n">phase_hint</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="s2">&quot;PS&quot;</span> <span class="ow">and</span>
+        <span class="n">pick</span><span class="o">.</span><span class="n">waveform_id</span><span class="o">.</span><span class="n">get_seed_string</span><span class="p">()</span> <span class="ow">in</span> <span class="n">available_seed_ids</span><span class="p">}</span>
+    <span class="n">Logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Using channels: </span><span class="si">{</span><span class="n">master_seed_ids</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="c1"># Dictionary of travel-times for master keyed by {station}_{phase_hint}</span>
+    <span class="n">master_tts</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="n">master_origin_time</span> <span class="o">=</span> <span class="p">(</span><span class="n">master</span><span class="o">.</span><span class="n">preferred_origin</span><span class="p">()</span> <span class="ow">or</span> <span class="n">master</span><span class="o">.</span><span class="n">origins</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">time</span>
+    <span class="k">for</span> <span class="n">pick</span> <span class="ow">in</span> <span class="n">master</span><span class="o">.</span><span class="n">picks</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">pick</span><span class="o">.</span><span class="n">phase_hint</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="s2">&quot;PS&quot;</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">tt1</span> <span class="o">=</span> <span class="n">pick</span><span class="o">.</span><span class="n">time</span> <span class="o">-</span> <span class="n">master_origin_time</span>
+        <span class="n">master_tts</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+            <span class="s2">&quot;</span><span class="si">{0}</span><span class="s2">_</span><span class="si">{1}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">pick</span><span class="o">.</span><span class="n">waveform_id</span><span class="o">.</span><span class="n">station_code</span><span class="p">,</span> <span class="n">pick</span><span class="o">.</span><span class="n">phase_hint</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span> <span class="n">tt1</span><span class="p">})</span>
+
+    <span class="n">matched_length</span> <span class="o">=</span> <span class="n">extract_len</span> <span class="o">+</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">shift_len</span><span class="p">)</span>
+    <span class="n">matched_pre_pick</span> <span class="o">=</span> <span class="n">pre_pick</span> <span class="o">+</span> <span class="n">shift_len</span>
+    <span class="c1"># We will use this to maintain order</span>
+    <span class="n">event_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">event</span><span class="o">.</span><span class="n">resource_id</span><span class="o">.</span><span class="n">id</span><span class="p">:</span> <span class="n">event</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">catalog</span><span class="p">}</span>
+    <span class="n">event_ids</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">event_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+    <span class="c1"># Check for overlap</span>
+    <span class="n">_stream_event_ids</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">stream_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">event_ids</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">_stream_event_ids</span><span class="p">)):</span>
+        <span class="n">Logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Missing streams for </span><span class="si">{</span><span class="n">event_ids</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">_stream_event_ids</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="c1"># Just use the event ids that we actually have streams for!</span>
+        <span class="n">event_ids</span> <span class="o">=</span> <span class="n">event_ids</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">_stream_event_ids</span><span class="p">)</span>
+    <span class="n">matched_streams</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">event_id</span><span class="p">:</span> <span class="n">_prepare_stream</span><span class="p">(</span>
+            <span class="n">stream</span><span class="o">=</span><span class="n">stream_dict</span><span class="p">[</span><span class="n">event_id</span><span class="p">],</span> <span class="n">event</span><span class="o">=</span><span class="n">event_dict</span><span class="p">[</span><span class="n">event_id</span><span class="p">],</span>
+            <span class="n">extract_len</span><span class="o">=</span><span class="n">matched_length</span><span class="p">,</span> <span class="n">pre_pick</span><span class="o">=</span><span class="n">matched_pre_pick</span><span class="p">,</span>
+            <span class="n">seed_pick_ids</span><span class="o">=</span><span class="n">master_seed_ids</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">event_id</span> <span class="ow">in</span> <span class="n">event_ids</span><span class="p">}</span>
+
+    <span class="n">sampling_rates</span> <span class="o">=</span> <span class="p">{</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span> <span class="k">for</span> <span class="n">st</span> <span class="ow">in</span> <span class="n">master_stream</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+                      <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">st</span><span class="p">}</span>
+    <span class="k">for</span> <span class="n">phase_hint</span> <span class="ow">in</span> <span class="n">master_stream</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>  <span class="c1"># Loop over P and S separately</span>
+        <span class="k">for</span> <span class="n">sampling_rate</span> <span class="ow">in</span> <span class="n">sampling_rates</span><span class="p">:</span>  <span class="c1"># Loop over separate samp rates</span>
+            <span class="n">delta</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">sampling_rate</span>
+            <span class="n">_master_stream</span> <span class="o">=</span> <span class="n">master_stream</span><span class="p">[</span><span class="n">phase_hint</span><span class="p">]</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+                <span class="n">sampling_rate</span><span class="o">=</span><span class="n">sampling_rate</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">_master_stream</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">_matched_streams</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">matched_streams</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">_st</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="n">phase_hint</span><span class="p">]</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">sampling_rate</span><span class="o">=</span><span class="n">sampling_rate</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">_st</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">_matched_streams</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">key</span><span class="p">:</span> <span class="n">_st</span><span class="p">})</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">_matched_streams</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">Logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;No matching data for </span><span class="si">{0}</span><span class="s2">, </span><span class="si">{1}</span><span class="s2"> phase&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">master</span><span class="o">.</span><span class="n">resource_id</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">phase_hint</span><span class="p">))</span>
+                <span class="k">continue</span>
+            <span class="c1"># Check lengths</span>
+            <span class="n">master_length</span> <span class="o">=</span> <span class="p">[</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">npts</span> <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">_master_stream</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">master_length</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">Logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Multiple lengths found - check that you &quot;</span>
+                               <span class="s2">&quot;are providing sufficient data&quot;</span><span class="p">)</span>
+            <span class="n">master_length</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">(</span><span class="n">master_length</span><span class="p">)</span><span class="o">.</span><span class="n">most_common</span><span class="p">(</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">_master_stream</span> <span class="o">=</span> <span class="n">_master_stream</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">npts</span><span class="o">=</span><span class="n">master_length</span><span class="p">)</span>
+            <span class="n">matched_length</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">npts</span> <span class="k">for</span> <span class="n">st</span> <span class="ow">in</span> <span class="n">_matched_streams</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+                 <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">st</span><span class="p">))</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">matched_length</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">Logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Multiple lengths of stream found - taking &quot;</span>
+                               <span class="s2">&quot;the most common. Check that you are &quot;</span>
+                               <span class="s2">&quot;providing sufficient data&quot;</span><span class="p">)</span>
+            <span class="n">matched_length</span> <span class="o">=</span> <span class="n">matched_length</span><span class="o">.</span><span class="n">most_common</span><span class="p">(</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">matched_length</span> <span class="o">&lt;</span> <span class="n">master_length</span><span class="p">:</span>
+                <span class="n">Logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Matched streams are shorter than the master, &quot;</span>
+                             <span class="s2">&quot;will not correlate&quot;</span><span class="p">)</span>
+                <span class="k">continue</span>
+            <span class="c1"># Remove empty streams and generate an ordered list of event_ids</span>
+            <span class="n">used_event_ids</span><span class="p">,</span> <span class="n">used_matched_streams</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">event_id</span><span class="p">,</span> <span class="n">_matched_stream</span> <span class="ow">in</span> <span class="n">_matched_streams</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">_matched_stream</span> <span class="o">=</span> <span class="n">_matched_stream</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">npts</span><span class="o">=</span><span class="n">matched_length</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">_matched_stream</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">used_event_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">event_id</span><span class="p">)</span>
+                    <span class="n">used_matched_streams</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_matched_stream</span><span class="p">)</span>
+            <span class="c1"># Check that there are matching seed ids.</span>
+            <span class="n">master_seed_ids</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">id</span> <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">_master_stream</span><span class="p">)</span>
+            <span class="n">matched_seed_ids</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span>
+                <span class="n">tr</span><span class="o">.</span><span class="n">id</span> <span class="k">for</span> <span class="n">st</span> <span class="ow">in</span> <span class="n">used_matched_streams</span> <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">st</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">matched_seed_ids</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="n">master_seed_ids</span><span class="p">):</span>
+                <span class="n">Logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="s2">&quot;After checking length there are no matched traces: &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;master: </span><span class="si">{</span><span class="n">master_seed_ids</span><span class="si">}</span><span class="s2">, matched: </span><span class="si">{</span><span class="n">matched_seed_ids</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">continue</span>
+            <span class="c1"># Do the correlations</span>
+            <span class="n">Logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Correlating channels: </span><span class="si">{</span><span class="p">[</span><span class="n">tr</span><span class="o">.</span><span class="n">id</span> <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">_master_stream</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">ccc_out</span><span class="p">,</span> <span class="n">used_chans</span> <span class="o">=</span> <span class="n">_concatenate_and_correlate</span><span class="p">(</span>
+                <span class="n">template</span><span class="o">=</span><span class="n">_master_stream</span><span class="p">,</span> <span class="n">streams</span><span class="o">=</span><span class="n">used_matched_streams</span><span class="p">,</span>
+                <span class="n">cores</span><span class="o">=</span><span class="n">max_workers</span><span class="p">)</span>
+            <span class="c1"># Convert ccc_out to pick-time</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">used_event_id</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">used_event_ids</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">chan</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">used_chans</span><span class="p">[</span><span class="n">i</span><span class="p">]):</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">chan</span><span class="o">.</span><span class="n">used</span><span class="p">:</span>
+                        <span class="k">continue</span>
+                    <span class="n">correlation</span> <span class="o">=</span> <span class="n">ccc_out</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">interpolate</span><span class="p">:</span>
+                        <span class="n">shift</span><span class="p">,</span> <span class="n">cc_max</span> <span class="o">=</span> <span class="n">_xcorr_interp</span><span class="p">(</span><span class="n">correlation</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="n">delta</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">cc_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">correlation</span><span class="p">)</span>
+                        <span class="n">shift</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">correlation</span><span class="p">)</span> <span class="o">*</span> <span class="n">delta</span>
+                    <span class="k">if</span> <span class="n">cc_max</span> <span class="o">&lt;</span> <span class="n">min_cc</span><span class="p">:</span>
+                        <span class="k">continue</span>
+                    <span class="n">shift</span> <span class="o">-=</span> <span class="n">shift_len</span>
+                    <span class="n">pick</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">event_dict</span><span class="p">[</span><span class="n">used_event_id</span><span class="p">]</span><span class="o">.</span><span class="n">picks</span>
+                            <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">phase_hint</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">phase_hint</span>
+                            <span class="ow">and</span> <span class="n">p</span><span class="o">.</span><span class="n">waveform_id</span><span class="o">.</span><span class="n">station_code</span> <span class="o">==</span> <span class="n">chan</span><span class="o">.</span><span class="n">channel</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                            <span class="ow">and</span> <span class="n">p</span><span class="o">.</span><span class="n">waveform_id</span><span class="o">.</span><span class="n">channel_code</span> <span class="o">==</span> <span class="n">chan</span><span class="o">.</span><span class="n">channel</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+                    <span class="n">pick</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">pick</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">time</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">tt2</span> <span class="o">=</span> <span class="n">pick</span><span class="o">.</span><span class="n">time</span> <span class="o">-</span> <span class="p">(</span>
+                            <span class="n">event_dict</span><span class="p">[</span><span class="n">used_event_id</span><span class="p">]</span><span class="o">.</span><span class="n">preferred_origin</span><span class="p">()</span> <span class="ow">or</span>
+                            <span class="n">event_dict</span><span class="p">[</span><span class="n">used_event_id</span><span class="p">]</span><span class="o">.</span><span class="n">origins</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">time</span>
+                    <span class="n">tt2</span> <span class="o">+=</span> <span class="n">shift</span>
+                    <span class="n">diff_time</span> <span class="o">=</span> <span class="n">differential_times_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                        <span class="n">used_event_id</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">diff_time</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">diff_time</span> <span class="o">=</span> <span class="n">_EventPair</span><span class="p">(</span>
+                            <span class="n">event_id_1</span><span class="o">=</span><span class="n">event_id_mapper</span><span class="p">[</span><span class="n">master</span><span class="o">.</span><span class="n">resource_id</span><span class="o">.</span><span class="n">id</span><span class="p">],</span>
+                            <span class="n">event_id_2</span><span class="o">=</span><span class="n">event_id_mapper</span><span class="p">[</span><span class="n">used_event_id</span><span class="p">])</span>
+                    <span class="n">diff_time</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="n">_DTObs</span><span class="p">(</span><span class="n">station</span><span class="o">=</span><span class="n">chan</span><span class="o">.</span><span class="n">channel</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                               <span class="n">tt1</span><span class="o">=</span><span class="n">master_tts</span><span class="p">[</span><span class="s2">&quot;</span><span class="si">{0}</span><span class="s2">_</span><span class="si">{1}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                                   <span class="n">chan</span><span class="o">.</span><span class="n">channel</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">phase_hint</span><span class="p">)],</span>
+                               <span class="n">tt2</span><span class="o">=</span><span class="n">tt2</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="n">cc_max</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span>
+                               <span class="n">phase</span><span class="o">=</span><span class="n">phase_hint</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+                    <span class="n">differential_times_dict</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">used_event_id</span><span class="p">:</span> <span class="n">diff_time</span><span class="p">})</span>
+    <span class="c1"># Threshold on min_link</span>
+    <span class="n">differential_times</span> <span class="o">=</span> <span class="p">[</span><span class="n">dt</span> <span class="k">for</span> <span class="n">dt</span> <span class="ow">in</span> <span class="n">differential_times_dict</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+                          <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">obs</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">min_link</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">differential_times</span>
+
+
+<span class="k">def</span> <span class="nf">_compute_dt</span><span class="p">(</span><span class="n">sparse_catalog</span><span class="p">,</span> <span class="n">master</span><span class="p">,</span> <span class="n">min_link</span><span class="p">,</span> <span class="n">event_id_mapper</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Inner function to compute differential times between a catalog and a</span>
+<span class="sd">    master event.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">_make_event_pair</span><span class="p">(</span>
+        <span class="n">sparse_event</span><span class="o">=</span><span class="n">event</span><span class="p">,</span> <span class="n">master</span><span class="o">=</span><span class="n">master</span><span class="p">,</span> <span class="n">event_id_mapper</span><span class="o">=</span><span class="n">event_id_mapper</span><span class="p">,</span>
+        <span class="n">min_link</span><span class="o">=</span><span class="n">min_link</span><span class="p">)</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">sparse_catalog</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">_make_event_pair</span><span class="p">(</span><span class="n">sparse_event</span><span class="p">,</span> <span class="n">master</span><span class="p">,</span> <span class="n">event_id_mapper</span><span class="p">,</span> <span class="n">min_link</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Make an event pair for a given event and master event.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">differential_times</span> <span class="o">=</span> <span class="n">_EventPair</span><span class="p">(</span>
+        <span class="n">event_id_1</span><span class="o">=</span><span class="n">event_id_mapper</span><span class="p">[</span><span class="n">master</span><span class="o">.</span><span class="n">resource_id</span><span class="p">],</span>
+        <span class="n">event_id_2</span><span class="o">=</span><span class="n">event_id_mapper</span><span class="p">[</span><span class="n">sparse_event</span><span class="o">.</span><span class="n">resource_id</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">master_pick</span> <span class="ow">in</span> <span class="n">master</span><span class="o">.</span><span class="n">picks</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">master_pick</span><span class="o">.</span><span class="n">phase</span> <span class="ow">and</span> \
+                <span class="n">master_pick</span><span class="o">.</span><span class="n">phase</span> <span class="ow">not</span> <span class="ow">in</span> <span class="s2">&quot;PS&quot;</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+            <span class="k">continue</span>
+        <span class="n">matched_picks</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">sparse_event</span><span class="o">.</span><span class="n">picks</span>
+                         <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">station</span> <span class="o">==</span> <span class="n">master_pick</span><span class="o">.</span><span class="n">station</span>
+                         <span class="ow">and</span> <span class="n">p</span><span class="o">.</span><span class="n">phase</span> <span class="o">==</span> <span class="n">master_pick</span><span class="o">.</span><span class="n">phase</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">matched_pick</span> <span class="ow">in</span> <span class="n">matched_picks</span><span class="p">:</span>
+            <span class="n">differential_times</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">_DTObs</span><span class="p">(</span><span class="n">station</span><span class="o">=</span><span class="n">master_pick</span><span class="o">.</span><span class="n">station</span><span class="p">,</span>
+                       <span class="n">tt1</span><span class="o">=</span><span class="n">master_pick</span><span class="o">.</span><span class="n">tt</span><span class="p">,</span> <span class="n">tt2</span><span class="o">=</span><span class="n">matched_pick</span><span class="o">.</span><span class="n">tt</span><span class="p">,</span>
+                       <span class="n">weight</span><span class="o">=</span><span class="p">(</span><span class="n">master_pick</span><span class="o">.</span><span class="n">time_weight</span> <span class="o">+</span>
+                               <span class="n">matched_pick</span><span class="o">.</span><span class="n">time_weight</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">,</span>
+                       <span class="n">phase</span><span class="o">=</span><span class="n">master_pick</span><span class="o">.</span><span class="n">phase</span><span class="p">))</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">differential_times</span><span class="o">.</span><span class="n">obs</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">min_link</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">differential_times</span>
+    <span class="k">return</span>
+
+
+<div class="viewcode-block" id="compute_differential_times"><a class="viewcode-back" href="../../../submodules/autogen/eqcorrscan.utils.catalog_to_dd.compute_differential_times.html#eqcorrscan.utils.catalog_to_dd.compute_differential_times">[docs]</a><span class="k">def</span> <span class="nf">compute_differential_times</span><span class="p">(</span><span class="n">catalog</span><span class="p">,</span> <span class="n">correlation</span><span class="p">,</span> <span class="n">stream_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                               <span class="n">event_id_mapper</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">max_sep</span><span class="o">=</span><span class="mf">8.</span><span class="p">,</span> <span class="n">min_link</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+                               <span class="n">min_cc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">extract_len</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pre_pick</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                               <span class="n">shift_len</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">interpolate</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                               <span class="n">max_workers</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate groups of differential times for a catalog.</span>
+
+<span class="sd">    :type catalog: `obspy.core.event.Catalog`</span>
+<span class="sd">    :param catalog: Catalog of events to get differential times for</span>
+<span class="sd">    :type correlation: bool</span>
+<span class="sd">    :param correlation:</span>
+<span class="sd">        If True will generate cross-correlation derived differential-times for</span>
+<span class="sd">        a dt.cc file. If false, will generate catalog times for a dt.ct file.</span>
+<span class="sd">    :type stream_dict: dict</span>
+<span class="sd">    :param stream_dict:</span>
+<span class="sd">        Dictionary of streams keyed by event-id (the event.resource_id.id,</span>
+<span class="sd">        NOT the hypoDD event-id)</span>
+<span class="sd">    :type event_id_mapper: dict</span>
+<span class="sd">    :param event_id_mapper:</span>
+<span class="sd">        Dictionary mapping event resource id to an integer event id for hypoDD.</span>
+<span class="sd">        If this is None, or missing events then the dictionary will be updated</span>
+<span class="sd">        to include appropriate event-ids. This should be of the form</span>
+<span class="sd">        {event.resource_id.id: integer_id}</span>
+<span class="sd">    :type max_sep: float</span>
+<span class="sd">    :param max_sep: Maximum hypocentral separation in km to link events</span>
+<span class="sd">    :type min_link: int</span>
+<span class="sd">    :param min_link: Minimum shared phase observations to link events</span>
+<span class="sd">    :type min_cc: float</span>
+<span class="sd">    :param min_cc: Threshold to include cross-correlation results.</span>
+<span class="sd">    :type extract_len: float</span>
+<span class="sd">    :param extract_len: Length in seconds to extract around the pick</span>
+<span class="sd">    :type pre_pick: float</span>
+<span class="sd">    :param pre_pick: Time before the pick to start the correlation window</span>
+<span class="sd">    :type shift_len: float</span>
+<span class="sd">    :param shift_len:</span>
+<span class="sd">        Time (+/-) to allow pick to vary in seconds. e.g. if shift_len</span>
+<span class="sd">        is set to 1s, the pick will be allowed to shift between</span>
+<span class="sd">        pick_time - 1 and pick_time + 1.</span>
+<span class="sd">    :type interpolate: bool</span>
+<span class="sd">    :param interpolate:</span>
+<span class="sd">        Whether to interpolate correlations or not. Allows subsample accuracy</span>
+<span class="sd">    :type max_workers: int</span>
+<span class="sd">    :param max_workers:</span>
+<span class="sd">        Maximum number of workers for parallel processing. If None then all</span>
+<span class="sd">        threads will be used - only used if correlation = True</span>
+
+<span class="sd">    :rtype: dict</span>
+<span class="sd">    :return: Dictionary of differential times keyed by event id.</span>
+<span class="sd">    :rtype: dict</span>
+<span class="sd">    :return: Dictionary of event_id_mapper</span>
+
+<span class="sd">    .. note::</span>
+<span class="sd">        The arguments min_cc, stream_dict, extract_len, pre_pick, shift_len</span>
+<span class="sd">        and interpolate are only required if correlation=True.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">include_master</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;include_master&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="n">correlation_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+        <span class="n">min_cc</span><span class="o">=</span><span class="n">min_cc</span><span class="p">,</span> <span class="n">stream_dict</span><span class="o">=</span><span class="n">stream_dict</span><span class="p">,</span> <span class="n">extract_len</span><span class="o">=</span><span class="n">extract_len</span><span class="p">,</span>
+        <span class="n">pre_pick</span><span class="o">=</span><span class="n">pre_pick</span><span class="p">,</span> <span class="n">shift_len</span><span class="o">=</span><span class="n">shift_len</span><span class="p">,</span> <span class="n">interpolate</span><span class="o">=</span><span class="n">interpolate</span><span class="p">,</span>
+        <span class="n">max_workers</span><span class="o">=</span><span class="n">max_workers</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">correlation</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">arg</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">correlation_kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">assert</span> <span class="n">arg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">{0}</span><span class="s2"> is required for correlation&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">name</span><span class="p">)</span>
+    <span class="c1"># Ensure all events have locations and picks.</span>
+    <span class="n">event_id_mapper</span> <span class="o">=</span> <span class="n">_generate_event_id_mapper</span><span class="p">(</span>
+        <span class="n">catalog</span><span class="o">=</span><span class="n">catalog</span><span class="p">,</span> <span class="n">event_id_mapper</span><span class="o">=</span><span class="n">event_id_mapper</span><span class="p">)</span>
+    <span class="n">distances</span> <span class="o">=</span> <span class="n">dist_mat_km</span><span class="p">(</span><span class="n">catalog</span><span class="p">)</span>
+    <span class="n">distance_filter</span> <span class="o">=</span> <span class="n">distances</span> <span class="o">&lt;=</span> <span class="n">max_sep</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">include_master</span><span class="p">:</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">fill_diagonal</span><span class="p">(</span><span class="n">distance_filter</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="c1"># Do not match events to themselves - this is the default,</span>
+        <span class="c1"># only included for testing</span>
+
+    <span class="n">additional_args</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">min_link</span><span class="o">=</span><span class="n">min_link</span><span class="p">,</span> <span class="n">event_id_mapper</span><span class="o">=</span><span class="n">event_id_mapper</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">correlation</span><span class="p">:</span>
+        <span class="n">differential_times</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">additional_args</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">correlation_kwargs</span><span class="p">)</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">catalog</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">master</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">catalog</span><span class="p">):</span>
+            <span class="n">master_id</span> <span class="o">=</span> <span class="n">master</span><span class="o">.</span><span class="n">resource_id</span><span class="o">.</span><span class="n">id</span>
+            <span class="n">sub_catalog</span> <span class="o">=</span> <span class="p">[</span><span class="n">ev</span> <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">ev</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">catalog</span><span class="p">)</span>
+                           <span class="k">if</span> <span class="n">distance_filter</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]]</span>
+            <span class="k">if</span> <span class="n">master_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">additional_args</span><span class="p">[</span><span class="s2">&quot;stream_dict&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">Logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">master_id</span><span class="si">}</span><span class="s2"> not in waveforms, skipping&quot;</span><span class="p">)</span>
+                <span class="k">continue</span>
+            <span class="n">differential_times</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+                <span class="n">master_id</span><span class="p">:</span> <span class="n">_compute_dt_correlations</span><span class="p">(</span>
+                    <span class="n">sub_catalog</span><span class="p">,</span> <span class="n">master</span><span class="p">,</span> <span class="o">**</span><span class="n">additional_args</span><span class="p">)})</span>
+            <span class="n">Logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Completed correlations for core event </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> of </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Reformat catalog to sparse catalog</span>
+        <span class="n">sparse_catalog</span> <span class="o">=</span> <span class="p">[</span><span class="n">_make_sparse_event</span><span class="p">(</span><span class="n">ev</span><span class="p">)</span> <span class="k">for</span> <span class="n">ev</span> <span class="ow">in</span> <span class="n">catalog</span><span class="p">]</span>
+
+        <span class="n">sub_catalogs</span> <span class="o">=</span> <span class="p">([</span><span class="n">ev</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ev</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">sparse_catalog</span><span class="p">)</span>
+                         <span class="k">if</span> <span class="n">master_filter</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span>
+                        <span class="k">for</span> <span class="n">master_filter</span> <span class="ow">in</span> <span class="n">distance_filter</span><span class="p">)</span>
+        <span class="n">differential_times</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">master</span><span class="o">.</span><span class="n">resource_id</span><span class="p">:</span> <span class="n">_compute_dt</span><span class="p">(</span>
+                <span class="n">sub_catalog</span><span class="p">,</span> <span class="n">master</span><span class="p">,</span> <span class="o">**</span><span class="n">additional_args</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">master</span><span class="p">,</span> <span class="n">sub_catalog</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">sparse_catalog</span><span class="p">,</span> <span class="n">sub_catalogs</span><span class="p">)}</span>
+
+    <span class="c1"># Remove Nones</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">differential_times</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">differential_times</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">key</span><span class="p">:</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">value</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">]})</span>
+    <span class="k">return</span> <span class="n">differential_times</span><span class="p">,</span> <span class="n">event_id_mapper</span></div>
+
+
+<span class="c1"># dt.ct functions</span>
+
+<div class="viewcode-block" id="write_catalog"><a class="viewcode-back" href="../../../submodules/autogen/eqcorrscan.utils.catalog_to_dd.write_catalog.html#eqcorrscan.utils.catalog_to_dd.write_catalog">[docs]</a><span class="k">def</span> <span class="nf">write_catalog</span><span class="p">(</span><span class="n">catalog</span><span class="p">,</span> <span class="n">event_id_mapper</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">max_sep</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">min_link</span><span class="o">=</span><span class="mi">8</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate a dt.ct file for hypoDD for a series of events.</span>
+
+<span class="sd">    :type catalog: `obspy.core.event.Catalog`</span>
+<span class="sd">    :param catalog: Catalog of events</span>
+<span class="sd">    :type event_id_mapper: dict</span>
+<span class="sd">    :param event_id_mapper:</span>
+<span class="sd">        Dictionary mapping event resource id to an integer event id for hypoDD.</span>
+<span class="sd">        If this is None, or missing events then the dictionary will be updated</span>
+<span class="sd">        to include appropriate event-ids. This should be of the form</span>
+<span class="sd">        {event.resource_id.id: integer_id}</span>
+<span class="sd">    :type max_sep: float</span>
+<span class="sd">    :param max_sep: Maximum separation between event pairs in km</span>
+<span class="sd">    :type min_link: int</span>
+<span class="sd">    :param min_link:</span>
+<span class="sd">        Minimum links for an event to be paired, e.g. minimum number of picks</span>
+<span class="sd">        from the same station and channel (and phase) that are shared between</span>
+<span class="sd">        two events for them to be paired.</span>
+
+<span class="sd">    :returns: event_id_mapper</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">differential_times</span><span class="p">,</span> <span class="n">event_id_mapper</span> <span class="o">=</span> <span class="n">compute_differential_times</span><span class="p">(</span>
+        <span class="n">catalog</span><span class="o">=</span><span class="n">catalog</span><span class="p">,</span> <span class="n">correlation</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">event_id_mapper</span><span class="o">=</span><span class="n">event_id_mapper</span><span class="p">,</span>
+        <span class="n">max_sep</span><span class="o">=</span><span class="n">max_sep</span><span class="p">,</span> <span class="n">min_link</span><span class="o">=</span><span class="n">min_link</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;dt.ct&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">master_id</span><span class="p">,</span> <span class="n">linked_events</span> <span class="ow">in</span> <span class="n">differential_times</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">linked_event</span> <span class="ow">in</span> <span class="n">linked_events</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">linked_event</span><span class="o">.</span><span class="n">ct_string</span><span class="p">)</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">event_id_mapper</span></div>
+
+
+<span class="c1"># dt.cc functions</span>
+
+<span class="k">def</span> <span class="nf">_meta_filter_stream</span><span class="p">(</span><span class="n">event_id</span><span class="p">,</span> <span class="n">stream_dict</span><span class="p">,</span> <span class="n">lowcut</span><span class="p">,</span> <span class="n">highcut</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">_filter_stream</span><span class="p">(</span>
+        <span class="n">event_id</span><span class="o">=</span><span class="n">event_id</span><span class="p">,</span> <span class="n">st</span><span class="o">=</span><span class="n">stream_dict</span><span class="p">[</span><span class="n">event_id</span><span class="p">],</span> <span class="n">lowcut</span><span class="o">=</span><span class="n">lowcut</span><span class="p">,</span>
+        <span class="n">highcut</span><span class="o">=</span><span class="n">highcut</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_filter_stream</span><span class="p">(</span><span class="n">event_id</span><span class="p">,</span> <span class="n">st</span><span class="p">,</span> <span class="n">lowcut</span><span class="p">,</span> <span class="n">highcut</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">lowcut</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">highcut</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">st_out</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">detrend</span><span class="p">()</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+            <span class="s2">&quot;bandpass&quot;</span><span class="p">,</span> <span class="n">freqmin</span><span class="o">=</span><span class="n">lowcut</span><span class="p">,</span> <span class="n">freqmax</span><span class="o">=</span><span class="n">highcut</span><span class="p">,</span> <span class="n">corners</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+            <span class="n">zerophase</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">lowcut</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">highcut</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">st_out</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">detrend</span><span class="p">()</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+            <span class="s2">&quot;lowpass&quot;</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="n">highcut</span><span class="p">,</span> <span class="n">corners</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">zerophase</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">lowcut</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">highcut</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">st_out</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">detrend</span><span class="p">()</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span>
+            <span class="s2">&quot;highpass&quot;</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="n">lowcut</span><span class="p">,</span> <span class="n">corners</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">zerophase</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">st_out</span> <span class="o">=</span> <span class="n">st</span>  <span class="c1"># Don&#39;t need to copy if we aren&#39;t doing anything.</span>
+    <span class="k">return</span> <span class="p">{</span><span class="n">event_id</span><span class="p">:</span> <span class="n">st_out</span><span class="p">}</span>
+
+
+<div class="viewcode-block" id="write_correlations"><a class="viewcode-back" href="../../../submodules/autogen/eqcorrscan.utils.catalog_to_dd.write_correlations.html#eqcorrscan.utils.catalog_to_dd.write_correlations">[docs]</a><span class="k">def</span> <span class="nf">write_correlations</span><span class="p">(</span><span class="n">catalog</span><span class="p">,</span> <span class="n">stream_dict</span><span class="p">,</span> <span class="n">extract_len</span><span class="p">,</span> <span class="n">pre_pick</span><span class="p">,</span>
+                       <span class="n">shift_len</span><span class="p">,</span> <span class="n">event_id_mapper</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lowcut</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+                       <span class="n">highcut</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span> <span class="n">max_sep</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">min_link</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>  <span class="n">min_cc</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+                       <span class="n">interpolate</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">max_workers</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                       <span class="n">parallel_process</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Write a dt.cc file for hypoDD input for a given list of events.</span>
+
+<span class="sd">    Takes an input list of events and computes pick refinements by correlation.</span>
+<span class="sd">    Outputs a single files, dt.cc file with weights as the square of the</span>
+<span class="sd">    cross-correlation.</span>
+
+<span class="sd">    :type catalog: `obspy.core.event.Catalog`</span>
+<span class="sd">    :param catalog: Catalog of events to get differential times for</span>
+<span class="sd">    :type event_id_mapper: dict</span>
+<span class="sd">    :param event_id_mapper:</span>
+<span class="sd">        Dictionary mapping event resource id to an integer event id for hypoDD.</span>
+<span class="sd">        If this is None, or missing events then the dictionary will be updated</span>
+<span class="sd">        to include appropriate event-ids. This should be of the form</span>
+<span class="sd">        {event.resource_id.id: integer_id}</span>
+<span class="sd">    :type stream_dict: dict</span>
+<span class="sd">    :param stream_dict:</span>
+<span class="sd">        Dictionary of streams keyed by event-id (the event.resource_id.id,</span>
+<span class="sd">        NOT the hypoDD event-id)</span>
+<span class="sd">    :type extract_len: float</span>
+<span class="sd">    :param extract_len: Length in seconds to extract around the pick</span>
+<span class="sd">    :type pre_pick: float</span>
+<span class="sd">    :param pre_pick: Time before the pick to start the correlation window</span>
+<span class="sd">    :type shift_len: float</span>
+<span class="sd">    :param shift_len: Time to allow pick to vary in seconds</span>
+<span class="sd">    :type lowcut: float</span>
+<span class="sd">    :param lowcut: Lowcut in Hz - set to None to apply no lowcut</span>
+<span class="sd">    :type highcut: float</span>
+<span class="sd">    :param highcut: Highcut in Hz - set to None to apply no highcut</span>
+<span class="sd">    :type max_sep: float</span>
+<span class="sd">    :param max_sep: Maximum separation between event pairs in km</span>
+<span class="sd">    :type min_link: int</span>
+<span class="sd">    :param min_link: Minimum links for an event to be paired</span>
+<span class="sd">    :type min_cc: float</span>
+<span class="sd">    :param min_cc: Threshold to include cross-correlation results.</span>
+<span class="sd">    :type interpolate: bool</span>
+<span class="sd">    :param interpolate:</span>
+<span class="sd">        Whether to interpolate correlations or not. Allows subsample accuracy</span>
+<span class="sd">    :type max_workers: int</span>
+<span class="sd">    :param max_workers:</span>
+<span class="sd">        Maximum number of workers for parallel processing. If None then all</span>
+<span class="sd">        threads will be used.</span>
+<span class="sd">    :type parallel_process: bool</span>
+<span class="sd">    :param parallel_process:</span>
+<span class="sd">        Whether to process streams in parallel or not. Experimental, may use</span>
+<span class="sd">        too much memory.</span>
+
+<span class="sd">    :rtype: dict</span>
+<span class="sd">    :returns: event_id_mapper</span>
+
+<span class="sd">    .. note::</span>
+<span class="sd">        You can provide processed waveforms, or let this function filter your</span>
+<span class="sd">        data for you.  Filtering is undertaken by detrending and bandpassing</span>
+<span class="sd">        with a 8th order zerophase butterworth filter.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Depreciated argument</span>
+    <span class="n">cc_thresh</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;cc_thresh&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">cc_thresh</span><span class="p">:</span>
+        <span class="n">min_cc</span> <span class="o">=</span> <span class="n">cc_thresh</span>
+        <span class="n">Logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;cc_thresh is depreciated, use min_cc instead&quot;</span><span class="p">)</span>
+    <span class="n">max_workers</span> <span class="o">=</span> <span class="n">max_workers</span> <span class="ow">or</span> <span class="n">cpu_count</span><span class="p">()</span>
+    <span class="c1"># Process the streams</span>
+    <span class="n">processed_stream_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">parallel_process</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">lowcut</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">highcut</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">with</span> <span class="n">pool_boy</span><span class="p">(</span><span class="n">Pool</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">stream_dict</span><span class="p">),</span> <span class="n">cores</span><span class="o">=</span><span class="n">max_workers</span><span class="p">)</span> <span class="k">as</span> <span class="n">pool</span><span class="p">:</span>
+                <span class="n">func</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span>
+                    <span class="n">_meta_filter_stream</span><span class="p">,</span> <span class="n">stream_dict</span><span class="o">=</span><span class="n">stream_dict</span><span class="p">,</span>
+                    <span class="n">lowcut</span><span class="o">=</span><span class="n">lowcut</span><span class="p">,</span> <span class="n">highcut</span><span class="o">=</span><span class="n">highcut</span><span class="p">)</span>
+                <span class="n">results</span> <span class="o">=</span> <span class="p">[</span><span class="n">pool</span><span class="o">.</span><span class="n">apply_async</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+                           <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">stream_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()]</span>
+            <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
+                <span class="n">processed_stream_dict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">())</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">stream_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">processed_stream_dict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_meta_filter_stream</span><span class="p">(</span>
+                <span class="n">stream_dict</span><span class="o">=</span><span class="n">stream_dict</span><span class="p">,</span> <span class="n">lowcut</span><span class="o">=</span><span class="n">lowcut</span><span class="p">,</span> <span class="n">highcut</span><span class="o">=</span><span class="n">highcut</span><span class="p">,</span>
+                <span class="n">event_id</span><span class="o">=</span><span class="n">key</span><span class="p">))</span>
+    <span class="n">correlation_times</span><span class="p">,</span> <span class="n">event_id_mapper</span> <span class="o">=</span> <span class="n">compute_differential_times</span><span class="p">(</span>
+        <span class="n">catalog</span><span class="o">=</span><span class="n">catalog</span><span class="p">,</span> <span class="n">correlation</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">event_id_mapper</span><span class="o">=</span><span class="n">event_id_mapper</span><span class="p">,</span>
+        <span class="n">max_sep</span><span class="o">=</span><span class="n">max_sep</span><span class="p">,</span> <span class="n">min_link</span><span class="o">=</span><span class="n">min_link</span><span class="p">,</span> <span class="n">max_workers</span><span class="o">=</span><span class="n">max_workers</span><span class="p">,</span>
+        <span class="n">stream_dict</span><span class="o">=</span><span class="n">processed_stream_dict</span><span class="p">,</span> <span class="n">min_cc</span><span class="o">=</span><span class="n">min_cc</span><span class="p">,</span>
+        <span class="n">extract_len</span><span class="o">=</span><span class="n">extract_len</span><span class="p">,</span> <span class="n">pre_pick</span><span class="o">=</span><span class="n">pre_pick</span><span class="p">,</span> <span class="n">shift_len</span><span class="o">=</span><span class="n">shift_len</span><span class="p">,</span>
+        <span class="n">interpolate</span><span class="o">=</span><span class="n">interpolate</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;dt.cc&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">master_id</span><span class="p">,</span> <span class="n">linked_events</span> <span class="ow">in</span> <span class="n">correlation_times</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">linked_event</span> <span class="ow">in</span> <span class="n">linked_events</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">linked_event</span><span class="o">.</span><span class="n">cc_string</span><span class="p">)</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">event_id_mapper</span></div>
+
+
+<span class="c1"># Phase-file functions</span>
+
+<span class="k">def</span> <span class="nf">_hypodd_phase_pick_str</span><span class="p">(</span><span class="n">pick</span><span class="p">,</span> <span class="n">sparse_event</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Make a hypodd phase.dat style pick string. &quot;&quot;&quot;</span>
+    <span class="n">pick_str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{station:5s}</span><span class="s2"> </span><span class="si">{tt:7.4f}</span><span class="s2"> </span><span class="si">{weight:5.3f}</span><span class="s2"> </span><span class="si">{phase:1s}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="n">station</span><span class="o">=</span><span class="n">pick</span><span class="o">.</span><span class="n">waveform_id</span><span class="o">.</span><span class="n">station_code</span><span class="p">,</span>
+        <span class="n">tt</span><span class="o">=</span><span class="n">pick</span><span class="o">.</span><span class="n">tt</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="n">pick</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="n">phase</span><span class="o">=</span><span class="n">pick</span><span class="o">.</span><span class="n">phase</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">())</span>
+    <span class="k">return</span> <span class="n">pick_str</span>
+
+
+<span class="k">def</span> <span class="nf">_hypodd_phase_str</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">event_id_mapper</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Form a phase-string for hypoDD from an obspy event. &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">origin</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">preferred_origin</span><span class="p">()</span> <span class="ow">or</span> <span class="n">event</span><span class="o">.</span><span class="n">origins</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">IndexError</span><span class="p">,</span> <span class="ne">AttributeError</span><span class="p">):</span>
+        <span class="n">Logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;No origin for event </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">resource_id</span><span class="o">.</span><span class="n">id</span><span class="p">))</span>
+        <span class="k">return</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">magnitude</span> <span class="o">=</span> <span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">preferred_magnitude</span><span class="p">()</span> <span class="ow">or</span> <span class="n">event</span><span class="o">.</span><span class="n">magnitudes</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">mag</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">IndexError</span><span class="p">,</span> <span class="ne">AttributeError</span><span class="p">):</span>
+        <span class="n">Logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;No magnitude&quot;</span><span class="p">)</span>
+        <span class="n">magnitude</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">time_error</span> <span class="o">=</span> <span class="n">origin</span><span class="o">.</span><span class="n">quality</span><span class="p">[</span><span class="s1">&#39;standard_error&#39;</span><span class="p">]</span> <span class="ow">or</span> <span class="mf">0.0</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">AttributeError</span><span class="p">):</span>
+        <span class="n">Logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;No time residual in header&#39;</span><span class="p">)</span>
+        <span class="n">time_error</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+    <span class="n">z_err</span> <span class="o">=</span> <span class="p">(</span><span class="n">origin</span><span class="o">.</span><span class="n">depth_errors</span><span class="o">.</span><span class="n">uncertainty</span> <span class="ow">or</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">/</span> <span class="mf">1000.</span>
+    <span class="c1"># Note that these should be in degrees, but GeoNet uses meters.</span>
+    <span class="n">x_err</span> <span class="o">=</span> <span class="p">(</span><span class="n">origin</span><span class="o">.</span><span class="n">longitude_errors</span><span class="o">.</span><span class="n">uncertainty</span> <span class="ow">or</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">/</span> <span class="mf">1000.</span>
+    <span class="n">y_err</span> <span class="o">=</span> <span class="p">(</span><span class="n">origin</span><span class="o">.</span><span class="n">latitude_errors</span><span class="o">.</span><span class="n">uncertainty</span> <span class="ow">or</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">/</span> <span class="mf">1000.</span>
+    <span class="n">x_err</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">x_err</span><span class="p">,</span> <span class="n">y_err</span><span class="p">)</span>
+
+    <span class="n">event_str</span> <span class="o">=</span> <span class="p">[(</span>
+        <span class="s2">&quot;# </span><span class="si">{year:4d}</span><span class="s2"> </span><span class="si">{month:02d}</span><span class="s2"> </span><span class="si">{day:02d}</span><span class="s2"> </span><span class="si">{hour:02d}</span><span class="s2"> </span><span class="si">{minute:02d}</span><span class="s2"> &quot;</span>
+        <span class="s2">&quot;</span><span class="si">{second:02d}</span><span class="s2"> </span><span class="si">{latitude:10.6f}</span><span class="s2"> </span><span class="si">{longitude: 10.6f}</span><span class="s2"> </span><span class="si">{depth:10.6f}</span><span class="s2"> &quot;</span>
+        <span class="s2">&quot;</span><span class="si">{magnitude:4.2f}</span><span class="s2"> </span><span class="si">{err_h:4.2f}</span><span class="s2"> </span><span class="si">{err_z:4.2f}</span><span class="s2"> </span><span class="si">{t_rms:4.2f}</span><span class="s2"> &quot;</span>
+        <span class="s2">&quot;</span><span class="si">{event_id:9d}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">year</span><span class="o">=</span><span class="n">origin</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="o">=</span><span class="n">origin</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">month</span><span class="p">,</span>
+            <span class="n">day</span><span class="o">=</span><span class="n">origin</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">day</span><span class="p">,</span> <span class="n">hour</span><span class="o">=</span><span class="n">origin</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">hour</span><span class="p">,</span>
+            <span class="n">minute</span><span class="o">=</span><span class="n">origin</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">minute</span><span class="p">,</span> <span class="n">second</span><span class="o">=</span><span class="n">origin</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
+            <span class="n">latitude</span><span class="o">=</span><span class="n">origin</span><span class="o">.</span><span class="n">latitude</span><span class="p">,</span> <span class="n">longitude</span><span class="o">=</span><span class="n">origin</span><span class="o">.</span><span class="n">longitude</span><span class="p">,</span>
+            <span class="n">depth</span><span class="o">=</span><span class="n">origin</span><span class="o">.</span><span class="n">depth</span> <span class="o">/</span> <span class="mf">1000.</span><span class="p">,</span> <span class="n">magnitude</span><span class="o">=</span><span class="n">magnitude</span><span class="p">,</span>
+            <span class="n">err_h</span><span class="o">=</span><span class="n">x_err</span><span class="p">,</span> <span class="n">err_z</span><span class="o">=</span><span class="n">z_err</span><span class="p">,</span> <span class="n">t_rms</span><span class="o">=</span><span class="n">time_error</span><span class="p">,</span>
+            <span class="n">event_id</span><span class="o">=</span><span class="n">event_id_mapper</span><span class="p">[</span><span class="n">event</span><span class="o">.</span><span class="n">resource_id</span><span class="o">.</span><span class="n">id</span><span class="p">]))]</span>
+    <span class="n">sparse_event</span> <span class="o">=</span> <span class="n">_make_sparse_event</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">pick</span> <span class="ow">in</span> <span class="n">sparse_event</span><span class="o">.</span><span class="n">picks</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">pick</span><span class="o">.</span><span class="n">phase</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="s2">&quot;PS&quot;</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">event_str</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="s2">&quot;</span><span class="si">{station:5s}</span><span class="s2"> </span><span class="si">{tt:7.2f}</span><span class="s2"> </span><span class="si">{weight:5.3f}</span><span class="s2"> </span><span class="si">{phase:1s}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">station</span><span class="o">=</span><span class="n">pick</span><span class="o">.</span><span class="n">station</span><span class="p">,</span> <span class="n">tt</span><span class="o">=</span><span class="n">pick</span><span class="o">.</span><span class="n">tt</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="n">pick</span><span class="o">.</span><span class="n">time_weight</span><span class="p">,</span>
+                <span class="n">phase</span><span class="o">=</span><span class="n">pick</span><span class="o">.</span><span class="n">phase</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()))</span>
+    <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">event_str</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="write_phase"><a class="viewcode-back" href="../../../submodules/autogen/eqcorrscan.utils.catalog_to_dd.write_phase.html#eqcorrscan.utils.catalog_to_dd.write_phase">[docs]</a><span class="k">def</span> <span class="nf">write_phase</span><span class="p">(</span><span class="n">catalog</span><span class="p">,</span> <span class="n">event_id_mapper</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Write a phase.dat formatted file from an obspy catalog.</span>
+
+<span class="sd">    :type catalog: `obspy.core.event.Catalog`</span>
+<span class="sd">    :param catalog: Catalog of events</span>
+<span class="sd">    :type event_id_mapper: dict</span>
+<span class="sd">    :param event_id_mapper:</span>
+<span class="sd">        Dictionary mapping event resource id to an integer event id for hypoDD.</span>
+<span class="sd">        If this is None, or missing events then the dictionary will be updated</span>
+<span class="sd">        to include appropriate event-ids. This should be of the form</span>
+<span class="sd">        {event.resource_id.id: integer_id}</span>
+
+<span class="sd">    :return: event_id_mapper</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">event_id_mapper</span> <span class="o">=</span> <span class="n">_generate_event_id_mapper</span><span class="p">(</span><span class="n">catalog</span><span class="p">,</span> <span class="n">event_id_mapper</span><span class="p">)</span>
+    <span class="n">phase_strings</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">_hypodd_phase_str</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">event_id_mapper</span><span class="p">)</span> <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">catalog</span><span class="p">])</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;phase.dat&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">phase_strings</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">event_id_mapper</span></div>
+
+
+<div class="viewcode-block" id="read_phase"><a class="viewcode-back" href="../../../submodules/autogen/eqcorrscan.utils.catalog_to_dd.read_phase.html#eqcorrscan.utils.catalog_to_dd.read_phase">[docs]</a><span class="k">def</span> <span class="nf">read_phase</span><span class="p">(</span><span class="n">ph_file</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Read hypoDD phase files into Obspy catalog class.</span>
+
+<span class="sd">    :type ph_file: str</span>
+<span class="sd">    :param ph_file: Phase file to read event info from.</span>
+
+<span class="sd">    :returns: Catalog of events from file.</span>
+<span class="sd">    :rtype: :class:`obspy.core.event.Catalog`</span>
+
+<span class="sd">    &gt;&gt;&gt; from obspy.core.event.catalog import Catalog</span>
+<span class="sd">    &gt;&gt;&gt; # Get the path to the test data</span>
+<span class="sd">    &gt;&gt;&gt; import eqcorrscan</span>
+<span class="sd">    &gt;&gt;&gt; import os</span>
+<span class="sd">    &gt;&gt;&gt; TEST_PATH = os.path.dirname(eqcorrscan.__file__) + &#39;/tests/test_data&#39;</span>
+<span class="sd">    &gt;&gt;&gt; catalog = read_phase(TEST_PATH + &#39;/tunnel.phase&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; isinstance(catalog, Catalog)</span>
+<span class="sd">    True</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ph_catalog</span> <span class="o">=</span> <span class="n">Catalog</span><span class="p">()</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">ph_file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+    <span class="c1"># Topline of each event is marked by # in position 0</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;#&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s1">&#39;event_text&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">locals</span><span class="p">():</span>
+                <span class="n">event_text</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;header&#39;</span><span class="p">:</span> <span class="n">line</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(),</span>
+                              <span class="s1">&#39;picks&#39;</span><span class="p">:</span> <span class="p">[]}</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">ph_catalog</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_phase_to_event</span><span class="p">(</span><span class="n">event_text</span><span class="p">))</span>
+                <span class="n">event_text</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;header&#39;</span><span class="p">:</span> <span class="n">line</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(),</span>
+                              <span class="s1">&#39;picks&#39;</span><span class="p">:</span> <span class="p">[]}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">event_text</span><span class="p">[</span><span class="s1">&#39;picks&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">rstrip</span><span class="p">())</span>
+    <span class="n">ph_catalog</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_phase_to_event</span><span class="p">(</span><span class="n">event_text</span><span class="p">))</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">ph_catalog</span></div>
+
+
+<span class="k">def</span> <span class="nf">_phase_to_event</span><span class="p">(</span><span class="n">event_text</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function to convert the text for one event in hypoDD phase format to \</span>
+<span class="sd">    event object.</span>
+
+<span class="sd">    :type event_text: dict</span>
+<span class="sd">    :param event_text: dict of two elements, header and picks, header is a \</span>
+<span class="sd">        str, picks is a list of str.</span>
+
+<span class="sd">    :returns: obspy.core.event.Event</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ph_event</span> <span class="o">=</span> <span class="n">Event</span><span class="p">()</span>
+    <span class="c1"># Extract info from header line</span>
+    <span class="c1"># YR, MO, DY, HR, MN, SC, LAT, LON, DEP, MAG, EH, EZ, RMS, ID</span>
+    <span class="n">header</span> <span class="o">=</span> <span class="n">event_text</span><span class="p">[</span><span class="s1">&#39;header&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+    <span class="n">ph_event</span><span class="o">.</span><span class="n">origins</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Origin</span><span class="p">())</span>
+    <span class="n">ph_event</span><span class="o">.</span><span class="n">origins</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">time</span> <span class="o">=</span> \
+        <span class="n">UTCDateTime</span><span class="p">(</span><span class="n">year</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">header</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">month</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">header</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span>
+                    <span class="n">day</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">header</span><span class="p">[</span><span class="mi">3</span><span class="p">]),</span> <span class="n">hour</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">header</span><span class="p">[</span><span class="mi">4</span><span class="p">]),</span>
+                    <span class="n">minute</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">header</span><span class="p">[</span><span class="mi">5</span><span class="p">]),</span> <span class="n">second</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">header</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]),</span>
+                    <span class="n">microsecond</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="nb">float</span><span class="p">((</span><span class="s1">&#39;0.&#39;</span> <span class="o">+</span> <span class="n">header</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]))</span> <span class="o">*</span>
+                                    <span class="mi">1000000</span><span class="p">))</span>
+    <span class="n">ph_event</span><span class="o">.</span><span class="n">origins</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">latitude</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">header</span><span class="p">[</span><span class="mi">7</span><span class="p">])</span>
+    <span class="n">ph_event</span><span class="o">.</span><span class="n">origins</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">longitude</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">header</span><span class="p">[</span><span class="mi">8</span><span class="p">])</span>
+    <span class="n">ph_event</span><span class="o">.</span><span class="n">origins</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">depth</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">header</span><span class="p">[</span><span class="mi">9</span><span class="p">])</span> <span class="o">*</span> <span class="mi">1000</span>
+    <span class="n">ph_event</span><span class="o">.</span><span class="n">origins</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">quality</span> <span class="o">=</span> <span class="n">OriginQuality</span><span class="p">(</span>
+        <span class="n">standard_error</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">header</span><span class="p">[</span><span class="mi">13</span><span class="p">]))</span>
+    <span class="n">ph_event</span><span class="o">.</span><span class="n">magnitudes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Magnitude</span><span class="p">())</span>
+    <span class="n">ph_event</span><span class="o">.</span><span class="n">magnitudes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">mag</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">header</span><span class="p">[</span><span class="mi">10</span><span class="p">])</span>
+    <span class="n">ph_event</span><span class="o">.</span><span class="n">magnitudes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">magnitude_type</span> <span class="o">=</span> <span class="s1">&#39;M&#39;</span>
+    <span class="c1"># Extract arrival info from picks!</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">pick_line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">event_text</span><span class="p">[</span><span class="s1">&#39;picks&#39;</span><span class="p">]):</span>
+        <span class="n">pick</span> <span class="o">=</span> <span class="n">pick_line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+        <span class="n">_waveform_id</span> <span class="o">=</span> <span class="n">WaveformStreamID</span><span class="p">(</span><span class="n">station_code</span><span class="o">=</span><span class="n">pick</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">pick_time</span> <span class="o">=</span> <span class="n">ph_event</span><span class="o">.</span><span class="n">origins</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">time</span> <span class="o">+</span> <span class="nb">float</span><span class="p">(</span><span class="n">pick</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">ph_event</span><span class="o">.</span><span class="n">picks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Pick</span><span class="p">(</span><span class="n">waveform_id</span><span class="o">=</span><span class="n">_waveform_id</span><span class="p">,</span>
+                                   <span class="n">phase_hint</span><span class="o">=</span><span class="n">pick</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
+                                   <span class="n">time</span><span class="o">=</span><span class="n">pick_time</span><span class="p">))</span>
+        <span class="n">ph_event</span><span class="o">.</span><span class="n">origins</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">arrivals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Arrival</span><span class="p">(</span><span class="n">phase</span><span class="o">=</span><span class="n">ph_event</span><span class="o">.</span><span class="n">picks</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                                                    <span class="n">pick_id</span><span class="o">=</span><span class="n">ph_event</span><span class="o">.</span><span class="n">picks</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span>
+                                                    <span class="n">resource_id</span><span class="p">))</span>
+        <span class="n">ph_event</span><span class="o">.</span><span class="n">origins</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">arrivals</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">time_weight</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">pick</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">ph_event</span>
+
+
+<span class="c1"># Event file functions</span>
+
+<span class="k">def</span> <span class="nf">_hypodd_event_str</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">event_id</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Make an event.dat style string for an event.</span>
+
+<span class="sd">    :type event_id: int</span>
+<span class="sd">    :param event_id: Must be an integer.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event_id</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">origin</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">preferred_origin</span><span class="p">()</span> <span class="ow">or</span> <span class="n">event</span><span class="o">.</span><span class="n">origins</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">IndexError</span><span class="p">,</span> <span class="ne">AttributeError</span><span class="p">):</span>
+        <span class="n">Logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;No origin for event </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">resource_id</span><span class="o">.</span><span class="n">id</span><span class="p">))</span>
+        <span class="k">return</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">magnitude</span> <span class="o">=</span> <span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">preferred_magnitude</span><span class="p">()</span> <span class="ow">or</span> <span class="n">event</span><span class="o">.</span><span class="n">magnitudes</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">mag</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">IndexError</span><span class="p">,</span> <span class="ne">AttributeError</span><span class="p">):</span>
+        <span class="n">Logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;No magnitude&quot;</span><span class="p">)</span>
+        <span class="n">magnitude</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">time_error</span> <span class="o">=</span> <span class="n">origin</span><span class="o">.</span><span class="n">quality</span><span class="p">[</span><span class="s1">&#39;standard_error&#39;</span><span class="p">]</span> <span class="ow">or</span> <span class="mf">0.0</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">AttributeError</span><span class="p">):</span>
+        <span class="n">Logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;No time residual in header&#39;</span><span class="p">)</span>
+        <span class="n">time_error</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+    <span class="n">z_err</span> <span class="o">=</span> <span class="p">(</span><span class="n">origin</span><span class="o">.</span><span class="n">depth_errors</span><span class="o">.</span><span class="n">uncertainty</span> <span class="ow">or</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">/</span> <span class="mf">1000.</span>
+    <span class="c1"># Note that these should be in degrees, but GeoNet uses meters.</span>
+    <span class="n">x_err</span> <span class="o">=</span> <span class="p">(</span><span class="n">origin</span><span class="o">.</span><span class="n">longitude_errors</span><span class="o">.</span><span class="n">uncertainty</span> <span class="ow">or</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">/</span> <span class="mf">1000.</span>
+    <span class="n">y_err</span> <span class="o">=</span> <span class="p">(</span><span class="n">origin</span><span class="o">.</span><span class="n">latitude_errors</span><span class="o">.</span><span class="n">uncertainty</span> <span class="ow">or</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">/</span> <span class="mf">1000.</span>
+    <span class="n">x_err</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">x_err</span><span class="p">,</span> <span class="n">y_err</span><span class="p">)</span>
+
+    <span class="n">event_str</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;</span><span class="si">{year:4d}{month:02d}{day:02d}</span><span class="s2">  </span><span class="si">{hour:2d}{minute:02d}</span><span class="s2">&quot;</span>
+        <span class="s2">&quot;</span><span class="si">{seconds:02d}{microseconds:02d}</span><span class="s2">  </span><span class="si">{latitude:8.4f}</span><span class="s2">  </span><span class="si">{longitude:9.4f}</span><span class="s2">&quot;</span>
+        <span class="s2">&quot;   </span><span class="si">{depth:8.4f}</span><span class="s2">  </span><span class="si">{magnitude:5.2f}</span><span class="s2">  </span><span class="si">{x_err:5.2f}</span><span class="s2">  </span><span class="si">{z_err:5.2f}</span><span class="s2">  &quot;</span>
+        <span class="s2">&quot;</span><span class="si">{time_err:5.2f}</span><span class="s2">  </span><span class="si">{event_id:9d}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">year</span><span class="o">=</span><span class="n">origin</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="o">=</span><span class="n">origin</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">month</span><span class="p">,</span>
+            <span class="n">day</span><span class="o">=</span><span class="n">origin</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">day</span><span class="p">,</span> <span class="n">hour</span><span class="o">=</span><span class="n">origin</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">hour</span><span class="p">,</span>
+            <span class="n">minute</span><span class="o">=</span><span class="n">origin</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">minute</span><span class="p">,</span> <span class="n">seconds</span><span class="o">=</span><span class="n">origin</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">second</span><span class="p">,</span>
+            <span class="n">microseconds</span><span class="o">=</span><span class="nb">round</span><span class="p">(</span><span class="n">origin</span><span class="o">.</span><span class="n">time</span><span class="o">.</span><span class="n">microsecond</span> <span class="o">/</span> <span class="mf">1e4</span><span class="p">),</span>
+            <span class="n">latitude</span><span class="o">=</span><span class="n">origin</span><span class="o">.</span><span class="n">latitude</span><span class="p">,</span> <span class="n">longitude</span><span class="o">=</span><span class="n">origin</span><span class="o">.</span><span class="n">longitude</span><span class="p">,</span>
+            <span class="n">depth</span><span class="o">=</span><span class="n">origin</span><span class="o">.</span><span class="n">depth</span> <span class="o">/</span> <span class="mf">1000.</span><span class="p">,</span> <span class="n">magnitude</span><span class="o">=</span><span class="n">magnitude</span><span class="p">,</span>
+            <span class="n">x_err</span><span class="o">=</span><span class="n">x_err</span><span class="p">,</span> <span class="n">z_err</span><span class="o">=</span><span class="n">z_err</span><span class="p">,</span> <span class="n">time_err</span><span class="o">=</span><span class="n">time_error</span><span class="p">,</span> <span class="n">event_id</span><span class="o">=</span><span class="n">event_id</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">event_str</span>
+
+
+<div class="viewcode-block" id="write_event"><a class="viewcode-back" href="../../../submodules/autogen/eqcorrscan.utils.catalog_to_dd.write_event.html#eqcorrscan.utils.catalog_to_dd.write_event">[docs]</a><span class="k">def</span> <span class="nf">write_event</span><span class="p">(</span><span class="n">catalog</span><span class="p">,</span> <span class="n">event_id_mapper</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Write obspy.core.event.Catalog to a hypoDD format event.dat file.</span>
+
+<span class="sd">    :type catalog: obspy.core.event.Catalog</span>
+<span class="sd">    :param catalog: A catalog of obspy events.</span>
+<span class="sd">    :type event_id_mapper: dict</span>
+<span class="sd">    :param event_id_mapper:</span>
+<span class="sd">        Dictionary mapping event resource id to an integer event id for hypoDD.</span>
+<span class="sd">        If this is None, or missing events then the dictionary will be updated</span>
+<span class="sd">        to include appropriate event-ids. This should be of the form</span>
+<span class="sd">        {event.resource_id.id: integer_id}</span>
+
+<span class="sd">    :returns: dictionary of event-id mappings.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">event_id_mapper</span> <span class="o">=</span> <span class="n">_generate_event_id_mapper</span><span class="p">(</span>
+        <span class="n">catalog</span><span class="o">=</span><span class="n">catalog</span><span class="p">,</span> <span class="n">event_id_mapper</span><span class="o">=</span><span class="n">event_id_mapper</span><span class="p">)</span>
+    <span class="n">event_strings</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">_hypodd_event_str</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">event_id_mapper</span><span class="p">[</span><span class="n">event</span><span class="o">.</span><span class="n">resource_id</span><span class="o">.</span><span class="n">id</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">event</span> <span class="ow">in</span> <span class="n">catalog</span><span class="p">]</span>
+    <span class="n">event_strings</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">event_strings</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;event.dat&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">event_strings</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">event_id_mapper</span></div>
+
+
+<span class="c1"># Station.dat functions</span>
+
+<div class="viewcode-block" id="write_station"><a class="viewcode-back" href="../../../submodules/autogen/eqcorrscan.utils.catalog_to_dd.write_station.html#eqcorrscan.utils.catalog_to_dd.write_station">[docs]</a><span class="k">def</span> <span class="nf">write_station</span><span class="p">(</span><span class="n">inventory</span><span class="p">,</span> <span class="n">use_elevation</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s2">&quot;station.dat&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Write a hypoDD formatted station file.</span>
+
+<span class="sd">    :type inventory: obspy.core.Inventory</span>
+<span class="sd">    :param inventory:</span>
+<span class="sd">        Inventory of stations to write - should include channels if</span>
+<span class="sd">        use_elevation=True to incorporate channel depths.</span>
+<span class="sd">    :type use_elevation: bool</span>
+<span class="sd">    :param use_elevation: Whether to write elevations (requires hypoDD &gt;= 2)</span>
+<span class="sd">    :type filename: str</span>
+<span class="sd">    :param filename: File to write stations to.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">station_strings</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">formatter</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{sta:&lt;7s}</span><span class="s2"> </span><span class="si">{lat:&gt;9.5f}</span><span class="s2"> </span><span class="si">{lon:&gt;10.5f}</span><span class="s2">&quot;</span>
+    <span class="k">if</span> <span class="n">use_elevation</span><span class="p">:</span>
+        <span class="n">formatter</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">formatter</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">{elev:&gt;5.0f}</span><span class="s2">&quot;</span><span class="p">])</span>
+
+    <span class="k">for</span> <span class="n">network</span> <span class="ow">in</span> <span class="n">inventory</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">station</span> <span class="ow">in</span> <span class="n">network</span><span class="p">:</span>
+            <span class="n">parts</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">sta</span><span class="o">=</span><span class="n">station</span><span class="o">.</span><span class="n">code</span><span class="p">,</span> <span class="n">lat</span><span class="o">=</span><span class="n">station</span><span class="o">.</span><span class="n">latitude</span><span class="p">,</span>
+                         <span class="n">lon</span><span class="o">=</span><span class="n">station</span><span class="o">.</span><span class="n">longitude</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">use_elevation</span><span class="p">:</span>
+                <span class="n">channel_depths</span> <span class="o">=</span> <span class="p">{</span><span class="n">chan</span><span class="o">.</span><span class="n">depth</span> <span class="k">for</span> <span class="n">chan</span> <span class="ow">in</span> <span class="n">station</span><span class="p">}</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">channel_depths</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">Logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;No channels provided, using 0 depth.&quot;</span><span class="p">)</span>
+                    <span class="n">depth</span> <span class="o">=</span> <span class="mf">0.0</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">depth</span> <span class="o">=</span> <span class="n">channel_depths</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">channel_depths</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">Logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Multiple depths for </span><span class="si">{</span><span class="n">station</span><span class="o">.</span><span class="n">code</span><span class="si">}</span><span class="s2">, using </span><span class="si">{</span><span class="n">depth</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">parts</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">elev</span><span class="o">=</span><span class="n">station</span><span class="o">.</span><span class="n">elevation</span> <span class="o">-</span> <span class="n">depth</span><span class="p">))</span>
+            <span class="n">station_strings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">formatter</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="n">parts</span><span class="p">))</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">station_strings</span><span class="p">))</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">doctest</span>
+
+    <span class="n">doctest</span><span class="o">.</span><span class="n">testmod</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2015-2021: EQcorrscan developers.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.2.1.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

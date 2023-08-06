@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>eqcorrscan.core.match_filter.matched_filter &#8212; EQcorrscan 0.4.3 documentation</title>
+    <link rel="stylesheet" href="../../../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script src="../../../../_static/jquery.js"></script>
+    <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="shortcut icon" href="../../../../_static/EQcorrscan_logo.ico"/>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../../../_static/js/jquery-1.12.4.min.js "></script>
+<script type="text/javascript" src="../../../../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../../../../_static/bootstrap-3.4.1/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../../../../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../../index.html"><span><img src="../../../../_static/EQcorrscan_logo.jpg"></span>
+          EQcorrscan</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.4</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../intro.html">1. Introduction to the EQcorrscan package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation.html">2. EQcorrscan installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../updates.html">3. What’s new</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorial.html">4. EQcorrscan tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api.html">5. EQcorrscan API</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"></ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+              <li class="hidden-sm"></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <h1>Source code for eqcorrscan.core.match_filter.matched_filter</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Functions for network matched-filter detection of seismic data.</span>
+
+<span class="sd">Designed to cross-correlate templates generated by template_gen function</span>
+<span class="sd">with data and output the detections.</span>
+
+<span class="sd">:copyright:</span>
+<span class="sd">    EQcorrscan developers.</span>
+
+<span class="sd">:license:</span>
+<span class="sd">    GNU Lesser General Public License, Version 3</span>
+<span class="sd">    (https://www.gnu.org/copyleft/lesser.html)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">timeit</span> <span class="kn">import</span> <span class="n">default_timer</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">obspy</span> <span class="kn">import</span> <span class="n">Catalog</span><span class="p">,</span> <span class="n">UTCDateTime</span><span class="p">,</span> <span class="n">Stream</span>
+
+<span class="kn">from</span> <span class="nn">eqcorrscan.core.match_filter.helpers</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">_spike_test</span><span class="p">,</span> <span class="n">extract_from_stream</span><span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">eqcorrscan.utils.correlate</span> <span class="kn">import</span> <span class="n">get_stream_xcorr</span>
+<span class="kn">from</span> <span class="nn">eqcorrscan.utils.findpeaks</span> <span class="kn">import</span> <span class="n">multi_find_peaks</span>
+<span class="kn">from</span> <span class="nn">eqcorrscan.utils.pre_processing</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">dayproc</span><span class="p">,</span> <span class="n">shortproc</span><span class="p">,</span> <span class="n">_prep_data_for_correlation</span><span class="p">)</span>
+
+<span class="n">Logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">MatchFilterError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Default error for match-filter errors.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Raise error.</span>
+
+<span class="sd">        .. rubric:: Example</span>
+
+<span class="sd">        &gt;&gt;&gt; MatchFilterError(&#39;This raises an error&#39;)</span>
+<span class="sd">        This raises an error</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Print the value of the error.</span>
+
+<span class="sd">        .. rubric:: Example</span>
+<span class="sd">        &gt;&gt;&gt; print(MatchFilterError(&#39;Error&#39;).__repr__())</span>
+<span class="sd">        Error</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Print the error in a pretty way.</span>
+
+<span class="sd">        .. rubric:: Example</span>
+<span class="sd">        &gt;&gt;&gt; print(MatchFilterError(&#39;Error&#39;))</span>
+<span class="sd">        Error</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span>
+
+
+<span class="k">def</span> <span class="nf">_group_detect</span><span class="p">(</span><span class="n">templates</span><span class="p">,</span> <span class="n">stream</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">threshold_type</span><span class="p">,</span> <span class="n">trig_int</span><span class="p">,</span>
+                  <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">plotdir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">group_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                  <span class="n">pre_processed</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">daylong</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">parallel_process</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                  <span class="n">xcorr_func</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">concurrency</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cores</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                  <span class="n">ignore_length</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">ignore_bad_data</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                  <span class="n">overlap</span><span class="o">=</span><span class="s2">&quot;calculate&quot;</span><span class="p">,</span> <span class="n">full_peaks</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">process_cores</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                  <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Pre-process and compute detections for a group of templates.</span>
+
+<span class="sd">    Will process the stream object, so if running in a loop, you will want</span>
+<span class="sd">    to copy the stream before passing it to this function.</span>
+
+<span class="sd">    :type templates: list</span>
+<span class="sd">    :param templates: List of :class:`eqcorrscan.core.match_filter.Template`</span>
+<span class="sd">    :type stream: `obspy.core.stream.Stream`</span>
+<span class="sd">    :param stream: Continuous data to detect within using the Template.</span>
+<span class="sd">    :type threshold: float</span>
+<span class="sd">    :param threshold:</span>
+<span class="sd">        Threshold level, if using `threshold_type=&#39;MAD&#39;` then this will be</span>
+<span class="sd">        the multiple of the median absolute deviation.</span>
+<span class="sd">    :type threshold_type: str</span>
+<span class="sd">    :param threshold_type:</span>
+<span class="sd">        The type of threshold to be used, can be MAD, absolute or</span>
+<span class="sd">        av_chan_corr.  See Note on thresholding below.</span>
+<span class="sd">    :type trig_int: float</span>
+<span class="sd">    :param trig_int:</span>
+<span class="sd">        Minimum gap between detections from one template in seconds.</span>
+<span class="sd">        If multiple detections occur within trig_int of one-another, the one</span>
+<span class="sd">        with the highest cross-correlation sum will be selected.</span>
+<span class="sd">    :type plot: bool</span>
+<span class="sd">    :param plot:</span>
+<span class="sd">        Turn plotting on or off.</span>
+<span class="sd">    :type plotdir: str</span>
+<span class="sd">    :param plotdir:</span>
+<span class="sd">        The path to save plots to. If `plotdir=None` (default) then the</span>
+<span class="sd">        figure will be shown on screen.</span>
+<span class="sd">    :type group_size: int</span>
+<span class="sd">    :param group_size:</span>
+<span class="sd">        Maximum number of templates to run at once, use to reduce memory</span>
+<span class="sd">        consumption, if unset will use all templates.</span>
+<span class="sd">    :type pre_processed: bool</span>
+<span class="sd">    :param pre_processed:</span>
+<span class="sd">        Set to True if `stream` has already undergone processing, in this</span>
+<span class="sd">        case eqcorrscan will only check that the sampling rate is correct.</span>
+<span class="sd">        Defaults to False, which will use the</span>
+<span class="sd">        :mod:`eqcorrscan.utils.pre_processing` routines to resample and</span>
+<span class="sd">        filter the continuous data.</span>
+<span class="sd">    :type daylong: bool</span>
+<span class="sd">    :param daylong:</span>
+<span class="sd">        Set to True to use the</span>
+<span class="sd">        :func:`eqcorrscan.utils.pre_processing.dayproc` routine, which</span>
+<span class="sd">        preforms additional checks and is more efficient for day-long data</span>
+<span class="sd">        over other methods.</span>
+<span class="sd">    :type parallel_process: bool</span>
+<span class="sd">    :param parallel_process:</span>
+<span class="sd">    :type xcorr_func: str or callable</span>
+<span class="sd">    :param xcorr_func:</span>
+<span class="sd">        A str of a registered xcorr function or a callable for implementing</span>
+<span class="sd">        a custom xcorr function. For more details see:</span>
+<span class="sd">        :func:`eqcorrscan.utils.correlate.register_array_xcorr`</span>
+<span class="sd">    :type concurrency: str</span>
+<span class="sd">    :param concurrency:</span>
+<span class="sd">        The type of concurrency to apply to the xcorr function. Options are</span>
+<span class="sd">        &#39;multithread&#39;, &#39;multiprocess&#39;, &#39;concurrent&#39;. For more details see</span>
+<span class="sd">        :func:`eqcorrscan.utils.correlate.get_stream_xcorr`</span>
+<span class="sd">    :type cores: int</span>
+<span class="sd">    :param cores: Number of workers for processing and correlation.</span>
+<span class="sd">    :type ignore_length: bool</span>
+<span class="sd">    :param ignore_length:</span>
+<span class="sd">        If using daylong=True, then dayproc will try check that the data</span>
+<span class="sd">        are there for at least 80% of the day, if you don&#39;t want this check</span>
+<span class="sd">        (which will raise an error if too much data are missing) then set</span>
+<span class="sd">        ignore_length=True.  This is not recommended!</span>
+<span class="sd">    :type overlap: float</span>
+<span class="sd">    :param overlap:</span>
+<span class="sd">        Either None, &quot;calculate&quot; or a float of number of seconds to</span>
+<span class="sd">        overlap detection streams by.  This is to counter the effects of</span>
+<span class="sd">        the delay-and-stack in calculating cross-correlation sums. Setting</span>
+<span class="sd">        overlap = &quot;calculate&quot; will work out the appropriate overlap based</span>
+<span class="sd">        on the maximum lags within templates.</span>
+<span class="sd">    :type full_peaks: bool</span>
+<span class="sd">    :param full_peaks: See `eqcorrscan.utils.findpeaks.find_peaks_compiled`</span>
+<span class="sd">    :type process_cores: int</span>
+<span class="sd">    :param process_cores:</span>
+<span class="sd">        Number of processes to use for pre-processing (if different to</span>
+<span class="sd">        `cores`).</span>
+
+<span class="sd">    :return:</span>
+<span class="sd">        :class:`eqcorrscan.core.match_filter.Party` of families of detections.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">eqcorrscan.core.match_filter.party</span> <span class="kn">import</span> <span class="n">Party</span>
+    <span class="kn">from</span> <span class="nn">eqcorrscan.core.match_filter.family</span> <span class="kn">import</span> <span class="n">Family</span>
+
+    <span class="n">master</span> <span class="o">=</span> <span class="n">templates</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="c1"># Check that they are all processed the same.</span>
+    <span class="n">lap</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">for</span> <span class="n">template</span> <span class="ow">in</span> <span class="n">templates</span><span class="p">:</span>
+        <span class="n">starts</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">template</span><span class="o">.</span><span class="n">st</span><span class="o">.</span><span class="n">sort</span><span class="p">([</span><span class="s1">&#39;starttime&#39;</span><span class="p">])]</span>
+        <span class="k">if</span> <span class="n">starts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">starts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">lap</span><span class="p">:</span>
+            <span class="n">lap</span> <span class="o">=</span> <span class="n">starts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">starts</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">template</span><span class="o">.</span><span class="n">same_processing</span><span class="p">(</span><span class="n">master</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">MatchFilterError</span><span class="p">(</span><span class="s1">&#39;Templates must be processed the same.&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">overlap</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">overlap</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">overlap</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">str</span><span class="p">(</span><span class="n">overlap</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="s2">&quot;calculate&quot;</span><span class="p">):</span>
+        <span class="n">overlap</span> <span class="o">=</span> <span class="n">lap</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">overlap</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> is not a recognised overlap type&quot;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">overlap</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">overlap</span> <span class="o">&gt;=</span> <span class="n">master</span><span class="o">.</span><span class="n">process_length</span><span class="p">:</span>
+        <span class="n">Logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Overlap of </span><span class="si">{</span><span class="n">overlap</span><span class="si">}</span><span class="s2"> s is greater than process &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;length (</span><span class="si">{</span><span class="n">master</span><span class="o">.</span><span class="n">process_length</span><span class="si">}</span><span class="s2"> s), ignoring overlap&quot;</span><span class="p">)</span>
+        <span class="n">overlap</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">pre_processed</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">process_cores</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">process_cores</span> <span class="o">=</span> <span class="n">cores</span>
+        <span class="n">streams</span> <span class="o">=</span> <span class="n">_group_process</span><span class="p">(</span>
+            <span class="n">template_group</span><span class="o">=</span><span class="n">templates</span><span class="p">,</span> <span class="n">parallel</span><span class="o">=</span><span class="n">parallel_process</span><span class="p">,</span>
+            <span class="n">cores</span><span class="o">=</span><span class="n">process_cores</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="n">stream</span><span class="p">,</span> <span class="n">daylong</span><span class="o">=</span><span class="n">daylong</span><span class="p">,</span>
+            <span class="n">ignore_length</span><span class="o">=</span><span class="n">ignore_length</span><span class="p">,</span> <span class="n">ignore_bad_data</span><span class="o">=</span><span class="n">ignore_bad_data</span><span class="p">,</span>
+            <span class="n">overlap</span><span class="o">=</span><span class="n">overlap</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">_st</span> <span class="ow">in</span> <span class="n">streams</span><span class="p">:</span>
+            <span class="n">Logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Processed stream:</span><span class="se">\n</span><span class="si">{</span><span class="n">_st</span><span class="o">.</span><span class="fm">__str__</span><span class="p">(</span><span class="n">extended</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">Logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Not performing any processing on the continuous data.&#39;</span><span class="p">)</span>
+        <span class="n">streams</span> <span class="o">=</span> <span class="p">[</span><span class="n">stream</span><span class="p">]</span>
+    <span class="n">detections</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">party</span> <span class="o">=</span> <span class="n">Party</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">group_size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">n_groups</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">templates</span><span class="p">)</span> <span class="o">/</span> <span class="n">group_size</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">n_groups</span> <span class="o">*</span> <span class="n">group_size</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">templates</span><span class="p">):</span>
+            <span class="n">n_groups</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">n_groups</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">for</span> <span class="n">st_chunk</span> <span class="ow">in</span> <span class="n">streams</span><span class="p">:</span>
+        <span class="n">chunk_start</span><span class="p">,</span> <span class="n">chunk_end</span> <span class="o">=</span> <span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span> <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">st_chunk</span><span class="p">),</span>
+                                  <span class="nb">max</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">endtime</span> <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">st_chunk</span><span class="p">))</span>
+        <span class="n">Logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s1">&#39;Computing detections between </span><span class="si">{</span><span class="n">chunk_start</span><span class="si">}</span><span class="s1"> and </span><span class="si">{</span><span class="n">chunk_end</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="n">st_chunk</span><span class="o">.</span><span class="n">trim</span><span class="p">(</span><span class="n">starttime</span><span class="o">=</span><span class="n">chunk_start</span><span class="p">,</span> <span class="n">endtime</span><span class="o">=</span><span class="n">chunk_end</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">st_chunk</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tr</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">st_chunk</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                <span class="n">tr</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">st_chunk</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_groups</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">group_size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">end_group</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">group_size</span>
+                <span class="n">start_group</span> <span class="o">=</span> <span class="n">i</span> <span class="o">*</span> <span class="n">group_size</span>
+                <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">n_groups</span><span class="p">:</span>
+                    <span class="n">end_group</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">templates</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">end_group</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">templates</span><span class="p">)</span>
+                <span class="n">start_group</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">template_group</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">templates</span><span class="p">[</span><span class="n">start_group</span><span class="p">:</span> <span class="n">end_group</span><span class="p">]]</span>
+            <span class="n">detections</span> <span class="o">+=</span> <span class="n">match_filter</span><span class="p">(</span>
+                <span class="n">template_names</span><span class="o">=</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">template_group</span><span class="p">],</span>
+                <span class="n">template_list</span><span class="o">=</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">st</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">template_group</span><span class="p">],</span> <span class="n">st</span><span class="o">=</span><span class="n">st_chunk</span><span class="p">,</span>
+                <span class="n">xcorr_func</span><span class="o">=</span><span class="n">xcorr_func</span><span class="p">,</span> <span class="n">concurrency</span><span class="o">=</span><span class="n">concurrency</span><span class="p">,</span>
+                <span class="n">threshold</span><span class="o">=</span><span class="n">threshold</span><span class="p">,</span> <span class="n">threshold_type</span><span class="o">=</span><span class="n">threshold_type</span><span class="p">,</span>
+                <span class="n">trig_int</span><span class="o">=</span><span class="n">trig_int</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="n">plot</span><span class="p">,</span> <span class="n">plotdir</span><span class="o">=</span><span class="n">plotdir</span><span class="p">,</span> <span class="n">cores</span><span class="o">=</span><span class="n">cores</span><span class="p">,</span>
+                <span class="n">full_peaks</span><span class="o">=</span><span class="n">full_peaks</span><span class="p">,</span> <span class="n">peak_cores</span><span class="o">=</span><span class="n">process_cores</span><span class="p">,</span>
+                <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">template</span> <span class="ow">in</span> <span class="n">template_group</span><span class="p">:</span>
+                <span class="n">family</span> <span class="o">=</span> <span class="n">Family</span><span class="p">(</span><span class="n">template</span><span class="o">=</span><span class="n">template</span><span class="p">,</span> <span class="n">detections</span><span class="o">=</span><span class="p">[])</span>
+                <span class="k">for</span> <span class="n">detection</span> <span class="ow">in</span> <span class="n">detections</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">detection</span><span class="o">.</span><span class="n">template_name</span> <span class="o">==</span> <span class="n">template</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+                        <span class="k">for</span> <span class="n">pick</span> <span class="ow">in</span> <span class="n">detection</span><span class="o">.</span><span class="n">event</span><span class="o">.</span><span class="n">picks</span><span class="p">:</span>
+                            <span class="n">pick</span><span class="o">.</span><span class="n">time</span> <span class="o">+=</span> <span class="n">template</span><span class="o">.</span><span class="n">prepick</span>
+                        <span class="k">for</span> <span class="n">origin</span> <span class="ow">in</span> <span class="n">detection</span><span class="o">.</span><span class="n">event</span><span class="o">.</span><span class="n">origins</span><span class="p">:</span>
+                            <span class="n">origin</span><span class="o">.</span><span class="n">time</span> <span class="o">+=</span> <span class="n">template</span><span class="o">.</span><span class="n">prepick</span>
+                        <span class="n">family</span><span class="o">.</span><span class="n">detections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">detection</span><span class="p">)</span>
+                <span class="n">party</span> <span class="o">+=</span> <span class="n">family</span>
+    <span class="k">return</span> <span class="n">party</span>
+
+
+<span class="k">def</span> <span class="nf">_group_process</span><span class="p">(</span><span class="n">template_group</span><span class="p">,</span> <span class="n">parallel</span><span class="p">,</span> <span class="n">cores</span><span class="p">,</span> <span class="n">stream</span><span class="p">,</span> <span class="n">daylong</span><span class="p">,</span>
+                   <span class="n">ignore_length</span><span class="p">,</span> <span class="n">ignore_bad_data</span><span class="p">,</span> <span class="n">overlap</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Process data into chunks based on template processing length.</span>
+
+<span class="sd">    Templates in template_group must all have the same processing parameters.</span>
+
+<span class="sd">    :type template_group: list</span>
+<span class="sd">    :param template_group: List of Templates.</span>
+<span class="sd">    :type parallel: bool</span>
+<span class="sd">    :param parallel: Whether to use parallel processing or not</span>
+<span class="sd">    :type cores: int</span>
+<span class="sd">    :param cores: Number of cores to use, can be False to use all available.</span>
+<span class="sd">    :type stream: :class:`obspy.core.stream.Stream`</span>
+<span class="sd">    :param stream: Stream to process, will be left intact.</span>
+<span class="sd">    :type daylong: bool</span>
+<span class="sd">    :param daylong: Whether to enforce day-length files or not.</span>
+<span class="sd">    :type ignore_length: bool</span>
+<span class="sd">    :param ignore_length:</span>
+<span class="sd">        If using daylong=True, then dayproc will try check that the data</span>
+<span class="sd">        are there for at least 80% of the day, if you don&#39;t want this check</span>
+<span class="sd">        (which will raise an error if too much data are missing) then set</span>
+<span class="sd">        ignore_length=True.  This is not recommended!</span>
+<span class="sd">    :type ignore_bad_data: bool</span>
+<span class="sd">    :param ignore_bad_data:</span>
+<span class="sd">        If False (default), errors will be raised if data are excessively</span>
+<span class="sd">        gappy or are mostly zeros. If True then no error will be raised, but</span>
+<span class="sd">        an empty trace will be returned.</span>
+<span class="sd">    :type overlap: float</span>
+<span class="sd">    :param overlap: Number of seconds to overlap chunks by.</span>
+
+<span class="sd">    :return: list of processed streams.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">master</span> <span class="o">=</span> <span class="n">template_group</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">processed_streams</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;filt_order&#39;</span><span class="p">:</span> <span class="n">master</span><span class="o">.</span><span class="n">filt_order</span><span class="p">,</span>
+        <span class="s1">&#39;highcut&#39;</span><span class="p">:</span> <span class="n">master</span><span class="o">.</span><span class="n">highcut</span><span class="p">,</span> <span class="s1">&#39;lowcut&#39;</span><span class="p">:</span> <span class="n">master</span><span class="o">.</span><span class="n">lowcut</span><span class="p">,</span>
+        <span class="s1">&#39;samp_rate&#39;</span><span class="p">:</span> <span class="n">master</span><span class="o">.</span><span class="n">samp_rate</span><span class="p">,</span> <span class="s1">&#39;parallel&#39;</span><span class="p">:</span> <span class="n">parallel</span><span class="p">,</span>
+        <span class="s1">&#39;num_cores&#39;</span><span class="p">:</span> <span class="n">cores</span><span class="p">,</span> <span class="s1">&#39;ignore_length&#39;</span><span class="p">:</span> <span class="n">ignore_length</span><span class="p">,</span>
+        <span class="s1">&#39;ignore_bad_data&#39;</span><span class="p">:</span> <span class="n">ignore_bad_data</span><span class="p">}</span>
+    <span class="c1"># Processing always needs to be run to account for gaps - pre-process will</span>
+    <span class="c1"># check whether filtering and resampling needs to be done.</span>
+    <span class="n">process_length</span> <span class="o">=</span> <span class="n">master</span><span class="o">.</span><span class="n">process_length</span>
+    <span class="k">if</span> <span class="n">daylong</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">master</span><span class="o">.</span><span class="n">process_length</span> <span class="o">==</span> <span class="mi">86400</span><span class="p">:</span>
+            <span class="n">Logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s1">&#39;Processing day-long data, but template was cut from </span><span class="si">%i</span><span class="s1"> s long&#39;</span>
+                <span class="s1">&#39; data, will reduce correlations&#39;</span> <span class="o">%</span> <span class="n">master</span><span class="o">.</span><span class="n">process_length</span><span class="p">)</span>
+        <span class="n">func</span> <span class="o">=</span> <span class="n">dayproc</span>
+        <span class="n">process_length</span> <span class="o">=</span> <span class="mi">86400</span>
+        <span class="c1"># Check that data all start on the same day, otherwise strange</span>
+        <span class="c1"># things will happen...</span>
+        <span class="n">starttimes</span> <span class="o">=</span> <span class="p">[</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span><span class="o">.</span><span class="n">date</span> <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">stream</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">starttimes</span><span class="p">)))</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">Logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Data start on different days, setting to last day&#39;</span><span class="p">)</span>
+            <span class="n">starttime</span> <span class="o">=</span> <span class="n">UTCDateTime</span><span class="p">(</span>
+                <span class="n">stream</span><span class="o">.</span><span class="n">sort</span><span class="p">([</span><span class="s1">&#39;starttime&#39;</span><span class="p">])[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span><span class="o">.</span><span class="n">date</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">starttime</span> <span class="o">=</span> <span class="n">stream</span><span class="o">.</span><span class="n">sort</span><span class="p">([</span><span class="s1">&#39;starttime&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># We want to use shortproc to allow overlaps</span>
+        <span class="n">func</span> <span class="o">=</span> <span class="n">shortproc</span>
+        <span class="n">starttime</span> <span class="o">=</span> <span class="n">stream</span><span class="o">.</span><span class="n">sort</span><span class="p">([</span><span class="s1">&#39;starttime&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span>
+    <span class="n">endtime</span> <span class="o">=</span> <span class="n">stream</span><span class="o">.</span><span class="n">sort</span><span class="p">([</span><span class="s1">&#39;endtime&#39;</span><span class="p">])[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">endtime</span>
+    <span class="n">data_len_samps</span> <span class="o">=</span> <span class="nb">round</span><span class="p">((</span><span class="n">endtime</span> <span class="o">-</span> <span class="n">starttime</span><span class="p">)</span> <span class="o">*</span> <span class="n">master</span><span class="o">.</span><span class="n">samp_rate</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="k">assert</span> <span class="n">overlap</span> <span class="o">&lt;</span> <span class="n">process_length</span><span class="p">,</span> <span class="s2">&quot;Overlap must be less than process length&quot;</span>
+    <span class="n">chunk_len_samps</span> <span class="o">=</span> <span class="p">(</span><span class="n">process_length</span> <span class="o">-</span> <span class="n">overlap</span><span class="p">)</span> <span class="o">*</span> <span class="n">master</span><span class="o">.</span><span class="n">samp_rate</span>
+    <span class="n">n_chunks</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">data_len_samps</span> <span class="o">//</span> <span class="n">chunk_len_samps</span><span class="p">)</span>
+    <span class="n">Logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Splitting these data in </span><span class="si">{</span><span class="n">n_chunks</span><span class="si">}</span><span class="s2"> chunks&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">n_chunks</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">Logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Data must be process_length or longer, not computing&#39;</span><span class="p">)</span>
+    <span class="n">_endtime</span> <span class="o">=</span> <span class="n">starttime</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_chunks</span><span class="p">):</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="p">{</span><span class="s1">&#39;starttime&#39;</span><span class="p">:</span> <span class="n">starttime</span> <span class="o">+</span> <span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="p">(</span><span class="n">process_length</span> <span class="o">-</span> <span class="n">overlap</span><span class="p">))})</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">daylong</span><span class="p">:</span>
+            <span class="n">_endtime</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;starttime&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">process_length</span>
+            <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;endtime&#39;</span><span class="p">:</span> <span class="n">_endtime</span><span class="p">})</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">_endtime</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;starttime&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">86400</span>
+        <span class="n">chunk_stream</span> <span class="o">=</span> <span class="n">stream</span><span class="o">.</span><span class="n">slice</span><span class="p">(</span><span class="n">starttime</span><span class="o">=</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;starttime&#39;</span><span class="p">],</span>
+                                    <span class="n">endtime</span><span class="o">=</span><span class="n">_endtime</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">Logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Processing chunk </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> between </span><span class="si">{</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;starttime&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> &quot;</span>
+                     <span class="sa">f</span><span class="s2">&quot;and </span><span class="si">{</span><span class="n">_endtime</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">chunk_stream</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">Logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;No data between </span><span class="si">{</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;starttime&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> and </span><span class="si">{</span><span class="n">_endtime</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">continue</span>
+        <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">chunk_stream</span><span class="p">:</span>
+            <span class="n">tr</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="nb">int</span><span class="p">(</span>
+                <span class="n">process_length</span> <span class="o">*</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">)]</span>
+        <span class="n">_chunk_stream_lengths</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">tr</span><span class="o">.</span><span class="n">id</span><span class="p">:</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">endtime</span> <span class="o">-</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span>
+            <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">chunk_stream</span><span class="p">}</span>
+        <span class="k">for</span> <span class="n">tr_id</span><span class="p">,</span> <span class="n">chunk_length</span> <span class="ow">in</span> <span class="n">_chunk_stream_lengths</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="c1"># Remove traces that are too short.</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">ignore_length</span> <span class="ow">and</span> <span class="n">chunk_length</span> <span class="o">&lt;=</span> <span class="o">.</span><span class="mi">8</span> <span class="o">*</span> <span class="n">process_length</span><span class="p">:</span>
+                <span class="n">tr</span> <span class="o">=</span> <span class="n">chunk_stream</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">tr_id</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">chunk_stream</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">tr</span><span class="p">)</span>
+                <span class="n">Logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="s2">&quot;Data chunk on </span><span class="si">{0}</span><span class="s2"> starting </span><span class="si">{1}</span><span class="s2"> and ending </span><span class="si">{2}</span><span class="s2"> is &quot;</span>
+                    <span class="s2">&quot;below 80</span><span class="si">% o</span><span class="s2">f the requested length, will not use&quot;</span>
+                    <span class="s2">&quot; this.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="n">tr</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span><span class="p">,</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">endtime</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">chunk_stream</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">Logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Processing chunk:</span><span class="se">\n</span><span class="si">{</span><span class="n">chunk_stream</span><span class="o">.</span><span class="fm">__str__</span><span class="p">(</span><span class="n">extended</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">_processed_stream</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">st</span><span class="o">=</span><span class="n">chunk_stream</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="c1"># If data have more zeros then pre-processing will return a</span>
+            <span class="c1"># trace of 0 length</span>
+            <span class="n">_processed_stream</span><span class="o">.</span><span class="n">traces</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">tr</span> <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">_processed_stream</span> <span class="k">if</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">npts</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">_processed_stream</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">Logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Data quality insufficient between </span><span class="si">{</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;starttime&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot; and </span><span class="si">{</span><span class="n">_endtime</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">continue</span>
+            <span class="c1"># Pre-procesing does additional checks for zeros - we need to check</span>
+            <span class="c1"># again whether we actually have something useful from this.</span>
+            <span class="n">processed_chunk_stream_lengths</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">endtime</span> <span class="o">-</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span>
+                <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">_processed_stream</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">min</span><span class="p">(</span><span class="n">processed_chunk_stream_lengths</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="o">.</span><span class="mi">8</span> <span class="o">*</span> <span class="n">process_length</span><span class="p">:</span>
+                <span class="n">processed_streams</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_processed_stream</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">Logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Data quality insufficient between </span><span class="si">{</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;starttime&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot; and </span><span class="si">{</span><span class="n">_endtime</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">continue</span>
+
+    <span class="k">if</span> <span class="n">_endtime</span> <span class="o">&lt;</span> <span class="n">stream</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">endtime</span><span class="p">:</span>
+        <span class="n">Logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+            <span class="s2">&quot;Last bit of data between </span><span class="si">{0}</span><span class="s2"> and </span><span class="si">{1}</span><span class="s2"> will go unused &quot;</span>
+            <span class="s2">&quot;because it is shorter than a chunk of </span><span class="si">{2}</span><span class="s2"> s&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">_endtime</span><span class="p">,</span> <span class="n">stream</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">endtime</span><span class="p">,</span> <span class="n">process_length</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">processed_streams</span>
+
+
+<div class="viewcode-block" id="match_filter"><a class="viewcode-back" href="../../../../submodules/autogen/eqcorrscan.core.match_filter.matched_filter.match_filter.html#eqcorrscan.core.match_filter.matched_filter.match_filter">[docs]</a><span class="k">def</span> <span class="nf">match_filter</span><span class="p">(</span><span class="n">template_names</span><span class="p">,</span> <span class="n">template_list</span><span class="p">,</span> <span class="n">st</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span>
+                 <span class="n">threshold_type</span><span class="p">,</span> <span class="n">trig_int</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">plotdir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">xcorr_func</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">concurrency</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cores</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">plot_format</span><span class="o">=</span><span class="s1">&#39;png&#39;</span><span class="p">,</span> <span class="n">output_cat</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">output_event</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">extract_detections</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">arg_check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">full_peaks</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">peak_cores</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">spike_test</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">copy_data</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">export_cccsums</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Main matched-filter detection function.</span>
+
+<span class="sd">    Over-arching code to run the correlations of given templates with a</span>
+<span class="sd">    day of seismic data and output the detections based on a given threshold.</span>
+<span class="sd">    For a functional example see the tutorials.</span>
+
+<span class="sd">    :type template_names: list</span>
+<span class="sd">    :param template_names:</span>
+<span class="sd">        List of template names in the same order as template_list</span>
+<span class="sd">    :type template_list: list</span>
+<span class="sd">    :param template_list:</span>
+<span class="sd">        A list of templates of which each template is a</span>
+<span class="sd">        :class:`obspy.core.stream.Stream` of obspy traces containing seismic</span>
+<span class="sd">        data and header information.</span>
+<span class="sd">    :type st: :class:`obspy.core.stream.Stream`</span>
+<span class="sd">    :param st:</span>
+<span class="sd">        A Stream object containing all the data available and</span>
+<span class="sd">        required for the correlations with templates given.  For efficiency</span>
+<span class="sd">        this should contain no excess traces which are not in one or more of</span>
+<span class="sd">        the templates.  This will now remove excess traces internally, but</span>
+<span class="sd">        will copy the stream and work on the copy, leaving your input stream</span>
+<span class="sd">        untouched.</span>
+<span class="sd">    :type threshold: float</span>
+<span class="sd">    :param threshold: A threshold value set based on the threshold_type</span>
+<span class="sd">    :type threshold_type: str</span>
+<span class="sd">    :param threshold_type:</span>
+<span class="sd">        The type of threshold to be used, can be MAD, absolute or av_chan_corr.</span>
+<span class="sd">        See Note on thresholding below.</span>
+<span class="sd">    :type trig_int: float</span>
+<span class="sd">    :param trig_int:</span>
+<span class="sd">        Minimum gap between detections from one template in seconds.</span>
+<span class="sd">        If multiple detections occur within trig_int of one-another, the one</span>
+<span class="sd">        with the highest cross-correlation sum will be selected.</span>
+<span class="sd">    :type plot: bool</span>
+<span class="sd">    :param plot: Turn plotting on or off</span>
+<span class="sd">    :type plotdir: str</span>
+<span class="sd">    :param plotdir:</span>
+<span class="sd">        Path to plotting folder, plots will be output here, defaults to None,</span>
+<span class="sd">        and plots are shown on screen.</span>
+<span class="sd">    :type xcorr_func: str or callable</span>
+<span class="sd">    :param xcorr_func:</span>
+<span class="sd">        A str of a registered xcorr function or a callable for implementing</span>
+<span class="sd">        a custom xcorr function. For more information see:</span>
+<span class="sd">        :func:`eqcorrscan.utils.correlate.register_array_xcorr`</span>
+<span class="sd">    :type concurrency: str</span>
+<span class="sd">    :param concurrency:</span>
+<span class="sd">        The type of concurrency to apply to the xcorr function. Options are</span>
+<span class="sd">        &#39;multithread&#39;, &#39;multiprocess&#39;, &#39;concurrent&#39;. For more details see</span>
+<span class="sd">        :func:`eqcorrscan.utils.correlate.get_stream_xcorr`</span>
+<span class="sd">    :type cores: int</span>
+<span class="sd">    :param cores: Number of cores to use</span>
+<span class="sd">    :type plot_format: str</span>
+<span class="sd">    :param plot_format: Specify format of output plots if saved</span>
+<span class="sd">    :type output_cat: bool</span>
+<span class="sd">    :param output_cat:</span>
+<span class="sd">        Specifies if matched_filter will output an obspy.Catalog class</span>
+<span class="sd">        containing events for each detection. Default is False, in which case</span>
+<span class="sd">        matched_filter will output a list of detection classes, as normal.</span>
+<span class="sd">    :type output_event: bool</span>
+<span class="sd">    :param output_event:</span>
+<span class="sd">        Whether to include events in the Detection objects, defaults to True,</span>
+<span class="sd">        but for large cases you may want to turn this off as Event objects</span>
+<span class="sd">        can be quite memory intensive.</span>
+<span class="sd">    :type extract_detections: bool</span>
+<span class="sd">    :param extract_detections:</span>
+<span class="sd">        Specifies whether or not to return a list of streams, one stream per</span>
+<span class="sd">        detection.</span>
+<span class="sd">    :type arg_check: bool</span>
+<span class="sd">    :param arg_check:</span>
+<span class="sd">        Check arguments, defaults to True, but if running in bulk, and you are</span>
+<span class="sd">        certain of your arguments, then set to False.</span>
+<span class="sd">    :type full_peaks: bool</span>
+<span class="sd">    :param full_peaks: See</span>
+<span class="sd">        :func: `eqcorrscan.utils.findpeaks.find_peaks_compiled`</span>
+<span class="sd">    :type peak_cores: int</span>
+<span class="sd">    :param peak_cores:</span>
+<span class="sd">        Number of processes to use for parallel peak-finding (if different to</span>
+<span class="sd">        `cores`).</span>
+<span class="sd">    :type spike_test: bool</span>
+<span class="sd">    :param spike_test: If set True, raise error when there is a spike in data.</span>
+<span class="sd">        defaults to True.</span>
+<span class="sd">    :type copy_data: bool</span>
+<span class="sd">    :param copy_data:</span>
+<span class="sd">        Whether to copy data to keep it safe, otherwise will edit your</span>
+<span class="sd">        templates and stream in place.</span>
+<span class="sd">    :type export_cccsums: bool</span>
+<span class="sd">    :param export_cccsums: Whether to save the cross-correlation statistic.</span>
+
+
+<span class="sd">    .. Note::</span>
+<span class="sd">        When using the &quot;fftw&quot; correlation backend the length of the fft</span>
+<span class="sd">        can be set. See :mod:`eqcorrscan.utils.correlate` for more info.</span>
+
+<span class="sd">    .. note::</span>
+<span class="sd">        **Returns:**</span>
+
+<span class="sd">        If neither `output_cat` or `extract_detections` are set to `True`,</span>
+<span class="sd">        then only the list of :class:`eqcorrscan.core.match_filter.Detection`&#39;s</span>
+<span class="sd">        will be output:</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">            :class:`eqcorrscan.core.match_filter.Detection` detections for each</span>
+<span class="sd">            detection made.</span>
+<span class="sd">        :rtype: list</span>
+
+<span class="sd">        If `output_cat` is set to `True`, then the</span>
+<span class="sd">        :class:`obspy.core.event.Catalog` will also be output:</span>
+
+<span class="sd">        :return: Catalog containing events for each detection, see above.</span>
+<span class="sd">        :rtype: :class:`obspy.core.event.Catalog`</span>
+
+<span class="sd">        If `extract_detections` is set to `True` then the list of</span>
+<span class="sd">        :class:`obspy.core.stream.Stream`&#39;s will also be output.</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">            list of :class:`obspy.core.stream.Stream`&#39;s for each detection, see</span>
+<span class="sd">            above.</span>
+<span class="sd">        :rtype: list</span>
+
+<span class="sd">    .. note::</span>
+<span class="sd">        If your data contain gaps these must be padded with zeros before</span>
+<span class="sd">        using this function. The `eqcorrscan.utils.pre_processing` functions</span>
+<span class="sd">        will provide gap-filled data in the appropriate format.  Note that if</span>
+<span class="sd">        you pad your data with zeros before filtering or resampling the gaps</span>
+<span class="sd">        will not be all zeros after filtering. This will result in the</span>
+<span class="sd">        calculation of spurious correlations in the gaps.</span>
+
+<span class="sd">    .. Note::</span>
+<span class="sd">        Detections are not corrected for `pre-pick`, the</span>
+<span class="sd">        detection.detect_time corresponds to the beginning of the earliest</span>
+<span class="sd">        template channel at detection.</span>
+
+<span class="sd">    .. note::</span>
+<span class="sd">        **Data overlap:**</span>
+
+<span class="sd">        Internally this routine shifts and trims the data according to the</span>
+<span class="sd">        offsets in the template (e.g. if trace 2 starts 2 seconds after trace 1</span>
+<span class="sd">        in the template then the continuous data will be shifted by 2 seconds</span>
+<span class="sd">        to align peak correlations prior to summing).  Because of this,</span>
+<span class="sd">        detections at the start and end of continuous data streams</span>
+<span class="sd">        **may be missed**.  The maximum time-period that might be missing</span>
+<span class="sd">        detections is the maximum offset in the template.</span>
+
+<span class="sd">        To work around this, if you are conducting matched-filter detections</span>
+<span class="sd">        through long-duration continuous data, we suggest using some overlap</span>
+<span class="sd">        (a few seconds, on the order of the maximum offset in the templates)</span>
+<span class="sd">        in the continous data.  You will then need to post-process the</span>
+<span class="sd">        detections (which should be done anyway to remove duplicates).</span>
+
+<span class="sd">    .. note::</span>
+<span class="sd">        **Thresholding:**</span>
+
+<span class="sd">        **MAD** threshold is calculated as the:</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            threshold {\\times} (median(abs(cccsum)))</span>
+
+<span class="sd">        where :math:`cccsum` is the cross-correlation sum for a given template.</span>
+
+<span class="sd">        **absolute** threshold is a true absolute threshold based on the</span>
+<span class="sd">        cccsum value.</span>
+
+<span class="sd">        **av_chan_corr** is based on the mean values of single-channel</span>
+<span class="sd">        cross-correlations assuming all data are present as required for the</span>
+<span class="sd">        template, e.g:</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            av\_chan\_corr\_thresh=threshold \\times (cccsum\ /\ len(template))</span>
+
+<span class="sd">        where :math:`template` is a single template from the input and the</span>
+<span class="sd">        length is the number of channels within this template.</span>
+
+<span class="sd">    .. note::</span>
+<span class="sd">        The output_cat flag will create an :class:`obspy.core.event.Catalog`</span>
+<span class="sd">        containing one event for each</span>
+<span class="sd">        :class:`eqcorrscan.core.match_filter.Detection`&#39;s generated by</span>
+<span class="sd">        match_filter. Each event will contain a number of comments dealing</span>
+<span class="sd">        with correlation values and channels used for the detection. Each</span>
+<span class="sd">        channel used for the detection will have a corresponding</span>
+<span class="sd">        :class:`obspy.core.event.Pick` which will contain time and</span>
+<span class="sd">        waveform information. **HOWEVER**, the user should note that</span>
+<span class="sd">        the pick times do not account for the prepick times inherent in</span>
+<span class="sd">        each template. For example, if a template trace starts 0.1 seconds</span>
+<span class="sd">        before the actual arrival of that phase, then the pick time generated</span>
+<span class="sd">        by match_filter for that phase will be 0.1 seconds early.</span>
+
+<span class="sd">    .. Note::</span>
+<span class="sd">        xcorr_func can be used as follows:</span>
+
+<span class="sd">        .. rubric::xcorr_func argument example</span>
+
+<span class="sd">        &gt;&gt;&gt; import obspy</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; from eqcorrscan.core.match_filter.matched_filter import (</span>
+<span class="sd">        ...    match_filter)</span>
+<span class="sd">        &gt;&gt;&gt; from eqcorrscan.utils.correlate import time_multi_normxcorr</span>
+<span class="sd">        &gt;&gt;&gt; # define a custom xcorr function</span>
+<span class="sd">        &gt;&gt;&gt; def custom_normxcorr(templates, stream, pads, *args, **kwargs):</span>
+<span class="sd">        ...     # Just to keep example short call other xcorr function</span>
+<span class="sd">        ...     # in practice you would define your own function here</span>
+<span class="sd">        ...     print(&#39;calling custom xcorr function&#39;)</span>
+<span class="sd">        ...     return time_multi_normxcorr(templates, stream, pads)</span>
+<span class="sd">        &gt;&gt;&gt; # generate some toy templates and stream</span>
+<span class="sd">        &gt;&gt;&gt; random = np.random.RandomState(42)</span>
+<span class="sd">        &gt;&gt;&gt; template = obspy.read()</span>
+<span class="sd">        &gt;&gt;&gt; stream = obspy.read()</span>
+<span class="sd">        &gt;&gt;&gt; for num, tr in enumerate(stream):  # iter st and embed templates</span>
+<span class="sd">        ...     data = tr.data</span>
+<span class="sd">        ...     tr.data = random.randn(6000) * 5</span>
+<span class="sd">        ...     tr.data[100: 100 + len(data)] = data</span>
+<span class="sd">        &gt;&gt;&gt; # call match_filter ane ensure the custom function is used</span>
+<span class="sd">        &gt;&gt;&gt; detections = match_filter(</span>
+<span class="sd">        ...     template_names=[&#39;1&#39;], template_list=[template], st=stream,</span>
+<span class="sd">        ...     threshold=.5, threshold_type=&#39;absolute&#39;, trig_int=1,</span>
+<span class="sd">        ...     plotvar=False,</span>
+<span class="sd">        ...     xcorr_func=custom_normxcorr)  # doctest:+ELLIPSIS</span>
+<span class="sd">        calling custom xcorr function...</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">eqcorrscan.core.match_filter.detection</span> <span class="kn">import</span> <span class="n">Detection</span>
+    <span class="kn">from</span> <span class="nn">eqcorrscan.utils.plotting</span> <span class="kn">import</span> <span class="n">_match_filter_plot</span>
+
+    <span class="k">if</span> <span class="s2">&quot;plotvar&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">Logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;plotvar is depreciated, use plot instead&quot;</span><span class="p">)</span>
+        <span class="n">plot</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;plotvar&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">arg_check</span><span class="p">:</span>
+        <span class="c1"># Check the arguments to be nice - if arguments wrong type the parallel</span>
+        <span class="c1"># output for the error won&#39;t be useful</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">template_names</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">MatchFilterError</span><span class="p">(</span><span class="s1">&#39;template_names must be of type: list&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">template_list</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">MatchFilterError</span><span class="p">(</span><span class="s1">&#39;templates must be of type: list&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">template_list</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">template_names</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">MatchFilterError</span><span class="p">(</span><span class="s1">&#39;Not the same number of templates as names&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">template</span> <span class="ow">in</span> <span class="n">template_list</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="n">Stream</span><span class="p">):</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;template in template_list must be of type: &#39;</span> <span class="o">+</span> \
+                      <span class="s1">&#39;obspy.core.stream.Stream&#39;</span>
+                <span class="k">raise</span> <span class="n">MatchFilterError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">st</span><span class="p">,</span> <span class="n">Stream</span><span class="p">):</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;st must be of type: obspy.core.stream.Stream&#39;</span>
+            <span class="k">raise</span> <span class="n">MatchFilterError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">threshold_type</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="s1">&#39;MAD&#39;</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="s1">&#39;absolute&#39;</span><span class="p">),</span>
+                                       <span class="nb">str</span><span class="p">(</span><span class="s1">&#39;av_chan_corr&#39;</span><span class="p">)]:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;threshold_type must be one of: MAD, absolute, av_chan_corr&#39;</span>
+            <span class="k">raise</span> <span class="n">MatchFilterError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">st</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span> <span class="o">==</span> <span class="n">st</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">MatchFilterError</span><span class="p">(</span><span class="s1">&#39;Sampling rates are not equal </span><span class="si">%f</span><span class="s1">: </span><span class="si">%f</span><span class="s1">&#39;</span> <span class="o">%</span>
+                                       <span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">,</span>
+                                        <span class="n">st</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">template</span> <span class="ow">in</span> <span class="n">template_list</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">template</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span> <span class="o">==</span> <span class="n">st</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">MatchFilterError</span><span class="p">(</span>
+                        <span class="s1">&#39;Template sampling rate does not &#39;</span>
+                        <span class="s1">&#39;match continuous data&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">template</span> <span class="ow">in</span> <span class="n">template_list</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">template</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">MaskedArray</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="n">MatchFilterError</span><span class="p">(</span>
+                        <span class="s1">&#39;Template contains masked array, split first&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">spike_test</span><span class="p">:</span>
+        <span class="n">Logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Checking for spikes in data&quot;</span><span class="p">)</span>
+        <span class="n">_spike_test</span><span class="p">(</span><span class="n">st</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">cores</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">parallel</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">parallel</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="n">peak_cores</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">peak_cores</span> <span class="o">=</span> <span class="n">cores</span>
+    <span class="k">if</span> <span class="n">copy_data</span><span class="p">:</span>
+        <span class="c1"># Copy the stream here because we will muck about with it</span>
+        <span class="n">Logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Copying data to keep your input safe&quot;</span><span class="p">)</span>
+        <span class="n">stream</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">templates</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">template_list</span><span class="p">]</span>
+        <span class="n">_template_names</span> <span class="o">=</span> <span class="n">template_names</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>  <span class="c1"># This can be a shallow copy</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">stream</span><span class="p">,</span> <span class="n">templates</span><span class="p">,</span> <span class="n">_template_names</span> <span class="o">=</span> <span class="n">st</span><span class="p">,</span> <span class="n">template_list</span><span class="p">,</span> <span class="n">template_names</span>
+
+    <span class="n">Logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Reshaping templates&quot;</span><span class="p">)</span>
+    <span class="n">stream</span><span class="p">,</span> <span class="n">templates</span><span class="p">,</span> <span class="n">_template_names</span> <span class="o">=</span> <span class="n">_prep_data_for_correlation</span><span class="p">(</span>
+        <span class="n">stream</span><span class="o">=</span><span class="n">stream</span><span class="p">,</span> <span class="n">templates</span><span class="o">=</span><span class="n">templates</span><span class="p">,</span> <span class="n">template_names</span><span class="o">=</span><span class="n">_template_names</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">templates</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s2">&quot;No matching data&quot;</span><span class="p">)</span>
+    <span class="n">Logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Starting the correlation run for these data&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">template</span> <span class="ow">in</span> <span class="n">templates</span><span class="p">:</span>
+        <span class="n">Logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">template</span><span class="o">.</span><span class="fm">__str__</span><span class="p">())</span>
+    <span class="n">Logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">stream</span><span class="o">.</span><span class="fm">__str__</span><span class="p">())</span>
+    <span class="n">multichannel_normxcorr</span> <span class="o">=</span> <span class="n">get_stream_xcorr</span><span class="p">(</span><span class="n">xcorr_func</span><span class="p">,</span> <span class="n">concurrency</span><span class="p">)</span>
+    <span class="n">outtic</span> <span class="o">=</span> <span class="n">default_timer</span><span class="p">()</span>
+    <span class="p">[</span><span class="n">cccsums</span><span class="p">,</span> <span class="n">no_chans</span><span class="p">,</span> <span class="n">chans</span><span class="p">]</span> <span class="o">=</span> <span class="n">multichannel_normxcorr</span><span class="p">(</span>
+        <span class="n">templates</span><span class="o">=</span><span class="n">templates</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="n">stream</span><span class="p">,</span> <span class="n">cores</span><span class="o">=</span><span class="n">cores</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">cccsums</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">MatchFilterError</span><span class="p">(</span><span class="s1">&#39;Correlation has not run, zero length cccsum&#39;</span><span class="p">)</span>
+    <span class="n">outtoc</span> <span class="o">=</span> <span class="n">default_timer</span><span class="p">()</span>
+    <span class="n">Logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Looping over templates and streams took: </span><span class="si">{0:.4f}</span><span class="s1">s&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="n">outtoc</span> <span class="o">-</span> <span class="n">outtic</span><span class="p">))</span>
+    <span class="n">Logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+        <span class="s1">&#39;The shape of the returned cccsums is: </span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cccsums</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+    <span class="n">Logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+        <span class="s1">&#39;This is from </span><span class="si">{0}</span><span class="s1"> templates correlated with </span><span class="si">{1}</span><span class="s1"> channels of &#39;</span>
+        <span class="s1">&#39;data&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">templates</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">stream</span><span class="p">)))</span>
+    <span class="n">detections</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">output_cat</span><span class="p">:</span>
+        <span class="n">det_cat</span> <span class="o">=</span> <span class="n">Catalog</span><span class="p">()</span>
+    <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">threshold_type</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="s2">&quot;absolute&quot;</span><span class="p">):</span>
+        <span class="n">thresholds</span> <span class="o">=</span> <span class="p">[</span><span class="n">threshold</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cccsums</span><span class="p">))]</span>
+    <span class="k">elif</span> <span class="nb">str</span><span class="p">(</span><span class="n">threshold_type</span><span class="p">)</span> <span class="o">==</span> <span class="nb">str</span><span class="p">(</span><span class="s1">&#39;MAD&#39;</span><span class="p">):</span>
+        <span class="n">thresholds</span> <span class="o">=</span> <span class="p">[</span><span class="n">threshold</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">cccsum</span><span class="p">))</span>
+                      <span class="k">for</span> <span class="n">cccsum</span> <span class="ow">in</span> <span class="n">cccsums</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">thresholds</span> <span class="o">=</span> <span class="p">[</span><span class="n">threshold</span> <span class="o">*</span> <span class="n">no_chans</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cccsums</span><span class="p">))]</span>
+    <span class="k">if</span> <span class="n">peak_cores</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">peak_cores</span> <span class="o">=</span> <span class="n">cores</span>
+    <span class="n">outtic</span> <span class="o">=</span> <span class="n">default_timer</span><span class="p">()</span>
+    <span class="n">all_peaks</span> <span class="o">=</span> <span class="n">multi_find_peaks</span><span class="p">(</span>
+        <span class="n">arr</span><span class="o">=</span><span class="n">cccsums</span><span class="p">,</span> <span class="n">thresh</span><span class="o">=</span><span class="n">thresholds</span><span class="p">,</span> <span class="n">parallel</span><span class="o">=</span><span class="n">parallel</span><span class="p">,</span>
+        <span class="n">trig_int</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">trig_int</span> <span class="o">*</span> <span class="n">stream</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">),</span>
+        <span class="n">full_peaks</span><span class="o">=</span><span class="n">full_peaks</span><span class="p">,</span> <span class="n">cores</span><span class="o">=</span><span class="n">peak_cores</span><span class="p">)</span>
+    <span class="n">outtoc</span> <span class="o">=</span> <span class="n">default_timer</span><span class="p">()</span>
+    <span class="n">Logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Finding peaks took </span><span class="si">{0:.4f}</span><span class="s2">s&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">outtoc</span> <span class="o">-</span> <span class="n">outtic</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">cccsum</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cccsums</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">export_cccsums</span><span class="p">:</span>
+            <span class="n">fname</span> <span class="o">=</span> <span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">_template_names</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">stream</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span><span class="si">}</span><span class="s2">-&quot;</span>
+                     <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">stream</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">endtime</span><span class="si">}</span><span class="s2">_cccsum.npy&quot;</span><span class="p">)</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="n">fname</span><span class="p">,</span> <span class="n">arr</span><span class="o">=</span><span class="n">cccsum</span><span class="p">)</span>
+            <span class="n">Logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Saved correlation statistic to </span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">cccsum</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mf">0.05</span><span class="p">:</span>
+            <span class="n">Logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Mean is not zero!  Check this!&#39;</span><span class="p">)</span>
+        <span class="c1"># Set up a trace object for the cccsum as this is easier to plot and</span>
+        <span class="c1"># maintains timing</span>
+        <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
+            <span class="n">_match_filter_plot</span><span class="p">(</span>
+                <span class="n">stream</span><span class="o">=</span><span class="n">stream</span><span class="p">,</span> <span class="n">cccsum</span><span class="o">=</span><span class="n">cccsum</span><span class="p">,</span> <span class="n">template_names</span><span class="o">=</span><span class="n">_template_names</span><span class="p">,</span>
+                <span class="n">rawthresh</span><span class="o">=</span><span class="n">thresholds</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">plotdir</span><span class="o">=</span><span class="n">plotdir</span><span class="p">,</span>
+                <span class="n">plot_format</span><span class="o">=</span><span class="n">plot_format</span><span class="p">,</span> <span class="n">i</span><span class="o">=</span><span class="n">i</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">all_peaks</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+            <span class="n">Logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Found </span><span class="si">{0}</span><span class="s2"> peaks for template </span><span class="si">{1}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="nb">len</span><span class="p">(</span><span class="n">all_peaks</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span> <span class="n">_template_names</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+            <span class="k">for</span> <span class="n">peak</span> <span class="ow">in</span> <span class="n">all_peaks</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+                <span class="n">detecttime</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">stream</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span> <span class="o">+</span>
+                    <span class="n">peak</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">stream</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">)</span>
+                <span class="n">detection</span> <span class="o">=</span> <span class="n">Detection</span><span class="p">(</span>
+                    <span class="n">template_name</span><span class="o">=</span><span class="n">_template_names</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">detect_time</span><span class="o">=</span><span class="n">detecttime</span><span class="p">,</span>
+                    <span class="n">no_chans</span><span class="o">=</span><span class="n">no_chans</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">detect_val</span><span class="o">=</span><span class="n">peak</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                    <span class="n">threshold</span><span class="o">=</span><span class="n">thresholds</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">typeofdet</span><span class="o">=</span><span class="s1">&#39;corr&#39;</span><span class="p">,</span> <span class="n">chans</span><span class="o">=</span><span class="n">chans</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                    <span class="n">threshold_type</span><span class="o">=</span><span class="n">threshold_type</span><span class="p">,</span> <span class="n">threshold_input</span><span class="o">=</span><span class="n">threshold</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">output_cat</span> <span class="ow">or</span> <span class="n">output_event</span><span class="p">:</span>
+                    <span class="n">detection</span><span class="o">.</span><span class="n">_calculate_event</span><span class="p">(</span><span class="n">template_st</span><span class="o">=</span><span class="n">templates</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                <span class="n">detections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">detection</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">output_cat</span><span class="p">:</span>
+                    <span class="n">det_cat</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">detection</span><span class="o">.</span><span class="n">event</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">Logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Found 0 peaks for template </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">_template_names</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+    <span class="n">Logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Made </span><span class="si">{0}</span><span class="s2"> detections from </span><span class="si">{1}</span><span class="s2"> templates&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="nb">len</span><span class="p">(</span><span class="n">detections</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">templates</span><span class="p">)))</span>
+    <span class="k">if</span> <span class="n">extract_detections</span><span class="p">:</span>
+        <span class="n">detection_streams</span> <span class="o">=</span> <span class="n">extract_from_stream</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span> <span class="n">detections</span><span class="p">)</span>
+    <span class="k">del</span> <span class="n">stream</span><span class="p">,</span> <span class="n">templates</span>
+
+    <span class="k">if</span> <span class="n">output_cat</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">extract_detections</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">detections</span><span class="p">,</span> <span class="n">det_cat</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="n">extract_detections</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">detections</span>
+    <span class="k">elif</span> <span class="n">extract_detections</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">output_cat</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">detections</span><span class="p">,</span> <span class="n">detection_streams</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">detections</span><span class="p">,</span> <span class="n">det_cat</span><span class="p">,</span> <span class="n">detection_streams</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">doctest</span>
+
+    <span class="n">doctest</span><span class="o">.</span><span class="n">testmod</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2015-2021: EQcorrscan developers.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.2.1.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

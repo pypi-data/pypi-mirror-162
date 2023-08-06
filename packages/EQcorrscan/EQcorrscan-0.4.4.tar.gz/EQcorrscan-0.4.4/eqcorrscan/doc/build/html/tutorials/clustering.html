@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
+
+    <title>4.8. Clustering and stacking &#8212; EQcorrscan 0.4.3 documentation</title>
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="shortcut icon" href="../_static/EQcorrscan_logo.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="5. EQcorrscan API" href="../api.html" />
+    <link rel="prev" title="4.7. Magnitude calculation" href="mag-calc.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../_static/js/jquery-1.12.4.min.js "></script>
+<script type="text/javascript" src="../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../_static/bootstrap-3.4.1/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html"><span><img src="../_static/EQcorrscan_logo.jpg"></span>
+          EQcorrscan</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.4</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">1. Introduction to the EQcorrscan package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">2. EQcorrscan installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../updates.html">3. What’s new</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../tutorial.html">4. EQcorrscan tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">5. EQcorrscan API</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">4.8. Clustering and stacking</a><ul>
+<li><a class="reference internal" href="#cluster-in-space">4.8.1. Cluster in space</a></li>
+<li><a class="reference internal" href="#cluster-in-time-and-space">4.8.2. Cluster in time and space</a></li>
+<li><a class="reference internal" href="#cluster-according-to-cross-correlation-values">4.8.3. Cluster according to cross-correlation values</a></li>
+<li><a class="reference internal" href="#stack-waveforms-linear">4.8.4. Stack waveforms (linear)</a></li>
+<li><a class="reference internal" href="#stack-waveforms-phase-weighted">4.8.5. Stack waveforms (phase-weighted)</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="mag-calc.html" title="Previous Chapter: 4.7. Magnitude calculation"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; 4.7. Magnitud...</span>
+    </a>
+  </li>
+  <li>
+    <a href="../api.html" title="Next Chapter: 5. EQcorrscan API"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">5. EQcorrscan API &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="../_sources/tutorials/clustering.rst.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <section id="clustering-and-stacking">
+<h1><span class="section-number">4.8. </span>Clustering and stacking<a class="headerlink" href="#clustering-and-stacking" title="Permalink to this headline">¶</a></h1>
+<p>Prior to template generation, it may be beneficial to cluster earthquake
+waveforms.  Clusters of earthquakes with similar properties can then be
+stacked to create higher signal-to-noise templates that describe the dataset
+well (and require fewer templates to reduce computational cost).  Clusters
+could also be reduced to their singular-vectors and employed in a subspace
+detection routine (coming soon to eqcorrscan).</p>
+<p>The following outlines a few examples of clustering and stacking.</p>
+<section id="cluster-in-space">
+<h2><span class="section-number">4.8.1. </span>Cluster in space<a class="headerlink" href="#cluster-in-space" title="Permalink to this headline">¶</a></h2>
+<p>Download a catalog of global earthquakes and cluster in space, set the distance
+threshold to 1,000km</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">eqcorrscan.utils.clustering</span> <span class="kn">import</span> <span class="n">catalog_cluster</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">obspy.clients.fdsn</span> <span class="kn">import</span> <span class="n">Client</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">obspy</span> <span class="kn">import</span> <span class="n">UTCDateTime</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;IRIS&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">starttime</span> <span class="o">=</span> <span class="n">UTCDateTime</span><span class="p">(</span><span class="s2">&quot;2002-01-01&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">endtime</span> <span class="o">=</span> <span class="n">UTCDateTime</span><span class="p">(</span><span class="s2">&quot;2002-02-01&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cat</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_events</span><span class="p">(</span><span class="n">starttime</span><span class="o">=</span><span class="n">starttime</span><span class="p">,</span> <span class="n">endtime</span><span class="o">=</span><span class="n">endtime</span><span class="p">,</span>
+<span class="gp">... </span>                        <span class="n">minmagnitude</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">catalog</span><span class="o">=</span><span class="s2">&quot;ISC&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">groups</span> <span class="o">=</span> <span class="n">catalog_cluster</span><span class="p">(</span>
+<span class="gp">... </span>   <span class="n">catalog</span><span class="o">=</span><span class="n">cat</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="s2">&quot;distance&quot;</span><span class="p">,</span> <span class="n">thresh</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Download a local catalog of earthquakes and cluster much finer (distance
+threshold of 2km).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;NCEDC&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cat</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_events</span><span class="p">(</span><span class="n">starttime</span><span class="o">=</span><span class="n">starttime</span><span class="p">,</span> <span class="n">endtime</span><span class="o">=</span><span class="n">endtime</span><span class="p">,</span>
+<span class="gp">... </span>                        <span class="n">minmagnitude</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">groups</span> <span class="o">=</span> <span class="n">catalog_cluster</span><span class="p">(</span>
+<span class="gp">... </span>   <span class="n">catalog</span><span class="o">=</span><span class="n">cat</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="s2">&quot;distance&quot;</span><span class="p">,</span> <span class="n">thresh</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Setting show to true will plot the dendrogram for grouping with individual
+groups plotted in different colours.  The clustering is performed using scipy’s
+<a href="http://docs.scipy.org/doc/scipy-0.16.0/reference/cluster.hierarchy.html" target="_blank">hierachical clustering routines</a>.  Specifically clustering is performed using the linkage method,
+which is an agglomorative clustering routine. EQcorrscan uses the average method
+with the euclidean distance metric.</p>
+</section>
+<section id="cluster-in-time-and-space">
+<h2><span class="section-number">4.8.2. </span>Cluster in time and space<a class="headerlink" href="#cluster-in-time-and-space" title="Permalink to this headline">¶</a></h2>
+<p>EQcorrscan’s space-time clustering routine first computes groups in space, using
+the space_cluster method, then splits the returned groups based on their
+inter-event time.</p>
+<p>The following example extends the example of the global catalog with a 1,000km
+distance threshold and a one-day temporal limit.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">eqcorrscan.utils.clustering</span> <span class="kn">import</span> <span class="n">space_time_cluster</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;IRIS&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cat</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_events</span><span class="p">(</span><span class="n">starttime</span><span class="o">=</span><span class="n">starttime</span><span class="p">,</span> <span class="n">endtime</span><span class="o">=</span><span class="n">endtime</span><span class="p">,</span>
+<span class="gp">... </span>                        <span class="n">minmagnitude</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">catalog</span><span class="o">=</span><span class="s2">&quot;ISC&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">groups</span> <span class="o">=</span> <span class="n">space_time_cluster</span><span class="p">(</span><span class="n">catalog</span><span class="o">=</span><span class="n">cat</span><span class="p">,</span> <span class="n">t_thresh</span><span class="o">=</span><span class="mi">86400</span><span class="p">,</span> <span class="n">d_thresh</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="cluster-according-to-cross-correlation-values">
+<h2><span class="section-number">4.8.3. </span>Cluster according to cross-correlation values<a class="headerlink" href="#cluster-according-to-cross-correlation-values" title="Permalink to this headline">¶</a></h2>
+<p>Waveforms from events are often best grouped based on their similarity.
+EQcorrscan has a method to compute clustering based on average cross-correlations.
+This again uses scipy’s <a href="http://docs.scipy.org/doc/scipy-0.16.0/reference/cluster.hierarchy.html" target="_blank">hierachical clustering routines</a>, however in this case clusters are computed
+using the <em>single</em> method.  Distances are computed from the average of the
+multi-chanel cross-correlation values.</p>
+<p>The following example uses data stored in the EQcorrscan github repository,
+in the tests directory.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">obspy</span> <span class="kn">import</span> <span class="n">read</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">glob</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">os</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">eqcorrscan.utils.clustering</span> <span class="kn">import</span> <span class="n">cluster</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">eqcorrscan</span> <span class="kn">import</span> <span class="n">tests</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># You will need to edit this line to the location of your eqcorrscan repo.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">TEST_PATH</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">tests</span><span class="o">.</span><span class="vm">__file__</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">testing_path</span> <span class="o">=</span> <span class="n">TEST_PATH</span> <span class="o">+</span> <span class="s1">&#39;/test_data/similar_events_processed&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">stream_files</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">testing_path</span><span class="p">,</span> <span class="s1">&#39;*&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">stream_list</span> <span class="o">=</span> <span class="p">[(</span><span class="n">read</span><span class="p">(</span><span class="n">stream_file</span><span class="p">),</span> <span class="n">i</span><span class="p">)</span>
+<span class="gp">... </span>               <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">stream_file</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">stream_files</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">stream</span> <span class="ow">in</span> <span class="n">stream_list</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">stream</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+<span class="gp">... </span>        <span class="k">if</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">station</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;WHAT2&#39;</span><span class="p">,</span> <span class="s1">&#39;WV04&#39;</span><span class="p">,</span> <span class="s1">&#39;GCSZ&#39;</span><span class="p">]:</span>
+<span class="gp">... </span>            <span class="n">stream</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">tr</span><span class="p">)</span> 
+<span class="gp">... </span>            <span class="k">continue</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">groups</span> <span class="o">=</span> <span class="n">cluster</span><span class="p">(</span><span class="n">template_list</span><span class="o">=</span><span class="n">stream_list</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="gp">... </span>                 <span class="n">corr_thresh</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">cores</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="stack-waveforms-linear">
+<h2><span class="section-number">4.8.4. </span>Stack waveforms (linear)<a class="headerlink" href="#stack-waveforms-linear" title="Permalink to this headline">¶</a></h2>
+<p>Following from clustering, similar waveforms can be stacked.  EQcorrscan includes
+two stacking algorithms, a simple linear stacking method, and a phase-weighted
+stacking method.</p>
+<p>The following examples use the test data in the eqcorrscan github repository.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">eqcorrscan.utils.stacking</span> <span class="kn">import</span> <span class="n">linstack</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># groups[0] should contain 3 streams, which we can now stack</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Groups are returned as lists of tuples, of the stream and event index</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">group_streams</span> <span class="o">=</span> <span class="p">[</span><span class="n">st_tuple</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">st_tuple</span> <span class="ow">in</span> <span class="n">groups</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">stack</span> <span class="o">=</span> <span class="n">linstack</span><span class="p">(</span><span class="n">streams</span><span class="o">=</span><span class="n">group_streams</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="stack-waveforms-phase-weighted">
+<h2><span class="section-number">4.8.5. </span>Stack waveforms (phase-weighted)<a class="headerlink" href="#stack-waveforms-phase-weighted" title="Permalink to this headline">¶</a></h2>
+<p>The phase-weighted stack method closely follows the method outlined by
+<a href="http://www.bssaonline.org/content/early/2014/08/12/0120140077.abstract" target="_blank">Thurber et al. 2014</a>. In this method the linear stack is weighted by the stack
+of the instantaneous phase.  In this manor coherent signals are amplified.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">eqcorrscan.utils.stacking</span> <span class="kn">import</span> <span class="n">PWS_stack</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># groups[0] should contain 3 streams, which we can now stack</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Groups are returned as lists of tuples, of the stream and event index</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">stack</span> <span class="o">=</span> <span class="n">PWS_stack</span><span class="p">(</span><span class="n">streams</span><span class="o">=</span><span class="n">group_streams</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2015-2021: EQcorrscan developers.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.2.1.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

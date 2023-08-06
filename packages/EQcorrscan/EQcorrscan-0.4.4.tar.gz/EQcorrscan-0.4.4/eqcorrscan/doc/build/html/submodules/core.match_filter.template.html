@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
+
+    <title>core.match_filter.template &#8212; EQcorrscan 0.4.3 documentation</title>
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="shortcut icon" href="../_static/EQcorrscan_logo.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../_static/js/jquery-1.12.4.min.js "></script>
+<script type="text/javascript" src="../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../_static/bootstrap-3.4.1/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html"><span><img src="../_static/EQcorrscan_logo.jpg"></span>
+          EQcorrscan</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.4</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">1. Introduction to the EQcorrscan package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">2. EQcorrscan installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../updates.html">3. What’s new</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">4. EQcorrscan tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">5. EQcorrscan API</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">core.match_filter.template</a></li>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="../_sources/submodules/core.match_filter.template.rst.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <section id="module-eqcorrscan.core.match_filter.template">
+<span id="core-match-filter-template"></span><h1>core.match_filter.template<a class="headerlink" href="#module-eqcorrscan.core.match_filter.template" title="Permalink to this headline">¶</a></h1>
+<p>Functions for network matched-filter detection of seismic data.</p>
+<p>Designed to cross-correlate templates generated by template_gen function
+with data and output the detections.</p>
+<dl class="field-list simple">
+<dt class="field-odd">copyright</dt>
+<dd class="field-odd"><p>EQcorrscan developers.</p>
+</dd>
+<dt class="field-even">license</dt>
+<dd class="field-even"><p>GNU Lesser General Public License, Version 3
+(<a class="reference external" href="https://www.gnu.org/copyleft/lesser.html">https://www.gnu.org/copyleft/lesser.html</a>)</p>
+</dd>
+</dl>
+<hr class="docutils" />
+<dl class="py class">
+<dt id="eqcorrscan.core.match_filter.template.Template">
+<em class="property">class </em><code class="sig-prename descclassname">eqcorrscan.core.match_filter.template.</code><code class="sig-name descname">Template</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">st</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">lowcut</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">highcut</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">samp_rate</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">filt_order</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">process_length</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">prepick</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">event</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eqcorrscan/core/match_filter/template.html#Template"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eqcorrscan.core.match_filter.template.Template" title="Permalink to this definition">¶</a></dt>
+<dd><p>Template object holder.</p>
+<p>Contains waveform data and metadata parameters used to generate the
+template.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – A name associated with the template as a parsable string (no spaces
+allowed)</p></li>
+<li><p><strong>st</strong> (<cite>obspy.core.stream.Stream</cite>) – The Stream object containing the Template waveform data</p></li>
+<li><p><strong>lowcut</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – The low-cut filter used to achieve st (float, Hz)</p></li>
+<li><p><strong>highcut</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – The high-cut filter used to achieve st (float, Hz)</p></li>
+<li><p><strong>samp_rate</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – The Sampling-rate of the template (float, Hz) - note that this should
+be the same as the sampling-rate of all traces in st.</p></li>
+<li><p><strong>filt_order</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) – The order of the filter applied to achieve st (int), see pre-processing
+functions for a more complete description</p></li>
+<li><p><strong>process_length</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – The length of data (in seconds) processed to achieve st. e.g. if you
+processed a day of data then cut the template st from this, then
+process_length would be 86400.0 (float)</p></li>
+<li><p><strong>prepick</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – The time before picks that waveforms were cut to make st
+(seconds, float)</p></li>
+<li><p><strong>event</strong> (<cite>obspy.core.event.Event</cite>) – The Event associated with the template (obspy.core.event.Event)</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#eqcorrscan.core.match_filter.template.Template.construct" title="eqcorrscan.core.match_filter.template.Template.construct"><code class="xref py py-obj docutils literal notranslate"><span class="pre">construct</span></code></a>(method, name, lowcut, highcut, …)</p></td>
+<td><p>Construct a template using a given method.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#eqcorrscan.core.match_filter.template.Template.copy" title="eqcorrscan.core.match_filter.template.Template.copy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">copy</span></code></a>()</p></td>
+<td><p>Returns a copy of the template.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#eqcorrscan.core.match_filter.template.Template.detect" title="eqcorrscan.core.match_filter.template.Template.detect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">detect</span></code></a>(stream, threshold, threshold_type, …)</p></td>
+<td><p>Detect using a single template within a continuous stream.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#eqcorrscan.core.match_filter.template.Template.read" title="eqcorrscan.core.match_filter.template.Template.read"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read</span></code></a>(filename)</p></td>
+<td><p>Read template from tar format with metadata.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#eqcorrscan.core.match_filter.template.Template.same_processing" title="eqcorrscan.core.match_filter.template.Template.same_processing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">same_processing</span></code></a>(other)</p></td>
+<td><p>Check is the templates are processed the same.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#eqcorrscan.core.match_filter.template.Template.write" title="eqcorrscan.core.match_filter.template.Template.write"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write</span></code></a>(filename[, format])</p></td>
+<td><p>Write template.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt id="eqcorrscan.core.match_filter.template.Template.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">st</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">lowcut</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">highcut</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">samp_rate</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">filt_order</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">process_length</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">prepick</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">event</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eqcorrscan/core/match_filter/template.html#Template.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eqcorrscan.core.match_filter.template.Template.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="eqcorrscan.core.match_filter.template.Template.construct">
+<code class="sig-name descname">construct</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">method</span></em>, <em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">lowcut</span></em>, <em class="sig-param"><span class="n">highcut</span></em>, <em class="sig-param"><span class="n">samp_rate</span></em>, <em class="sig-param"><span class="n">filt_order</span></em>, <em class="sig-param"><span class="n">length</span></em>, <em class="sig-param"><span class="n">prepick</span></em>, <em class="sig-param"><span class="n">swin</span><span class="o">=</span><span class="default_value">'all'</span></em>, <em class="sig-param"><span class="n">process_len</span><span class="o">=</span><span class="default_value">86400</span></em>, <em class="sig-param"><span class="n">all_horiz</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">delayed</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">plot</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">plotdir</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">min_snr</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">parallel</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">num_cores</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">skip_short_chans</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eqcorrscan/core/match_filter/template.html#Template.construct"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eqcorrscan.core.match_filter.template.Template.construct" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct a template using a given method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>method</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – Method to make the template, the only available method is:
+<cite>from_sac</cite>. For all other methods (<cite>from_seishub</cite>, <cite>from_client</cite>
+and <cite>from_meta_file</cite>) use <cite>Tribe.construct()</cite>.</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – Name for the template</p></li>
+<li><p><strong>lowcut</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – Low cut (Hz), if set to None will not apply a lowcut</p></li>
+<li><p><strong>highcut</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – High cut (Hz), if set to None will not apply a highcut.</p></li>
+<li><p><strong>samp_rate</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – New sampling rate in Hz.</p></li>
+<li><p><strong>filt_order</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) – Filter level (number of corners).</p></li>
+<li><p><strong>length</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – Length of template waveform in seconds.</p></li>
+<li><p><strong>prepick</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – Pre-pick time in seconds</p></li>
+<li><p><strong>swin</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – P, S, P_all, S_all or all, defaults to all: see note in
+<a class="reference internal" href="core.template_gen.html#eqcorrscan.core.template_gen.template_gen" title="eqcorrscan.core.template_gen.template_gen"><code class="xref py py-func docutils literal notranslate"><span class="pre">eqcorrscan.core.template_gen.template_gen()</span></code></a></p></li>
+<li><p><strong>process_len</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) – Length of data in seconds to download and process.</p></li>
+<li><p><strong>all_horiz</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – To use both horizontal channels even if there is only a pick on
+one of them.  Defaults to False.</p></li>
+<li><p><strong>delayed</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – If True, each channel will begin relative to it’s own
+pick-time, if set to False, each channel will begin at the same
+time.</p></li>
+<li><p><strong>plot</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – Plot templates or not.</p></li>
+<li><p><strong>plotdir</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – The path to save plots to. If <cite>plotdir=None</cite> (default) then the
+figure will be shown on screen.</p></li>
+<li><p><strong>min_snr</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – Minimum signal-to-noise ratio for a channel to be included in the
+template, where signal-to-noise ratio is calculated as the ratio
+of the maximum amplitude in the template window to the rms
+amplitude in the whole window given.</p></li>
+<li><p><strong>parallel</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – Whether to process data in parallel or not.</p></li>
+<li><p><strong>num_cores</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) – Number of cores to try and use, if False and parallel=True,
+will use either all your cores, or as many traces as in the data
+(whichever is smaller).</p></li>
+<li><p><strong>skip_short_chans</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – Whether to ignore channels that have insufficient length data or
+not. Useful when the quality of data is not known, e.g. when
+downloading old, possibly triggered data from a datacentre</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><cite>method=from_sac</cite> requires the following kwarg(s):
+:param list sac_files:</p>
+<blockquote>
+<div><p>osbpy.core.stream.Stream of sac waveforms, or list of paths to
+sac waveforms.</p>
+</div></blockquote>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>See <cite>eqcorrscan.utils.sac_util.sactoevent</cite> for details on
+how pick information is collected.</p>
+</div>
+</div>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get the path to the test data</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">eqcorrscan</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">glob</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">TEST_PATH</span> <span class="o">=</span> <span class="p">(</span>
+<span class="gp">... </span>    <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">eqcorrscan</span><span class="o">.</span><span class="vm">__file__</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;/tests/test_data&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sac_files</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">TEST_PATH</span> <span class="o">+</span> <span class="s1">&#39;/SAC/2014p611252/*&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">template</span> <span class="o">=</span> <span class="n">Template</span><span class="p">()</span><span class="o">.</span><span class="n">construct</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">method</span><span class="o">=</span><span class="s1">&#39;from_sac&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;test&#39;</span><span class="p">,</span> <span class="n">lowcut</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">highcut</span><span class="o">=</span><span class="mf">8.0</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">samp_rate</span><span class="o">=</span><span class="mf">20.0</span><span class="p">,</span> <span class="n">filt_order</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">prepick</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">swin</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">length</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">sac_files</span><span class="o">=</span><span class="n">sac_files</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">template</span><span class="p">)</span> 
+<span class="go">Template test:</span>
+<span class="go"> 12 channels;</span>
+<span class="go"> lowcut: 2.0 Hz;</span>
+<span class="go"> highcut: 8.0 Hz;</span>
+<span class="go"> sampling rate 20.0 Hz;</span>
+<span class="go"> filter order: 4;</span>
+<span class="go"> process length: 300.0 s</span>
+</pre></div>
+</div>
+<p>This will raise an error if the method is unsupported:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">template</span> <span class="o">=</span> <span class="n">Template</span><span class="p">()</span><span class="o">.</span><span class="n">construct</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">method</span><span class="o">=</span><span class="s1">&#39;from_meta_file&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;test&#39;</span><span class="p">,</span> <span class="n">lowcut</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">highcut</span><span class="o">=</span><span class="mf">8.0</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">samp_rate</span><span class="o">=</span><span class="mf">20.0</span><span class="p">,</span> <span class="n">filt_order</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">prepick</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">swin</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">length</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span> 
+<span class="gt">Traceback (most recent call last):</span>
+<span class="gr">NotImplementedError</span>: <span class="n">Method is not supported, use         Tribe.construct instead.</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="eqcorrscan.core.match_filter.template.Template.copy">
+<code class="sig-name descname">copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eqcorrscan/core/match_filter/template.html#Template.copy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eqcorrscan.core.match_filter.template.Template.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a copy of the template.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Copy of template</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">obspy</span> <span class="kn">import</span> <span class="n">read</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">template_a</span> <span class="o">=</span> <span class="n">Template</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">st</span><span class="o">=</span><span class="n">read</span><span class="p">(),</span> <span class="n">lowcut</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">highcut</span><span class="o">=</span><span class="mf">8.0</span><span class="p">,</span> <span class="n">samp_rate</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">filt_order</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">process_length</span><span class="o">=</span><span class="mi">3600</span><span class="p">,</span> <span class="n">prepick</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">template_b</span> <span class="o">=</span> <span class="n">template_a</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">template_a</span> <span class="o">==</span> <span class="n">template_b</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="eqcorrscan.core.match_filter.template.Template.detect">
+<code class="sig-name descname">detect</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">stream</span></em>, <em class="sig-param"><span class="n">threshold</span></em>, <em class="sig-param"><span class="n">threshold_type</span></em>, <em class="sig-param"><span class="n">trig_int</span></em>, <em class="sig-param"><span class="n">plot</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">plotdir</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">pre_processed</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">daylong</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">parallel_process</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">xcorr_func</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">concurrency</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">cores</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ignore_length</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">overlap</span><span class="o">=</span><span class="default_value">'calculate'</span></em>, <em class="sig-param"><span class="n">full_peaks</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eqcorrscan/core/match_filter/template.html#Template.detect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eqcorrscan.core.match_filter.template.Template.detect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Detect using a single template within a continuous stream.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>stream</strong> (<cite>obspy.core.stream.Stream</cite>) – Continuous data to detect within using the Template.</p></li>
+<li><p><strong>threshold</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – Threshold level, if using <cite>threshold_type=’MAD’</cite> then this will be
+the multiple of the median absolute deviation.</p></li>
+<li><p><strong>threshold_type</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – The type of threshold to be used, can be MAD, absolute or
+av_chan_corr.  See Note on thresholding below.</p></li>
+<li><p><strong>trig_int</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – Minimum gap between detections in seconds. If multiple detections
+occur within trig_int of one-another, the one with the highest
+cross-correlation sum will be selected.</p></li>
+<li><p><strong>plot</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – Turn plotting on or off.</p></li>
+<li><p><strong>plotdir</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – The path to save plots to. If <cite>plotdir=None</cite> (default) then the
+figure will be shown on screen.</p></li>
+<li><p><strong>pre_processed</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – Set to True if <cite>stream</cite> has already undergone processing, in this
+case eqcorrscan will only check that the sampling rate is correct.
+Defaults to False, which will use the
+<a class="reference internal" href="utils.pre_processing.html#module-eqcorrscan.utils.pre_processing" title="eqcorrscan.utils.pre_processing"><code class="xref py py-mod docutils literal notranslate"><span class="pre">eqcorrscan.utils.pre_processing</span></code></a> routines to resample and
+filter the continuous data.</p></li>
+<li><p><strong>daylong</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – Set to True to use the
+<a class="reference internal" href="autogen/eqcorrscan.utils.pre_processing.dayproc.html#eqcorrscan.utils.pre_processing.dayproc" title="eqcorrscan.utils.pre_processing.dayproc"><code class="xref py py-func docutils literal notranslate"><span class="pre">eqcorrscan.utils.pre_processing.dayproc()</span></code></a> routine, which
+preforms additional checks and is more efficient for day-long data
+over other methods.</p></li>
+<li><p><strong>parallel_process</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – </p></li>
+<li><p><strong>xcorr_func</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a><em> or </em><em>callable</em>) – A str of a registered xcorr function or a callable for implementing
+a custom xcorr function. For more details see
+<a class="reference internal" href="autogen/eqcorrscan.utils.correlate.register_array_xcorr.html#eqcorrscan.utils.correlate.register_array_xcorr" title="eqcorrscan.utils.correlate.register_array_xcorr"><code class="xref py py-func docutils literal notranslate"><span class="pre">eqcorrscan.utils.correlate.register_array_xcorr()</span></code></a>.</p></li>
+<li><p><strong>concurrency</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – The type of concurrency to apply to the xcorr function. Options are
+‘multithread’, ‘multiprocess’, ‘concurrent’. For more details see
+<a class="reference internal" href="autogen/eqcorrscan.utils.correlate.get_stream_xcorr.html#eqcorrscan.utils.correlate.get_stream_xcorr" title="eqcorrscan.utils.correlate.get_stream_xcorr"><code class="xref py py-func docutils literal notranslate"><span class="pre">eqcorrscan.utils.correlate.get_stream_xcorr()</span></code></a>.</p></li>
+<li><p><strong>cores</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) – Number of workers for processing and detection.</p></li>
+<li><p><strong>ignore_length</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – If using daylong=True, then dayproc will try check that the data
+are there for at least 80% of the day, if you don’t want this check
+(which will raise an error if too much data are missing) then set
+ignore_length=True.  This is not recommended!</p></li>
+<li><p><strong>overlap</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – Either None, “calculate” or a float of number of seconds to
+overlap detection streams by.  This is to counter the effects of
+the delay-and-stack in calculating cross-correlation sums. Setting
+overlap = “calculate” will work out the appropriate overlap based
+on the maximum lags within templates.</p></li>
+<li><p><strong>full_peaks</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – See <a class="reference internal" href="autogen/eqcorrscan.utils.findpeaks.find_peaks2_short.html#eqcorrscan.utils.findpeaks.find_peaks2_short" title="eqcorrscan.utils.findpeaks.find_peaks2_short"><code class="xref py py-func docutils literal notranslate"><span class="pre">eqcorrscan.utils.findpeaks.find_peaks2_short()</span></code></a></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Family of detections.</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>When using the “fftw” correlation backend the length of the fft
+can be set. See <a class="reference internal" href="utils.correlate.html#module-eqcorrscan.utils.correlate" title="eqcorrscan.utils.correlate"><code class="xref py py-mod docutils literal notranslate"><span class="pre">eqcorrscan.utils.correlate</span></code></a> for more info.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><cite>stream</cite> must not be pre-processed. If your data contain gaps
+you should <em>NOT</em> fill those gaps before using this method.
+The pre-process functions (called within) will fill the gaps
+internally prior to processing, process the data, then re-fill
+the gaps with zeros to ensure correlations are not incorrectly
+calculated within gaps. If your data have gaps you should pass a
+merged stream without the <cite>fill_value</cite> argument
+(e.g.: <cite>stream = stream.merge()</cite>).</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>Data overlap:</strong></p>
+<p>Internally this routine shifts and trims the data according to
+the offsets in the template (e.g. if trace 2 starts 2 seconds
+after trace 1 in the template then the continuous data will be
+shifted by 2 seconds to align peak correlations prior to summing).
+Because of this, detections at the start and end of continuous data
+streams <strong>may be missed</strong>.  The maximum time-period that might be
+missing detections is the maximum offset in the template.</p>
+<p>To work around this, if you are conducting matched-filter
+detections through long-duration continuous data, we suggest using
+some overlap (a few seconds, on the order of the maximum offset
+in the templates) in the continous data.  You will then need to
+post-process the detections (which should be done anyway to remove
+duplicates).</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>Thresholding:</strong></p>
+<p><strong>MAD</strong> threshold is calculated as the:</p>
+<div class="math notranslate nohighlight">
+\[threshold {\times} (median(abs(cccsum)))\]</div>
+<p>where <span class="math notranslate nohighlight">\(cccsum\)</span> is the cross-correlation sum for a
+given template.</p>
+<p><strong>absolute</strong> threshold is a true absolute threshold based on the
+cccsum value.</p>
+<p><strong>av_chan_corr</strong> is based on the mean values of single-channel
+cross-correlations assuming all data are present as required
+for the template, e.g:</p>
+<div class="math notranslate nohighlight">
+\[av\_chan\_corr\_thresh=threshold \times (cccsum /
+len(template))\]</div>
+<p>where <span class="math notranslate nohighlight">\(template\)</span> is a single template from the input and the
+length is the number of channels within this template.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>See tutorials for example.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="eqcorrscan.core.match_filter.template.Template.read">
+<code class="sig-name descname">read</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eqcorrscan/core/match_filter/template.html#Template.read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eqcorrscan.core.match_filter.template.Template.read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read template from tar format with metadata.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – Filename to read template from.</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">obspy</span> <span class="kn">import</span> <span class="n">read</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">template_a</span> <span class="o">=</span> <span class="n">Template</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">st</span><span class="o">=</span><span class="n">read</span><span class="p">(),</span> <span class="n">lowcut</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">highcut</span><span class="o">=</span><span class="mf">8.0</span><span class="p">,</span> <span class="n">samp_rate</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">filt_order</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">process_length</span><span class="o">=</span><span class="mi">3600</span><span class="p">,</span> <span class="n">prepick</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">template_a</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s1">&#39;test_template_read&#39;</span><span class="p">)</span> 
+<span class="go">Template a:</span>
+<span class="go"> 3 channels;</span>
+<span class="go"> lowcut: 2.0 Hz;</span>
+<span class="go"> highcut: 8.0 Hz;</span>
+<span class="go"> sampling rate 100 Hz;</span>
+<span class="go"> filter order: 4;</span>
+<span class="go"> process length: 3600 s</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">template_b</span> <span class="o">=</span> <span class="n">Template</span><span class="p">()</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s1">&#39;test_template_read.tgz&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">template_a</span> <span class="o">==</span> <span class="n">template_b</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="eqcorrscan.core.match_filter.template.Template.same_processing">
+<code class="sig-name descname">same_processing</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">other</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eqcorrscan/core/match_filter/template.html#Template.same_processing"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eqcorrscan.core.match_filter.template.Template.same_processing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check is the templates are processed the same.</p>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">obspy</span> <span class="kn">import</span> <span class="n">read</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">template_a</span> <span class="o">=</span> <span class="n">Template</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">st</span><span class="o">=</span><span class="n">read</span><span class="p">(),</span> <span class="n">lowcut</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">highcut</span><span class="o">=</span><span class="mf">8.0</span><span class="p">,</span> <span class="n">samp_rate</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">filt_order</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">process_length</span><span class="o">=</span><span class="mi">3600</span><span class="p">,</span> <span class="n">prepick</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">template_b</span> <span class="o">=</span> <span class="n">template_a</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">template_a</span><span class="o">.</span><span class="n">same_processing</span><span class="p">(</span><span class="n">template_b</span><span class="p">)</span>
+<span class="go">True</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">template_b</span><span class="o">.</span><span class="n">lowcut</span> <span class="o">=</span> <span class="mf">5.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">template_a</span><span class="o">.</span><span class="n">same_processing</span><span class="p">(</span><span class="n">template_b</span><span class="p">)</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="eqcorrscan.core.match_filter.template.Template.write">
+<code class="sig-name descname">write</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span></em>, <em class="sig-param"><span class="n">format</span><span class="o">=</span><span class="default_value">'tar'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eqcorrscan/core/match_filter/template.html#Template.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eqcorrscan.core.match_filter.template.Template.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write template.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – Filename to write to, if it already exists it will be opened and
+appended to, otherwise it will be created.</p></li>
+<li><p><strong>format</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – Format to write to, either ‘tar’ (to retain metadata), or any obspy
+supported waveform format to just extract the waveform.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">obspy</span> <span class="kn">import</span> <span class="n">read</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">template_a</span> <span class="o">=</span> <span class="n">Template</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">st</span><span class="o">=</span><span class="n">read</span><span class="p">(),</span> <span class="n">lowcut</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">highcut</span><span class="o">=</span><span class="mf">8.0</span><span class="p">,</span> <span class="n">samp_rate</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">filt_order</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">process_length</span><span class="o">=</span><span class="mi">3600</span><span class="p">,</span> <span class="n">prepick</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">template_a</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;test_template&#39;</span><span class="p">)</span> 
+<span class="go">Template a:</span>
+<span class="go"> 3 channels;</span>
+<span class="go"> lowcut: 2.0 Hz;</span>
+<span class="go"> highcut: 8.0 Hz;</span>
+<span class="go"> sampling rate 100 Hz;</span>
+<span class="go"> filter order: 4;</span>
+<span class="go"> process length: 3600 s</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">template_a</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;test_waveform.ms&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                 <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;MSEED&#39;</span><span class="p">)</span> 
+<span class="go">Template a:</span>
+<span class="go"> 3 channels;</span>
+<span class="go"> lowcut: 2.0 Hz;</span>
+<span class="go"> highcut: 8.0 Hz;</span>
+<span class="go"> sampling rate 100 Hz;</span>
+<span class="go"> filter order: 4;</span>
+<span class="go"> process length: 3600 s</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="functions">
+<h1>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h1>
+<dl class="py function">
+<dt id="eqcorrscan.core.match_filter.template.read_template">
+<code class="sig-prename descclassname">eqcorrscan.core.match_filter.template.</code><code class="sig-name descname">read_template</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fname</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eqcorrscan/core/match_filter/template.html#read_template"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eqcorrscan.core.match_filter.template.read_template" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a Template object from a tar archive.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>fname</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – Filename to read from</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">eqcorrscan.core.match_filter.Template</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2015-2021: EQcorrscan developers.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.2.1.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

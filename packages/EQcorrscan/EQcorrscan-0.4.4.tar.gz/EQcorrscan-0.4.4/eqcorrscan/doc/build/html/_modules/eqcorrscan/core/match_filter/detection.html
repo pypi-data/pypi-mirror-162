@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>eqcorrscan.core.match_filter.detection &#8212; EQcorrscan 0.4.3 documentation</title>
+    <link rel="stylesheet" href="../../../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script src="../../../../_static/jquery.js"></script>
+    <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="shortcut icon" href="../../../../_static/EQcorrscan_logo.ico"/>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../../../_static/js/jquery-1.12.4.min.js "></script>
+<script type="text/javascript" src="../../../../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../../../../_static/bootstrap-3.4.1/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../../../../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../../index.html"><span><img src="../../../../_static/EQcorrscan_logo.jpg"></span>
+          EQcorrscan</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.4</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../intro.html">1. Introduction to the EQcorrscan package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation.html">2. EQcorrscan installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../updates.html">3. What’s new</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorial.html">4. EQcorrscan tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api.html">5. EQcorrscan API</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"></ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+              <li class="hidden-sm"></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <h1>Source code for eqcorrscan.core.match_filter.detection</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Functions for network matched-filter detection of seismic data.</span>
+
+<span class="sd">Designed to cross-correlate templates generated by template_gen function</span>
+<span class="sd">with data and output the detections.</span>
+
+<span class="sd">:copyright:</span>
+<span class="sd">    EQcorrscan developers.</span>
+
+<span class="sd">:license:</span>
+<span class="sd">    GNU Lesser General Public License, Version 3</span>
+<span class="sd">    (https://www.gnu.org/copyleft/lesser.html)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">ast</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">obspy</span> <span class="kn">import</span> <span class="n">Catalog</span><span class="p">,</span> <span class="n">UTCDateTime</span><span class="p">,</span> <span class="n">Stream</span>
+<span class="kn">from</span> <span class="nn">obspy.core.event</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Comment</span><span class="p">,</span> <span class="n">WaveformStreamID</span><span class="p">,</span> <span class="n">Event</span><span class="p">,</span> <span class="n">Pick</span><span class="p">,</span> <span class="n">CreationInfo</span><span class="p">,</span> <span class="n">ResourceIdentifier</span><span class="p">,</span>
+    <span class="n">Origin</span><span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">eqcorrscan.core.match_filter.helpers</span> <span class="kn">import</span> <span class="n">_test_event_similarity</span>
+
+<span class="n">Logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Detection"><a class="viewcode-back" href="../../../../submodules/core.match_filter.detection.html#eqcorrscan.core.match_filter.detection.Detection">[docs]</a><span class="k">class</span> <span class="nc">Detection</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Single detection from detection routines in eqcorrscan.</span>
+<span class="sd">    Information required for a full detection based on cross-channel \</span>
+<span class="sd">    correlation sums.</span>
+
+<span class="sd">    :type template_name: str</span>
+<span class="sd">    :param template_name:</span>
+<span class="sd">        The name of the template for which this detection was made.</span>
+<span class="sd">    :type detect_time: obspy.core.utcdatetime.UTCDateTime</span>
+<span class="sd">    :param detect_time: Time of detection as an obspy UTCDateTime object</span>
+<span class="sd">    :type no_chans: int</span>
+<span class="sd">    :param no_chans:</span>
+<span class="sd">        The number of channels for which the cross-channel correlation sum</span>
+<span class="sd">        was calculated over.</span>
+<span class="sd">    :type detect_val: float</span>
+<span class="sd">    :param detect_val:</span>
+<span class="sd">        The raw value of the cross-channel correlation sum for this detection.</span>
+<span class="sd">    :type threshold: float</span>
+<span class="sd">    :param threshold:</span>
+<span class="sd">        The value of the threshold used for this detection, will be the raw</span>
+<span class="sd">        threshold value related to the cccsum.</span>
+<span class="sd">    :type typeofdet: str</span>
+<span class="sd">    :param typeofdet: Type of detection, STA, corr, bright</span>
+<span class="sd">    :type threshold_type: str</span>
+<span class="sd">    :param threshold_type: Type of threshold used for detection</span>
+<span class="sd">    :type threshold_input: float</span>
+<span class="sd">    :param threshold_input:</span>
+<span class="sd">        Threshold set for detection, relates to `threshold` according to the</span>
+<span class="sd">        `threshold_type`.</span>
+<span class="sd">    :type chans: list</span>
+<span class="sd">    :param chans: List of stations for the detection</span>
+<span class="sd">    :type event: obspy.core.event.event.Event</span>
+<span class="sd">    :param event:</span>
+<span class="sd">        Obspy Event object for this detection, note that this is lost when</span>
+<span class="sd">        writing to a :class:`Detection` objects to csv files using</span>
+<span class="sd">        :func:`eqcorrscan.core.match_filter.Detection.write`</span>
+<span class="sd">    :type id: str</span>
+<span class="sd">    :param id: Identification for detection (should be unique).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Detection.__init__"><a class="viewcode-back" href="../../../../submodules/core.match_filter.detection.html#eqcorrscan.core.match_filter.detection.Detection.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">template_name</span><span class="p">,</span> <span class="n">detect_time</span><span class="p">,</span> <span class="n">no_chans</span><span class="p">,</span> <span class="n">detect_val</span><span class="p">,</span>
+                 <span class="n">threshold</span><span class="p">,</span> <span class="n">typeofdet</span><span class="p">,</span> <span class="n">threshold_type</span><span class="p">,</span> <span class="n">threshold_input</span><span class="p">,</span>
+                 <span class="n">chans</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Main class of Detection.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">template_name</span> <span class="o">=</span> <span class="n">template_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">detect_time</span> <span class="o">=</span> <span class="n">detect_time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">no_chans</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">no_chans</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">chans</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">chans</span> <span class="o">=</span> <span class="p">[</span><span class="n">chans</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">chans</span> <span class="o">=</span> <span class="n">chans</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">detect_val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="n">detect_val</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">threshold</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="n">threshold</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">typeofdet</span> <span class="o">=</span> <span class="n">typeofdet</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">threshold_type</span> <span class="o">=</span> <span class="n">threshold_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">threshold_input</span> <span class="o">=</span> <span class="n">threshold_input</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">event</span> <span class="o">=</span> <span class="n">event</span>
+        <span class="k">if</span> <span class="nb">id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="nb">id</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">template_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span>
+                       <span class="n">detect_time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">_%H%M%S</span><span class="si">%f</span><span class="s1">&#39;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">event</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">event</span><span class="o">.</span><span class="n">resource_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">typeofdet</span> <span class="o">==</span> <span class="s1">&#39;corr&#39;</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">detect_val</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">no_chans</span></div>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Simple print.&quot;&quot;&quot;</span>
+        <span class="n">print_str</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="p">[</span><span class="s1">&#39;template name =&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">template_name</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span>
+             <span class="s1">&#39;detection id =&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span>
+             <span class="s1">&#39;detection time =&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">detect_time</span><span class="p">),</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span>
+             <span class="s1">&#39;number of channels =&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">no_chans</span><span class="p">),</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span>
+             <span class="s1">&#39;channels =&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chans</span><span class="p">),</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span>
+             <span class="s1">&#39;detection value =&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">detect_val</span><span class="p">),</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span>
+             <span class="s1">&#39;threshold =&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">threshold</span><span class="p">),</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span>
+             <span class="s1">&#39;threshold type =&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">threshold_type</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span>
+             <span class="s1">&#39;input threshold =&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">threshold_input</span><span class="p">),</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span>
+             <span class="s1">&#39;detection type =&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">typeofdet</span><span class="p">)])</span>
+        <span class="k">return</span> <span class="s2">&quot;Detection(&quot;</span> <span class="o">+</span> <span class="n">print_str</span> <span class="o">+</span> <span class="s2">&quot;)&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Full print.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="s2">&quot;Detection on template: </span><span class="si">{0}</span><span class="s2"> at: </span><span class="si">{1}</span><span class="s2"> with </span><span class="si">{2}</span><span class="s2"> channels: </span><span class="si">{3}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">template_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">detect_time</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">no_chans</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">chans</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">self_is_event</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">event</span><span class="p">,</span> <span class="n">Event</span><span class="p">)</span>
+            <span class="n">other_is_event</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">event</span><span class="p">,</span> <span class="n">Event</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s1">&#39;event&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">self_is_event</span> <span class="ow">and</span> <span class="n">other_is_event</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">_test_event_similarity</span><span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">event</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">event</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">):</span>
+                        <span class="k">return</span> <span class="kc">False</span>
+                <span class="k">elif</span> <span class="n">self_is_event</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">other_is_event</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+                <span class="k">elif</span> <span class="ow">not</span> <span class="n">self_is_event</span> <span class="ow">and</span> <span class="n">other_is_event</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">!=</span> <span class="n">other</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">key</span><span class="p">]:</span>
+                <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">def</span> <span class="fm">__lt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">detect_time</span> <span class="o">&lt;</span> <span class="n">other</span><span class="o">.</span><span class="n">detect_time</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="fm">__le__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">detect_time</span> <span class="o">&lt;=</span> <span class="n">other</span><span class="o">.</span><span class="n">detect_time</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="fm">__gt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__le__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__ge__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__lt__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Cannot hash Detection objects, they may change.</span>
+<span class="sd">        :return: 0</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="mi">0</span>
+
+    <span class="k">def</span> <span class="fm">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__eq__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_print_str</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">{0}</span><span class="s2">; </span><span class="si">{1}</span><span class="s2">; </span><span class="si">{2}</span><span class="s2">; </span><span class="si">{3}</span><span class="s2">; </span><span class="si">{4}</span><span class="s2">; </span><span class="si">{5}</span><span class="s2">; </span><span class="si">{6}</span><span class="s2">; </span><span class="si">{7}</span><span class="s2">; </span><span class="si">{8}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">template_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">detect_time</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">no_chans</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">chans</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">detect_val</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">threshold</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">threshold_type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">threshold_input</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">typeofdet</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Detection.copy"><a class="viewcode-back" href="../../../../submodules/core.match_filter.detection.html#eqcorrscan.core.match_filter.detection.Detection.copy">[docs]</a>    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns a copy of the detection.</span>
+
+<span class="sd">        :return: Copy of detection</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Detection.write"><a class="viewcode-back" href="../../../../submodules/core.match_filter.detection.html#eqcorrscan.core.match_filter.detection.Detection.write">[docs]</a>    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">append</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Write detection to csv formatted file.</span>
+
+<span class="sd">        Will append if append==True and file exists</span>
+
+<span class="sd">        :type fname: str</span>
+<span class="sd">        :param fname: Full path to file to open and write to.</span>
+<span class="sd">        :type append: bool</span>
+<span class="sd">        :param append:</span>
+<span class="sd">            Set to true to append to an existing file, if True and file doesn&#39;t</span>
+<span class="sd">            exist, will create new file and warn.  If False will overwrite</span>
+<span class="sd">            old files.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">mode</span> <span class="o">=</span> <span class="s1">&#39;w&#39;</span>
+        <span class="k">if</span> <span class="n">append</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+            <span class="n">mode</span> <span class="o">=</span> <span class="s1">&#39;a&#39;</span>
+        <span class="n">header</span> <span class="o">=</span> <span class="s1">&#39;; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span>
+            <span class="s1">&#39;Template name&#39;</span><span class="p">,</span> <span class="s1">&#39;Detection time (UTC)&#39;</span><span class="p">,</span> <span class="s1">&#39;Number of channels&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;Channel list&#39;</span><span class="p">,</span> <span class="s1">&#39;Detection value&#39;</span><span class="p">,</span> <span class="s1">&#39;Threshold&#39;</span><span class="p">,</span> <span class="s1">&#39;Threshold type&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;Input threshold&#39;</span><span class="p">,</span> <span class="s1">&#39;Detection type&#39;</span><span class="p">])</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span> <span class="k">as</span> <span class="n">_f</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;w&quot;</span><span class="p">:</span>
+                <span class="n">_f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">header</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>  <span class="c1"># Write a header for the file</span>
+            <span class="n">_f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_print_str</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_calculate_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">template</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">template_st</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                         <span class="n">estimate_origin</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">correct_prepick</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate an event for this detection using a given template.</span>
+
+<span class="sd">        :type template: Template</span>
+<span class="sd">        :param template: The template that made this detection</span>
+<span class="sd">        :type template_st: `obspy.core.stream.Stream`</span>
+<span class="sd">        :param template_st:</span>
+<span class="sd">            Template stream, used to calculate pick times, not needed if</span>
+<span class="sd">            template is given.</span>
+<span class="sd">        :type estimate_origin: bool</span>
+<span class="sd">        :param estimate_origin:</span>
+<span class="sd">            Whether to include an estimate of the origin based on the template</span>
+<span class="sd">            origin.</span>
+<span class="sd">        :type correct_prepick: bool</span>
+<span class="sd">        :param correct_prepick:</span>
+<span class="sd">            Whether to apply the prepick correction defined in the template.</span>
+<span class="sd">            Only applicable if template is not None</span>
+
+<span class="sd">        .. rubric:: Note</span>
+<span class="sd">            Works in place on Detection - over-writes previous events.</span>
+<span class="sd">            Corrects for prepick if template given.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">template</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">template</span><span class="o">.</span><span class="n">name</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">template_name</span><span class="p">:</span>
+            <span class="n">Logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Template names do not match: </span><span class="si">{0}</span><span class="s2">: </span><span class="si">{1}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">template</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">template_name</span><span class="p">))</span>
+            <span class="k">return</span>
+        <span class="c1"># Detect time must be valid QuakeML uri within resource_id.</span>
+        <span class="c1"># This will write a formatted string which is still</span>
+        <span class="c1"># readable by UTCDateTime</span>
+        <span class="n">det_time</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">detect_time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y%m</span><span class="si">%d</span><span class="s1">T%H%M%S.</span><span class="si">%f</span><span class="s1">&#39;</span><span class="p">))</span>
+        <span class="n">ev</span> <span class="o">=</span> <span class="n">Event</span><span class="p">(</span><span class="n">resource_id</span><span class="o">=</span><span class="n">ResourceIdentifier</span><span class="p">(</span>
+            <span class="nb">id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">template_name</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">det_time</span><span class="p">,</span>
+            <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;smi:local&#39;</span><span class="p">))</span>
+        <span class="n">ev</span><span class="o">.</span><span class="n">creation_info</span> <span class="o">=</span> <span class="n">CreationInfo</span><span class="p">(</span>
+            <span class="n">author</span><span class="o">=</span><span class="s1">&#39;EQcorrscan&#39;</span><span class="p">,</span> <span class="n">creation_time</span><span class="o">=</span><span class="n">UTCDateTime</span><span class="p">())</span>
+        <span class="n">ev</span><span class="o">.</span><span class="n">comments</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">Comment</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s2">&quot;Template: </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">template_name</span><span class="p">)))</span>
+        <span class="n">ev</span><span class="o">.</span><span class="n">comments</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">Comment</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s1">&#39;threshold=</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">threshold</span><span class="p">)))</span>
+        <span class="n">ev</span><span class="o">.</span><span class="n">comments</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">Comment</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s1">&#39;detect_val=</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">detect_val</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">chans</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ev</span><span class="o">.</span><span class="n">comments</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">Comment</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s1">&#39;channels used: </span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">pair</span><span class="p">)</span> <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">chans</span><span class="p">]))))</span>
+        <span class="k">if</span> <span class="n">template</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">template_st</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">st</span>
+            <span class="k">if</span> <span class="n">correct_prepick</span><span class="p">:</span>
+                <span class="n">template_prepick</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">prepick</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">template_prepick</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">template_picks</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">event</span><span class="o">.</span><span class="n">picks</span>
+            <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+                <span class="n">template_picks</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">template_prepick</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">template_picks</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">min_template_tm</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span> <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">template_st</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">template_st</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">station</span><span class="p">,</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">channel</span><span class="p">)</span> \
+                    <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">chans</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">elif</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="fm">__contains__</span><span class="p">(</span><span class="s2">&quot;not_in_original&quot;</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="k">elif</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">data</span><span class="p">)):</span>
+                <span class="k">continue</span>  <span class="c1"># The channel contains no data and was not used.</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">pick_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">detect_time</span> <span class="o">+</span> <span class="p">(</span>
+                    <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span> <span class="o">-</span> <span class="n">min_template_tm</span><span class="p">)</span>
+                <span class="n">pick_time</span> <span class="o">+=</span> <span class="n">template_prepick</span>
+                <span class="n">new_pick</span> <span class="o">=</span> <span class="n">Pick</span><span class="p">(</span>
+                    <span class="n">time</span><span class="o">=</span><span class="n">pick_time</span><span class="p">,</span> <span class="n">waveform_id</span><span class="o">=</span><span class="n">WaveformStreamID</span><span class="p">(</span>
+                        <span class="n">network_code</span><span class="o">=</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">network</span><span class="p">,</span>
+                        <span class="n">station_code</span><span class="o">=</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">station</span><span class="p">,</span>
+                        <span class="n">channel_code</span><span class="o">=</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">channel</span><span class="p">,</span>
+                        <span class="n">location_code</span><span class="o">=</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">location</span><span class="p">))</span>
+                <span class="n">template_pick</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">template_picks</span>
+                                 <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">waveform_id</span><span class="o">.</span><span class="n">get_seed_string</span><span class="p">()</span> <span class="o">==</span>
+                                 <span class="n">new_pick</span><span class="o">.</span><span class="n">waveform_id</span><span class="o">.</span><span class="n">get_seed_string</span><span class="p">()]</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">template_pick</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">new_pick</span><span class="o">.</span><span class="n">phase_hint</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">template_pick</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">new_pick</span><span class="o">.</span><span class="n">phase_hint</span> <span class="o">=</span> <span class="n">template_pick</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">phase_hint</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># Multiple picks for this trace in template</span>
+                    <span class="n">similar_traces</span> <span class="o">=</span> <span class="n">template_st</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">tr</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+                    <span class="n">similar_traces</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+                    <span class="n">_index</span> <span class="o">=</span> <span class="n">similar_traces</span><span class="o">.</span><span class="n">traces</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">tr</span><span class="p">)</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">new_pick</span><span class="o">.</span><span class="n">phase_hint</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+                            <span class="n">template_pick</span><span class="p">,</span>
+                            <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">time</span><span class="p">)[</span><span class="n">_index</span><span class="p">]</span><span class="o">.</span><span class="n">phase_hint</span>
+                    <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+                        <span class="n">Logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No pick for trace: </span><span class="si">{</span><span class="n">tr</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">ev</span><span class="o">.</span><span class="n">picks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_pick</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">estimate_origin</span> <span class="ow">and</span> <span class="n">template</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>\
+                <span class="ow">and</span> <span class="n">template</span><span class="o">.</span><span class="n">event</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">template_origin</span> <span class="o">=</span> <span class="p">(</span><span class="n">template</span><span class="o">.</span><span class="n">event</span><span class="o">.</span><span class="n">preferred_origin</span><span class="p">()</span> <span class="ow">or</span>
+                                   <span class="n">template</span><span class="o">.</span><span class="n">event</span><span class="o">.</span><span class="n">origins</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+                <span class="n">template_origin</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="n">template_origin</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">pick</span> <span class="ow">in</span> <span class="n">ev</span><span class="o">.</span><span class="n">picks</span><span class="p">:</span>
+                    <span class="n">comparison_pick</span> <span class="o">=</span> <span class="p">[</span>
+                        <span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">template</span><span class="o">.</span><span class="n">event</span><span class="o">.</span><span class="n">picks</span>
+                        <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">waveform_id</span><span class="o">.</span><span class="n">get_seed_string</span><span class="p">()</span> <span class="o">==</span>
+                        <span class="n">pick</span><span class="o">.</span><span class="n">waveform_id</span><span class="o">.</span><span class="n">get_seed_string</span><span class="p">()]</span>
+                    <span class="n">comparison_pick</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">comparison_pick</span>
+                                       <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">phase_hint</span> <span class="o">==</span> <span class="n">pick</span><span class="o">.</span><span class="n">phase_hint</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">comparison_pick</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="k">break</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">Logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Could not compute relative origin: no picks&quot;</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">event</span> <span class="o">=</span> <span class="n">ev</span>
+                    <span class="k">return</span>
+                <span class="n">origin_time</span> <span class="o">=</span> <span class="n">pick</span><span class="o">.</span><span class="n">time</span> <span class="o">-</span> <span class="p">(</span>
+                        <span class="n">comparison_pick</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">time</span> <span class="o">-</span> <span class="n">template_origin</span><span class="o">.</span><span class="n">time</span><span class="p">)</span>
+                <span class="c1"># Calculate based on difference between pick and origin?</span>
+                <span class="n">_origin</span> <span class="o">=</span> <span class="n">Origin</span><span class="p">(</span><span class="n">ResourceIdentifier</span><span class="p">(</span>
+                    <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;EQcorrscan/</span><span class="si">{0}</span><span class="s2">_</span><span class="si">{1}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">template_name</span><span class="p">,</span> <span class="n">det_time</span><span class="p">),</span> <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;smi:local&quot;</span><span class="p">),</span>
+                    <span class="n">time</span><span class="o">=</span><span class="n">origin_time</span><span class="p">,</span> <span class="n">evaluation_mode</span><span class="o">=</span><span class="s2">&quot;automatic&quot;</span><span class="p">,</span>
+                    <span class="n">evaluation_status</span><span class="o">=</span><span class="s2">&quot;preliminary&quot;</span><span class="p">,</span>
+                    <span class="n">creation_info</span><span class="o">=</span><span class="n">CreationInfo</span><span class="p">(</span>
+                        <span class="n">author</span><span class="o">=</span><span class="s1">&#39;EQcorrscan&#39;</span><span class="p">,</span> <span class="n">creation_time</span><span class="o">=</span><span class="n">UTCDateTime</span><span class="p">()),</span>
+                    <span class="n">comments</span><span class="o">=</span><span class="p">[</span><span class="n">Comment</span><span class="p">(</span>
+                        <span class="n">text</span><span class="o">=</span><span class="s2">&quot;Origin automatically assigned based on template&quot;</span>
+                             <span class="s2">&quot; origin: use with caution.&quot;</span><span class="p">)],</span>
+                    <span class="n">latitude</span><span class="o">=</span><span class="n">template_origin</span><span class="o">.</span><span class="n">latitude</span><span class="p">,</span>
+                    <span class="n">longitude</span><span class="o">=</span><span class="n">template_origin</span><span class="o">.</span><span class="n">longitude</span><span class="p">,</span>
+                    <span class="n">depth</span><span class="o">=</span><span class="n">template_origin</span><span class="o">.</span><span class="n">depth</span><span class="p">,</span>
+                    <span class="n">time_errors</span><span class="o">=</span><span class="n">template_origin</span><span class="o">.</span><span class="n">time_errors</span><span class="p">,</span>
+                    <span class="n">latitude_errors</span><span class="o">=</span><span class="n">template_origin</span><span class="o">.</span><span class="n">latitude_errors</span><span class="p">,</span>
+                    <span class="n">longitude_errors</span><span class="o">=</span><span class="n">template_origin</span><span class="o">.</span><span class="n">longitude_errors</span><span class="p">,</span>
+                    <span class="n">depth_errors</span><span class="o">=</span><span class="n">template_origin</span><span class="o">.</span><span class="n">depth_errors</span><span class="p">,</span>
+                    <span class="n">depth_type</span><span class="o">=</span><span class="n">template_origin</span><span class="o">.</span><span class="n">depth_type</span><span class="p">,</span>
+                    <span class="n">time_fixed</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                    <span class="n">epicenter_fixed</span><span class="o">=</span><span class="n">template_origin</span><span class="o">.</span><span class="n">epicenter_fixed</span><span class="p">,</span>
+                    <span class="n">reference_system_id</span><span class="o">=</span><span class="n">template_origin</span><span class="o">.</span><span class="n">reference_system_id</span><span class="p">,</span>
+                    <span class="n">method_id</span><span class="o">=</span><span class="n">template_origin</span><span class="o">.</span><span class="n">method_id</span><span class="p">,</span>
+                    <span class="n">earth_model_id</span><span class="o">=</span><span class="n">template_origin</span><span class="o">.</span><span class="n">earth_model_id</span><span class="p">,</span>
+                    <span class="n">origin_type</span><span class="o">=</span><span class="n">template_origin</span><span class="o">.</span><span class="n">origin_type</span><span class="p">,</span>
+                    <span class="n">origin_uncertainty</span><span class="o">=</span><span class="n">template_origin</span><span class="o">.</span><span class="n">origin_uncertainty</span><span class="p">,</span>
+                    <span class="n">region</span><span class="o">=</span><span class="n">template_origin</span><span class="o">.</span><span class="n">region</span><span class="p">)</span>
+                <span class="n">ev</span><span class="o">.</span><span class="n">origins</span> <span class="o">=</span> <span class="p">[</span><span class="n">_origin</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">event</span> <span class="o">=</span> <span class="n">ev</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+<div class="viewcode-block" id="Detection.extract_stream"><a class="viewcode-back" href="../../../../submodules/core.match_filter.detection.html#eqcorrscan.core.match_filter.detection.Detection.extract_stream">[docs]</a>    <span class="k">def</span> <span class="nf">extract_stream</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stream</span><span class="p">,</span> <span class="n">length</span><span class="p">,</span> <span class="n">prepick</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Extract a cut stream of a given length around the detection.</span>
+
+<span class="sd">        :type stream: `obspy.core.stream.Stream`</span>
+<span class="sd">        :param stream: Stream of data to cut from</span>
+<span class="sd">        :type length: float</span>
+<span class="sd">        :param length: Length of data to extract in seconds.</span>
+<span class="sd">        :type prepick: float</span>
+<span class="sd">        :param prepick:</span>
+<span class="sd">            Length before the expected pick on each channel to start the cut</span>
+<span class="sd">            stream in seconds.</span>
+
+<span class="sd">        :rtype: `obspy.core.stream.Stream`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">event</span><span class="p">,</span> <span class="s2">&quot;Detection must have an event - use Detection._&quot;</span> \
+                           <span class="s2">&quot;calculate_event()&quot;</span>
+        <span class="n">cut_stream</span> <span class="o">=</span> <span class="n">Stream</span><span class="p">()</span>
+        <span class="n">valid_chans</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">station</span><span class="p">,</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">channel</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">stream</span><span class="p">}</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chans</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">station</span><span class="p">,</span> <span class="n">channel</span> <span class="ow">in</span> <span class="n">valid_chans</span><span class="p">:</span>
+            <span class="n">_st</span> <span class="o">=</span> <span class="n">stream</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">station</span><span class="o">=</span><span class="n">station</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="n">channel</span><span class="p">)</span>
+            <span class="n">pick</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">event</span><span class="o">.</span><span class="n">picks</span>
+                <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">waveform_id</span><span class="o">.</span><span class="n">station_code</span> <span class="o">==</span> <span class="n">station</span> <span class="ow">and</span>
+                <span class="n">p</span><span class="o">.</span><span class="n">waveform_id</span><span class="o">.</span><span class="n">channel_code</span> <span class="o">==</span> <span class="n">channel</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">pick</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">Logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;No pick for </span><span class="si">{0}</span><span class="s2">.</span><span class="si">{1}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">station</span><span class="p">,</span> <span class="n">channel</span><span class="p">))</span>
+                <span class="k">continue</span>
+            <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">pick</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">Logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                    <span class="s2">&quot;Multiple picks found for </span><span class="si">{0}</span><span class="s2">.</span><span class="si">{1}</span><span class="s2">, using earliest&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="n">station</span><span class="p">,</span> <span class="n">channel</span><span class="p">))</span>
+                <span class="n">pick</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">time</span><span class="p">)</span>
+            <span class="n">pick</span> <span class="o">=</span> <span class="n">pick</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">cut_start</span> <span class="o">=</span> <span class="n">pick</span><span class="o">.</span><span class="n">time</span> <span class="o">-</span> <span class="n">prepick</span>
+            <span class="n">cut_end</span> <span class="o">=</span> <span class="n">cut_start</span> <span class="o">+</span> <span class="n">length</span>
+            <span class="n">_st</span> <span class="o">=</span> <span class="n">_st</span><span class="o">.</span><span class="n">slice</span><span class="p">(</span><span class="n">starttime</span><span class="o">=</span><span class="n">cut_start</span><span class="p">,</span> <span class="n">endtime</span><span class="o">=</span><span class="n">cut_end</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="c1"># Minimum length check</span>
+            <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">_st</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">abs</span><span class="p">((</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">endtime</span> <span class="o">-</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span><span class="p">)</span> <span class="o">-</span>
+                       <span class="n">length</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">delta</span><span class="p">:</span>
+                    <span class="n">cut_stream</span> <span class="o">+=</span> <span class="n">tr</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">Logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                        <span class="s2">&quot;Insufficient data length for </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">id</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">cut_stream</span></div></div>
+
+
+<span class="k">def</span> <span class="nf">write_detections</span><span class="p">(</span><span class="n">detections</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;a&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Write a list of detections to a file.</span>
+
+<span class="sd">    :type detections: List of Detection</span>
+<span class="sd">    :param detections: List of detection objects to write</span>
+<span class="sd">    :type fname: str</span>
+<span class="sd">    :param fname: Filename to write to</span>
+<span class="sd">    :type mode: str</span>
+<span class="sd">    :param mode: &#39;a&#39; for append, or &#39;w&#39; for write (will overwrite old files)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="n">mode</span> <span class="ow">in</span> <span class="p">{</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">}</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;w&quot;</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span>
+            <span class="s1">&#39;Template name&#39;</span><span class="p">,</span> <span class="s1">&#39;Detection time (UTC)&#39;</span><span class="p">,</span> <span class="s1">&#39;Number of channels&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;Channel list&#39;</span><span class="p">,</span> <span class="s1">&#39;Detection value&#39;</span><span class="p">,</span> <span class="s1">&#39;Threshold&#39;</span><span class="p">,</span> <span class="s1">&#39;Threshold type&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;Input threshold&#39;</span><span class="p">,</span> <span class="s1">&#39;Detection type&#39;</span><span class="p">]))</span>
+    <span class="n">lines</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">d</span><span class="o">.</span><span class="n">_print_str</span><span class="p">()</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">detections</span><span class="p">])</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
+    <span class="n">lines</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="read_detections"><a class="viewcode-back" href="../../../../submodules/core.match_filter.detection.html#eqcorrscan.core.match_filter.detection.read_detections">[docs]</a><span class="k">def</span> <span class="nf">read_detections</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;UTF8&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Read detections from a file to a list of Detection objects.</span>
+
+<span class="sd">    :type fname: str</span>
+<span class="sd">    :param fname:</span>
+<span class="sd">        File to read from, must be a file written to by Detection.write.</span>
+<span class="sd">    :type encoding: str</span>
+<span class="sd">    :param encoding: Encoding used for detection file.</span>
+
+<span class="sd">    :returns: list of :class:`eqcorrscan.core.match_filter.Detection`</span>
+<span class="sd">    :rtype: list</span>
+
+<span class="sd">    .. note::</span>
+<span class="sd">        :class:`eqcorrscan.core.match_filter.detection.Detection`&#39;s returned</span>
+<span class="sd">        do not contain Detection.event</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">_f</span><span class="p">:</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="n">_f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">encoding</span><span class="p">)</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
+    <span class="n">detections</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lines</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;; &#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;Template name&#39;</span><span class="p">:</span>
+            <span class="k">continue</span>  <span class="c1"># Skip any repeated headers</span>
+        <span class="n">detection</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;; &#39;</span><span class="p">)</span>
+        <span class="n">detection</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">UTCDateTime</span><span class="p">(</span><span class="n">detection</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">detection</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">detection</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
+        <span class="n">detection</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">ast</span><span class="o">.</span><span class="n">literal_eval</span><span class="p">(</span><span class="n">detection</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+        <span class="n">detection</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">detection</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span>
+        <span class="n">detection</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">detection</span><span class="p">[</span><span class="mi">5</span><span class="p">])</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">detection</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">9</span><span class="p">:</span>
+            <span class="n">detection</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s1">&#39;Unset&#39;</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;NaN&#39;</span><span class="p">)])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">detection</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">detection</span><span class="p">[</span><span class="mi">7</span><span class="p">])</span>
+        <span class="n">detections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Detection</span><span class="p">(</span>
+            <span class="n">template_name</span><span class="o">=</span><span class="n">detection</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">detect_time</span><span class="o">=</span><span class="n">detection</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+            <span class="n">no_chans</span><span class="o">=</span><span class="n">detection</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">detect_val</span><span class="o">=</span><span class="n">detection</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span>
+            <span class="n">threshold</span><span class="o">=</span><span class="n">detection</span><span class="p">[</span><span class="mi">5</span><span class="p">],</span> <span class="n">threshold_type</span><span class="o">=</span><span class="n">detection</span><span class="p">[</span><span class="mi">6</span><span class="p">],</span>
+            <span class="n">threshold_input</span><span class="o">=</span><span class="n">detection</span><span class="p">[</span><span class="mi">7</span><span class="p">],</span> <span class="n">typeofdet</span><span class="o">=</span><span class="n">detection</span><span class="p">[</span><span class="mi">8</span><span class="p">],</span>
+            <span class="n">chans</span><span class="o">=</span><span class="n">detection</span><span class="p">[</span><span class="mi">3</span><span class="p">]))</span>
+    <span class="k">return</span> <span class="n">detections</span></div>
+
+
+<div class="viewcode-block" id="write_catalog"><a class="viewcode-back" href="../../../../submodules/core.match_filter.detection.html#eqcorrscan.core.match_filter.detection.write_catalog">[docs]</a><span class="k">def</span> <span class="nf">write_catalog</span><span class="p">(</span><span class="n">detections</span><span class="p">,</span> <span class="n">fname</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;QUAKEML&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Write events contained within detections to a catalog file.</span>
+
+<span class="sd">    :type detections: list</span>
+<span class="sd">    :param detections: list of eqcorrscan.core.match_filter.Detection</span>
+<span class="sd">    :type fname: str</span>
+<span class="sd">    :param fname: Name of the file to write to</span>
+<span class="sd">    :type format: str</span>
+<span class="sd">    :param format: File format to use, see obspy.core.event.Catalog.write \</span>
+<span class="sd">        for supported formats.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">catalog</span> <span class="o">=</span> <span class="n">get_catalog</span><span class="p">(</span><span class="n">detections</span><span class="p">)</span>
+    <span class="n">catalog</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">fname</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="nb">format</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_catalog"><a class="viewcode-back" href="../../../../submodules/core.match_filter.detection.html#eqcorrscan.core.match_filter.detection.get_catalog">[docs]</a><span class="k">def</span> <span class="nf">get_catalog</span><span class="p">(</span><span class="n">detections</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate an :class:`obspy.core.event.Catalog` from list of \</span>
+<span class="sd">    :class:`Detection`&#39;s.</span>
+
+<span class="sd">    :type detections: list</span>
+<span class="sd">    :param detections: list of :class:`eqcorrscan.core.match_filter.Detection`</span>
+
+<span class="sd">    :returns: Catalog of detected events.</span>
+<span class="sd">    :rtype: :class:`obspy.core.event.Catalog`</span>
+
+<span class="sd">    .. warning::</span>
+<span class="sd">        Will only work if the detections have an event associated with them.</span>
+<span class="sd">        This will not be the case if detections have been written to csv</span>
+<span class="sd">        format using :func:`eqcorrscan.core.match_filter.Detection.write`</span>
+<span class="sd">        and read back in.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">catalog</span> <span class="o">=</span> <span class="n">Catalog</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">detection</span> <span class="ow">in</span> <span class="n">detections</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">detection</span><span class="o">.</span><span class="n">event</span><span class="p">:</span>
+            <span class="n">catalog</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">detection</span><span class="o">.</span><span class="n">event</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">catalog</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">doctest</span>
+
+    <span class="n">doctest</span><span class="o">.</span><span class="n">testmod</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2015-2021: EQcorrscan developers.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.2.1.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

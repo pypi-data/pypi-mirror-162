@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
+
+    <title>5.2.8.1.1. eqcorrscan.utils.mag_calc.amp_pick_event &#8212; EQcorrscan 0.4.3 documentation</title>
+    <link rel="stylesheet" href="../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="shortcut icon" href="../../_static/EQcorrscan_logo.ico"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="5.2.8.1.2. eqcorrscan.utils.mag_calc.calc_b_value" href="eqcorrscan.utils.mag_calc.calc_b_value.html" />
+    <link rel="prev" title="5.2.8. mag_calc" href="../utils.mag_calc.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../_static/js/jquery-1.12.4.min.js "></script>
+<script type="text/javascript" src="../../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../../_static/bootstrap-3.4.1/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../index.html"><span><img src="../../_static/EQcorrscan_logo.jpg"></span>
+          EQcorrscan</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.4</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../intro.html">1. Introduction to the EQcorrscan package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">2. EQcorrscan installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../updates.html">3. What’s new</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">4. EQcorrscan tutorials</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../api.html">5. EQcorrscan API</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">5.2.8.1.1. eqcorrscan.utils.mag_calc.amp_pick_event</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="../utils.mag_calc.html" title="Previous Chapter: 5.2.8. mag_calc"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; 5.2.8. mag_calc</span>
+    </a>
+  </li>
+  <li>
+    <a href="eqcorrscan.utils.mag_calc.calc_b_value.html" title="Next Chapter: 5.2.8.1.2. eqcorrscan.utils.mag_calc.calc_b_value"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">5.2.8.1.2. eq... &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="../../_sources/submodules/autogen/eqcorrscan.utils.mag_calc.amp_pick_event.rst.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <section id="eqcorrscan-utils-mag-calc-amp-pick-event">
+<h1><span class="section-number">5.2.8.1.1. </span>eqcorrscan.utils.mag_calc.amp_pick_event<a class="headerlink" href="#eqcorrscan-utils-mag-calc-amp-pick-event" title="Permalink to this headline">¶</a></h1>
+<dl class="py function">
+<dt id="eqcorrscan.utils.mag_calc.amp_pick_event">
+<code class="sig-prename descclassname">eqcorrscan.utils.mag_calc.</code><code class="sig-name descname">amp_pick_event</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">event</span></em>, <em class="sig-param"><span class="n">st</span></em>, <em class="sig-param"><span class="n">inventory</span></em>, <em class="sig-param"><span class="n">chans</span><span class="o">=</span><span class="default_value">'Z'</span></em>, <em class="sig-param"><span class="n">var_wintype</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">winlen</span><span class="o">=</span><span class="default_value">0.9</span></em>, <em class="sig-param"><span class="n">pre_pick</span><span class="o">=</span><span class="default_value">0.2</span></em>, <em class="sig-param"><span class="n">pre_filt</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">lowcut</span><span class="o">=</span><span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">highcut</span><span class="o">=</span><span class="default_value">20.0</span></em>, <em class="sig-param"><span class="n">corners</span><span class="o">=</span><span class="default_value">4</span></em>, <em class="sig-param"><span class="n">min_snr</span><span class="o">=</span><span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">plot</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">remove_old</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">ps_multiplier</span><span class="o">=</span><span class="default_value">0.34</span></em>, <em class="sig-param"><span class="n">velocity</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">water_level</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">iaspei_standard</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/eqcorrscan/utils/mag_calc.html#amp_pick_event"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eqcorrscan.utils.mag_calc.amp_pick_event" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pick amplitudes for local magnitude for a single event.</p>
+<p>Looks for maximum peak-to-trough amplitude for a channel in a stream, and
+picks this amplitude and period.  There are a few things it does
+internally to stabilise the result:</p>
+<blockquote>
+<div><p>1. Applies a given filter to the data using obspy’s bandpass filter.
+The filter applied is a time-domain digital SOS filter.
+This is often necessary for small magnitude earthquakes.  To correct
+for this filter later the gain of the filter at the period of the
+maximum amplitude is retrieved using scipy’s sosfreqz, and used to
+divide the resulting picked amplitude.</p>
+<p>2. Picks the peak-to-trough amplitude, but records half of this to
+cope with possible DC offsets.</p>
+<p>3. The maximum amplitude within the given window is picked. Care must
+be taken to avoid including surface waves in the window;</p>
+<p>4. A variable window-length is used by default that takes into account
+P-S times if available, this is in an effort to include only the
+body waves.  When P-S times are not available the ps_multiplier
+variable is used, which defaults to 0.34 x hypocentral distance.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>event</strong> (<a class="reference external" href="https://docs.obspy.org/packages/autogen/obspy.core.event.event.Event.html#obspy.core.event.event.Event" title="(in ObsPy Documentation (1.2.0) v1.2)"><em>obspy.core.event.event.Event</em></a>) – Event to pick</p></li>
+<li><p><strong>st</strong> (<a class="reference external" href="https://docs.obspy.org/packages/autogen/obspy.core.stream.Stream.html#obspy.core.stream.Stream" title="(in ObsPy Documentation (1.2.0) v1.2)"><em>obspy.core.stream.Stream</em></a>) – Stream associated with event</p></li>
+<li><p><strong>inventory</strong> (<em>obspy.core.inventory.Inventory</em>) – Inventory containing response information for the stations in st.</p></li>
+<li><p><strong>chans</strong> (<em>tuple</em>) – Tuple of the components to pick on, e.g. (Z, 1, 2, N, E)</p></li>
+<li><p><strong>var_wintype</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – If True, the winlen will be multiplied by the P-S time if both P and
+S picks are available, otherwise it will be multiplied by the
+hypocentral distance*ps_multiplier, defaults to True</p></li>
+<li><p><strong>winlen</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – Length of window, see above parameter, if var_wintype is False then
+this will be in seconds, otherwise it is the multiplier to the
+p-s time, defaults to 0.9.</p></li>
+<li><p><strong>pre_pick</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – Time before the s-pick to start the cut window, defaults to 0.2.</p></li>
+<li><p><strong>pre_filt</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – To apply a pre-filter or not, defaults to True</p></li>
+<li><p><strong>lowcut</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – Lowcut in Hz for the pre-filter, defaults to 1.0</p></li>
+<li><p><strong>highcut</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – Highcut in Hz for the pre-filter, defaults to 20.0</p></li>
+<li><p><strong>corners</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) – Number of corners to use in the pre-filter</p></li>
+<li><p><strong>min_snr</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – Minimum signal-to-noise ratio to allow a pick - see note below on
+signal-to-noise ratio calculation.</p></li>
+<li><p><strong>plot</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – Turn plotting on or off.</p></li>
+<li><p><strong>remove_old</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – If True, will remove old amplitudes and associated picks from event
+and overwrite with new picks. Defaults to False.</p></li>
+<li><p><strong>ps_multiplier</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – A p-s time multiplier of hypocentral distance - defaults to 0.34,
+based on p-s ratio of 1.68 and an S-velocity 0f 1.5km/s, deliberately
+chosen to be quite slow.</p></li>
+<li><p><strong>velocity</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – Whether to make the pick in velocity space or not. Original definition
+of local magnitude used displacement of Wood-Anderson, MLv in seiscomp
+and Antelope uses a velocity measurement. <em>velocity and iaspei_standard
+are mutually exclusive</em>.</p></li>
+<li><p><strong>water_level</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – Water-level for seismometer simulation, see
+<a class="reference external" href="https://docs.obspy.org/packages/autogen/obspy.core.trace.Trace.remove_response.html">https://docs.obspy.org/packages/autogen/obspy.core.trace.Trace.remove_response.html</a></p></li>
+<li><p><strong>iaspei_standard</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – Whether to output amplitude in IASPEI standard IAML (wood-anderson
+static amplification of 1), or AML with wood-anderson static
+amplification of 2080. Note: Units are SI (and specified in the
+amplitude)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Picked event</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">obspy.core.event.Event</span></code></p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Signal-to-noise ratio is calculated using the filtered data by
+dividing the maximum amplitude in the signal window (pick window)
+by the normalized noise amplitude (taken from the whole window
+supplied).</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>With <cite>iaspei_standard=False</cite>, picks will be returned in SI units
+(m or m/s), with the standard Wood-Anderson sensitivity of 2080 applied
+such that the measurements reflect the amplitude measured on a Wood
+Anderson instrument, as per the original local magnitude definitions
+of Richter and others.</p>
+</div>
+</dd></dl>
+
+</section>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2015-2021: EQcorrscan developers.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.2.1.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

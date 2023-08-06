@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>eqcorrscan.core.lag_calc &#8212; EQcorrscan 0.4.3 documentation</title>
+    <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="shortcut icon" href="../../../_static/EQcorrscan_logo.ico"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../../_static/js/jquery-1.12.4.min.js "></script>
+<script type="text/javascript" src="../../../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../../../_static/bootstrap-3.4.1/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../../../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../index.html"><span><img src="../../../_static/EQcorrscan_logo.jpg"></span>
+          EQcorrscan</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.4</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../intro.html">1. Introduction to the EQcorrscan package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">2. EQcorrscan installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../updates.html">3. What’s new</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorial.html">4. EQcorrscan tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">5. EQcorrscan API</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"></ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+              <li class="hidden-sm"></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <h1>Source code for eqcorrscan.core.lag_calc</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Functions to generate pick-corrections for events detected by correlation.</span>
+
+<span class="sd">:copyright:</span>
+<span class="sd">    EQcorrscan developers.</span>
+
+<span class="sd">:license:</span>
+<span class="sd">    GNU Lesser General Public License, Version 3</span>
+<span class="sd">    (https://www.gnu.org/copyleft/lesser.html)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">Counter</span><span class="p">,</span> <span class="n">namedtuple</span>
+
+<span class="kn">from</span> <span class="nn">obspy</span> <span class="kn">import</span> <span class="n">Stream</span><span class="p">,</span> <span class="n">Trace</span>
+<span class="kn">from</span> <span class="nn">obspy.core.event</span> <span class="kn">import</span> <span class="n">Catalog</span>
+<span class="kn">from</span> <span class="nn">obspy.core.event</span> <span class="kn">import</span> <span class="n">Event</span><span class="p">,</span> <span class="n">Pick</span><span class="p">,</span> <span class="n">WaveformStreamID</span>
+<span class="kn">from</span> <span class="nn">obspy.core.event</span> <span class="kn">import</span> <span class="n">ResourceIdentifier</span><span class="p">,</span> <span class="n">Comment</span>
+
+<span class="kn">from</span> <span class="nn">eqcorrscan.utils.correlate</span> <span class="kn">import</span> <span class="n">get_stream_xcorr</span>
+<span class="kn">from</span> <span class="nn">eqcorrscan.core.match_filter.family</span> <span class="kn">import</span> <span class="n">Family</span>
+<span class="kn">from</span> <span class="nn">eqcorrscan.core.match_filter.template</span> <span class="kn">import</span> <span class="n">Template</span>
+<span class="kn">from</span> <span class="nn">eqcorrscan.utils.plotting</span> <span class="kn">import</span> <span class="n">plot_repicked</span>
+
+
+<span class="n">Logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">LagCalcError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Default error for issues within lag-calc.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;LagCalcError: &#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span>
+
+
+<div class="viewcode-block" id="_xcorr_interp"><a class="viewcode-back" href="../../../submodules/core.lag_calc.html#eqcorrscan.core.lag_calc._xcorr_interp">[docs]</a><span class="k">def</span> <span class="nf">_xcorr_interp</span><span class="p">(</span><span class="n">ccc</span><span class="p">,</span> <span class="n">dt</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Interpolate around the maximum correlation value for sub-sample precision.</span>
+
+<span class="sd">    :param ccc: Cross-correlation array</span>
+<span class="sd">    :type ccc: numpy.ndarray</span>
+<span class="sd">    :param dt: sample interval</span>
+<span class="sd">    :type dt: float</span>
+
+<span class="sd">    :return: Position of interpolated maximum in seconds from start of ccc</span>
+<span class="sd">    :rtype: float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">ccc</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">cc</span> <span class="o">=</span> <span class="n">ccc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">cc</span> <span class="o">=</span> <span class="n">ccc</span>
+    <span class="c1"># Code borrowed from obspy.signal.cross_correlation.xcorr_pick_correction</span>
+    <span class="n">cc_curvature</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">cc</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">)))</span>
+    <span class="n">cc_t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">cc</span><span class="p">)</span> <span class="o">*</span> <span class="n">dt</span><span class="p">,</span> <span class="n">dt</span><span class="p">)</span>
+    <span class="n">peak_index</span> <span class="o">=</span> <span class="n">cc</span><span class="o">.</span><span class="n">argmax</span><span class="p">()</span>
+    <span class="n">first_sample</span> <span class="o">=</span> <span class="n">peak_index</span>
+    <span class="c1"># XXX this could be improved..</span>
+    <span class="k">while</span> <span class="n">first_sample</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">cc_curvature</span><span class="p">[</span><span class="n">first_sample</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">first_sample</span> <span class="o">-=</span> <span class="mi">1</span>
+    <span class="n">last_sample</span> <span class="o">=</span> <span class="n">peak_index</span>
+    <span class="k">while</span> <span class="n">last_sample</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">cc</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">cc_curvature</span><span class="p">[</span><span class="n">last_sample</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">last_sample</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">num_samples</span> <span class="o">=</span> <span class="n">last_sample</span> <span class="o">-</span> <span class="n">first_sample</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="k">if</span> <span class="n">num_samples</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="n">Logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+            <span class="s2">&quot;Fewer than 3 samples selected for fit to cross correlation: &quot;</span>
+            <span class="s2">&quot;</span><span class="si">{0}</span><span class="s2">, returning maximum in data&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">num_samples</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">cc</span><span class="p">)</span> <span class="o">*</span> <span class="n">dt</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">cc</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">num_samples</span> <span class="o">&lt;</span> <span class="mi">5</span><span class="p">:</span>
+        <span class="n">Logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+            <span class="s2">&quot;Fewer than 5 samples selected for fit to cross correlation: &quot;</span>
+            <span class="s2">&quot;</span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">num_samples</span><span class="p">))</span>
+    <span class="n">coeffs</span><span class="p">,</span> <span class="n">residual</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">polyfit</span><span class="p">(</span>
+        <span class="n">cc_t</span><span class="p">[</span><span class="n">first_sample</span><span class="p">:</span><span class="n">last_sample</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span>
+        <span class="n">cc</span><span class="p">[</span><span class="n">first_sample</span><span class="p">:</span><span class="n">last_sample</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="n">deg</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">full</span><span class="o">=</span><span class="kc">True</span><span class="p">)[:</span><span class="mi">2</span><span class="p">]</span>
+    <span class="c1"># check results of fit</span>
+    <span class="k">if</span> <span class="n">coeffs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">Logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Fitted parabola opens upwards!&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">residual</span> <span class="o">&gt;</span> <span class="mf">0.1</span><span class="p">:</span>
+        <span class="n">Logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+            <span class="s2">&quot;Residual in quadratic fit to cross correlation maximum larger &quot;</span>
+            <span class="s2">&quot;than 0.1: </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">residual</span><span class="p">))</span>
+    <span class="c1"># X coordinate of vertex of parabola gives time shift to correct</span>
+    <span class="c1"># differential pick time. Y coordinate gives maximum correlation</span>
+    <span class="c1"># coefficient.</span>
+    <span class="n">shift</span> <span class="o">=</span> <span class="o">-</span><span class="n">coeffs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="mf">2.0</span> <span class="o">/</span> <span class="n">coeffs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">coeff</span> <span class="o">=</span> <span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="n">coeffs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">coeffs</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">coeffs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="n">coeffs</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">coeff</span> <span class="o">&lt;</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">ccc</span><span class="p">)</span> <span class="ow">or</span> <span class="n">coeff</span> <span class="o">&gt;</span> <span class="mf">1.0</span> <span class="ow">or</span> <span class="ow">not</span> <span class="mi">0</span> <span class="o">&lt;</span> <span class="n">shift</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">ccc</span><span class="p">)</span> <span class="o">*</span> <span class="n">dt</span><span class="p">:</span>
+        <span class="c1"># Sometimes the interpolation returns a worse result.</span>
+        <span class="n">Logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Interpolation did not give an accurate result, &quot;</span>
+                       <span class="s2">&quot;returning maximum in data&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">ccc</span><span class="p">)</span> <span class="o">*</span> <span class="n">dt</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">ccc</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">shift</span><span class="p">,</span> <span class="n">coeff</span></div>
+
+
+<div class="viewcode-block" id="_concatenate_and_correlate"><a class="viewcode-back" href="../../../submodules/core.lag_calc.html#eqcorrscan.core.lag_calc._concatenate_and_correlate">[docs]</a><span class="k">def</span> <span class="nf">_concatenate_and_correlate</span><span class="p">(</span><span class="n">streams</span><span class="p">,</span> <span class="n">template</span><span class="p">,</span> <span class="n">cores</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Concatenate a list of streams into one stream and correlate that with a</span>
+<span class="sd">    template.</span>
+
+<span class="sd">    All traces in a stream must have the same length.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">UsedChannel</span> <span class="o">=</span> <span class="n">namedtuple</span><span class="p">(</span><span class="s2">&quot;UsedChannel&quot;</span><span class="p">,</span> <span class="s2">&quot;channel used&quot;</span><span class="p">)</span>
+
+    <span class="n">samp_rate</span> <span class="o">=</span> <span class="p">{</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span> <span class="k">for</span> <span class="n">st</span> <span class="ow">in</span> <span class="n">streams</span> <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">st</span><span class="p">}</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">samp_rate</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Multiple sample rates found&quot;</span>
+    <span class="n">samp_rate</span> <span class="o">=</span> <span class="n">samp_rate</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+
+    <span class="n">template_length</span> <span class="o">=</span> <span class="p">{</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">npts</span> <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">template</span><span class="p">}</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">template_length</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Multiple data lengths in template&quot;</span>
+    <span class="n">template_length</span> <span class="o">=</span> <span class="n">template_length</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+
+    <span class="n">channel_length</span> <span class="o">=</span> <span class="p">{</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">npts</span> <span class="k">for</span> <span class="n">st</span> <span class="ow">in</span> <span class="n">streams</span> <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">st</span><span class="p">}</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">channel_length</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">Logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Multiple lengths of stream found, using the longest&quot;</span><span class="p">)</span>
+    <span class="n">channel_length</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">channel_length</span><span class="p">))[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="c1"># pre-define stream for efficiency</span>
+    <span class="n">chans</span> <span class="o">=</span> <span class="p">{</span><span class="n">tr</span><span class="o">.</span><span class="n">id</span> <span class="k">for</span> <span class="n">st</span> <span class="ow">in</span> <span class="n">streams</span> <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">st</span><span class="p">}</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span>
+        <span class="p">{</span><span class="n">tr</span><span class="o">.</span><span class="n">id</span> <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">template</span><span class="p">})</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">chans</span><span class="p">),</span> <span class="n">channel_length</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">streams</span><span class="p">)),</span>
+                    <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+    <span class="c1"># concatenate detection streams together.</span>
+    <span class="n">used_chans</span> <span class="o">=</span> <span class="p">[[]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">streams</span><span class="p">))]</span>
+    <span class="n">concatenated_stream</span> <span class="o">=</span> <span class="n">Stream</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">chan</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">chans</span><span class="p">):</span>
+        <span class="n">start_index</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">stream</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">streams</span><span class="p">):</span>
+            <span class="n">tr</span> <span class="o">=</span> <span class="n">stream</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">chan</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tr</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="c1"># No data for this channel in this stream</span>
+                <span class="n">used_chans</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">UsedChannel</span><span class="p">(</span>
+                    <span class="n">channel</span><span class="o">=</span><span class="p">(</span><span class="n">chan</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">],</span> <span class="n">chan</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span>
+                    <span class="n">used</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+                <span class="n">start_index</span> <span class="o">+=</span> <span class="n">channel_length</span>
+                <span class="k">continue</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">tr</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Multiple channels found for </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">chan</span><span class="p">)</span>
+            <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">start_index</span><span class="p">:</span><span class="n">start_index</span> <span class="o">+</span> <span class="n">tr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">npts</span><span class="p">]</span> <span class="o">=</span> <span class="n">tr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">data</span>
+            <span class="n">start_index</span> <span class="o">+=</span> <span class="n">channel_length</span>
+            <span class="n">used_chans</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">UsedChannel</span><span class="p">(</span>
+                <span class="n">channel</span><span class="o">=</span><span class="p">(</span><span class="n">chan</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">],</span> <span class="n">chan</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span> <span class="n">used</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+        <span class="n">net</span><span class="p">,</span> <span class="n">sta</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">chan</span> <span class="o">=</span> <span class="n">chan</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
+        <span class="n">concatenated_stream</span> <span class="o">+=</span> <span class="n">Trace</span><span class="p">(</span>
+            <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">header</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">network</span><span class="o">=</span><span class="n">net</span><span class="p">,</span> <span class="n">station</span><span class="o">=</span><span class="n">sta</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="n">chan</span><span class="p">,</span>
+                                      <span class="n">location</span><span class="o">=</span><span class="n">loc</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="o">=</span><span class="n">samp_rate</span><span class="p">))</span>
+    <span class="c1"># Remove unnecesary channels from template</span>
+    <span class="n">_template</span> <span class="o">=</span> <span class="n">Stream</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">template</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">tr</span><span class="o">.</span><span class="n">id</span> <span class="ow">in</span> <span class="n">chans</span><span class="p">:</span>
+            <span class="n">_template</span> <span class="o">+=</span> <span class="n">tr</span>
+    <span class="c1"># Do correlations</span>
+    <span class="n">xcorr_func</span> <span class="o">=</span> <span class="n">get_stream_xcorr</span><span class="p">(</span><span class="n">name_or_func</span><span class="o">=</span><span class="s2">&quot;fftw&quot;</span><span class="p">)</span>
+    <span class="n">ccc</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">chan_order</span> <span class="o">=</span> <span class="n">xcorr_func</span><span class="p">(</span>
+        <span class="n">templates</span><span class="o">=</span><span class="p">[</span><span class="n">_template</span><span class="p">],</span> <span class="n">stream</span><span class="o">=</span><span class="n">concatenated_stream</span><span class="p">,</span> <span class="n">stack</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">cores</span><span class="o">=</span><span class="n">cores</span><span class="p">)</span>
+    <span class="c1"># Re-order used_chans</span>
+    <span class="n">chan_order</span> <span class="o">=</span> <span class="n">chan_order</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">used_chans</span><span class="p">)):</span>
+        <span class="n">_used_chans</span> <span class="o">=</span> <span class="n">used_chans</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="c1"># Remove any channels that ended up not being used.</span>
+        <span class="n">_used_chans</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">_used_chans</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">channel</span> <span class="ow">in</span> <span class="n">chan_order</span><span class="p">]</span>
+        <span class="c1"># Order the channels in the same way that they were correlated</span>
+        <span class="n">_used_chans</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">chan</span><span class="p">:</span> <span class="n">chan_order</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">chan</span><span class="o">.</span><span class="n">channel</span><span class="p">))</span>
+        <span class="n">used_chans</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">_used_chans</span>  <span class="c1"># Put back in.</span>
+
+    <span class="c1"># Reshape ccc output</span>
+    <span class="n">ccc_out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">streams</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">chans</span><span class="p">),</span>
+                        <span class="n">channel_length</span> <span class="o">-</span> <span class="n">template_length</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
+                       <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">streams</span><span class="p">)):</span>
+        <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">chan</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">used_chans</span><span class="p">[</span><span class="n">i</span><span class="p">]):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">chan</span><span class="o">.</span><span class="n">used</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">index_start</span> <span class="o">=</span> <span class="n">i</span> <span class="o">*</span> <span class="n">channel_length</span>
+            <span class="n">index_end</span> <span class="o">=</span> <span class="n">index_start</span> <span class="o">+</span> <span class="n">channel_length</span> <span class="o">-</span> <span class="n">template_length</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="n">ccc_out</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">ccc</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">j</span><span class="p">][</span><span class="n">index_start</span><span class="p">:</span> <span class="n">index_end</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">ccc_out</span><span class="p">,</span> <span class="n">used_chans</span></div>
+
+
+<div class="viewcode-block" id="xcorr_pick_family"><a class="viewcode-back" href="../../../submodules/core.lag_calc.html#eqcorrscan.core.lag_calc.xcorr_pick_family">[docs]</a><span class="k">def</span> <span class="nf">xcorr_pick_family</span><span class="p">(</span><span class="n">family</span><span class="p">,</span> <span class="n">stream</span><span class="p">,</span> <span class="n">shift_len</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">min_cc</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span>
+                      <span class="n">min_cc_from_mean_cc_factor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                      <span class="n">horizontal_chans</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;E&#39;</span><span class="p">,</span> <span class="s1">&#39;N&#39;</span><span class="p">,</span> <span class="s1">&#39;1&#39;</span><span class="p">,</span> <span class="s1">&#39;2&#39;</span><span class="p">],</span>
+                      <span class="n">vertical_chans</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Z&#39;</span><span class="p">],</span> <span class="n">cores</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">interpolate</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                      <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">plotdir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">export_cc</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">cc_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute cross-correlation picks for detections in a family.</span>
+
+<span class="sd">    :type family: `eqcorrscan.core.match_filter.family.Family`</span>
+<span class="sd">    :param family: Family to calculate correlation picks for.</span>
+<span class="sd">    :type stream: `obspy.core.stream.Stream`</span>
+<span class="sd">    :param stream:</span>
+<span class="sd">        Data stream containing data for all (or a subset of) detections in</span>
+<span class="sd">        the Family</span>
+<span class="sd">    :type shift_len: float</span>
+<span class="sd">    :param shift_len:</span>
+<span class="sd">        Shift length allowed for the pick in seconds, will be plus/minus this</span>
+<span class="sd">        amount - default=0.2</span>
+<span class="sd">    :type min_cc: float</span>
+<span class="sd">    :param min_cc:</span>
+<span class="sd">        Minimum cross-correlation value to be considered a pick, default=0.4.</span>
+<span class="sd">    :type min_cc_from_mean_cc_factor: float</span>
+<span class="sd">    :param min_cc_from_mean_cc_factor:</span>
+<span class="sd">        If set to a value other than None, then the minimum cross-correlation</span>
+<span class="sd">        value for a trace is set individually for each detection based on:</span>
+<span class="sd">        min(detect_val / n_chans * min_cc_from_mean_cc_factor, min_cc).</span>
+<span class="sd">    :type horizontal_chans: list</span>
+<span class="sd">    :param horizontal_chans:</span>
+<span class="sd">        List of channel endings for horizontal-channels, on which S-picks will</span>
+<span class="sd">        be made.</span>
+<span class="sd">    :type vertical_chans: list</span>
+<span class="sd">    :param vertical_chans:</span>
+<span class="sd">        List of channel endings for vertical-channels, on which P-picks will</span>
+<span class="sd">        be made.</span>
+<span class="sd">    :type cores: int</span>
+<span class="sd">    :param cores:</span>
+<span class="sd">        Number of cores to use in parallel processing, defaults to one.</span>
+<span class="sd">    :type interpolate: bool</span>
+<span class="sd">    :param interpolate:</span>
+<span class="sd">        Interpolate the correlation function to achieve sub-sample precision.</span>
+<span class="sd">    :type plot: bool</span>
+<span class="sd">    :param plot:</span>
+<span class="sd">        To generate a plot for every detection or not, defaults to False</span>
+<span class="sd">    :type plotdir: str</span>
+<span class="sd">    :param plotdir:</span>
+<span class="sd">        Path to plotting folder, plots will be output here.</span>
+<span class="sd">    :type export_cc: bool</span>
+<span class="sd">    :param export_cc:</span>
+<span class="sd">        To generate a binary file in NumPy for every detection or not,</span>
+<span class="sd">        defaults to False</span>
+<span class="sd">    :type cc_dir: str</span>
+<span class="sd">    :param cc_dir:</span>
+<span class="sd">        Path to saving folder, NumPy files will be output here.</span>
+
+<span class="sd">    :return: Dictionary of picked events keyed by detection id.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">picked_dict</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">delta</span> <span class="o">=</span> <span class="n">family</span><span class="o">.</span><span class="n">template</span><span class="o">.</span><span class="n">st</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">delta</span>
+    <span class="n">detect_streams_dict</span> <span class="o">=</span> <span class="n">_prepare_data</span><span class="p">(</span>
+        <span class="n">family</span><span class="o">=</span><span class="n">family</span><span class="p">,</span> <span class="n">detect_data</span><span class="o">=</span><span class="n">stream</span><span class="p">,</span> <span class="n">shift_len</span><span class="o">=</span><span class="n">shift_len</span><span class="p">)</span>
+    <span class="n">detection_ids</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">detect_streams_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+    <span class="n">detect_streams</span> <span class="o">=</span> <span class="p">[</span><span class="n">detect_streams_dict</span><span class="p">[</span><span class="n">detection_id</span><span class="p">]</span>
+                      <span class="k">for</span> <span class="n">detection_id</span> <span class="ow">in</span> <span class="n">detection_ids</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">detect_streams</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">Logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;No appropriate data found, check your family and &quot;</span>
+                       <span class="s2">&quot;detections - make sure seed ids match&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">picked_dict</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">detect_streams</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">family</span><span class="p">):</span>
+        <span class="n">Logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Not all detections have matching data. &quot;</span>
+                       <span class="s2">&quot;Proceeding anyway. HINT: Make sure SEED IDs match&quot;</span><span class="p">)</span>
+    <span class="c1"># Correlation function needs a list of streams, we need to maintain order.</span>
+    <span class="n">ccc</span><span class="p">,</span> <span class="n">chans</span> <span class="o">=</span> <span class="n">_concatenate_and_correlate</span><span class="p">(</span>
+        <span class="n">streams</span><span class="o">=</span><span class="n">detect_streams</span><span class="p">,</span> <span class="n">template</span><span class="o">=</span><span class="n">family</span><span class="o">.</span><span class="n">template</span><span class="o">.</span><span class="n">st</span><span class="p">,</span> <span class="n">cores</span><span class="o">=</span><span class="n">cores</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">detection_id</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">detection_ids</span><span class="p">):</span>
+        <span class="n">detection</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">family</span><span class="o">.</span><span class="n">detections</span> <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">id</span> <span class="o">==</span> <span class="n">detection_id</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">correlations</span> <span class="o">=</span> <span class="n">ccc</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">export_cc</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">cc_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">fname</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">detection_id</span><span class="si">}</span><span class="s2">-cc.npy&quot;</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cc_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">),</span> <span class="n">correlations</span><span class="p">)</span>
+            <span class="n">Logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Saved correlation statistic to </span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s2"> (lag_calc)&quot;</span><span class="p">)</span>
+        <span class="n">picked_chans</span> <span class="o">=</span> <span class="n">chans</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">detect_stream</span> <span class="o">=</span> <span class="n">detect_streams_dict</span><span class="p">[</span><span class="n">detection_id</span><span class="p">]</span>
+        <span class="n">checksum</span><span class="p">,</span> <span class="n">cccsum</span><span class="p">,</span> <span class="n">used_chans</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mi">0</span>
+        <span class="n">event</span> <span class="o">=</span> <span class="n">Event</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">min_cc_from_mean_cc_factor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">cc_thresh</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">detection</span><span class="o">.</span><span class="n">detect_val</span> <span class="o">/</span> <span class="n">detection</span><span class="o">.</span><span class="n">no_chans</span>
+                            <span class="o">*</span> <span class="n">min_cc_from_mean_cc_factor</span><span class="p">,</span> <span class="n">min_cc</span><span class="p">)</span>
+            <span class="n">Logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Setting minimum cc-threshold for detection </span><span class="si">%s</span><span class="s1"> to </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                        <span class="n">detection</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">cc_thresh</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cc_thresh</span> <span class="o">=</span> <span class="n">min_cc</span>
+        <span class="k">for</span> <span class="n">correlation</span><span class="p">,</span> <span class="n">stachan</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">correlations</span><span class="p">,</span> <span class="n">picked_chans</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">stachan</span><span class="o">.</span><span class="n">used</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">tr</span> <span class="o">=</span> <span class="n">detect_stream</span><span class="o">.</span><span class="n">select</span><span class="p">(</span>
+                <span class="n">station</span><span class="o">=</span><span class="n">stachan</span><span class="o">.</span><span class="n">channel</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">channel</span><span class="o">=</span><span class="n">stachan</span><span class="o">.</span><span class="n">channel</span><span class="p">[</span><span class="mi">1</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">interpolate</span><span class="p">:</span>
+                <span class="n">shift</span><span class="p">,</span> <span class="n">cc_max</span> <span class="o">=</span> <span class="n">_xcorr_interp</span><span class="p">(</span><span class="n">correlation</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="n">delta</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">cc_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">correlation</span><span class="p">)</span>
+                <span class="n">shift</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">correlation</span><span class="p">)</span> <span class="o">*</span> <span class="n">delta</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">cc_max</span><span class="p">):</span>  <span class="c1"># pragma: no cover</span>
+                <span class="n">Logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                    <span class="s1">&#39;Problematic trace, no cross correlation possible&#39;</span><span class="p">)</span>
+                <span class="k">continue</span>
+            <span class="n">picktime</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span> <span class="o">+</span> <span class="n">shift</span>
+            <span class="n">checksum</span> <span class="o">+=</span> <span class="n">cc_max</span>
+            <span class="n">used_chans</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">cc_max</span> <span class="o">&lt;</span> <span class="n">cc_thresh</span><span class="p">:</span>
+                <span class="n">Logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Correlation of </span><span class="si">{0}</span><span class="s1"> is below threshold, not &#39;</span>
+                             <span class="s1">&#39;using&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cc_max</span><span class="p">))</span>
+                <span class="k">continue</span>
+            <span class="n">cccsum</span> <span class="o">+=</span> <span class="n">cc_max</span>
+            <span class="n">phase</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="n">stachan</span><span class="o">.</span><span class="n">channel</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="n">vertical_chans</span><span class="p">:</span>
+                <span class="n">phase</span> <span class="o">=</span> <span class="s1">&#39;P&#39;</span>
+            <span class="k">elif</span> <span class="n">stachan</span><span class="o">.</span><span class="n">channel</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="n">horizontal_chans</span><span class="p">:</span>
+                <span class="n">phase</span> <span class="o">=</span> <span class="s1">&#39;S&#39;</span>
+            <span class="n">_waveform_id</span> <span class="o">=</span> <span class="n">WaveformStreamID</span><span class="p">(</span><span class="n">seed_string</span><span class="o">=</span><span class="n">tr</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+            <span class="n">event</span><span class="o">.</span><span class="n">picks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Pick</span><span class="p">(</span>
+                <span class="n">waveform_id</span><span class="o">=</span><span class="n">_waveform_id</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">picktime</span><span class="p">,</span>
+                <span class="n">method_id</span><span class="o">=</span><span class="n">ResourceIdentifier</span><span class="p">(</span><span class="s1">&#39;EQcorrscan&#39;</span><span class="p">),</span> <span class="n">phase_hint</span><span class="o">=</span><span class="n">phase</span><span class="p">,</span>
+                <span class="n">creation_info</span><span class="o">=</span><span class="s1">&#39;eqcorrscan.core.lag_calc&#39;</span><span class="p">,</span>
+                <span class="n">evaluation_mode</span><span class="o">=</span><span class="s1">&#39;automatic&#39;</span><span class="p">,</span>
+                <span class="n">comments</span><span class="o">=</span><span class="p">[</span><span class="n">Comment</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s1">&#39;cc_max=</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cc_max</span><span class="p">))]))</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">resource_id</span> <span class="o">=</span> <span class="n">ResourceIdentifier</span><span class="p">(</span><span class="n">detection_id</span><span class="p">)</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">comments</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Comment</span><span class="p">(</span><span class="n">text</span><span class="o">=</span><span class="s2">&quot;detect_val=</span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cccsum</span><span class="p">)))</span>
+        <span class="c1"># Add template-name as comment to events</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">comments</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Comment</span><span class="p">(</span>
+            <span class="n">text</span><span class="o">=</span><span class="s2">&quot;Detected using template: </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">family</span><span class="o">.</span><span class="n">template</span><span class="o">.</span><span class="n">name</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="n">used_chans</span> <span class="o">==</span> <span class="n">detection</span><span class="o">.</span><span class="n">no_chans</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+            <span class="k">if</span> <span class="n">detection</span><span class="o">.</span><span class="n">detect_val</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span>\
+               <span class="n">checksum</span> <span class="o">-</span> <span class="n">detection</span><span class="o">.</span><span class="n">detect_val</span> <span class="o">&lt;</span> <span class="o">-</span><span class="p">(</span><span class="mf">0.3</span> <span class="o">*</span> <span class="n">detection</span><span class="o">.</span><span class="n">detect_val</span><span class="p">):</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;lag-calc has decreased cccsum from </span><span class="si">%f</span><span class="s1"> to </span><span class="si">%f</span><span class="s1"> - &#39;</span>
+                       <span class="o">%</span> <span class="p">(</span><span class="n">detection</span><span class="o">.</span><span class="n">detect_val</span><span class="p">,</span> <span class="n">checksum</span><span class="p">))</span>
+                <span class="n">Logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                <span class="k">continue</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">Logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s1">&#39;Cannot check if cccsum is better, used </span><span class="si">{0}</span><span class="s1"> channels for &#39;</span>
+                <span class="s1">&#39;detection, but </span><span class="si">{1}</span><span class="s1"> are used here&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">detection</span><span class="o">.</span><span class="n">no_chans</span><span class="p">,</span> <span class="n">used_chans</span><span class="p">))</span>
+        <span class="n">picked_dict</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">detection_id</span><span class="p">:</span> <span class="n">event</span><span class="p">})</span>
+    <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">event</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">picked_dict</span><span class="o">.</span><span class="n">values</span><span class="p">()):</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">picks</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">plot_stream</span> <span class="o">=</span> <span class="n">detect_streams</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">template_plot</span> <span class="o">=</span> <span class="n">family</span><span class="o">.</span><span class="n">template</span><span class="o">.</span><span class="n">st</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">pick_stachans</span> <span class="o">=</span> <span class="p">[(</span><span class="n">pick</span><span class="o">.</span><span class="n">waveform_id</span><span class="o">.</span><span class="n">station_code</span><span class="p">,</span>
+                              <span class="n">pick</span><span class="o">.</span><span class="n">waveform_id</span><span class="o">.</span><span class="n">channel_code</span><span class="p">)</span>
+                             <span class="k">for</span> <span class="n">pick</span> <span class="ow">in</span> <span class="n">event</span><span class="o">.</span><span class="n">picks</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">plot_stream</span><span class="p">:</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">station</span><span class="p">,</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">channel</span><span class="p">)</span> \
+                        <span class="ow">not</span> <span class="ow">in</span> <span class="n">pick_stachans</span><span class="p">:</span>
+                    <span class="n">plot_stream</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">tr</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">template_plot</span><span class="p">:</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">station</span><span class="p">,</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">channel</span><span class="p">)</span> \
+                        <span class="ow">not</span> <span class="ow">in</span> <span class="n">pick_stachans</span><span class="p">:</span>
+                    <span class="n">template_plot</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">tr</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">plotdir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">plotdir</span><span class="p">):</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">plotdir</span><span class="p">)</span>
+                <span class="n">savefile</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{plotdir}</span><span class="s2">/</span><span class="si">{rid}</span><span class="s2">.png&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">plotdir</span><span class="o">=</span><span class="n">plotdir</span><span class="p">,</span> <span class="n">rid</span><span class="o">=</span><span class="n">event</span><span class="o">.</span><span class="n">resource_id</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+                <span class="n">plot_repicked</span><span class="p">(</span><span class="n">template</span><span class="o">=</span><span class="n">template_plot</span><span class="p">,</span> <span class="n">picks</span><span class="o">=</span><span class="n">event</span><span class="o">.</span><span class="n">picks</span><span class="p">,</span>
+                              <span class="n">det_stream</span><span class="o">=</span><span class="n">plot_stream</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                              <span class="n">savefile</span><span class="o">=</span><span class="n">savefile</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">plot_repicked</span><span class="p">(</span><span class="n">template</span><span class="o">=</span><span class="n">template_plot</span><span class="p">,</span> <span class="n">picks</span><span class="o">=</span><span class="n">event</span><span class="o">.</span><span class="n">picks</span><span class="p">,</span>
+                              <span class="n">det_stream</span><span class="o">=</span><span class="n">plot_stream</span><span class="p">,</span> <span class="n">show</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">picked_dict</span></div>
+
+
+<div class="viewcode-block" id="_prepare_data"><a class="viewcode-back" href="../../../submodules/core.lag_calc.html#eqcorrscan.core.lag_calc._prepare_data">[docs]</a><span class="k">def</span> <span class="nf">_prepare_data</span><span class="p">(</span><span class="n">family</span><span class="p">,</span> <span class="n">detect_data</span><span class="p">,</span> <span class="n">shift_len</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Prepare data for lag_calc - reduce memory here.</span>
+
+<span class="sd">    :type family: `eqcorrscan.core.match_filter.family.Family`</span>
+<span class="sd">    :param family:</span>
+<span class="sd">        The Family containing the template and detections.</span>
+<span class="sd">    :type detect_data: obspy.core.stream.Stream</span>
+<span class="sd">    :param detect_data: Stream to extract detection streams from.</span>
+<span class="sd">    :type shift_len: float</span>
+<span class="sd">    :param shift_len: Shift length in seconds allowed for picking.</span>
+
+<span class="sd">    :returns: Dictionary of detect_streams keyed by detection id</span>
+<span class="sd">              to be worked on</span>
+<span class="sd">    :rtype: dict</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">lengths</span> <span class="o">=</span> <span class="p">{</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">npts</span> <span class="o">*</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">delta</span> <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">family</span><span class="o">.</span><span class="n">template</span><span class="o">.</span><span class="n">st</span><span class="p">}</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">lengths</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;Template contains channels of different length&quot;</span>
+    <span class="n">length</span> <span class="o">=</span> <span class="n">lengths</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span> <span class="o">+</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">shift_len</span><span class="p">)</span>
+    <span class="c1"># Enforce length be an integer number of samples</span>
+    <span class="n">length_samples</span> <span class="o">=</span> <span class="n">length</span> <span class="o">*</span> <span class="n">family</span><span class="o">.</span><span class="n">template</span><span class="o">.</span><span class="n">samp_rate</span>
+    <span class="k">if</span> <span class="n">length_samples</span> <span class="o">!=</span> <span class="nb">int</span><span class="p">(</span><span class="n">length_samples</span><span class="p">):</span>
+        <span class="n">length</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">length_samples</span><span class="p">)</span> <span class="o">/</span> <span class="n">family</span><span class="o">.</span><span class="n">template</span><span class="o">.</span><span class="n">samp_rate</span>
+        <span class="n">Logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Setting length to </span><span class="si">{0}</span><span class="s2">s to give an integer number of &quot;</span>
+                    <span class="s2">&quot;samples&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">length</span><span class="p">))</span>
+    <span class="n">prepick</span> <span class="o">=</span> <span class="n">shift_len</span>
+    <span class="n">detect_streams_dict</span> <span class="o">=</span> <span class="n">family</span><span class="o">.</span><span class="n">extract_streams</span><span class="p">(</span>
+        <span class="n">stream</span><span class="o">=</span><span class="n">detect_data</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="n">length</span><span class="p">,</span> <span class="n">prepick</span><span class="o">=</span><span class="n">prepick</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">detect_stream</span> <span class="ow">in</span> <span class="n">detect_streams_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="c1"># Split to remove trailing or leading masks</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">detect_stream</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">trace</span> <span class="o">=</span> <span class="n">detect_stream</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">is_masked</span><span class="p">(</span><span class="n">trace</span><span class="o">.</span><span class="n">data</span><span class="p">):</span>
+                <span class="n">detect_stream</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">trace</span><span class="p">)</span>
+                <span class="n">Logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Masked array found for </span><span class="si">{0}</span><span class="s2">, not supported, &quot;</span>
+                               <span class="s2">&quot;removing.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">trace</span><span class="o">.</span><span class="n">id</span><span class="p">))</span>
+        <span class="n">stachans</span> <span class="o">=</span> <span class="p">[(</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">station</span><span class="p">,</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">channel</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">detect_stream</span><span class="p">]</span>
+        <span class="n">c_stachans</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">(</span><span class="n">stachans</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">c_stachans</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">c_stachans</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">LagCalcError</span><span class="p">(</span>
+                    <span class="s1">&#39;Multiple channels for </span><span class="si">{0}</span><span class="s1">.</span><span class="si">{1}</span><span class="s1">, likely a data &#39;</span>
+                    <span class="s1">&#39;issue&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">key</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+    <span class="n">detect_streams_dict_out</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">detect_stream</span> <span class="ow">in</span> <span class="n">detect_streams_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">detect_stream</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">Logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;No data for </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+            <span class="k">continue</span>
+        <span class="n">detect_streams_dict_out</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">key</span><span class="p">:</span> <span class="n">detect_stream</span><span class="p">})</span>
+    <span class="k">return</span> <span class="n">detect_streams_dict_out</span></div>
+
+
+<div class="viewcode-block" id="lag_calc"><a class="viewcode-back" href="../../../submodules/core.lag_calc.html#eqcorrscan.core.lag_calc.lag_calc">[docs]</a><span class="k">def</span> <span class="nf">lag_calc</span><span class="p">(</span><span class="n">detections</span><span class="p">,</span> <span class="n">detect_data</span><span class="p">,</span> <span class="n">template_names</span><span class="p">,</span> <span class="n">templates</span><span class="p">,</span>
+             <span class="n">shift_len</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">min_cc</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span> <span class="n">min_cc_from_mean_cc_factor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+             <span class="n">horizontal_chans</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;E&#39;</span><span class="p">,</span> <span class="s1">&#39;N&#39;</span><span class="p">,</span> <span class="s1">&#39;1&#39;</span><span class="p">,</span> <span class="s1">&#39;2&#39;</span><span class="p">],</span>
+             <span class="n">vertical_chans</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Z&#39;</span><span class="p">],</span> <span class="n">cores</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">interpolate</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+             <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">plotdir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">export_cc</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">cc_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Cross-correlation derived picking of seismic events.</span>
+
+<span class="sd">    Overseer function to take a list of detection objects, cut the data for</span>
+<span class="sd">    them to lengths of the same length of the template + shift_len on</span>
+<span class="sd">    either side. This will output a :class:`obspy.core.event.Catalog` of</span>
+<span class="sd">    picked events. Pick times are based on the lag-times found at the maximum</span>
+<span class="sd">    correlation, providing that correlation is above the min_cc.</span>
+
+<span class="sd">    :type detections: list</span>
+<span class="sd">    :param detections:</span>
+<span class="sd">        List of :class:`eqcorrscan.core.match_filter.Detection` objects.</span>
+<span class="sd">    :type detect_data: obspy.core.stream.Stream</span>
+<span class="sd">    :param detect_data:</span>
+<span class="sd">        All the data needed to cut from - can be a gappy Stream.</span>
+<span class="sd">    :type template_names: list</span>
+<span class="sd">    :param template_names:</span>
+<span class="sd">        List of the template names, used to help identify families of events.</span>
+<span class="sd">        Must be in the same order as templates.</span>
+<span class="sd">    :type templates: list</span>
+<span class="sd">    :param templates:</span>
+<span class="sd">        List of the templates, templates must be a list of</span>
+<span class="sd">         :class:`obspy.core.stream.Stream` objects.</span>
+<span class="sd">    :type shift_len: float</span>
+<span class="sd">    :param shift_len:</span>
+<span class="sd">        Shift length allowed for the pick in seconds, will be plus/minus this</span>
+<span class="sd">        amount - default=0.2</span>
+<span class="sd">    :type min_cc: float</span>
+<span class="sd">    :param min_cc:</span>
+<span class="sd">        Minimum cross-correlation value to be considered a pick, default=0.4.</span>
+<span class="sd">    :type min_cc_from_mean_cc_factor: float</span>
+<span class="sd">    :param min_cc_from_mean_cc_factor:</span>
+<span class="sd">        If set to a value other than None, then the minimum cross-correlation</span>
+<span class="sd">        value for a trace is set individually for each detection based on:</span>
+<span class="sd">        min(detect_val / n_chans * min_cc_from_mean_cc_factor, min_cc).</span>
+<span class="sd">    :type horizontal_chans: list</span>
+<span class="sd">    :param horizontal_chans:</span>
+<span class="sd">        List of channel endings for horizontal-channels, on which S-picks will</span>
+<span class="sd">        be made.</span>
+<span class="sd">    :type vertical_chans: list</span>
+<span class="sd">    :param vertical_chans:</span>
+<span class="sd">        List of channel endings for vertical-channels, on which P-picks will</span>
+<span class="sd">        be made.</span>
+<span class="sd">    :type cores: int</span>
+<span class="sd">    :param cores:</span>
+<span class="sd">        Number of cores to use in parallel processing, defaults to one.</span>
+<span class="sd">    :type interpolate: bool</span>
+<span class="sd">    :param interpolate:</span>
+<span class="sd">        Interpolate the correlation function to achieve sub-sample precision.</span>
+<span class="sd">    :type plot: bool</span>
+<span class="sd">    :param plot:</span>
+<span class="sd">        To generate a plot for every detection or not, defaults to False</span>
+<span class="sd">    :param plotdir:</span>
+<span class="sd">        Path to plotting folder, plots will be output here.</span>
+<span class="sd">    :type export_cc: bool</span>
+<span class="sd">    :param export_cc:</span>
+<span class="sd">        To generate a binary file in NumPy for every detection or not,</span>
+<span class="sd">        defaults to False</span>
+<span class="sd">    :type cc_dir: str</span>
+<span class="sd">    :param cc_dir:</span>
+<span class="sd">        Path to saving folder, NumPy files will be output here.</span>
+
+<span class="sd">    :returns:</span>
+<span class="sd">        Catalog of events with picks.  No origin information is included.</span>
+<span class="sd">        These events can then be written out via</span>
+<span class="sd">        :func:`obspy.core.event.Catalog.write`, or to Nordic Sfiles using</span>
+<span class="sd">        :func:`eqcorrscan.utils.sfile_util.eventtosfile` and located</span>
+<span class="sd">        externally.</span>
+<span class="sd">    :rtype: obspy.core.event.Catalog</span>
+
+<span class="sd">    .. note::</span>
+<span class="sd">        Picks output in catalog are generated relative to the template</span>
+<span class="sd">        start-time.  For example, if you generated your template with a</span>
+<span class="sd">        pre_pick time of 0.2 seconds, you should expect picks generated by</span>
+<span class="sd">        lag_calc to occur 0.2 seconds before the true phase-pick.  This</span>
+<span class="sd">        is because we do not currently store template meta-data alongside the</span>
+<span class="sd">        templates.</span>
+
+<span class="sd">    .. warning::</span>
+<span class="sd">        Because of the above note, origin times will be consistently</span>
+<span class="sd">        shifted by the static pre_pick applied to the templates.</span>
+
+<span class="sd">    .. warning::</span>
+<span class="sd">        This routine requires only one template per channel (e.g. you should</span>
+<span class="sd">        not use templates with a P and S template on a single channel).  If</span>
+<span class="sd">        this does occur an error will be raised.</span>
+
+<span class="sd">    .. note::</span>
+<span class="sd">        S-picks will be made on horizontal channels, and P picks made on</span>
+<span class="sd">        vertical channels - the default is that horizontal channels end in</span>
+<span class="sd">        one of: &#39;E&#39;, &#39;N&#39;, &#39;1&#39; or &#39;2&#39;, and that vertical channels end in &#39;Z&#39;.</span>
+<span class="sd">        The options vertical_chans and horizontal_chans can be changed to suit</span>
+<span class="sd">        your dataset.</span>
+
+<span class="sd">    .. note::</span>
+<span class="sd">        Individual channel cross-correlations are stored as a</span>
+<span class="sd">        :class:`obspy.core.event.Comment` for each pick, and the summed</span>
+<span class="sd">        cross-correlation value resulting from these is stored as a</span>
+<span class="sd">        :class:`obspy.core.event.Comment` in the main</span>
+<span class="sd">        :class:`obspy.core.event.Event` object.</span>
+
+<span class="sd">    .. note::</span>
+<span class="sd">        The order of events is preserved (e.g. detections[n] == output[n]),</span>
+<span class="sd">        providing picks have been made for that event.  If no picks have</span>
+<span class="sd">        been made for an event, it will not be included in the output.</span>
+<span class="sd">        However, as each detection has an ID associated with it, these can</span>
+<span class="sd">        be mapped to the output resource_id for each Event in the output</span>
+<span class="sd">        Catalog. e.g.</span>
+
+<span class="sd">            detections[n].id == output[m].resource_id</span>
+
+<span class="sd">        if the output[m] is for the same event as detections[n].</span>
+
+<span class="sd">    .. note::</span>
+<span class="sd">        The correlation data that are saved to the binary files can be useful</span>
+<span class="sd">        to select an appropriate threshold for your data.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># First check that sample rates are equal for everything</span>
+    <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">detect_data</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span> <span class="o">!=</span> <span class="n">detect_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">LagCalcError</span><span class="p">(</span><span class="s1">&#39;Sampling rates are not equal&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">template</span> <span class="ow">in</span> <span class="n">templates</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">template</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span> <span class="o">!=</span> <span class="n">detect_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">LagCalcError</span><span class="p">(</span><span class="s1">&#39;Sampling rates are not equal&#39;</span><span class="p">)</span>
+    <span class="n">initial_cat</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>  <span class="c1"># Dictionary keyed by detection id</span>
+    <span class="k">for</span> <span class="n">template</span><span class="p">,</span> <span class="n">template_name</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">templates</span><span class="p">,</span> <span class="n">template_names</span><span class="p">):</span>
+        <span class="n">Logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Running lag-calc for template </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">template</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">template_detections</span> <span class="o">=</span> <span class="p">[</span><span class="n">detection</span> <span class="k">for</span> <span class="n">detection</span> <span class="ow">in</span> <span class="n">detections</span>
+                               <span class="k">if</span> <span class="n">detection</span><span class="o">.</span><span class="n">template_name</span> <span class="o">==</span> <span class="n">template_name</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">detection</span> <span class="ow">in</span> <span class="n">template_detections</span><span class="p">:</span>
+            <span class="n">detection</span><span class="o">.</span><span class="n">event</span> <span class="o">=</span> <span class="n">detection</span><span class="o">.</span><span class="n">event</span> <span class="ow">or</span> <span class="n">detection</span><span class="o">.</span><span class="n">_calculate_event</span><span class="p">(</span>
+                <span class="n">template_st</span><span class="o">=</span><span class="n">template</span><span class="p">)</span>
+        <span class="n">family</span> <span class="o">=</span> <span class="n">Family</span><span class="p">(</span>
+            <span class="n">detections</span><span class="o">=</span><span class="n">template_detections</span><span class="p">,</span>
+            <span class="n">template</span><span class="o">=</span><span class="n">Template</span><span class="p">(</span>
+                <span class="n">name</span><span class="o">=</span><span class="n">template_name</span><span class="p">,</span> <span class="n">st</span><span class="o">=</span><span class="n">template</span><span class="p">,</span>
+                <span class="n">samp_rate</span><span class="o">=</span><span class="n">template</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">))</span>
+        <span class="c1"># Make a sparse template</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">template_detections</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">template_dict</span> <span class="o">=</span> <span class="n">xcorr_pick_family</span><span class="p">(</span>
+                <span class="n">family</span><span class="o">=</span><span class="n">family</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="n">detect_data</span><span class="p">,</span> <span class="n">min_cc</span><span class="o">=</span><span class="n">min_cc</span><span class="p">,</span>
+                <span class="n">min_cc_from_mean_cc_factor</span><span class="o">=</span><span class="n">min_cc_from_mean_cc_factor</span><span class="p">,</span>
+                <span class="n">horizontal_chans</span><span class="o">=</span><span class="n">horizontal_chans</span><span class="p">,</span>
+                <span class="n">vertical_chans</span><span class="o">=</span><span class="n">vertical_chans</span><span class="p">,</span> <span class="n">interpolate</span><span class="o">=</span><span class="n">interpolate</span><span class="p">,</span>
+                <span class="n">cores</span><span class="o">=</span><span class="n">cores</span><span class="p">,</span> <span class="n">shift_len</span><span class="o">=</span><span class="n">shift_len</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="n">plot</span><span class="p">,</span> <span class="n">plotdir</span><span class="o">=</span><span class="n">plotdir</span><span class="p">,</span>
+                <span class="n">export_cc</span><span class="o">=</span><span class="n">export_cc</span><span class="p">,</span> <span class="n">cc_dir</span><span class="o">=</span><span class="n">cc_dir</span><span class="p">)</span>
+            <span class="n">initial_cat</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">template_dict</span><span class="p">)</span>
+    <span class="c1"># Order the catalogue to match the input</span>
+    <span class="n">output_cat</span> <span class="o">=</span> <span class="n">Catalog</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">det</span> <span class="ow">in</span> <span class="n">detections</span><span class="p">:</span>
+        <span class="n">event</span> <span class="o">=</span> <span class="n">initial_cat</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">det</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">event</span><span class="p">:</span>
+            <span class="n">output_cat</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">event</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">Logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;No picks made for detection: </span><span class="se">\n</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">det</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">output_cat</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">doctest</span>
+    <span class="n">doctest</span><span class="o">.</span><span class="n">testmod</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2015-2021: EQcorrscan developers.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.2.1.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
+
+    <title>5.2.10. plotting &#8212; EQcorrscan 0.4.3 documentation</title>
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="shortcut icon" href="../_static/EQcorrscan_logo.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="5.2.10.1. eqcorrscan.utils.plotting.chunk_data" href="autogen/eqcorrscan.utils.plotting.chunk_data.html" />
+    <link rel="prev" title="5.2.9.1.2. eqcorrscan.utils.picker.stalta_pick" href="autogen/eqcorrscan.utils.picker.stalta_pick.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../_static/js/jquery-1.12.4.min.js "></script>
+<script type="text/javascript" src="../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../_static/bootstrap-3.4.1/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html"><span><img src="../_static/EQcorrscan_logo.jpg"></span>
+          EQcorrscan</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.4</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">1. Introduction to the EQcorrscan package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">2. EQcorrscan installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../updates.html">3. What’s new</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">4. EQcorrscan tutorials</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">5. EQcorrscan API</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">5.2.10. plotting</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="autogen/eqcorrscan.utils.picker.stalta_pick.html" title="Previous Chapter: 5.2.9.1.2. eqcorrscan.utils.picker.stalta_pick"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; 5.2.9.1.2. eq...</span>
+    </a>
+  </li>
+  <li>
+    <a href="autogen/eqcorrscan.utils.plotting.chunk_data.html" title="Next Chapter: 5.2.10.1. eqcorrscan.utils.plotting.chunk_data"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">5.2.10.1. eqc... &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="../_sources/submodules/utils.plotting.rst.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <section id="module-eqcorrscan.utils.plotting">
+<span id="plotting"></span><h1><span class="section-number">5.2.10. </span>plotting<a class="headerlink" href="#module-eqcorrscan.utils.plotting" title="Permalink to this headline">¶</a></h1>
+<p>Utility code for most of the plots used as part of the EQcorrscan package.</p>
+<dl class="field-list simple">
+<dt class="field-odd">copyright</dt>
+<dd class="field-odd"><p>EQcorrscan developers.</p>
+</dd>
+<dt class="field-even">license</dt>
+<dd class="field-even"><p>GNU Lesser General Public License, Version 3
+(<a class="reference external" href="https://www.gnu.org/copyleft/lesser.html">https://www.gnu.org/copyleft/lesser.html</a>)</p>
+</dd>
+</dl>
+<p>All plotting functions accept the <cite>save</cite>, <cite>savefile</cite>, <cite>title</cite> and <cite>show</cite> keyword
+arguments.</p>
+<blockquote>
+<div><table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="autogen/eqcorrscan.utils.plotting.chunk_data.html#eqcorrscan.utils.plotting.chunk_data" title="eqcorrscan.utils.plotting.chunk_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">chunk_data</span></code></a></p></td>
+<td><p>Downsample data for plotting.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="autogen/eqcorrscan.utils.plotting.cumulative_detections.html#eqcorrscan.utils.plotting.cumulative_detections" title="eqcorrscan.utils.plotting.cumulative_detections"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cumulative_detections</span></code></a></p></td>
+<td><p>Plot cumulative detections or detection rate in time.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="autogen/eqcorrscan.utils.plotting.detection_multiplot.html#eqcorrscan.utils.plotting.detection_multiplot" title="eqcorrscan.utils.plotting.detection_multiplot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">detection_multiplot</span></code></a></p></td>
+<td><p>Plot a stream of data with a template on top of it at detection times.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="autogen/eqcorrscan.utils.plotting.freq_mag.html#eqcorrscan.utils.plotting.freq_mag" title="eqcorrscan.utils.plotting.freq_mag"><code class="xref py py-obj docutils literal notranslate"><span class="pre">freq_mag</span></code></a></p></td>
+<td><p>Plot a frequency-magnitude histogram and cumulative density plot.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="autogen/eqcorrscan.utils.plotting.interev_mag.html#eqcorrscan.utils.plotting.interev_mag" title="eqcorrscan.utils.plotting.interev_mag"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interev_mag</span></code></a></p></td>
+<td><p>Plot inter-event times against magnitude.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="autogen/eqcorrscan.utils.plotting.multi_event_singlechan.html#eqcorrscan.utils.plotting.multi_event_singlechan" title="eqcorrscan.utils.plotting.multi_event_singlechan"><code class="xref py py-obj docutils literal notranslate"><span class="pre">multi_event_singlechan</span></code></a></p></td>
+<td><p>Plot data from a single channel for multiple events.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="autogen/eqcorrscan.utils.plotting.obspy_3d_plot.html#eqcorrscan.utils.plotting.obspy_3d_plot" title="eqcorrscan.utils.plotting.obspy_3d_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">obspy_3d_plot</span></code></a></p></td>
+<td><p>Plot obspy Inventory and obspy Catalog classes in three dimensions.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="autogen/eqcorrscan.utils.plotting.peaks_plot.html#eqcorrscan.utils.plotting.peaks_plot" title="eqcorrscan.utils.plotting.peaks_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">peaks_plot</span></code></a></p></td>
+<td><p>Plot peaks to check that the peak finding routine is running correctly.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="autogen/eqcorrscan.utils.plotting.plot_repicked.html#eqcorrscan.utils.plotting.plot_repicked" title="eqcorrscan.utils.plotting.plot_repicked"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_repicked</span></code></a></p></td>
+<td><p>Plot a template over a detected stream, with picks corrected by lag-calc.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="autogen/eqcorrscan.utils.plotting.plot_synth_real.html#eqcorrscan.utils.plotting.plot_synth_real" title="eqcorrscan.utils.plotting.plot_synth_real"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_synth_real</span></code></a></p></td>
+<td><p>Plot multiple channels of data for real data and synthetic.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="autogen/eqcorrscan.utils.plotting.pretty_template_plot.html#eqcorrscan.utils.plotting.pretty_template_plot" title="eqcorrscan.utils.plotting.pretty_template_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pretty_template_plot</span></code></a></p></td>
+<td><p>Plot of a single template, possibly within background data.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="autogen/eqcorrscan.utils.plotting.spec_trace.html#eqcorrscan.utils.plotting.spec_trace" title="eqcorrscan.utils.plotting.spec_trace"><code class="xref py py-obj docutils literal notranslate"><span class="pre">spec_trace</span></code></a></p></td>
+<td><p>Plots seismic data with spectrogram behind.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="autogen/eqcorrscan.utils.plotting.subspace_detector_plot.html#eqcorrscan.utils.plotting.subspace_detector_plot" title="eqcorrscan.utils.plotting.subspace_detector_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">subspace_detector_plot</span></code></a></p></td>
+<td><p>Plotting for the subspace detector class.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="autogen/eqcorrscan.utils.plotting.svd_plot.html#eqcorrscan.utils.plotting.svd_plot" title="eqcorrscan.utils.plotting.svd_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">svd_plot</span></code></a></p></td>
+<td><p>Plot singular vectors from the <a class="reference internal" href="utils.clustering.html#module-eqcorrscan.utils.clustering" title="eqcorrscan.utils.clustering"><code class="xref py py-mod docutils literal notranslate"><span class="pre">eqcorrscan.utils.clustering</span></code></a> routines.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="autogen/eqcorrscan.utils.plotting.threeD_gridplot.html#eqcorrscan.utils.plotting.threeD_gridplot" title="eqcorrscan.utils.plotting.threeD_gridplot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">threeD_gridplot</span></code></a></p></td>
+<td><p>Plot in a series of grid points in 3D.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="autogen/eqcorrscan.utils.plotting.threeD_seismplot.html#eqcorrscan.utils.plotting.threeD_seismplot" title="eqcorrscan.utils.plotting.threeD_seismplot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">threeD_seismplot</span></code></a></p></td>
+<td><p>Plot seismicity and stations in a 3D, movable, zoomable space.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="autogen/eqcorrscan.utils.plotting.triple_plot.html#eqcorrscan.utils.plotting.triple_plot" title="eqcorrscan.utils.plotting.triple_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">triple_plot</span></code></a></p></td>
+<td><p>Plot a seismogram, correlogram and histogram.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="autogen/eqcorrscan.utils.plotting.xcorr_plot.html#eqcorrscan.utils.plotting.xcorr_plot" title="eqcorrscan.utils.plotting.xcorr_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">xcorr_plot</span></code></a></p></td>
+<td><p>Plot a template overlying an image aligned by correlation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="autogen/eqcorrscan.utils.plotting.noise_plot.html#eqcorrscan.utils.plotting.noise_plot" title="eqcorrscan.utils.plotting.noise_plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">noise_plot</span></code></a></p></td>
+<td><p>Plot signal and noise fourier transforms and the difference.</p></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</section>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2015-2021: EQcorrscan developers.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.2.1.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

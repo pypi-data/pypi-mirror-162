@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
+
+    <title>5.2.1.1.1. eqcorrscan.utils.archive_read.read_data &#8212; EQcorrscan 0.4.3 documentation</title>
+    <link rel="stylesheet" href="../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="shortcut icon" href="../../_static/EQcorrscan_logo.ico"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="5.2.1.2.1. eqcorrscan.utils.archive_read._check_available_data" href="eqcorrscan.utils.archive_read._check_available_data.html" />
+    <link rel="prev" title="5.2.1. archive_read" href="../utils.archive_read.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../_static/js/jquery-1.12.4.min.js "></script>
+<script type="text/javascript" src="../../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../../_static/bootstrap-3.4.1/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../index.html"><span><img src="../../_static/EQcorrscan_logo.jpg"></span>
+          EQcorrscan</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.4</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../intro.html">1. Introduction to the EQcorrscan package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">2. EQcorrscan installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../updates.html">3. What’s new</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">4. EQcorrscan tutorials</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../api.html">5. EQcorrscan API</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">5.2.1.1.1. eqcorrscan.utils.archive_read.read_data</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="../utils.archive_read.html" title="Previous Chapter: 5.2.1. archive_read"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; 5.2.1. archive_read</span>
+    </a>
+  </li>
+  <li>
+    <a href="eqcorrscan.utils.archive_read._check_available_data.html" title="Next Chapter: 5.2.1.2.1. eqcorrscan.utils.archive_read._check_available_data"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">5.2.1.2.1. eq... &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="../../_sources/submodules/autogen/eqcorrscan.utils.archive_read.read_data.rst.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <section id="eqcorrscan-utils-archive-read-read-data">
+<h1><span class="section-number">5.2.1.1.1. </span>eqcorrscan.utils.archive_read.read_data<a class="headerlink" href="#eqcorrscan-utils-archive-read-read-data" title="Permalink to this headline">¶</a></h1>
+<dl class="py function">
+<dt id="eqcorrscan.utils.archive_read.read_data">
+<code class="sig-prename descclassname">eqcorrscan.utils.archive_read.</code><code class="sig-name descname">read_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">archive</span></em>, <em class="sig-param"><span class="n">arc_type</span></em>, <em class="sig-param"><span class="n">day</span></em>, <em class="sig-param"><span class="n">stachans</span></em>, <em class="sig-param"><span class="n">length</span><span class="o">=</span><span class="default_value">86400</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/eqcorrscan/utils/archive_read.html#read_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eqcorrscan.utils.archive_read.read_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to read the appropriate data from an archive for a day.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>archive</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – The archive source - if arc_type is seishub, this should be a url,
+if the arc_type is FDSN then this can be either a url or a known obspy
+client.  If arc_type is day_vols, then this is the path to the top
+directory.</p></li>
+<li><p><strong>arc_type</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – The type of archive, can be: seishub, FDSN, day_volumes</p></li>
+<li><p><strong>day</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/datetime.html#datetime.date" title="(in Python v2.7)"><em>datetime.date</em></a>) – Date to retrieve data for</p></li>
+<li><p><strong>stachans</strong> (<em>list</em>) – List of tuples of Stations and channels to try and get,
+will not fail if stations are not available, but will warn.</p></li>
+<li><p><strong>length</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – Data length to extract in seconds, defaults to 1 day.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Stream of data</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.obspy.org/packages/autogen/obspy.core.stream.Stream.html#obspy.core.stream.Stream" title="(in ObsPy Documentation (1.2.0) v1.2)">obspy.core.stream.Stream</a></p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>A note on arc_types, if arc_type is day_vols, then this will         look for directories labelled in the IRIS DMC conventions of         Yyyyy/Rjjj.01/… where yyyy is the year and jjj is the julian day.         Data within these files directories should be stored as day-long,         single-channel files.  This is not implemented in the fasted way         possible to allow for a more general situation.  If you require more         speed you will need to re-write this.</p>
+</div>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">obspy</span> <span class="kn">import</span> <span class="n">UTCDateTime</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t1</span> <span class="o">=</span> <span class="n">UTCDateTime</span><span class="p">(</span><span class="mi">2012</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">26</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">stachans</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;JCNB&#39;</span><span class="p">,</span> <span class="s1">&#39;SP1&#39;</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">st</span> <span class="o">=</span> <span class="n">read_data</span><span class="p">(</span><span class="s1">&#39;NCEDC&#39;</span><span class="p">,</span> <span class="s1">&#39;FDSN&#39;</span><span class="p">,</span> <span class="n">t1</span><span class="p">,</span> <span class="n">stachans</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">st</span><span class="p">)</span>
+<span class="go">1 Trace(s) in Stream:</span>
+<span class="go">BP.JCNB.40.SP1 | 2012-03-26T00:00:00.000000Z - 2012-03-26T23:59:59.950000Z | 20.0 Hz, 1728000 samples</span>
+</pre></div>
+</div>
+<p class="rubric">Example, missing data</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">t1</span> <span class="o">=</span> <span class="n">UTCDateTime</span><span class="p">(</span><span class="mi">2012</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">26</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">stachans</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;JCNB&#39;</span><span class="p">,</span> <span class="s1">&#39;SP1&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;GCSZ&#39;</span><span class="p">,</span> <span class="s1">&#39;HHZ&#39;</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">st</span> <span class="o">=</span> <span class="n">read_data</span><span class="p">(</span><span class="s1">&#39;NCEDC&#39;</span><span class="p">,</span> <span class="s1">&#39;FDSN&#39;</span><span class="p">,</span> <span class="n">t1</span><span class="p">,</span> <span class="n">stachans</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">st</span><span class="p">)</span>
+<span class="go">1 Trace(s) in Stream:</span>
+<span class="go">BP.JCNB.40.SP1 | 2012-03-26T00:00:00.000000Z - 2012-03-26T23:59:59.950000Z | 20.0 Hz, 1728000 samples</span>
+</pre></div>
+</div>
+<p class="rubric">Example, local day-volumes</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get the path to the test data</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">eqcorrscan</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">TEST_PATH</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">eqcorrscan</span><span class="o">.</span><span class="vm">__file__</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;/tests/test_data&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">t1</span> <span class="o">=</span> <span class="n">UTCDateTime</span><span class="p">(</span><span class="mi">2012</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">26</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">stachans</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;WHYM&#39;</span><span class="p">,</span> <span class="s1">&#39;SHZ&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;EORO&#39;</span><span class="p">,</span> <span class="s1">&#39;SHZ&#39;</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">st</span> <span class="o">=</span> <span class="n">read_data</span><span class="p">(</span><span class="n">TEST_PATH</span> <span class="o">+</span> <span class="s1">&#39;/day_vols&#39;</span><span class="p">,</span> <span class="s1">&#39;day_vols&#39;</span><span class="p">,</span>
+<span class="gp">... </span>               <span class="n">t1</span><span class="p">,</span> <span class="n">stachans</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">st</span><span class="p">)</span>
+<span class="go">2 Trace(s) in Stream:</span>
+<span class="go">AF.WHYM..SHZ | 2012-03-26T00:00:00.000000Z - 2012-03-26T23:59:59.000000Z | 1.0 Hz, 86400 samples</span>
+<span class="go">AF.EORO..SHZ | 2012-03-26T00:00:00.000000Z - 2012-03-26T23:59:59.000000Z | 1.0 Hz, 86400 samples</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2015-2021: EQcorrscan developers.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.2.1.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

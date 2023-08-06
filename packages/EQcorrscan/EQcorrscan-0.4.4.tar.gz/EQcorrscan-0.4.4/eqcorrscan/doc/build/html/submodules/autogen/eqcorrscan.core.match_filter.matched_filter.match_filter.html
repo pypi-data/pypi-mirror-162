@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
+
+    <title>5.1.2.2.1.1.1. eqcorrscan.core.match_filter.matched_filter.match_filter &#8212; EQcorrscan 0.4.3 documentation</title>
+    <link rel="stylesheet" href="../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="shortcut icon" href="../../_static/EQcorrscan_logo.ico"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="5.1.2.2.2.1.1. eqcorrscan.core.match_filter.helpers.extract_from_stream" href="eqcorrscan.core.match_filter.helpers.extract_from_stream.html" />
+    <link rel="prev" title="5.1.2. match_filter" href="../core.match_filter.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../_static/js/jquery-1.12.4.min.js "></script>
+<script type="text/javascript" src="../../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../../_static/bootstrap-3.4.1/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../index.html"><span><img src="../../_static/EQcorrscan_logo.jpg"></span>
+          EQcorrscan</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.4</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../intro.html">1. Introduction to the EQcorrscan package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">2. EQcorrscan installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../updates.html">3. What’s new</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">4. EQcorrscan tutorials</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../api.html">5. EQcorrscan API</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">5.1.2.2.1.1.1. eqcorrscan.core.match_filter.matched_filter.match_filter</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="../core.match_filter.html" title="Previous Chapter: 5.1.2. match_filter"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; 5.1.2. match_filter</span>
+    </a>
+  </li>
+  <li>
+    <a href="eqcorrscan.core.match_filter.helpers.extract_from_stream.html" title="Next Chapter: 5.1.2.2.2.1.1. eqcorrscan.core.match_filter.helpers.extract_from_stream"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">5.1.2.2.2.1.1... &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="../../_sources/submodules/autogen/eqcorrscan.core.match_filter.matched_filter.match_filter.rst.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <section id="eqcorrscan-core-match-filter-matched-filter-match-filter">
+<h1><span class="section-number">5.1.2.2.1.1.1. </span>eqcorrscan.core.match_filter.matched_filter.match_filter<a class="headerlink" href="#eqcorrscan-core-match-filter-matched-filter-match-filter" title="Permalink to this headline">¶</a></h1>
+<dl class="py function">
+<dt id="eqcorrscan.core.match_filter.matched_filter.match_filter">
+<code class="sig-prename descclassname">eqcorrscan.core.match_filter.matched_filter.</code><code class="sig-name descname">match_filter</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">template_names</span></em>, <em class="sig-param"><span class="n">template_list</span></em>, <em class="sig-param"><span class="n">st</span></em>, <em class="sig-param"><span class="n">threshold</span></em>, <em class="sig-param"><span class="n">threshold_type</span></em>, <em class="sig-param"><span class="n">trig_int</span></em>, <em class="sig-param"><span class="n">plot</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">plotdir</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">xcorr_func</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">concurrency</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">cores</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">plot_format</span><span class="o">=</span><span class="default_value">'png'</span></em>, <em class="sig-param"><span class="n">output_cat</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">output_event</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">extract_detections</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">arg_check</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">full_peaks</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">peak_cores</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">spike_test</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">copy_data</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">export_cccsums</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/eqcorrscan/core/match_filter/matched_filter.html#match_filter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eqcorrscan.core.match_filter.matched_filter.match_filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Main matched-filter detection function.</p>
+<p>Over-arching code to run the correlations of given templates with a
+day of seismic data and output the detections based on a given threshold.
+For a functional example see the tutorials.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>template_names</strong> (<em>list</em>) – List of template names in the same order as template_list</p></li>
+<li><p><strong>template_list</strong> (<em>list</em>) – A list of templates of which each template is a
+<a class="reference external" href="https://docs.obspy.org/packages/autogen/obspy.core.stream.Stream.html#obspy.core.stream.Stream" title="(in ObsPy Documentation (1.2.0) v1.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">obspy.core.stream.Stream</span></code></a> of obspy traces containing seismic
+data and header information.</p></li>
+<li><p><strong>st</strong> (<a class="reference external" href="https://docs.obspy.org/packages/autogen/obspy.core.stream.Stream.html#obspy.core.stream.Stream" title="(in ObsPy Documentation (1.2.0) v1.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">obspy.core.stream.Stream</span></code></a>) – A Stream object containing all the data available and
+required for the correlations with templates given.  For efficiency
+this should contain no excess traces which are not in one or more of
+the templates.  This will now remove excess traces internally, but
+will copy the stream and work on the copy, leaving your input stream
+untouched.</p></li>
+<li><p><strong>threshold</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – A threshold value set based on the threshold_type</p></li>
+<li><p><strong>threshold_type</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – The type of threshold to be used, can be MAD, absolute or av_chan_corr.
+See Note on thresholding below.</p></li>
+<li><p><strong>trig_int</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – Minimum gap between detections from one template in seconds.
+If multiple detections occur within trig_int of one-another, the one
+with the highest cross-correlation sum will be selected.</p></li>
+<li><p><strong>plot</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – Turn plotting on or off</p></li>
+<li><p><strong>plotdir</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – Path to plotting folder, plots will be output here, defaults to None,
+and plots are shown on screen.</p></li>
+<li><p><strong>xcorr_func</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a><em> or </em><em>callable</em>) – A str of a registered xcorr function or a callable for implementing
+a custom xcorr function. For more information see:
+<a class="reference internal" href="eqcorrscan.utils.correlate.register_array_xcorr.html#eqcorrscan.utils.correlate.register_array_xcorr" title="eqcorrscan.utils.correlate.register_array_xcorr"><code class="xref py py-func docutils literal notranslate"><span class="pre">eqcorrscan.utils.correlate.register_array_xcorr()</span></code></a></p></li>
+<li><p><strong>concurrency</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – The type of concurrency to apply to the xcorr function. Options are
+‘multithread’, ‘multiprocess’, ‘concurrent’. For more details see
+<a class="reference internal" href="eqcorrscan.utils.correlate.get_stream_xcorr.html#eqcorrscan.utils.correlate.get_stream_xcorr" title="eqcorrscan.utils.correlate.get_stream_xcorr"><code class="xref py py-func docutils literal notranslate"><span class="pre">eqcorrscan.utils.correlate.get_stream_xcorr()</span></code></a></p></li>
+<li><p><strong>cores</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) – Number of cores to use</p></li>
+<li><p><strong>plot_format</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – Specify format of output plots if saved</p></li>
+<li><p><strong>output_cat</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – Specifies if matched_filter will output an obspy.Catalog class
+containing events for each detection. Default is False, in which case
+matched_filter will output a list of detection classes, as normal.</p></li>
+<li><p><strong>output_event</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – Whether to include events in the Detection objects, defaults to True,
+but for large cases you may want to turn this off as Event objects
+can be quite memory intensive.</p></li>
+<li><p><strong>extract_detections</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – Specifies whether or not to return a list of streams, one stream per
+detection.</p></li>
+<li><p><strong>arg_check</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – Check arguments, defaults to True, but if running in bulk, and you are
+certain of your arguments, then set to False.</p></li>
+<li><p><strong>full_peaks</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – See
+:func: <cite>eqcorrscan.utils.findpeaks.find_peaks_compiled</cite></p></li>
+<li><p><strong>peak_cores</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) – Number of processes to use for parallel peak-finding (if different to
+<cite>cores</cite>).</p></li>
+<li><p><strong>spike_test</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – If set True, raise error when there is a spike in data.
+defaults to True.</p></li>
+<li><p><strong>copy_data</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – Whether to copy data to keep it safe, otherwise will edit your
+templates and stream in place.</p></li>
+<li><p><strong>export_cccsums</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – Whether to save the cross-correlation statistic.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>When using the “fftw” correlation backend the length of the fft
+can be set. See <a class="reference internal" href="../utils.correlate.html#module-eqcorrscan.utils.correlate" title="eqcorrscan.utils.correlate"><code class="xref py py-mod docutils literal notranslate"><span class="pre">eqcorrscan.utils.correlate</span></code></a> for more info.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>Returns:</strong></p>
+<p>If neither <cite>output_cat</cite> or <cite>extract_detections</cite> are set to <cite>True</cite>,
+then only the list of <code class="xref py py-class docutils literal notranslate"><span class="pre">eqcorrscan.core.match_filter.Detection</span></code>’s
+will be output:</p>
+<dl class="field-list simple">
+<dt class="field-odd">return</dt>
+<dd class="field-odd"><p><code class="xref py py-class docutils literal notranslate"><span class="pre">eqcorrscan.core.match_filter.Detection</span></code> detections for each
+detection made.</p>
+</dd>
+<dt class="field-even">rtype</dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+<p>If <cite>output_cat</cite> is set to <cite>True</cite>, then the
+<a class="reference external" href="https://docs.obspy.org/packages/autogen/obspy.core.event.Catalog.html#obspy.core.event.Catalog" title="(in ObsPy Documentation (1.2.0) v1.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">obspy.core.event.Catalog</span></code></a> will also be output:</p>
+<dl class="field-list simple">
+<dt class="field-odd">return</dt>
+<dd class="field-odd"><p>Catalog containing events for each detection, see above.</p>
+</dd>
+<dt class="field-even">rtype</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.obspy.org/packages/autogen/obspy.core.event.Catalog.html#obspy.core.event.Catalog" title="(in ObsPy Documentation (1.2.0) v1.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">obspy.core.event.Catalog</span></code></a></p>
+</dd>
+</dl>
+<p>If <cite>extract_detections</cite> is set to <cite>True</cite> then the list of
+<a class="reference external" href="https://docs.obspy.org/packages/autogen/obspy.core.stream.Stream.html#obspy.core.stream.Stream" title="(in ObsPy Documentation (1.2.0) v1.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">obspy.core.stream.Stream</span></code></a>’s will also be output.</p>
+<dl class="field-list simple">
+<dt class="field-odd">return</dt>
+<dd class="field-odd"><p>list of <a class="reference external" href="https://docs.obspy.org/packages/autogen/obspy.core.stream.Stream.html#obspy.core.stream.Stream" title="(in ObsPy Documentation (1.2.0) v1.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">obspy.core.stream.Stream</span></code></a>’s for each detection, see
+above.</p>
+</dd>
+<dt class="field-even">rtype</dt>
+<dd class="field-even"><p>list</p>
+</dd>
+</dl>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If your data contain gaps these must be padded with zeros before
+using this function. The <cite>eqcorrscan.utils.pre_processing</cite> functions
+will provide gap-filled data in the appropriate format.  Note that if
+you pad your data with zeros before filtering or resampling the gaps
+will not be all zeros after filtering. This will result in the
+calculation of spurious correlations in the gaps.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Detections are not corrected for <cite>pre-pick</cite>, the
+detection.detect_time corresponds to the beginning of the earliest
+template channel at detection.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>Data overlap:</strong></p>
+<p>Internally this routine shifts and trims the data according to the
+offsets in the template (e.g. if trace 2 starts 2 seconds after trace 1
+in the template then the continuous data will be shifted by 2 seconds
+to align peak correlations prior to summing).  Because of this,
+detections at the start and end of continuous data streams
+<strong>may be missed</strong>.  The maximum time-period that might be missing
+detections is the maximum offset in the template.</p>
+<p>To work around this, if you are conducting matched-filter detections
+through long-duration continuous data, we suggest using some overlap
+(a few seconds, on the order of the maximum offset in the templates)
+in the continous data.  You will then need to post-process the
+detections (which should be done anyway to remove duplicates).</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>Thresholding:</strong></p>
+<p><strong>MAD</strong> threshold is calculated as the:</p>
+<div class="math notranslate nohighlight">
+\[threshold {\times} (median(abs(cccsum)))\]</div>
+<p>where <span class="math notranslate nohighlight">\(cccsum\)</span> is the cross-correlation sum for a given template.</p>
+<p><strong>absolute</strong> threshold is a true absolute threshold based on the
+cccsum value.</p>
+<p><strong>av_chan_corr</strong> is based on the mean values of single-channel
+cross-correlations assuming all data are present as required for the
+template, e.g:</p>
+<div class="math notranslate nohighlight">
+\[av\_chan\_corr\_thresh=threshold \times (cccsum\ /\ len(template))\]</div>
+<p>where <span class="math notranslate nohighlight">\(template\)</span> is a single template from the input and the
+length is the number of channels within this template.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The output_cat flag will create an <a class="reference external" href="https://docs.obspy.org/packages/autogen/obspy.core.event.Catalog.html#obspy.core.event.Catalog" title="(in ObsPy Documentation (1.2.0) v1.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">obspy.core.event.Catalog</span></code></a>
+containing one event for each
+<code class="xref py py-class docutils literal notranslate"><span class="pre">eqcorrscan.core.match_filter.Detection</span></code>’s generated by
+match_filter. Each event will contain a number of comments dealing
+with correlation values and channels used for the detection. Each
+channel used for the detection will have a corresponding
+<code class="xref py py-class docutils literal notranslate"><span class="pre">obspy.core.event.Pick</span></code> which will contain time and
+waveform information. <strong>HOWEVER</strong>, the user should note that
+the pick times do not account for the prepick times inherent in
+each template. For example, if a template trace starts 0.1 seconds
+before the actual arrival of that phase, then the pick time generated
+by match_filter for that phase will be 0.1 seconds early.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>xcorr_func can be used as follows:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">obspy</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">eqcorrscan.core.match_filter.matched_filter</span> <span class="kn">import</span> <span class="p">(</span>
+<span class="gp">... </span>   <span class="n">match_filter</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">eqcorrscan.utils.correlate</span> <span class="kn">import</span> <span class="n">time_multi_normxcorr</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># define a custom xcorr function</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">custom_normxcorr</span><span class="p">(</span><span class="n">templates</span><span class="p">,</span> <span class="n">stream</span><span class="p">,</span> <span class="n">pads</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="c1"># Just to keep example short call other xcorr function</span>
+<span class="gp">... </span>    <span class="c1"># in practice you would define your own function here</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;calling custom xcorr function&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">time_multi_normxcorr</span><span class="p">(</span><span class="n">templates</span><span class="p">,</span> <span class="n">stream</span><span class="p">,</span> <span class="n">pads</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># generate some toy templates and stream</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">random</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">RandomState</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">template</span> <span class="o">=</span> <span class="n">obspy</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">stream</span> <span class="o">=</span> <span class="n">obspy</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">num</span><span class="p">,</span> <span class="n">tr</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">stream</span><span class="p">):</span>  <span class="c1"># iter st and embed templates</span>
+<span class="gp">... </span>    <span class="n">data</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">data</span>
+<span class="gp">... </span>    <span class="n">tr</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">6000</span><span class="p">)</span> <span class="o">*</span> <span class="mi">5</span>
+<span class="gp">... </span>    <span class="n">tr</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">100</span><span class="p">:</span> <span class="mi">100</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)]</span> <span class="o">=</span> <span class="n">data</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># call match_filter ane ensure the custom function is used</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">detections</span> <span class="o">=</span> <span class="n">match_filter</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">template_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;1&#39;</span><span class="p">],</span> <span class="n">template_list</span><span class="o">=</span><span class="p">[</span><span class="n">template</span><span class="p">],</span> <span class="n">st</span><span class="o">=</span><span class="n">stream</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">threshold</span><span class="o">=.</span><span class="mi">5</span><span class="p">,</span> <span class="n">threshold_type</span><span class="o">=</span><span class="s1">&#39;absolute&#39;</span><span class="p">,</span> <span class="n">trig_int</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">plotvar</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">xcorr_func</span><span class="o">=</span><span class="n">custom_normxcorr</span><span class="p">)</span>  
+<span class="go">calling custom xcorr function...</span>
+</pre></div>
+</div>
+</div>
+</dd></dl>
+
+</section>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2015-2021: EQcorrscan developers.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.2.1.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>eqcorrscan.utils.archive_read &#8212; EQcorrscan 0.4.3 documentation</title>
+    <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="shortcut icon" href="../../../_static/EQcorrscan_logo.ico"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../../_static/js/jquery-1.12.4.min.js "></script>
+<script type="text/javascript" src="../../../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../../../_static/bootstrap-3.4.1/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../../../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../index.html"><span><img src="../../../_static/EQcorrscan_logo.jpg"></span>
+          EQcorrscan</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.4</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../intro.html">1. Introduction to the EQcorrscan package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">2. EQcorrscan installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../updates.html">3. What’s new</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorial.html">4. EQcorrscan tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">5. EQcorrscan API</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"></ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+              <li class="hidden-sm"></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <h1>Source code for eqcorrscan.utils.archive_read</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Helper functions for reading data from archives for the EQcorrscan package.</span>
+
+<span class="sd">.. note:: These functions are tools to aid simplification of general scripts, \</span>
+<span class="sd">    they do not cover all use cases, however if you have a use case you want \</span>
+<span class="sd">    to see here, then let the authors know, or implement it yourself and \</span>
+<span class="sd">    contribute it back to the project.</span>
+
+<span class="sd">:copyright:</span>
+<span class="sd">    EQcorrscan developers.</span>
+
+<span class="sd">:license:</span>
+<span class="sd">    GNU Lesser General Public License, Version 3</span>
+<span class="sd">    (https://www.gnu.org/copyleft/lesser.html)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">import</span> <span class="nn">fnmatch</span>
+
+<span class="kn">from</span> <span class="nn">obspy</span> <span class="kn">import</span> <span class="n">read</span><span class="p">,</span> <span class="n">UTCDateTime</span><span class="p">,</span> <span class="n">Stream</span>
+<span class="kn">from</span> <span class="nn">obspy.clients.fdsn.header</span> <span class="kn">import</span> <span class="n">FDSNException</span>
+<span class="kn">from</span> <span class="nn">obspy.clients.seishub</span> <span class="kn">import</span> <span class="n">Client</span> <span class="k">as</span> <span class="n">SeishubClient</span>
+<span class="kn">from</span> <span class="nn">obspy.clients.fdsn</span> <span class="kn">import</span> <span class="n">Client</span> <span class="k">as</span> <span class="n">FDSNClient</span>
+<span class="kn">from</span> <span class="nn">obspy.clients.filesystem.sds</span> <span class="kn">import</span> <span class="n">Client</span> <span class="k">as</span> <span class="n">SDSClient</span>
+
+
+<span class="n">Logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="read_data"><a class="viewcode-back" href="../../../submodules/autogen/eqcorrscan.utils.archive_read.read_data.html#eqcorrscan.utils.archive_read.read_data">[docs]</a><span class="k">def</span> <span class="nf">read_data</span><span class="p">(</span><span class="n">archive</span><span class="p">,</span> <span class="n">arc_type</span><span class="p">,</span> <span class="n">day</span><span class="p">,</span> <span class="n">stachans</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mi">86400</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function to read the appropriate data from an archive for a day.</span>
+
+<span class="sd">    :type archive: str</span>
+<span class="sd">    :param archive:</span>
+<span class="sd">        The archive source - if arc_type is seishub, this should be a url,</span>
+<span class="sd">        if the arc_type is FDSN then this can be either a url or a known obspy</span>
+<span class="sd">        client.  If arc_type is day_vols, then this is the path to the top</span>
+<span class="sd">        directory.</span>
+<span class="sd">    :type arc_type: str</span>
+<span class="sd">    :param arc_type: The type of archive, can be: seishub, FDSN, day_volumes</span>
+<span class="sd">    :type day: datetime.date</span>
+<span class="sd">    :param day: Date to retrieve data for</span>
+<span class="sd">    :type stachans: list</span>
+<span class="sd">    :param stachans: List of tuples of Stations and channels to try and get,</span>
+<span class="sd">        will not fail if stations are not available, but will warn.</span>
+<span class="sd">    :type length: float</span>
+<span class="sd">    :param length: Data length to extract in seconds, defaults to 1 day.</span>
+
+<span class="sd">    :returns: Stream of data</span>
+<span class="sd">    :rtype: obspy.core.stream.Stream</span>
+
+<span class="sd">    .. note:: A note on arc_types, if arc_type is day_vols, then this will \</span>
+<span class="sd">        look for directories labelled in the IRIS DMC conventions of \</span>
+<span class="sd">        Yyyyy/Rjjj.01/... where yyyy is the year and jjj is the julian day. \</span>
+<span class="sd">        Data within these files directories should be stored as day-long, \</span>
+<span class="sd">        single-channel files.  This is not implemented in the fasted way \</span>
+<span class="sd">        possible to allow for a more general situation.  If you require more \</span>
+<span class="sd">        speed you will need to re-write this.</span>
+
+<span class="sd">    .. rubric:: Example</span>
+
+<span class="sd">    &gt;&gt;&gt; from obspy import UTCDateTime</span>
+<span class="sd">    &gt;&gt;&gt; t1 = UTCDateTime(2012, 3, 26)</span>
+<span class="sd">    &gt;&gt;&gt; stachans = [(&#39;JCNB&#39;, &#39;SP1&#39;)]</span>
+<span class="sd">    &gt;&gt;&gt; st = read_data(&#39;NCEDC&#39;, &#39;FDSN&#39;, t1, stachans)</span>
+<span class="sd">    &gt;&gt;&gt; print(st)</span>
+<span class="sd">    1 Trace(s) in Stream:</span>
+<span class="sd">    BP.JCNB.40.SP1 | 2012-03-26T00:00:00.000000Z - 2012-03-26T23:59:59.\</span>
+<span class="sd">950000Z | 20.0 Hz, 1728000 samples</span>
+
+<span class="sd">    .. rubric:: Example, missing data</span>
+
+<span class="sd">    &gt;&gt;&gt; t1 = UTCDateTime(2012, 3, 26)</span>
+<span class="sd">    &gt;&gt;&gt; stachans = [(&#39;JCNB&#39;, &#39;SP1&#39;), (&#39;GCSZ&#39;, &#39;HHZ&#39;)]</span>
+<span class="sd">    &gt;&gt;&gt; st = read_data(&#39;NCEDC&#39;, &#39;FDSN&#39;, t1, stachans)</span>
+<span class="sd">    &gt;&gt;&gt; print(st)</span>
+<span class="sd">    1 Trace(s) in Stream:</span>
+<span class="sd">    BP.JCNB.40.SP1 | 2012-03-26T00:00:00.000000Z - 2012-03-26T23:59:59.\</span>
+<span class="sd">950000Z | 20.0 Hz, 1728000 samples</span>
+
+
+<span class="sd">    .. rubric:: Example, local day-volumes</span>
+
+<span class="sd">    &gt;&gt;&gt; # Get the path to the test data</span>
+<span class="sd">    &gt;&gt;&gt; import eqcorrscan</span>
+<span class="sd">    &gt;&gt;&gt; TEST_PATH = os.path.dirname(eqcorrscan.__file__) + &#39;/tests/test_data&#39;</span>
+<span class="sd">    &gt;&gt;&gt; t1 = UTCDateTime(2012, 3, 26)</span>
+<span class="sd">    &gt;&gt;&gt; stachans = [(&#39;WHYM&#39;, &#39;SHZ&#39;), (&#39;EORO&#39;, &#39;SHZ&#39;)]</span>
+<span class="sd">    &gt;&gt;&gt; st = read_data(TEST_PATH + &#39;/day_vols&#39;, &#39;day_vols&#39;,</span>
+<span class="sd">    ...                t1, stachans)</span>
+<span class="sd">    &gt;&gt;&gt; print(st)</span>
+<span class="sd">    2 Trace(s) in Stream:</span>
+<span class="sd">    AF.WHYM..SHZ | 2012-03-26T00:00:00.000000Z - 2012-03-26T23:59:59.000000Z \</span>
+<span class="sd">| 1.0 Hz, 86400 samples</span>
+<span class="sd">    AF.EORO..SHZ | 2012-03-26T00:00:00.000000Z - 2012-03-26T23:59:59.000000Z \</span>
+<span class="sd">| 1.0 Hz, 86400 samples</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">st</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">available_stations</span> <span class="o">=</span> <span class="n">_check_available_data</span><span class="p">(</span><span class="n">archive</span><span class="p">,</span> <span class="n">arc_type</span><span class="p">,</span> <span class="n">day</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">station</span> <span class="ow">in</span> <span class="n">stachans</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">station</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="c1"># Cope with two char channel naming in seisan</span>
+            <span class="n">station_map</span> <span class="o">=</span> <span class="p">(</span><span class="n">station</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">station</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;*&#39;</span> <span class="o">+</span> <span class="n">station</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">available_stations_map</span> <span class="o">=</span> <span class="p">[(</span><span class="n">sta</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">sta</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;*&#39;</span> <span class="o">+</span> <span class="n">sta</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+                                      <span class="k">for</span> <span class="n">sta</span> <span class="ow">in</span> <span class="n">available_stations</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">station_map</span> <span class="o">=</span> <span class="n">station</span>
+            <span class="n">available_stations_map</span> <span class="o">=</span> <span class="n">available_stations</span>
+        <span class="c1"># Allow matching of station-channel-tuples with wildcards</span>
+        <span class="n">stachan_in_station_map</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">av_station</span> <span class="ow">in</span> <span class="n">available_stations_map</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">fnmatch</span><span class="o">.</span><span class="n">fnmatch</span><span class="p">(</span><span class="n">av_station</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">station</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>\
+                    <span class="ow">and</span> <span class="n">fnmatch</span><span class="o">.</span><span class="n">fnmatch</span><span class="p">(</span><span class="n">av_station</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">station</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+                <span class="n">stachan_in_station_map</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">break</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">stachan_in_station_map</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">station</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">station_map</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;is not available for&#39;</span><span class="p">,</span>
+                            <span class="n">day</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%Y/%m/</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)])</span>
+            <span class="n">Logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">arc_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;seishub&#39;</span><span class="p">:</span>
+            <span class="n">client</span> <span class="o">=</span> <span class="n">SeishubClient</span><span class="p">(</span><span class="n">archive</span><span class="p">)</span>
+            <span class="n">st</span> <span class="o">+=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_waveforms</span><span class="p">(</span>
+                    <span class="n">network</span><span class="o">=</span><span class="s1">&#39;*&#39;</span><span class="p">,</span> <span class="n">station</span><span class="o">=</span><span class="n">station_map</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">location</span><span class="o">=</span><span class="s1">&#39;*&#39;</span><span class="p">,</span>
+                    <span class="n">channel</span><span class="o">=</span><span class="n">station_map</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">starttime</span><span class="o">=</span><span class="n">UTCDateTime</span><span class="p">(</span><span class="n">day</span><span class="p">),</span>
+                    <span class="n">endtime</span><span class="o">=</span><span class="n">UTCDateTime</span><span class="p">(</span><span class="n">day</span><span class="p">)</span> <span class="o">+</span> <span class="n">length</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">arc_type</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;FDSN&quot;</span><span class="p">:</span>
+            <span class="n">client</span> <span class="o">=</span> <span class="n">FDSNClient</span><span class="p">(</span><span class="n">archive</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">st</span> <span class="o">+=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_waveforms</span><span class="p">(</span>
+                    <span class="n">network</span><span class="o">=</span><span class="s1">&#39;*&#39;</span><span class="p">,</span> <span class="n">station</span><span class="o">=</span><span class="n">station_map</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">location</span><span class="o">=</span><span class="s1">&#39;*&#39;</span><span class="p">,</span>
+                    <span class="n">channel</span><span class="o">=</span><span class="n">station_map</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">starttime</span><span class="o">=</span><span class="n">UTCDateTime</span><span class="p">(</span><span class="n">day</span><span class="p">),</span>
+                    <span class="n">endtime</span><span class="o">=</span><span class="n">UTCDateTime</span><span class="p">(</span><span class="n">day</span><span class="p">)</span> <span class="o">+</span> <span class="n">length</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">FDSNException</span><span class="p">:</span>
+                <span class="n">Logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;No data on server despite station being &#39;</span> <span class="o">+</span>
+                               <span class="s1">&#39;available...&#39;</span><span class="p">)</span>
+                <span class="k">continue</span>
+        <span class="k">elif</span> <span class="n">arc_type</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;SDS&quot;</span><span class="p">:</span>
+            <span class="n">client</span> <span class="o">=</span> <span class="n">SDSClient</span><span class="p">(</span><span class="n">archive</span><span class="p">)</span>
+            <span class="n">st</span> <span class="o">+=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_waveforms</span><span class="p">(</span>
+                    <span class="n">network</span><span class="o">=</span><span class="s1">&#39;*&#39;</span><span class="p">,</span> <span class="n">station</span><span class="o">=</span><span class="n">station_map</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">location</span><span class="o">=</span><span class="s1">&#39;*&#39;</span><span class="p">,</span>
+                    <span class="n">channel</span><span class="o">=</span><span class="n">station_map</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">starttime</span><span class="o">=</span><span class="n">UTCDateTime</span><span class="p">(</span><span class="n">day</span><span class="p">),</span>
+                    <span class="n">endtime</span><span class="o">=</span><span class="n">UTCDateTime</span><span class="p">(</span><span class="n">day</span><span class="p">)</span> <span class="o">+</span> <span class="n">length</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">arc_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;day_vols&#39;</span><span class="p">:</span>
+            <span class="n">wavfiles</span> <span class="o">=</span> <span class="n">_get_station_file</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="n">archive</span><span class="p">,</span> <span class="n">day</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;Y%Y&#39;</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="s1">&#39;R%j.01&#39;</span><span class="p">)),</span>
+                <span class="n">station_map</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">station_map</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">wavfile</span> <span class="ow">in</span> <span class="n">wavfiles</span><span class="p">:</span>
+                <span class="n">st</span> <span class="o">+=</span> <span class="n">read</span><span class="p">(</span><span class="n">wavfile</span><span class="p">,</span> <span class="n">starttime</span><span class="o">=</span><span class="n">day</span><span class="p">,</span> <span class="n">endtime</span><span class="o">=</span><span class="n">day</span> <span class="o">+</span> <span class="n">length</span><span class="p">)</span>
+    <span class="n">st</span> <span class="o">=</span> <span class="n">Stream</span><span class="p">(</span><span class="n">st</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">st</span></div>
+
+
+<div class="viewcode-block" id="_get_station_file"><a class="viewcode-back" href="../../../submodules/autogen/eqcorrscan.utils.archive_read._get_station_file.html#eqcorrscan.utils.archive_read._get_station_file">[docs]</a><span class="k">def</span> <span class="nf">_get_station_file</span><span class="p">(</span><span class="n">path_name</span><span class="p">,</span> <span class="n">station</span><span class="p">,</span> <span class="n">channel</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Helper function to find the correct file.</span>
+
+<span class="sd">    :type path_name: str</span>
+<span class="sd">    :param path_name: Path to files to check.</span>
+<span class="sd">    :type station: str</span>
+<span class="sd">    :type channel: str</span>
+
+<span class="sd">    :returns: list of filenames, str</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">wavfiles</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">path_name</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">sep</span> <span class="o">+</span> <span class="s1">&#39;*&#39;</span><span class="p">)</span>
+
+    <span class="n">out_files</span> <span class="o">=</span> <span class="p">[</span><span class="n">_check_data</span><span class="p">(</span><span class="n">wavfile</span><span class="p">,</span> <span class="n">station</span><span class="p">,</span> <span class="n">channel</span><span class="p">)</span>
+                 <span class="k">for</span> <span class="n">wavfile</span> <span class="ow">in</span> <span class="n">wavfiles</span><span class="p">]</span>
+    <span class="n">out_files</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">out_files</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">out_files</span></div>
+
+
+<span class="k">def</span> <span class="nf">_check_data</span><span class="p">(</span><span class="n">wavfile</span><span class="p">,</span> <span class="n">station</span><span class="p">,</span> <span class="n">channel</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Inner loop for parallel checks.</span>
+
+<span class="sd">    :type wavfile: str</span>
+<span class="sd">    :param wavfile: Wavefile path name to look in.</span>
+<span class="sd">    :type station: str</span>
+<span class="sd">    :param station: Channel name to check for</span>
+<span class="sd">    :type channel: str</span>
+<span class="sd">    :param channel: Channel name to check for</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">Logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Checking &#39;</span> <span class="o">+</span> <span class="n">wavfile</span><span class="p">)</span>
+    <span class="n">st</span> <span class="o">=</span> <span class="n">read</span><span class="p">(</span><span class="n">wavfile</span><span class="p">,</span> <span class="n">headonly</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">st</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">station</span> <span class="o">==</span> <span class="n">station</span> <span class="ow">and</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">channel</span> <span class="o">==</span> <span class="n">channel</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">wavfile</span>
+
+
+<div class="viewcode-block" id="_check_available_data"><a class="viewcode-back" href="../../../submodules/autogen/eqcorrscan.utils.archive_read._check_available_data.html#eqcorrscan.utils.archive_read._check_available_data">[docs]</a><span class="k">def</span> <span class="nf">_check_available_data</span><span class="p">(</span><span class="n">archive</span><span class="p">,</span> <span class="n">arc_type</span><span class="p">,</span> <span class="n">day</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function to check what stations are available in the archive for a given \</span>
+<span class="sd">    day.</span>
+
+<span class="sd">    :type archive: str</span>
+<span class="sd">    :param archive: The archive source</span>
+<span class="sd">    :type arc_type: str</span>
+<span class="sd">    :param arc_type: The type of archive, can be:</span>
+<span class="sd">    :type day: datetime.date</span>
+<span class="sd">    :param day: Date to retrieve data for</span>
+
+<span class="sd">    :returns: list of tuples of (station, channel) as available.</span>
+
+<span class="sd">    .. note:: Currently the seishub options are untested.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">available_stations</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">arc_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;day_vols&#39;</span><span class="p">:</span>
+        <span class="n">wavefiles</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">archive</span><span class="p">,</span> <span class="n">day</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;Y%Y&#39;</span><span class="p">),</span>
+                                           <span class="n">day</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;R%j.01&#39;</span><span class="p">),</span> <span class="s1">&#39;*&#39;</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">wavefile</span> <span class="ow">in</span> <span class="n">wavefiles</span><span class="p">:</span>
+            <span class="n">header</span> <span class="o">=</span> <span class="n">read</span><span class="p">(</span><span class="n">wavefile</span><span class="p">,</span> <span class="n">headonly</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">available_stations</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">header</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">station</span><span class="p">,</span>
+                                       <span class="n">header</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">channel</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="n">arc_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;seishub&#39;</span><span class="p">:</span>
+        <span class="n">client</span> <span class="o">=</span> <span class="n">SeishubClient</span><span class="p">(</span><span class="n">archive</span><span class="p">)</span>
+        <span class="n">st</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_previews</span><span class="p">(</span><span class="n">starttime</span><span class="o">=</span><span class="n">UTCDateTime</span><span class="p">(</span><span class="n">day</span><span class="p">),</span>
+                                 <span class="n">endtime</span><span class="o">=</span><span class="n">UTCDateTime</span><span class="p">(</span><span class="n">day</span><span class="p">)</span> <span class="o">+</span> <span class="mi">86400</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">st</span><span class="p">:</span>
+            <span class="n">available_stations</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">station</span><span class="p">,</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">channel</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="n">arc_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;fdsn&#39;</span><span class="p">:</span>
+        <span class="n">client</span> <span class="o">=</span> <span class="n">FDSNClient</span><span class="p">(</span><span class="n">archive</span><span class="p">)</span>
+        <span class="n">inventory</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_stations</span><span class="p">(</span><span class="n">starttime</span><span class="o">=</span><span class="n">UTCDateTime</span><span class="p">(</span><span class="n">day</span><span class="p">),</span>
+                                        <span class="n">endtime</span><span class="o">=</span><span class="n">UTCDateTime</span><span class="p">(</span><span class="n">day</span><span class="p">)</span> <span class="o">+</span> <span class="mi">86400</span><span class="p">,</span>
+                                        <span class="n">level</span><span class="o">=</span><span class="s1">&#39;channel&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">network</span> <span class="ow">in</span> <span class="n">inventory</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">station</span> <span class="ow">in</span> <span class="n">network</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">channel</span> <span class="ow">in</span> <span class="n">station</span><span class="p">:</span>
+                    <span class="n">available_stations</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">station</span><span class="o">.</span><span class="n">code</span><span class="p">,</span>
+                                               <span class="n">channel</span><span class="o">.</span><span class="n">code</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="n">arc_type</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;SDS&quot;</span><span class="p">:</span>
+        <span class="n">client</span> <span class="o">=</span> <span class="n">SDSClient</span><span class="p">(</span><span class="n">archive</span><span class="p">)</span>
+        <span class="n">nslc</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_all_nslc</span><span class="p">(</span><span class="n">sds_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">datetime</span><span class="o">=</span><span class="n">UTCDateTime</span><span class="p">(</span><span class="n">day</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">nslc</span><span class="p">:</span>
+            <span class="n">available_stations</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">item</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">item</span><span class="p">[</span><span class="mi">3</span><span class="p">]))</span>
+    <span class="k">return</span> <span class="n">available_stations</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">doctest</span>
+    <span class="n">doctest</span><span class="o">.</span><span class="n">testmod</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2015-2021: EQcorrscan developers.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.2.1.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

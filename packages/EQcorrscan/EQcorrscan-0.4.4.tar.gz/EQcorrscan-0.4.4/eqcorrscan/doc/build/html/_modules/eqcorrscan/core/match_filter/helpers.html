@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>eqcorrscan.core.match_filter.helpers &#8212; EQcorrscan 0.4.3 documentation</title>
+    <link rel="stylesheet" href="../../../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script src="../../../../_static/jquery.js"></script>
+    <script src="../../../../_static/underscore.js"></script>
+    <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="shortcut icon" href="../../../../_static/EQcorrscan_logo.ico"/>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../../../_static/js/jquery-1.12.4.min.js "></script>
+<script type="text/javascript" src="../../../../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../../../../_static/bootstrap-3.4.1/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../../../../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../../index.html"><span><img src="../../../../_static/EQcorrscan_logo.jpg"></span>
+          EQcorrscan</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.4</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../intro.html">1. Introduction to the EQcorrscan package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation.html">2. EQcorrscan installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../updates.html">3. What’s new</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../tutorial.html">4. EQcorrscan tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api.html">5. EQcorrscan API</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"></ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+              <li class="hidden-sm"></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <h1>Source code for eqcorrscan.core.match_filter.helpers</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Helper functions for network matched-filter detection of seismic data.</span>
+
+<span class="sd">:copyright:</span>
+<span class="sd">    EQcorrscan developers.</span>
+
+<span class="sd">:license:</span>
+<span class="sd">    GNU Lesser General Public License, Version 3</span>
+<span class="sd">    (https://www.gnu.org/copyleft/lesser.html)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">contextlib</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">tarfile</span>
+<span class="kn">import</span> <span class="nn">tempfile</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">obspy</span> <span class="kn">import</span> <span class="n">Stream</span>
+<span class="kn">from</span> <span class="nn">obspy.core.event</span> <span class="kn">import</span> <span class="n">Event</span>
+
+<span class="kn">from</span> <span class="nn">eqcorrscan.utils.correlate</span> <span class="kn">import</span> <span class="n">get_array_xcorr</span>
+
+
+<span class="n">Logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="temporary_directory"><a class="viewcode-back" href="../../../../submodules/autogen/eqcorrscan.core.match_filter.helpers.temporary_directory.html#eqcorrscan.core.match_filter.helpers.temporary_directory">[docs]</a><span class="nd">@contextlib</span><span class="o">.</span><span class="n">contextmanager</span>
+<span class="k">def</span> <span class="nf">temporary_directory</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot; make a temporary directory, yeild its name, cleanup on exit &quot;&quot;&quot;</span>
+    <span class="n">dir_name</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">()</span>
+    <span class="k">yield</span> <span class="n">dir_name</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">dir_name</span><span class="p">):</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">dir_name</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">get_waveform_client</span><span class="p">(</span><span class="n">waveform_client</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Bind a `get_waveforms_bulk` method to client if it doesn&#39;t already have one</span>
+
+<span class="sd">    :param waveform_client: Obspy client with a `get_waveforms` method</span>
+
+<span class="sd">    :returns: waveform_client with `get_waveforms_bulk`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">_get_waveforms_bulk_naive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bulk_arg</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; naive implementation of get_waveforms_bulk that uses iteration. &quot;&quot;&quot;</span>
+        <span class="n">st</span> <span class="o">=</span> <span class="n">Stream</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">bulk_arg</span><span class="p">:</span>
+            <span class="n">st</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_waveforms</span><span class="p">(</span><span class="o">*</span><span class="n">arg</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">st</span>
+
+    <span class="c1"># add waveform_bulk method dynamically if it doesn&#39;t exist already</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">waveform_client</span><span class="p">,</span> <span class="s2">&quot;get_waveforms_bulk&quot;</span><span class="p">):</span>
+        <span class="n">bound_method</span> <span class="o">=</span> <span class="n">_get_waveforms_bulk_naive</span><span class="o">.</span><span class="fm">__get__</span><span class="p">(</span><span class="n">waveform_client</span><span class="p">)</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="n">waveform_client</span><span class="p">,</span> <span class="s2">&quot;get_waveforms_bulk&quot;</span><span class="p">,</span> <span class="n">bound_method</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">waveform_client</span>
+
+
+<span class="k">def</span> <span class="nf">_spike_test</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span> <span class="n">percent</span><span class="o">=</span><span class="mf">0.99</span><span class="p">,</span> <span class="n">multiplier</span><span class="o">=</span><span class="mf">1e7</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check for very large spikes in data and raise an error if found.</span>
+
+<span class="sd">    :param stream: Stream to look for spikes in.</span>
+<span class="sd">    :type stream: :class:`obspy.core.stream.Stream`</span>
+<span class="sd">    :param percent: Percentage as a decimal to calculate range for.</span>
+<span class="sd">    :type percent: float</span>
+<span class="sd">    :param multiplier: Multiplier of range to define a spike.</span>
+<span class="sd">    :type multiplier: float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">eqcorrscan.core.match_filter.matched_filter</span> <span class="kn">import</span> <span class="n">MatchFilterError</span>
+
+    <span class="n">list_ids</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">stream</span><span class="p">:</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">data</span> <span class="o">&gt;</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">data</span><span class="p">))[</span><span class="mi">0</span><span class="p">:</span><span class="nb">int</span><span class="p">(</span><span class="n">percent</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">data</span><span class="p">))]</span>
+                                 <span class="p">)</span> <span class="o">*</span> <span class="n">multiplier</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">list_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">list_ids</span> <span class="o">!=</span> <span class="p">[]:</span>
+        <span class="n">ids</span> <span class="o">=</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">list_ids</span><span class="p">)</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;Spikes above &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">multiplier</span><span class="p">)</span> <span class="o">+</span>
+               <span class="s1">&#39; of the range of &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">percent</span><span class="p">)</span> <span class="o">+</span>
+               <span class="s1">&#39; of the data present, check:</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span> <span class="n">ids</span> <span class="o">+</span> <span class="s1">&#39;.</span><span class="se">\n</span><span class="s1">&#39;</span>
+               <span class="s1">&#39;This would otherwise likely result in an issue during &#39;</span> <span class="o">+</span>
+               <span class="s1">&#39;FFT prior to cross-correlation.</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>
+               <span class="s1">&#39;If you think this spike is real please report &#39;</span> <span class="o">+</span>
+               <span class="s1">&#39;this as a bug.&#39;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">MatchFilterError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_total_microsec</span><span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate difference between two datetime stamps in microseconds.</span>
+
+<span class="sd">    :type t1: :class: `datetime.datetime`</span>
+<span class="sd">    :type t2: :class: `datetime.datetime`</span>
+<span class="sd">    :return: int</span>
+
+<span class="sd">    .. rubric:: Example</span>
+
+<span class="sd">    &gt;&gt;&gt; from obspy import UTCDateTime</span>
+<span class="sd">    &gt;&gt;&gt; print(_total_microsec(UTCDateTime(2013, 1, 1).datetime,</span>
+<span class="sd">    ...                       UTCDateTime(2014, 1, 1).datetime))</span>
+<span class="sd">    -31536000000000</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">td</span> <span class="o">=</span> <span class="n">t1</span> <span class="o">-</span> <span class="n">t2</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">td</span><span class="o">.</span><span class="n">seconds</span> <span class="o">+</span> <span class="n">td</span><span class="o">.</span><span class="n">days</span> <span class="o">*</span> <span class="mi">24</span> <span class="o">*</span> <span class="mi">3600</span><span class="p">)</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">**</span> <span class="mi">6</span> <span class="o">+</span> <span class="n">td</span><span class="o">.</span><span class="n">microseconds</span>
+
+
+<span class="k">def</span> <span class="nf">_templates_match</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">family_file</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return True if a tribe matches a family file path.</span>
+
+<span class="sd">    :type t: Tribe</span>
+<span class="sd">    :type family_file: str</span>
+<span class="sd">    :return: bool</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">t</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">family_file</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_detections.csv&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">_test_event_similarity</span><span class="p">(</span><span class="n">event_1</span><span class="p">,</span> <span class="n">event_2</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">shallow</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check the similarity of the components of obspy events, discounting</span>
+<span class="sd">    resource IDs, which are not maintained in nordic files.</span>
+
+<span class="sd">    :type event_1: obspy.core.event.Event</span>
+<span class="sd">    :param event_1: First event</span>
+<span class="sd">    :type event_2: obspy.core.event.Event</span>
+<span class="sd">    :param event_2: Comparison event</span>
+<span class="sd">    :type verbose: bool</span>
+<span class="sd">    :param verbose: If true and fails will output why it fails.</span>
+
+<span class="sd">    :return: bool</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event_1</span><span class="p">,</span> <span class="n">Event</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">event_2</span><span class="p">,</span> <span class="n">Event</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Cannot compare things that are not Events&#39;</span><span class="p">)</span>
+    <span class="c1"># Check origins</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">event_1</span><span class="o">.</span><span class="n">origins</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">event_2</span><span class="o">.</span><span class="n">origins</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">for</span> <span class="n">ori_1</span><span class="p">,</span> <span class="n">ori_2</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">event_1</span><span class="o">.</span><span class="n">origins</span><span class="p">,</span> <span class="n">event_2</span><span class="o">.</span><span class="n">origins</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">ori_1</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">shallow</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">ori_2</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;resource_id&quot;</span><span class="p">,</span> <span class="s2">&quot;comments&quot;</span><span class="p">,</span> <span class="s2">&quot;arrivals&quot;</span><span class="p">,</span>
+                           <span class="s2">&quot;method_id&quot;</span><span class="p">,</span> <span class="s2">&quot;origin_uncertainty&quot;</span><span class="p">,</span> <span class="s2">&quot;depth_type&quot;</span><span class="p">,</span>
+                           <span class="s2">&quot;quality&quot;</span><span class="p">,</span> <span class="s2">&quot;creation_info&quot;</span><span class="p">,</span> <span class="s2">&quot;evaluation_mode&quot;</span><span class="p">,</span>
+                           <span class="s2">&quot;depth_errors&quot;</span><span class="p">,</span> <span class="s2">&quot;time_errors&quot;</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">ori_1</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">!=</span> <span class="n">ori_2</span><span class="p">[</span><span class="n">key</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> is not the same as </span><span class="si">%s</span><span class="s1"> for key </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span>
+                              <span class="p">(</span><span class="n">ori_1</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">ori_2</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">key</span><span class="p">))</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;arrivals&quot;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">shallow</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ori_1</span><span class="p">[</span><span class="n">key</span><span class="p">])</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">ori_2</span><span class="p">[</span><span class="n">key</span><span class="p">]):</span>
+                    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Arrival: </span><span class="si">%i</span><span class="s1"> is not the same as </span><span class="si">%i</span><span class="s1"> for key </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span>
+                              <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ori_1</span><span class="p">[</span><span class="n">key</span><span class="p">]),</span> <span class="nb">len</span><span class="p">(</span><span class="n">ori_2</span><span class="p">[</span><span class="n">key</span><span class="p">]),</span> <span class="n">key</span><span class="p">))</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+                <span class="k">for</span> <span class="n">arr_1</span><span class="p">,</span> <span class="n">arr_2</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">ori_1</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">ori_2</span><span class="p">[</span><span class="n">key</span><span class="p">]):</span>
+                    <span class="k">for</span> <span class="n">arr_key</span> <span class="ow">in</span> <span class="n">arr_1</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                        <span class="k">if</span> <span class="n">arr_key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;resource_id&quot;</span><span class="p">,</span> <span class="s2">&quot;pick_id&quot;</span><span class="p">,</span>
+                                           <span class="s2">&quot;distance&quot;</span><span class="p">]:</span>
+                            <span class="k">if</span> <span class="n">arr_1</span><span class="p">[</span><span class="n">arr_key</span><span class="p">]</span> <span class="o">!=</span> <span class="n">arr_2</span><span class="p">[</span><span class="n">arr_key</span><span class="p">]:</span>
+                                <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> does not match </span><span class="si">%s</span><span class="s1"> for key </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span>
+                                          <span class="p">(</span><span class="n">arr_1</span><span class="p">[</span><span class="n">arr_key</span><span class="p">],</span> <span class="n">arr_2</span><span class="p">[</span><span class="n">arr_key</span><span class="p">],</span>
+                                           <span class="n">arr_key</span><span class="p">))</span>
+                                <span class="k">return</span> <span class="kc">False</span>
+                    <span class="k">if</span> <span class="n">arr_1</span><span class="p">[</span><span class="s2">&quot;distance&quot;</span><span class="p">]</span> <span class="ow">and</span> <span class="nb">round</span><span class="p">(</span>
+                            <span class="n">arr_1</span><span class="p">[</span><span class="s2">&quot;distance&quot;</span><span class="p">])</span> <span class="o">!=</span> <span class="nb">round</span><span class="p">(</span><span class="n">arr_2</span><span class="p">[</span><span class="s2">&quot;distance&quot;</span><span class="p">]):</span>
+                        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> does not match </span><span class="si">%s</span><span class="s1"> for key </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span>
+                                  <span class="p">(</span><span class="n">arr_1</span><span class="p">[</span><span class="n">arr_key</span><span class="p">],</span> <span class="n">arr_2</span><span class="p">[</span><span class="n">arr_key</span><span class="p">],</span>
+                                   <span class="n">arr_key</span><span class="p">))</span>
+                        <span class="k">return</span> <span class="kc">False</span>
+    <span class="c1"># Check picks</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">event_1</span><span class="o">.</span><span class="n">picks</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">event_2</span><span class="o">.</span><span class="n">picks</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Number of picks is not equal&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="n">event_1</span><span class="o">.</span><span class="n">picks</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">time</span><span class="p">)</span>
+    <span class="n">event_2</span><span class="o">.</span><span class="n">picks</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">time</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">pick_1</span><span class="p">,</span> <span class="n">pick_2</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">event_1</span><span class="o">.</span><span class="n">picks</span><span class="p">,</span> <span class="n">event_2</span><span class="o">.</span><span class="n">picks</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">pick_1</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">shallow</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">pick_2</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;resource_id&quot;</span><span class="p">,</span> <span class="s2">&quot;waveform_id&quot;</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">pick_1</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">!=</span> <span class="n">pick_2</span><span class="p">[</span><span class="n">key</span><span class="p">]:</span>
+                    <span class="c1"># Cope with a None set not being equal to a set, but still</span>
+                    <span class="c1">#  None quantity</span>
+                    <span class="k">if</span> <span class="n">pick_1</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">pick_2</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="k">try</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">pick_2</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">values</span><span class="p">()):</span>
+                                <span class="k">continue</span>
+                        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Pick: </span><span class="si">%s</span><span class="s1"> is not the same as </span><span class="si">%s</span><span class="s1"> for &#39;</span>
+                                      <span class="s1">&#39;key </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">pick_1</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">pick_2</span><span class="p">[</span><span class="n">key</span><span class="p">],</span>
+                                                  <span class="n">key</span><span class="p">))</span>
+                            <span class="k">return</span> <span class="kc">False</span>
+                    <span class="k">if</span> <span class="n">pick_2</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">pick_1</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="k">try</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">pick_1</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">values</span><span class="p">()):</span>
+                                <span class="k">continue</span>
+                        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Pick: </span><span class="si">%s</span><span class="s1"> is not the same as </span><span class="si">%s</span><span class="s1"> for &#39;</span>
+                                      <span class="s1">&#39;key </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">pick_1</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">pick_2</span><span class="p">[</span><span class="n">key</span><span class="p">],</span>
+                                                  <span class="n">key</span><span class="p">))</span>
+                            <span class="k">return</span> <span class="kc">False</span>
+                    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Pick: </span><span class="si">%s</span><span class="s1"> is not the same as </span><span class="si">%s</span><span class="s1"> for key </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span>
+                              <span class="p">(</span><span class="n">pick_1</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">pick_2</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">key</span><span class="p">))</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;waveform_id&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">pick_1</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">station_code</span> <span class="o">!=</span> <span class="n">pick_2</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">station_code</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Station codes do not match&#39;</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+                <span class="k">if</span> <span class="n">pick_1</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">channel_code</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">pick_2</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">channel_code</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Channel codes do not match&#39;</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+                <span class="k">if</span> <span class="n">pick_1</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">channel_code</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> \
+                        <span class="n">pick_2</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">channel_code</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Channel codes do not match&#39;</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+    <span class="c1"># Check amplitudes</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">event_1</span><span class="o">.</span><span class="n">amplitudes</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">event_2</span><span class="o">.</span><span class="n">amplitudes</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Not the same number of amplitudes&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="n">event_1</span><span class="o">.</span><span class="n">amplitudes</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">a</span><span class="p">:</span> <span class="n">a</span><span class="o">.</span><span class="n">generic_amplitude</span><span class="p">)</span>
+    <span class="n">event_2</span><span class="o">.</span><span class="n">amplitudes</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">a</span><span class="p">:</span> <span class="n">a</span><span class="o">.</span><span class="n">generic_amplitude</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">amp_1</span><span class="p">,</span> <span class="n">amp_2</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">event_1</span><span class="o">.</span><span class="n">amplitudes</span><span class="p">,</span> <span class="n">event_2</span><span class="o">.</span><span class="n">amplitudes</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">shallow</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="c1"># Assuming same ordering of amplitudes</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">amp_1</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;resource_id&quot;</span><span class="p">,</span> <span class="s2">&quot;pick_id&quot;</span><span class="p">,</span> <span class="s2">&quot;waveform_id&quot;</span><span class="p">,</span> <span class="s2">&quot;snr&quot;</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">amp_1</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">==</span> <span class="n">amp_2</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">and</span> <span class="n">amp_2</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Amplitude: </span><span class="si">%s</span><span class="s1"> is not the same as </span><span class="si">%s</span><span class="s1"> for key&#39;</span>
+                              <span class="s1">&#39; </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">amp_1</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">amp_2</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">key</span><span class="p">))</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;waveform_id&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">pick_1</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">station_code</span> <span class="o">!=</span> <span class="n">pick_2</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">station_code</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Station codes do not match&#39;</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+                <span class="k">if</span> <span class="n">pick_1</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">channel_code</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">pick_2</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">channel_code</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Channel codes do not match&#39;</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+                <span class="k">if</span> <span class="n">pick_1</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">channel_code</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> \
+                        <span class="n">pick_2</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">channel_code</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Channel codes do not match&#39;</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="kc">True</span>
+
+
+<span class="k">def</span> <span class="nf">_par_read</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="n">compressed</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Internal write function to read a formatted parameter file.</span>
+
+<span class="sd">    :type dirname: str</span>
+<span class="sd">    :param dirname: Directory to read the parameter file from.</span>
+<span class="sd">    :type compressed: bool</span>
+<span class="sd">    :param compressed: Whether the directory is compressed or not.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">eqcorrscan.core.match_filter.matched_filter</span> <span class="kn">import</span> <span class="n">MatchFilterError</span>
+    <span class="kn">from</span> <span class="nn">eqcorrscan.core.match_filter.template</span> <span class="kn">import</span> <span class="n">Template</span>
+
+    <span class="n">templates</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">compressed</span><span class="p">:</span>
+        <span class="n">arc</span> <span class="o">=</span> <span class="n">tarfile</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">dirname</span><span class="p">,</span> <span class="s2">&quot;r:*&quot;</span><span class="p">)</span>
+        <span class="n">members</span> <span class="o">=</span> <span class="n">arc</span><span class="o">.</span><span class="n">getmembers</span><span class="p">()</span>
+        <span class="n">_parfile</span> <span class="o">=</span> <span class="p">[</span><span class="n">member</span> <span class="k">for</span> <span class="n">member</span> <span class="ow">in</span> <span class="n">members</span>
+                    <span class="k">if</span> <span class="n">member</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">sep</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span>
+                    <span class="s1">&#39;template_parameters.csv&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">_parfile</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">arc</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="k">raise</span> <span class="n">MatchFilterError</span><span class="p">(</span>
+                <span class="s1">&#39;No template parameter file in archive&#39;</span><span class="p">)</span>
+        <span class="n">parfile</span> <span class="o">=</span> <span class="n">arc</span><span class="o">.</span><span class="n">extractfile</span><span class="p">(</span><span class="n">_parfile</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">parfile</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">dirname</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="s1">&#39;template_parameters.csv&#39;</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">parfile</span><span class="p">:</span>
+        <span class="n">t_in</span> <span class="o">=</span> <span class="n">Template</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">key_pair</span> <span class="ow">in</span> <span class="n">line</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">key_pair</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;name&#39;</span><span class="p">:</span>
+                <span class="n">t_in</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">key_pair</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()]</span> <span class="o">=</span> \
+                    <span class="n">key_pair</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="k">elif</span> <span class="n">key_pair</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;filt_order&#39;</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">t_in</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">key_pair</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()]</span> <span class="o">=</span> \
+                        <span class="nb">int</span><span class="p">(</span><span class="n">key_pair</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+                <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                    <span class="k">pass</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">t_in</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">key_pair</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()]</span> <span class="o">=</span> \
+                        <span class="nb">float</span><span class="p">(</span><span class="n">key_pair</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+                <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                    <span class="k">pass</span>
+        <span class="n">templates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t_in</span><span class="p">)</span>
+    <span class="n">parfile</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">compressed</span><span class="p">:</span>
+        <span class="n">arc</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">templates</span>
+
+
+<span class="k">def</span> <span class="nf">_resolved</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">_badpath</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">base</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    joinpath will ignore base if path is absolute.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="ow">not</span> <span class="n">_resolved</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="n">path</span><span class="p">))</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">base</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_badlink</span><span class="p">(</span><span class="n">info</span><span class="p">,</span> <span class="n">base</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Links are interpreted relative to the directory containing the link</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">tip</span> <span class="o">=</span> <span class="n">_resolved</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">name</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="n">_badpath</span><span class="p">(</span><span class="n">info</span><span class="o">.</span><span class="n">linkname</span><span class="p">,</span> <span class="n">base</span><span class="o">=</span><span class="n">tip</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_safemembers</span><span class="p">(</span><span class="n">members</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Check members of a tar archive for safety.</span>
+<span class="sd">    Ensure that they do not contain paths or links outside of where we</span>
+<span class="sd">    need them - this would only happen if the archive wasn&#39;t made by</span>
+<span class="sd">    eqcorrscan.</span>
+
+<span class="sd">    :type members: :class:`tarfile.TarFile`</span>
+<span class="sd">    :param members: an open tarfile.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">base</span> <span class="o">=</span> <span class="n">_resolved</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">finfo</span> <span class="ow">in</span> <span class="n">members</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">_badpath</span><span class="p">(</span><span class="n">finfo</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">base</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">finfo</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s2">&quot;is blocked (illegal path)&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">finfo</span><span class="o">.</span><span class="n">issym</span><span class="p">()</span> <span class="ow">and</span> <span class="n">_badlink</span><span class="p">(</span><span class="n">finfo</span><span class="p">,</span> <span class="n">base</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">finfo</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s2">&quot;is blocked: Hard link to&quot;</span><span class="p">,</span> <span class="n">finfo</span><span class="o">.</span><span class="n">linkname</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">finfo</span><span class="o">.</span><span class="n">islnk</span><span class="p">()</span> <span class="ow">and</span> <span class="n">_badlink</span><span class="p">(</span><span class="n">finfo</span><span class="p">,</span> <span class="n">base</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">finfo</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s2">&quot;is blocked: Symlink to&quot;</span><span class="p">,</span> <span class="n">finfo</span><span class="o">.</span><span class="n">linkname</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">finfo</span>
+
+
+<div class="viewcode-block" id="extract_from_stream"><a class="viewcode-back" href="../../../../submodules/autogen/eqcorrscan.core.match_filter.helpers.extract_from_stream.html#eqcorrscan.core.match_filter.helpers.extract_from_stream">[docs]</a><span class="k">def</span> <span class="nf">extract_from_stream</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span> <span class="n">detections</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mf">30.0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Extract waveforms for a list of detections from a stream.</span>
+
+<span class="sd">    :type stream: obspy.core.stream.Stream</span>
+<span class="sd">    :param stream: Stream containing the detections.</span>
+<span class="sd">    :type detections: list</span>
+<span class="sd">    :param detections: list of eqcorrscan.core.match_filter.detection</span>
+<span class="sd">    :type pad: float</span>
+<span class="sd">    :param pad: Pre-detection extract time in seconds.</span>
+<span class="sd">    :type length: float</span>
+<span class="sd">    :param length: Total extracted length in seconds.</span>
+
+<span class="sd">    :returns:</span>
+<span class="sd">        list of :class:`obspy.core.stream.Stream`, one for each detection.</span>
+<span class="sd">    :type: list</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">streams</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">detection</span> <span class="ow">in</span> <span class="n">detections</span><span class="p">:</span>
+        <span class="n">cut_stream</span> <span class="o">=</span> <span class="n">Stream</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">pick</span> <span class="ow">in</span> <span class="n">detection</span><span class="o">.</span><span class="n">event</span><span class="o">.</span><span class="n">picks</span><span class="p">:</span>
+            <span class="n">tr</span> <span class="o">=</span> <span class="n">stream</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">station</span><span class="o">=</span><span class="n">pick</span><span class="o">.</span><span class="n">waveform_id</span><span class="o">.</span><span class="n">station_code</span><span class="p">,</span>
+                               <span class="n">channel</span><span class="o">=</span><span class="n">pick</span><span class="o">.</span><span class="n">waveform_id</span><span class="o">.</span><span class="n">channel_code</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tr</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">Logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;No data in stream for pick: </span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">pick</span><span class="p">))</span>
+                <span class="k">continue</span>
+            <span class="n">cut_stream</span> <span class="o">+=</span> <span class="n">tr</span><span class="o">.</span><span class="n">slice</span><span class="p">(</span>
+                <span class="n">starttime</span><span class="o">=</span><span class="n">pick</span><span class="o">.</span><span class="n">time</span> <span class="o">-</span> <span class="n">pad</span><span class="p">,</span>
+                <span class="n">endtime</span><span class="o">=</span><span class="n">pick</span><span class="o">.</span><span class="n">time</span> <span class="o">-</span> <span class="n">pad</span> <span class="o">+</span> <span class="n">length</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">streams</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cut_stream</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">streams</span></div>
+
+
+<div class="viewcode-block" id="normxcorr2"><a class="viewcode-back" href="../../../../submodules/autogen/eqcorrscan.core.match_filter.helpers.normxcorr2.html#eqcorrscan.core.match_filter.helpers.normxcorr2">[docs]</a><span class="k">def</span> <span class="nf">normxcorr2</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="n">image</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Thin wrapper to eqcorrscan.utils.correlate functions.</span>
+
+<span class="sd">    :type template: numpy.ndarray</span>
+<span class="sd">    :param template: Template array</span>
+<span class="sd">    :type image: numpy.ndarray</span>
+<span class="sd">    :param image:</span>
+<span class="sd">        Image to scan the template through.  The order of these</span>
+<span class="sd">        matters, if you put the template after the image you will get a</span>
+<span class="sd">        reversed correlation matrix</span>
+
+<span class="sd">    :return:</span>
+<span class="sd">        New :class:`numpy.ndarray` of the correlation values for the</span>
+<span class="sd">        correlation of the image with the template.</span>
+<span class="sd">    :rtype: numpy.ndarray</span>
+
+<span class="sd">    .. note::</span>
+<span class="sd">        If your data contain gaps these must be padded with zeros before</span>
+<span class="sd">        using this function. The `eqcorrscan.utils.pre_processing` functions</span>
+<span class="sd">        will provide gap-filled data in the appropriate format.  Note that if</span>
+<span class="sd">        you pad your data with zeros before filtering or resampling the gaps</span>
+<span class="sd">        will not be all zeros after filtering. This will result in the</span>
+<span class="sd">        calculation of spurious correlations in the gaps.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">array_xcorr</span> <span class="o">=</span> <span class="n">get_array_xcorr</span><span class="p">()</span>
+    <span class="c1"># Check that we have been passed numpy arrays</span>
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">template</span><span class="p">)</span> <span class="o">!=</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="ow">or</span> <span class="nb">type</span><span class="p">(</span><span class="n">image</span><span class="p">)</span> <span class="o">!=</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="n">Logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+            <span class="s1">&#39;You have not provided numpy arrays, I will not convert them&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s1">&#39;NaN&#39;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">template</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">image</span><span class="p">):</span>
+        <span class="n">ccc</span> <span class="o">=</span> <span class="n">array_xcorr</span><span class="p">(</span>
+            <span class="n">templates</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">image</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+            <span class="n">stream</span><span class="o">=</span><span class="n">template</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">pads</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="n">threaded</span><span class="o">=</span><span class="kc">False</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ccc</span> <span class="o">=</span> <span class="n">array_xcorr</span><span class="p">(</span>
+            <span class="n">templates</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">template</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+            <span class="n">stream</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">pads</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">threaded</span><span class="o">=</span><span class="kc">False</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">ccc</span> <span class="o">=</span> <span class="n">ccc</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">ccc</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="n">ccc</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">doctest</span>
+
+    <span class="n">doctest</span><span class="o">.</span><span class="n">testmod</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2015-2021: EQcorrscan developers.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.2.1.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
+
+    <title>core.match_filter.family &#8212; EQcorrscan 0.4.3 documentation</title>
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="shortcut icon" href="../_static/EQcorrscan_logo.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../_static/js/jquery-1.12.4.min.js "></script>
+<script type="text/javascript" src="../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../_static/bootstrap-3.4.1/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html"><span><img src="../_static/EQcorrscan_logo.jpg"></span>
+          EQcorrscan</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.4</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">1. Introduction to the EQcorrscan package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">2. EQcorrscan installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../updates.html">3. What’s new</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">4. EQcorrscan tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">5. EQcorrscan API</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">core.match_filter.family</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="../_sources/submodules/core.match_filter.family.rst.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <section id="module-eqcorrscan.core.match_filter.family">
+<span id="core-match-filter-family"></span><h1>core.match_filter.family<a class="headerlink" href="#module-eqcorrscan.core.match_filter.family" title="Permalink to this headline">¶</a></h1>
+<p>Functions for network matched-filter detection of seismic data.</p>
+<p>Designed to cross-correlate templates generated by template_gen function
+with data and output the detections.</p>
+<dl class="field-list simple">
+<dt class="field-odd">copyright</dt>
+<dd class="field-odd"><p>EQcorrscan developers.</p>
+</dd>
+<dt class="field-even">license</dt>
+<dd class="field-even"><p>GNU Lesser General Public License, Version 3
+(<a class="reference external" href="https://www.gnu.org/copyleft/lesser.html">https://www.gnu.org/copyleft/lesser.html</a>)</p>
+</dd>
+</dl>
+<hr class="docutils" />
+<dl class="py class">
+<dt id="eqcorrscan.core.match_filter.family.Family">
+<em class="property">class </em><code class="sig-prename descclassname">eqcorrscan.core.match_filter.family.</code><code class="sig-name descname">Family</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">template</span></em>, <em class="sig-param"><span class="n">detections</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">catalog</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eqcorrscan/core/match_filter/family.html#Family"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eqcorrscan.core.match_filter.family.Family" title="Permalink to this definition">¶</a></dt>
+<dd><p>Container for Detection objects from a single template.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>template</strong> (<em>eqcorrscan.core.match_filter.Template</em>) – The template used to detect the family</p></li>
+<li><p><strong>detections</strong> (<em>list</em>) – list of Detection objects</p></li>
+<li><p><strong>catalog</strong> (<a class="reference external" href="https://docs.obspy.org/packages/autogen/obspy.core.event.Catalog.html#obspy.core.event.Catalog" title="(in ObsPy Documentation (1.2.0) v1.2)"><em>obspy.core.event.Catalog</em></a>) – Catalog of detections, with information for the individual detections.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#eqcorrscan.core.match_filter.family.Family.append" title="eqcorrscan.core.match_filter.family.Family.append"><code class="xref py py-obj docutils literal notranslate"><span class="pre">append</span></code></a>(other)</p></td>
+<td><p>Add another family or detection to the family.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#eqcorrscan.core.match_filter.family.Family.copy" title="eqcorrscan.core.match_filter.family.Family.copy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">copy</span></code></a>()</p></td>
+<td><p>Returns a copy of the family.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#eqcorrscan.core.match_filter.family.Family.extract_streams" title="eqcorrscan.core.match_filter.family.Family.extract_streams"><code class="xref py py-obj docutils literal notranslate"><span class="pre">extract_streams</span></code></a>(stream, length, prepick)</p></td>
+<td><p>Generate a dictionary of cut streams around detections.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#eqcorrscan.core.match_filter.family.Family.lag_calc" title="eqcorrscan.core.match_filter.family.Family.lag_calc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lag_calc</span></code></a>(stream, pre_processed[, shift_len, …])</p></td>
+<td><p>Compute picks based on cross-correlation alignment.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#eqcorrscan.core.match_filter.family.Family.plot" title="eqcorrscan.core.match_filter.family.Family.plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot</span></code></a>([plot_grouped])</p></td>
+<td><p>Plot the cumulative number of detections in time.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#eqcorrscan.core.match_filter.family.Family.sort" title="eqcorrscan.core.match_filter.family.Family.sort"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sort</span></code></a>()</p></td>
+<td><p>Sort by detection time.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#eqcorrscan.core.match_filter.family.Family.write" title="eqcorrscan.core.match_filter.family.Family.write"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write</span></code></a>(filename[, format, overwrite])</p></td>
+<td><p>Write Family out, select output format.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt id="eqcorrscan.core.match_filter.family.Family.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">template</span></em>, <em class="sig-param"><span class="n">detections</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">catalog</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eqcorrscan/core/match_filter/family.html#Family.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eqcorrscan.core.match_filter.family.Family.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Instantiation of Family object.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="eqcorrscan.core.match_filter.family.Family.append">
+<code class="sig-name descname">append</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">other</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eqcorrscan/core/match_filter/family.html#Family.append"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eqcorrscan.core.match_filter.family.Family.append" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add another family or detection to the family.</p>
+<p class="rubric">Example</p>
+<p>Append a family to a family</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">eqcorrscan</span> <span class="kn">import</span> <span class="n">Template</span><span class="p">,</span> <span class="n">Detection</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">family_a</span> <span class="o">=</span> <span class="n">Family</span><span class="p">(</span><span class="n">template</span><span class="o">=</span><span class="n">Template</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;a&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">family_b</span> <span class="o">=</span> <span class="n">Family</span><span class="p">(</span><span class="n">template</span><span class="o">=</span><span class="n">Template</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;a&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">family_a</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">family_b</span><span class="p">)</span>
+<span class="go">Family of 0 detections from template a</span>
+</pre></div>
+</div>
+<p>Append a detection to the family</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">family_a</span> <span class="o">=</span> <span class="n">Family</span><span class="p">(</span><span class="n">template</span><span class="o">=</span><span class="n">Template</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;a&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">detection</span> <span class="o">=</span> <span class="n">Detection</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">template_name</span><span class="o">=</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">detect_time</span><span class="o">=</span><span class="n">UTCDateTime</span><span class="p">(),</span> <span class="n">no_chans</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">detect_val</span><span class="o">=</span><span class="mf">2.5</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">1.23</span><span class="p">,</span> <span class="n">typeofdet</span><span class="o">=</span><span class="s1">&#39;corr&#39;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">threshold_type</span><span class="o">=</span><span class="s1">&#39;MAD&#39;</span><span class="p">,</span> <span class="n">threshold_input</span><span class="o">=</span><span class="mf">8.0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">family_a</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">detection</span><span class="p">)</span>
+<span class="go">Family of 1 detections from template a</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="eqcorrscan.core.match_filter.family.Family.copy">
+<code class="sig-name descname">copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eqcorrscan/core/match_filter/family.html#Family.copy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eqcorrscan.core.match_filter.family.Family.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a copy of the family.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Copy of family</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">eqcorrscan</span> <span class="kn">import</span> <span class="n">Template</span><span class="p">,</span> <span class="n">Detection</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">family</span> <span class="o">=</span> <span class="n">Family</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">template</span><span class="o">=</span><span class="n">Template</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;a&#39;</span><span class="p">),</span> <span class="n">detections</span><span class="o">=</span><span class="p">[</span>
+<span class="gp">... </span>    <span class="n">Detection</span><span class="p">(</span><span class="n">template_name</span><span class="o">=</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">detect_time</span><span class="o">=</span><span class="n">UTCDateTime</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
+<span class="gp">... </span>              <span class="n">no_chans</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">detect_val</span><span class="o">=</span><span class="mf">4.2</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">1.2</span><span class="p">,</span>
+<span class="gp">... </span>              <span class="n">typeofdet</span><span class="o">=</span><span class="s1">&#39;corr&#39;</span><span class="p">,</span> <span class="n">threshold_type</span><span class="o">=</span><span class="s1">&#39;MAD&#39;</span><span class="p">,</span>
+<span class="gp">... </span>              <span class="n">threshold_input</span><span class="o">=</span><span class="mf">8.0</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">Detection</span><span class="p">(</span><span class="n">template_name</span><span class="o">=</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">detect_time</span><span class="o">=</span><span class="n">UTCDateTime</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">10</span><span class="p">,</span>
+<span class="gp">... </span>              <span class="n">no_chans</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">detect_val</span><span class="o">=</span><span class="mf">4.5</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">1.2</span><span class="p">,</span>
+<span class="gp">... </span>              <span class="n">typeofdet</span><span class="o">=</span><span class="s1">&#39;corr&#39;</span><span class="p">,</span> <span class="n">threshold_type</span><span class="o">=</span><span class="s1">&#39;MAD&#39;</span><span class="p">,</span>
+<span class="gp">... </span>              <span class="n">threshold_input</span><span class="o">=</span><span class="mf">8.0</span><span class="p">)])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">family</span> <span class="o">==</span> <span class="n">family</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="eqcorrscan.core.match_filter.family.Family.extract_streams">
+<code class="sig-name descname">extract_streams</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">stream</span></em>, <em class="sig-param"><span class="n">length</span></em>, <em class="sig-param"><span class="n">prepick</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eqcorrscan/core/match_filter/family.html#Family.extract_streams"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eqcorrscan.core.match_filter.family.Family.extract_streams" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a dictionary of cut streams around detections.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>stream</strong> (<cite>obspy.core.stream.Stream</cite>) – Stream of data to cut from</p></li>
+<li><p><strong>length</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – Length of data to extract in seconds.</p></li>
+<li><p><strong>prepick</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – Length before the expected pick on each channel to start the cut
+stream in seconds.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/2.7/library/stdtypes.html#dict" title="(in Python v2.7)">dict</a></p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Dictionary of cut streams keyed by detection id.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="eqcorrscan.core.match_filter.family.Family.lag_calc">
+<code class="sig-name descname">lag_calc</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">stream</span></em>, <em class="sig-param"><span class="n">pre_processed</span></em>, <em class="sig-param"><span class="n">shift_len</span><span class="o">=</span><span class="default_value">0.2</span></em>, <em class="sig-param"><span class="n">min_cc</span><span class="o">=</span><span class="default_value">0.4</span></em>, <em class="sig-param"><span class="n">min_cc_from_mean_cc_factor</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">horizontal_chans</span><span class="o">=</span><span class="default_value">['E', 'N', '1', '2']</span></em>, <em class="sig-param"><span class="n">vertical_chans</span><span class="o">=</span><span class="default_value">['Z']</span></em>, <em class="sig-param"><span class="n">cores</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">interpolate</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">plot</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">plotdir</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">parallel</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">process_cores</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ignore_length</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">ignore_bad_data</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">export_cc</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">cc_dir</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eqcorrscan/core/match_filter/family.html#Family.lag_calc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eqcorrscan.core.match_filter.family.Family.lag_calc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute picks based on cross-correlation alignment.</p>
+<p>Works in place on events in the Family</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>stream</strong> (<a class="reference external" href="https://docs.obspy.org/packages/autogen/obspy.core.stream.Stream.html#obspy.core.stream.Stream" title="(in ObsPy Documentation (1.2.0) v1.2)"><em>obspy.core.stream.Stream</em></a>) – All the data needed to cut from - can be a gappy Stream.</p></li>
+<li><p><strong>pre_processed</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – Whether the stream has been pre-processed or not to match the
+templates. See note below.</p></li>
+<li><p><strong>shift_len</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – Shift length allowed for the pick in seconds, will be
+plus/minus this amount - default=0.2</p></li>
+<li><p><strong>min_cc</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – Minimum cross-correlation value to be considered a pick,
+default=0.4.</p></li>
+<li><p><strong>min_cc_from_mean_cc_factor</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – If set to a value other than None, then the minimum cross-
+correlation value for a trace is set individually for each
+detection based on:
+min(detect_val / n_chans * min_cc_from_mean_cc_factor, min_cc).</p></li>
+<li><p><strong>horizontal_chans</strong> (<em>list</em>) – List of channel endings for horizontal-channels, on which
+S-picks will be made.</p></li>
+<li><p><strong>vertical_chans</strong> (<em>list</em>) – List of channel endings for vertical-channels, on which P-picks
+will be made.</p></li>
+<li><p><strong>cores</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) – Number of cores to use in parallel processing, defaults to one.</p></li>
+<li><p><strong>interpolate</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – Interpolate the correlation function to achieve sub-sample
+precision.</p></li>
+<li><p><strong>plot</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – To generate a plot for every detection or not, defaults to False.</p></li>
+<li><p><strong>plotdir</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – The path to save plots to. If <cite>plotdir=None</cite> (default) then the
+figure will be shown on screen.</p></li>
+<li><p><strong>parallel</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – Turn parallel processing on or off.</p></li>
+<li><p><strong>process_cores</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) – Number of processes to use for pre-processing (if different to
+<cite>cores</cite>).</p></li>
+<li><p><strong>ignore_length</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – If using daylong=True, then dayproc will try check that the data
+are there for at least 80% of the day, if you don’t want this check
+(which will raise an error if too much data are missing) then set
+ignore_length=True.  This is not recommended!</p></li>
+<li><p><strong>ignore_bad_data</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – If False (default), errors will be raised if data are excessively
+gappy or are mostly zeros. If True then no error will be raised,
+but an empty trace will be returned (and not used in detection).</p></li>
+<li><p><strong>export_cc</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – To generate a binary file in NumPy for every detection or not,
+defaults to False</p></li>
+<li><p><strong>cc_dir</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – Path to saving folder, NumPy files will be output here.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Catalog of events with picks.  No origin information is included.
+These events can then be written out via
+<code class="xref py py-func docutils literal notranslate"><span class="pre">obspy.core.event.Catalog.write()</span></code>, or to Nordic Sfiles using
+<code class="xref py py-func docutils literal notranslate"><span class="pre">eqcorrscan.utils.sfile_util.eventtosfile()</span></code> and located
+externally.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.obspy.org/packages/autogen/obspy.core.event.Catalog.html#obspy.core.event.Catalog" title="(in ObsPy Documentation (1.2.0) v1.2)">obspy.core.event.Catalog</a></p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Note on pre-processing: You can provide a pre-processed stream,
+which may be beneficial for detections over large time periods
+(the stream can have gaps, which reduces memory usage).  However,
+in this case the processing steps are not checked, so you must
+ensure that the template in the Family has the same sampling
+rate and filtering as the stream.
+If pre-processing has not be done then the data will be processed
+according to the parameters in the template.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Picks are corrected for the template pre-pick time.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="eqcorrscan.core.match_filter.family.Family.plot">
+<code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">plot_grouped</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eqcorrscan/core/match_filter/family.html#Family.plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eqcorrscan.core.match_filter.family.Family.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the cumulative number of detections in time.</p>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">eqcorrscan</span> <span class="kn">import</span> <span class="n">Template</span><span class="p">,</span> <span class="n">Detection</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">family</span> <span class="o">=</span> <span class="n">Family</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">template</span><span class="o">=</span><span class="n">Template</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;a&#39;</span><span class="p">),</span> <span class="n">detections</span><span class="o">=</span><span class="p">[</span>
+<span class="gp">... </span>    <span class="n">Detection</span><span class="p">(</span><span class="n">template_name</span><span class="o">=</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">detect_time</span><span class="o">=</span><span class="n">UTCDateTime</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">200</span><span class="p">,</span>
+<span class="gp">... </span>              <span class="n">no_chans</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">detect_val</span><span class="o">=</span><span class="mf">4.2</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">1.2</span><span class="p">,</span>
+<span class="gp">... </span>              <span class="n">typeofdet</span><span class="o">=</span><span class="s1">&#39;corr&#39;</span><span class="p">,</span> <span class="n">threshold_type</span><span class="o">=</span><span class="s1">&#39;MAD&#39;</span><span class="p">,</span>
+<span class="gp">... </span>              <span class="n">threshold_input</span><span class="o">=</span><span class="mf">8.0</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">Detection</span><span class="p">(</span><span class="n">template_name</span><span class="o">=</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">detect_time</span><span class="o">=</span><span class="n">UTCDateTime</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
+<span class="gp">... </span>              <span class="n">no_chans</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">detect_val</span><span class="o">=</span><span class="mf">4.5</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">1.2</span><span class="p">,</span>
+<span class="gp">... </span>              <span class="n">typeofdet</span><span class="o">=</span><span class="s1">&#39;corr&#39;</span><span class="p">,</span> <span class="n">threshold_type</span><span class="o">=</span><span class="s1">&#39;MAD&#39;</span><span class="p">,</span>
+<span class="gp">... </span>              <span class="n">threshold_input</span><span class="o">=</span><span class="mf">8.0</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">Detection</span><span class="p">(</span><span class="n">template_name</span><span class="o">=</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">detect_time</span><span class="o">=</span><span class="n">UTCDateTime</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">10</span><span class="p">,</span>
+<span class="gp">... </span>              <span class="n">no_chans</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">detect_val</span><span class="o">=</span><span class="mf">4.5</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">1.2</span><span class="p">,</span>
+<span class="gp">... </span>              <span class="n">typeofdet</span><span class="o">=</span><span class="s1">&#39;corr&#39;</span><span class="p">,</span> <span class="n">threshold_type</span><span class="o">=</span><span class="s1">&#39;MAD&#39;</span><span class="p">,</span>
+<span class="gp">... </span>              <span class="n">threshold_input</span><span class="o">=</span><span class="mf">8.0</span><span class="p">)])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">family</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">plot_grouped</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  
+</pre></div>
+</div>
+<p>(<a class="reference external" href="../submodules/core-match_filter-family-1.py">Source code</a>)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="eqcorrscan.core.match_filter.family.Family.sort">
+<code class="sig-name descname">sort</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eqcorrscan/core/match_filter/family.html#Family.sort"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eqcorrscan.core.match_filter.family.Family.sort" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sort by detection time.</p>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">eqcorrscan</span> <span class="kn">import</span> <span class="n">Template</span><span class="p">,</span> <span class="n">Detection</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">family</span> <span class="o">=</span> <span class="n">Family</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">template</span><span class="o">=</span><span class="n">Template</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;a&#39;</span><span class="p">),</span> <span class="n">detections</span><span class="o">=</span><span class="p">[</span>
+<span class="gp">... </span>    <span class="n">Detection</span><span class="p">(</span><span class="n">template_name</span><span class="o">=</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">detect_time</span><span class="o">=</span><span class="n">UTCDateTime</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">200</span><span class="p">,</span>
+<span class="gp">... </span>              <span class="n">no_chans</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">detect_val</span><span class="o">=</span><span class="mf">4.2</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">1.2</span><span class="p">,</span>
+<span class="gp">... </span>              <span class="n">typeofdet</span><span class="o">=</span><span class="s1">&#39;corr&#39;</span><span class="p">,</span> <span class="n">threshold_type</span><span class="o">=</span><span class="s1">&#39;MAD&#39;</span><span class="p">,</span>
+<span class="gp">... </span>              <span class="n">threshold_input</span><span class="o">=</span><span class="mf">8.0</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">Detection</span><span class="p">(</span><span class="n">template_name</span><span class="o">=</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">detect_time</span><span class="o">=</span><span class="n">UTCDateTime</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
+<span class="gp">... </span>              <span class="n">no_chans</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">detect_val</span><span class="o">=</span><span class="mf">4.5</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">1.2</span><span class="p">,</span>
+<span class="gp">... </span>              <span class="n">typeofdet</span><span class="o">=</span><span class="s1">&#39;corr&#39;</span><span class="p">,</span> <span class="n">threshold_type</span><span class="o">=</span><span class="s1">&#39;MAD&#39;</span><span class="p">,</span>
+<span class="gp">... </span>              <span class="n">threshold_input</span><span class="o">=</span><span class="mf">8.0</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">Detection</span><span class="p">(</span><span class="n">template_name</span><span class="o">=</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">detect_time</span><span class="o">=</span><span class="n">UTCDateTime</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">10</span><span class="p">,</span>
+<span class="gp">... </span>              <span class="n">no_chans</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">detect_val</span><span class="o">=</span><span class="mf">4.5</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">1.2</span><span class="p">,</span>
+<span class="gp">... </span>              <span class="n">typeofdet</span><span class="o">=</span><span class="s1">&#39;corr&#39;</span><span class="p">,</span> <span class="n">threshold_type</span><span class="o">=</span><span class="s1">&#39;MAD&#39;</span><span class="p">,</span>
+<span class="gp">... </span>              <span class="n">threshold_input</span><span class="o">=</span><span class="mf">8.0</span><span class="p">)])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">family</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">detect_time</span>
+<span class="go">UTCDateTime(1970, 1, 1, 0, 3, 20)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">family</span><span class="o">.</span><span class="n">sort</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">detect_time</span>
+<span class="go">UTCDateTime(1970, 1, 1, 0, 0)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="eqcorrscan.core.match_filter.family.Family.write">
+<code class="sig-name descname">write</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span></em>, <em class="sig-param"><span class="n">format</span><span class="o">=</span><span class="default_value">'tar'</span></em>, <em class="sig-param"><span class="n">overwrite</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eqcorrscan/core/match_filter/family.html#Family.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eqcorrscan.core.match_filter.family.Family.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write Family out, select output format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>format</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – One of either ‘tar’, ‘csv’, or any obspy supported
+catalog output.</p></li>
+<li><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – Path to write file to.</p></li>
+<li><p><strong>overwrite</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – Specifies whether detection-files are overwritten if they exist
+already. By default, no files are overwritten.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>csv format will write out detection objects, all other
+outputs will write the catalog.  These cannot be rebuilt into
+a Family object.  The only format that can be read back into
+Family objects is the ‘tar’ type.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>csv format will append detections to filename, all others
+will overwrite any existing files.</p>
+</div>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">eqcorrscan</span> <span class="kn">import</span> <span class="n">Template</span><span class="p">,</span> <span class="n">Detection</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">obspy</span> <span class="kn">import</span> <span class="n">read</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">family</span> <span class="o">=</span> <span class="n">Family</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">template</span><span class="o">=</span><span class="n">Template</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">st</span><span class="o">=</span><span class="n">read</span><span class="p">()),</span> <span class="n">detections</span><span class="o">=</span><span class="p">[</span>
+<span class="gp">... </span>    <span class="n">Detection</span><span class="p">(</span><span class="n">template_name</span><span class="o">=</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">detect_time</span><span class="o">=</span><span class="n">UTCDateTime</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">200</span><span class="p">,</span>
+<span class="gp">... </span>              <span class="n">no_chans</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">detect_val</span><span class="o">=</span><span class="mf">4.2</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">1.2</span><span class="p">,</span>
+<span class="gp">... </span>              <span class="n">typeofdet</span><span class="o">=</span><span class="s1">&#39;corr&#39;</span><span class="p">,</span> <span class="n">threshold_type</span><span class="o">=</span><span class="s1">&#39;MAD&#39;</span><span class="p">,</span>
+<span class="gp">... </span>              <span class="n">threshold_input</span><span class="o">=</span><span class="mf">8.0</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">Detection</span><span class="p">(</span><span class="n">template_name</span><span class="o">=</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">detect_time</span><span class="o">=</span><span class="n">UTCDateTime</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
+<span class="gp">... </span>              <span class="n">no_chans</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">detect_val</span><span class="o">=</span><span class="mf">4.5</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">1.2</span><span class="p">,</span>
+<span class="gp">... </span>              <span class="n">typeofdet</span><span class="o">=</span><span class="s1">&#39;corr&#39;</span><span class="p">,</span> <span class="n">threshold_type</span><span class="o">=</span><span class="s1">&#39;MAD&#39;</span><span class="p">,</span>
+<span class="gp">... </span>              <span class="n">threshold_input</span><span class="o">=</span><span class="mf">8.0</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">Detection</span><span class="p">(</span><span class="n">template_name</span><span class="o">=</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">detect_time</span><span class="o">=</span><span class="n">UTCDateTime</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">10</span><span class="p">,</span>
+<span class="gp">... </span>              <span class="n">no_chans</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">detect_val</span><span class="o">=</span><span class="mf">4.5</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">1.2</span><span class="p">,</span>
+<span class="gp">... </span>              <span class="n">typeofdet</span><span class="o">=</span><span class="s1">&#39;corr&#39;</span><span class="p">,</span> <span class="n">threshold_type</span><span class="o">=</span><span class="s1">&#39;MAD&#39;</span><span class="p">,</span>
+<span class="gp">... </span>              <span class="n">threshold_input</span><span class="o">=</span><span class="mf">8.0</span><span class="p">)])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">family</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;test_family&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2015-2021: EQcorrscan developers.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.2.1.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

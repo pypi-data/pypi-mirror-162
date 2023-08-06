@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
+
+    <title>4.1. Quick Start &#8212; EQcorrscan 0.4.3 documentation</title>
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="shortcut icon" href="../_static/EQcorrscan_logo.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="4.2. Local File Tutorial" href="local_files.html" />
+    <link rel="prev" title="4. EQcorrscan tutorials" href="../tutorial.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../_static/js/jquery-1.12.4.min.js "></script>
+<script type="text/javascript" src="../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../_static/bootstrap-3.4.1/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html"><span><img src="../_static/EQcorrscan_logo.jpg"></span>
+          EQcorrscan</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.4</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">1. Introduction to the EQcorrscan package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">2. EQcorrscan installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../updates.html">3. What’s new</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../tutorial.html">4. EQcorrscan tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">5. EQcorrscan API</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">4.1. Quick Start</a><ul>
+<li><a class="reference internal" href="#Matched-filter-earthquake-detection">4.1.1. Matched-filter earthquake detection</a></li>
+<li><a class="reference internal" href="#Note:">4.1.2. Note:</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="../tutorial.html" title="Previous Chapter: 4. EQcorrscan tutorials"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; 4. EQcorrscan...</span>
+    </a>
+  </li>
+  <li>
+    <a href="local_files.html" title="Next Chapter: 4.2. Local File Tutorial"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">4.2. Local Fi... &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="../_sources/tutorials/quick_start.ipynb.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput.container,
+div.nbinput.container div.prompt,
+div.nbinput.container div.input_area,
+div.nbinput.container div[class*=highlight],
+div.nbinput.container div[class*=highlight] pre,
+div.nboutput.container,
+div.nboutput.container div.prompt,
+div.nboutput.container div.output_area,
+div.nboutput.container div[class*=highlight],
+div.nboutput.container div[class*=highlight] pre {
+    background: none;
+    border: none;
+    padding: 0 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+/* avoid gaps between output lines */
+div.nboutput.container div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput.container,
+div.nboutput.container {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput.container,
+    div.nboutput.container {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput.container {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast.container {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput.container div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput.container div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput.container div.prompt,
+div.nboutput.container div.prompt {
+    width: 4.5ex;
+    padding-top: 5px;
+    position: relative;
+    user-select: none;
+}
+
+div.nbinput.container div.prompt > div,
+div.nboutput.container div.prompt > div {
+    position: absolute;
+    right: 0;
+    margin-right: 0.3ex;
+}
+
+@media (max-width: 540px) {
+    div.nbinput.container div.prompt,
+    div.nboutput.container div.prompt {
+        width: unset;
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput.container div.prompt.empty {
+        padding: 0;
+    }
+
+    div.nbinput.container div.prompt > div,
+    div.nboutput.container div.prompt > div {
+        position: unset;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput.container div.prompt pre,
+div.nboutput.container div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput.container div.input_area,
+div.nboutput.container div.output_area {
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput.container div.input_area,
+    div.nboutput.container div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput.container div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    background: #f5f5f5;
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput.container div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput.container div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput.container div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+
+div.nbinput.container div.input_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight].math,
+div.nboutput.container div.output_area.rendered_html,
+div.nboutput.container div.output_area > div.output_javascript,
+div.nboutput.container div.output_area:not(.rendered_html) > img{
+    padding: 5px;
+}
+
+/* fix copybtn overflow problem in chromium (needed for 'sphinx_copybutton') */
+div.nbinput.container div.input_area > div[class^='highlight'],
+div.nboutput.container div.output_area > div[class^='highlight']{
+    overflow-y: hidden;
+}
+
+/* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
+.prompt a.copybtn {
+    display: none;
+}
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+</style>
+<section id="Quick-Start">
+<h1><span class="section-number">4.1. </span>Quick Start<a class="headerlink" href="#Quick-Start" title="Permalink to this headline">¶</a></h1>
+<p>The goal of this notebook is to provide you with a quick overview of some of the key features of EQcorrscan. From this you should be able to dig deeper into the API to learn some of the more advanced features.</p>
+<section id="Matched-filter-earthquake-detection">
+<h2><span class="section-number">4.1.1. </span>Matched-filter earthquake detection<a class="headerlink" href="#Matched-filter-earthquake-detection" title="Permalink to this headline">¶</a></h2>
+<p>One of the main applications of EQcorrscan is to detect earthquakes or other seimic signals using matched-filters (aka template-matching). To undertake matched-filtering templates are required. Templates are simply processed waveforms. In EQcorrscan templates are realised as <code class="docutils literal notranslate"><span class="pre">Template</span></code> objects, which contain the waveform data and meta-data associated with their creation. Groups of <code class="docutils literal notranslate"><span class="pre">Template</span></code> objects are stored in <code class="docutils literal notranslate"><span class="pre">Tribe</span></code> objects. To demonstrate this, we will create a <code class="docutils literal notranslate"><span class="pre">Tribe</span></code> for the
+Parkfield 2004 earthquake.</p>
+<p>Before we begin we will set up logging - EQcorrscan provides textual output through the native Python <a class="reference external" href="https://docs.python.org/3/library/logging.html">logging library</a>. The standard <code class="docutils literal notranslate"><span class="pre">DEBUG</span></code>, <code class="docutils literal notranslate"><span class="pre">INFO</span></code>, <code class="docutils literal notranslate"><span class="pre">WARNING</span></code>, <code class="docutils literal notranslate"><span class="pre">ERROR</span></code> and <code class="docutils literal notranslate"><span class="pre">CRITICAL</span></code> levels are supported. For this we will set to <code class="docutils literal notranslate"><span class="pre">ERROR</span></code> to reduce the output. When starting off you might want to set to <code class="docutils literal notranslate"><span class="pre">INFO</span></code>, or if something is happening that you don’t expect, <code class="docutils literal notranslate"><span class="pre">DEBUG</span></code> will give you much more output.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span>
+    <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">,</span>
+    <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%(asctime)s</span><span class="se">\t</span><span class="si">%(name)s</span><span class="se">\t</span><span class="si">%(levelname)s</span><span class="se">\t</span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>First we need a catalog of events. We will just use a few earthquakes from the NCEDC. We are also only going to used picks from the 20 most picked stations.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="o">%</span><span class="k">matplotlib</span> inline
+<span class="kn">from</span> <span class="nn">obspy</span> <span class="kn">import</span> <span class="n">UTCDateTime</span>
+<span class="kn">from</span> <span class="nn">obspy.clients.fdsn</span> <span class="kn">import</span> <span class="n">Client</span>
+<span class="kn">from</span> <span class="nn">eqcorrscan.utils.catalog_utils</span> <span class="kn">import</span> <span class="n">filter_picks</span>
+
+<span class="n">client</span> <span class="o">=</span> <span class="n">Client</span><span class="p">(</span><span class="s2">&quot;NCEDC&quot;</span><span class="p">)</span>
+<span class="n">t1</span> <span class="o">=</span> <span class="n">UTCDateTime</span><span class="p">(</span><span class="mi">2004</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">28</span><span class="p">)</span>
+<span class="n">t2</span> <span class="o">=</span> <span class="n">t1</span> <span class="o">+</span> <span class="mi">86400</span>
+<span class="n">catalog</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_events</span><span class="p">(</span>
+    <span class="n">starttime</span><span class="o">=</span><span class="n">t1</span><span class="p">,</span> <span class="n">endtime</span><span class="o">=</span><span class="n">t2</span><span class="p">,</span> <span class="n">minmagnitude</span><span class="o">=</span><span class="mf">2.5</span><span class="p">,</span> <span class="n">minlatitude</span><span class="o">=</span><span class="mf">35.7</span><span class="p">,</span> <span class="n">maxlatitude</span><span class="o">=</span><span class="mf">36.1</span><span class="p">,</span>
+    <span class="n">minlongitude</span><span class="o">=-</span><span class="mf">120.6</span><span class="p">,</span> <span class="n">maxlongitude</span><span class="o">=-</span><span class="mf">120.2</span><span class="p">,</span> <span class="n">includearrivals</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">catalog</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">projection</span><span class="o">=</span><span class="s2">&quot;local&quot;</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="s2">&quot;h&quot;</span><span class="p">)</span>
+<span class="n">catalog</span> <span class="o">=</span> <span class="n">filter_picks</span><span class="p">(</span><span class="n">catalog</span><span class="o">=</span><span class="n">catalog</span><span class="p">,</span> <span class="n">evaluation_mode</span><span class="o">=</span><span class="s2">&quot;manual&quot;</span><span class="p">,</span> <span class="n">top_n_picks</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/home/calumch/miniconda3/envs/conda_37/lib/python3.7/site-packages/obspy/imaging/maps.py:387: MatplotlibDeprecationWarning:
+The dedent function was deprecated in Matplotlib 3.1 and will be removed in 3.3. Use inspect.cleandoc instead.
+  width=width, height=height, ax=ax)
+/home/calumch/miniconda3/envs/conda_37/lib/python3.7/site-packages/obspy/imaging/maps.py:435: MatplotlibDeprecationWarning:
+The dedent function was deprecated in Matplotlib 3.1 and will be removed in 3.3. Use inspect.cleandoc instead.
+  bmap.drawcountries(color=&#34;0.75&#34;)
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/tutorials_quick_start_4_1.png" src="../_images/tutorials_quick_start_4_1.png" />
+</div>
+</div>
+<p>When data are available via a <code class="docutils literal notranslate"><span class="pre">Client</span></code>, you can generate templates directly from the client without having to download data yourself. However, if you have data locally you can pass that data. Have a look at the notebook on <a class="reference external" href="template_creation.ipynb">template creation</a> for more details on other methods.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">eqcorrscan</span> <span class="kn">import</span> <span class="n">Tribe</span>
+
+<span class="n">tribe</span> <span class="o">=</span> <span class="n">Tribe</span><span class="p">()</span><span class="o">.</span><span class="n">construct</span><span class="p">(</span>
+    <span class="n">method</span><span class="o">=</span><span class="s2">&quot;from_client&quot;</span><span class="p">,</span> <span class="n">lowcut</span><span class="o">=</span><span class="mf">4.0</span><span class="p">,</span> <span class="n">highcut</span><span class="o">=</span><span class="mf">15.0</span><span class="p">,</span> <span class="n">samp_rate</span><span class="o">=</span><span class="mf">50.0</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mf">6.0</span><span class="p">,</span>
+    <span class="n">filt_order</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">prepick</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">client_id</span><span class="o">=</span><span class="n">client</span><span class="p">,</span> <span class="n">catalog</span><span class="o">=</span><span class="n">catalog</span><span class="p">,</span> <span class="n">data_pad</span><span class="o">=</span><span class="mf">20.</span><span class="p">,</span>
+    <span class="n">process_len</span><span class="o">=</span><span class="mi">21600</span><span class="p">,</span> <span class="n">min_snr</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">parallel</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">tribe</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Tribe of 34 templates
+</pre></div></div>
+</div>
+<p>This makes a tribe by:</p>
+<ol class="arabic simple">
+<li><p>Downloading data for each event (if multiple events occur close in time they will share data;</p></li>
+<li><p>Detrending, filtering and resampling the data;</p></li>
+<li><p>Trimming the data around picks within each event in the catalog.</p></li>
+</ol>
+<p>To make this <code class="docutils literal notranslate"><span class="pre">Tribe</span></code> we used a few different arguments:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">lowcut</span></code>: This controls the lower corner frequency of a filter in Hz. EQcorrscan natively uses Obspy’s butterworth filter functions. For more details, see the <a class="reference external" href="https://docs.obspy.org/packages/autogen/obspy.core.stream.Stream.filter.html">Obspy docs</a>. This can optionally be set to <code class="docutils literal notranslate"><span class="pre">None</span></code> to not apply filtering at low frequencies.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">highcut</span></code>: This controls the upper corner frequency of a filter in Hz. It is applied in tandem with lowcut, or can be set to <code class="docutils literal notranslate"><span class="pre">None</span></code> to not apply filtering at high frequencies.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">samp_rate</span></code>: The desired sampling-rate of the templates in Hz. EQcorrscan requires that templates and continuous data be sampled at the same rate. In this case we are downsampling data from 100.0 Hz to 50.0 Hz. We do this to reduce memory-load. EQcorrscan uses Obspy’s <a class="reference external" href="https://docs.obspy.org/packages/autogen/obspy.core.stream.Stream.resample.html#obspy.core.stream.Stream.resample">resampling method</a></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">length</span></code>: This is the length of the template waveform on each channel in seconds.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">filt_order</span></code>: This sets the number of corners/order of the filter applied using <code class="docutils literal notranslate"><span class="pre">highcut</span></code> and <code class="docutils literal notranslate"><span class="pre">lowcut</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">prepick</span></code>: The number of seconds prior to a phase-pick to start a template waveform.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">client_id</span></code>: This is the <code class="docutils literal notranslate"><span class="pre">Client</span></code> or client ID (e.g. our client id would be <code class="docutils literal notranslate"><span class="pre">&quot;NCEDC&quot;</span></code>) from which to download the data from.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">catalog</span></code>: The catalog of events to generate templates for.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data_pad</span></code>: A fudge-factor to cope with data centres not providing quite the data you asked for. This is the number of seconds extra to download to cope with this.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">process_len</span></code>: The length of data to download in seconds for each template. This should be the same as the length of your continuous data, e.g. if you data are in day-long files, this should be set to <code class="docutils literal notranslate"><span class="pre">86400</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">min_snr</span></code>: The minimum signal-to-noise ratio required for a channel to be included in a template. This provides a simple way of getting rid of poor-quality data from your templates.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">parallel</span></code>: Whether to process the data in parallel or not. This will increase memory load, if you find yourself running out of memory, set <code class="docutils literal notranslate"><span class="pre">parallel=False</span></code> for these template construction methods.</p></li>
+</ul>
+<p>Lets have a quick look at the attributes of a <code class="docutils literal notranslate"><span class="pre">Template</span></code>:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="nb">print</span><span class="p">(</span><span class="n">tribe</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">tribe</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">st</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">equal_scale</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">800</span><span class="p">,</span> <span class="mi">600</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Template 2004_09_28t17_15_25:
+         20 channels;
+         lowcut: 4.0 Hz;
+         highcut: 15.0 Hz;
+         sampling rate 50.0 Hz;
+         filter order: 4;
+         process length: 21600.0 s
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/tutorials_quick_start_8_1.png" src="../_images/tutorials_quick_start_8_1.png" />
+</div>
+</div>
+<p>We can see that this template has data from multiple stations, and that our processing parameters are stored alongside the template waveform. This means that we can ensure that when we work on continuous data to run matched-filtering the data are processed in the same way.</p>
+<p>Lets remove templates with fewer than five stations then use this tribe to detect earthquakes within the first few days of the Parkfield aftershock sequence:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">tribe</span><span class="o">.</span><span class="n">templates</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tribe</span> <span class="k">if</span> <span class="nb">len</span><span class="p">({</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">station</span> <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">t</span><span class="o">.</span><span class="n">st</span><span class="p">})</span> <span class="o">&gt;=</span> <span class="mi">5</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">tribe</span><span class="p">)</span>
+<span class="n">party</span><span class="p">,</span> <span class="n">st</span> <span class="o">=</span> <span class="n">tribe</span><span class="o">.</span><span class="n">client_detect</span><span class="p">(</span>
+    <span class="n">client</span><span class="o">=</span><span class="n">client</span><span class="p">,</span> <span class="n">starttime</span><span class="o">=</span><span class="n">t1</span><span class="p">,</span> <span class="n">endtime</span><span class="o">=</span><span class="n">t1</span> <span class="o">+</span> <span class="p">(</span><span class="mi">86400</span> <span class="o">*</span> <span class="mi">2</span><span class="p">),</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">9.</span><span class="p">,</span>
+    <span class="n">threshold_type</span><span class="o">=</span><span class="s2">&quot;MAD&quot;</span><span class="p">,</span> <span class="n">trig_int</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">return_stream</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Tribe of 28 templates
+</pre></div></div>
+</div>
+<p>This will:</p>
+<ol class="arabic simple">
+<li><p>Download the data required;</p></li>
+<li><p>Process the data in the same way as the templates in the <code class="docutils literal notranslate"><span class="pre">Tribe</span></code> (note that your tribe can contain templates processed in different ways: these will be grouped into similarly processed templates and the matched-filter process will be run multiple times; once for each group of similar templates);</p></li>
+<li><p>Cross-correlate the templates with the processed data and stack the correlations;</p></li>
+<li><p>Detect within each templates stacked cross-correlation array based on a given threshold;</p></li>
+<li><p>Generate <code class="docutils literal notranslate"><span class="pre">Detection</span></code> objects with Obspy events and meta-data</p></li>
+</ol>
+<p>Again, we used a few arguments here:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">client</span></code>: This again is the client from which to download data;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">starttime</span></code>: The start of the data we want to detect within;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">endtime</span></code>: The end of the data we want to detect within;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">threshold</span></code>: The threshold for detection: note that the correlation sum is both positive and negative valued. Detections are made based on the absolute of the correlation vector, so both postively and negatively correlated detections are made;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">threshold_type</span></code>: The type of threshold to use, in this case we used <code class="docutils literal notranslate"><span class="pre">&quot;MAD&quot;</span></code>, the median absolute deviation, our <code class="docutils literal notranslate"><span class="pre">threshold</span></code> is the MAD multiplier;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">trig_int</span></code>: The minimum time (in seconds) between triggers. The highest absolute correlation value will be used within this window if multiple possible triggers occur. Note that this only applies within the detections from one template.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">plotvar</span></code>: We turned plotting off in this case;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">return_stream</span></code>: Setting this to <code class="docutils literal notranslate"><span class="pre">True</span></code> will return the pre-processed stream downloaded from the client, allowing us to reuse this stream for later processing.</p></li>
+</ul>
+<p>Lets have a look at the cumulative detections we made.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">party</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">plot_grouped</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/tutorials_quick_start_12_0.png" src="../_images/tutorials_quick_start_12_0.png" />
+</div>
+</div>
+<p>We were returned a <code class="docutils literal notranslate"><span class="pre">Party</span></code> and a <code class="docutils literal notranslate"><span class="pre">Stream</span></code>. The <code class="docutils literal notranslate"><span class="pre">Party</span></code> is a container for <code class="docutils literal notranslate"><span class="pre">Family</span></code> objects. Each <code class="docutils literal notranslate"><span class="pre">Family</span></code> contains a <code class="docutils literal notranslate"><span class="pre">Template</span></code> and all the detections associated with that <code class="docutils literal notranslate"><span class="pre">Template</span></code>. Detections are stored as <code class="docutils literal notranslate"><span class="pre">Detection</span></code> objects.</p>
+<p>Lets have a look at the most productive family:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">family</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">party</span><span class="o">.</span><span class="n">families</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">f</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">f</span><span class="p">))[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">family</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Family of 106 detections from template 2004_09_28t20_05_53
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">family</span><span class="o">.</span><span class="n">template</span><span class="o">.</span><span class="n">st</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">equal_scale</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">800</span><span class="p">,</span> <span class="mi">600</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/tutorials_quick_start_15_0.png" src="../_images/tutorials_quick_start_15_0.png" />
+</div>
+</div>
+<p>We can get a dictionary of streams for each detection in a <code class="docutils literal notranslate"><span class="pre">Family</span></code> and look at some of those:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">streams</span> <span class="o">=</span> <span class="n">family</span><span class="o">.</span><span class="n">extract_streams</span><span class="p">(</span><span class="n">stream</span><span class="o">=</span><span class="n">st</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">prepick</span><span class="o">=</span><span class="mf">2.5</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">family</span><span class="o">.</span><span class="n">detections</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">streams</span><span class="p">[</span><span class="n">family</span><span class="o">.</span><span class="n">detections</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">id</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">equal_scale</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">800</span><span class="p">,</span> <span class="mi">600</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Detection on template: 2004_09_28t20_05_53 at: 2004-09-28T17:24:03.440000Z with 20 channels: [(&#39;BAP&#39;, &#39;SHZ&#39;), (&#39;BCW&#39;, &#39;EHZ&#39;), (&#39;BJC&#39;, &#39;EHZ&#39;), (&#39;BPO&#39;, &#39;SHZ&#39;), (&#39;BSG&#39;, &#39;EHZ&#39;), (&#39;PAP&#39;, &#39;SHZ&#39;), (&#39;PBW&#39;, &#39;SHZ&#39;), (&#39;PCA&#39;, &#39;EHZ&#39;), (&#39;PGH&#39;, &#39;EHZ&#39;), (&#39;PHP&#39;, &#39;SHZ&#39;), (&#39;PHS&#39;, &#39;SHZ&#39;), (&#39;PJC&#39;, &#39;EHZ&#39;), (&#39;PMM&#39;, &#39;EHZ&#39;), (&#39;PMR&#39;, &#39;EHZ&#39;), (&#39;PPT&#39;, &#39;SHZ&#39;), (&#39;PSA&#39;, &#39;SHZ&#39;), (&#39;PSM&#39;, &#39;SHZ&#39;), (&#39;PSR&#39;, &#39;EHZ&#39;), (&#39;PST&#39;, &#39;EHZ&#39;), (&#39;PTA&#39;, &#39;SHZ&#39;)]
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/tutorials_quick_start_17_1.png" src="../_images/tutorials_quick_start_17_1.png" />
+</div>
+</div>
+<p>On some stations we can clearly see the earthquake that was detected. Remember that these data have not been filtered.</p>
+<p>We can also undertake cross-correlation phase-picking using our templates. This is achieved using the <code class="docutils literal notranslate"><span class="pre">lag_calc</span></code> method on <code class="docutils literal notranslate"><span class="pre">Party</span></code> or <code class="docutils literal notranslate"><span class="pre">Family</span></code> objects. You can also use the <code class="docutils literal notranslate"><span class="pre">eqcorrscan.core.lag_calc</span></code> module directly on other catalogs.</p>
+<p>We need to provide a merged stream to the lag-calc function. The stream we have obtained from <code class="docutils literal notranslate"><span class="pre">tribe.detect</span></code> has overlaps in it. Using <code class="docutils literal notranslate"><span class="pre">stream.merge()</span></code> would result in gaps at those overlaps, which we do not want. We use <code class="docutils literal notranslate"><span class="pre">stream.merge(method=1)</span></code> to take include the real data in that gap.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">st</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">repicked_catalog</span> <span class="o">=</span> <span class="n">party</span><span class="o">.</span><span class="n">lag_calc</span><span class="p">(</span><span class="n">st</span><span class="p">,</span> <span class="n">pre_processed</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">shift_len</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">min_cc</span><span class="o">=</span><span class="mf">0.4</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area stderr docutils container">
+<div class="highlight"><pre>
+/home/calumch/miniconda3/envs/conda_37/lib/python3.7/site-packages/obspy/signal/detrend.py:35: RuntimeWarning: invalid value encountered in true_divide
+  data -= x1 + np.arange(ndat) * (x2 - x1) / float(ndat - 1)
+</pre></div></div>
+</div>
+<p>This returns a catalog with picks for each detected event. The arguments we have used are:</p>
+<ul class="simple">
+<li><p>The stream that we downloaded previously;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pre_processed</span></code>: Our data have not been processed, so we rely on <code class="docutils literal notranslate"><span class="pre">lag_calc</span></code> to process our data - this means that our data will be processed in the same way as our templates were;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">shift_len</span></code>: This is the maximum allowed shift (positive and negative) of the pick-time relative to the template moveout in seconds.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">min_cc</span></code>: The minimum normalised cross-correlation value required to generate a pick. Picks are made on the maximum correlation within a window.</p></li>
+</ul>
+<p>Lets look at one of the events that we have picked. The correlation value for the pick is stored in a comment:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="nb">print</span><span class="p">(</span><span class="n">repicked_catalog</span><span class="p">[</span><span class="mi">100</span><span class="p">]</span><span class="o">.</span><span class="n">picks</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Pick
+             resource_id: ResourceIdentifier(id=&#34;smi:local/08139539-1fec-4707-b60e-b87f68ecfb9e&#34;)
+                    time: UTCDateTime(2004, 9, 28, 18, 45, 22, 820000)
+             waveform_id: WaveformStreamID(network_code=&#39;NC&#39;, station_code=&#39;BPO&#39;, channel_code=&#39;SHZ&#39;, location_code=&#39;&#39;)
+               method_id: ResourceIdentifier(id=&#34;EQcorrscan&#34;)
+              phase_hint: &#39;P&#39;
+         evaluation_mode: &#39;automatic&#39;
+           creation_info: CreationInfo(agency_id=&#39;eqcorrscan.core.lag_calc&#39;)
+                    ---------
+                comments: 1 Elements
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[21]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="nb">print</span><span class="p">(</span><span class="n">repicked_catalog</span><span class="p">[</span><span class="mi">100</span><span class="p">]</span><span class="o">.</span><span class="n">picks</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">comments</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Comment(text=&#39;cc_max=0.439941&#39;, resource_id=ResourceIdentifier(id=&#34;smi:local/383b3803-a499-407b-bf1c-8d78ab4b73d1&#34;))
+</pre></div></div>
+</div>
+</section>
+<section id="Note:">
+<h2><span class="section-number">4.1.2. </span>Note:<a class="headerlink" href="#Note:" title="Permalink to this headline">¶</a></h2>
+<p>Using long templates like this that include both P and S energy does not usually produce good correlation derived phase arrivals. This is simply a demonstration. You should carefully select your template length, and ideally include both P and S picks in the catalog that you use to make templates.</p>
+<p>Explore the rest of the tutorials and API docs for further hints.</p>
+</section>
+</section>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2015-2021: EQcorrscan developers.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.2.1.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

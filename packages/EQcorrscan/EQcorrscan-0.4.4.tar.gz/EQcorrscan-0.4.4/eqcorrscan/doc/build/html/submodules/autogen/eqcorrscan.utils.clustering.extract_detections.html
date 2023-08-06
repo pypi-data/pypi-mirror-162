@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
+
+    <title>5.2.4.1.10. eqcorrscan.utils.clustering.extract_detections &#8212; EQcorrscan 0.4.3 documentation</title>
+    <link rel="stylesheet" href="../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="shortcut icon" href="../../_static/EQcorrscan_logo.ico"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="5.2.4.1.11. eqcorrscan.utils.clustering.group_delays" href="eqcorrscan.utils.clustering.group_delays.html" />
+    <link rel="prev" title="5.2.4.1.9. eqcorrscan.utils.clustering.empirical_svd" href="eqcorrscan.utils.clustering.empirical_svd.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../_static/js/jquery-1.12.4.min.js "></script>
+<script type="text/javascript" src="../../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../../_static/bootstrap-3.4.1/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../index.html"><span><img src="../../_static/EQcorrscan_logo.jpg"></span>
+          EQcorrscan</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.4</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../intro.html">1. Introduction to the EQcorrscan package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">2. EQcorrscan installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../updates.html">3. What’s new</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">4. EQcorrscan tutorials</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../api.html">5. EQcorrscan API</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">5.2.4.1.10. eqcorrscan.utils.clustering.extract_detections</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="eqcorrscan.utils.clustering.empirical_svd.html" title="Previous Chapter: 5.2.4.1.9. eqcorrscan.utils.clustering.empirical_svd"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; 5.2.4.1.9. eq...</span>
+    </a>
+  </li>
+  <li>
+    <a href="eqcorrscan.utils.clustering.group_delays.html" title="Next Chapter: 5.2.4.1.11. eqcorrscan.utils.clustering.group_delays"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">5.2.4.1.11. e... &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="../../_sources/submodules/autogen/eqcorrscan.utils.clustering.extract_detections.rst.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <section id="eqcorrscan-utils-clustering-extract-detections">
+<h1><span class="section-number">5.2.4.1.10. </span>eqcorrscan.utils.clustering.extract_detections<a class="headerlink" href="#eqcorrscan-utils-clustering-extract-detections" title="Permalink to this headline">¶</a></h1>
+<dl class="py function">
+<dt id="eqcorrscan.utils.clustering.extract_detections">
+<code class="sig-prename descclassname">eqcorrscan.utils.clustering.</code><code class="sig-name descname">extract_detections</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">detections</span></em>, <em class="sig-param"><span class="n">templates</span></em>, <em class="sig-param"><span class="n">archive</span></em>, <em class="sig-param"><span class="n">arc_type</span></em>, <em class="sig-param"><span class="n">extract_len</span><span class="o">=</span><span class="default_value">90.0</span></em>, <em class="sig-param"><span class="n">outdir</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">extract_Z</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">additional_stations</span><span class="o">=</span><span class="default_value">[]</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/eqcorrscan/utils/clustering.html#extract_detections"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eqcorrscan.utils.clustering.extract_detections" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract waveforms associated with detections</p>
+<p>Takes a list of detections for the template, template.  Waveforms will be
+returned as a list of <a class="reference external" href="https://docs.obspy.org/packages/autogen/obspy.core.stream.Stream.html#obspy.core.stream.Stream" title="(in ObsPy Documentation (1.2.0) v1.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">obspy.core.stream.Stream</span></code></a> containing
+segments of extract_len.  They will also be saved if outdir is set.
+The default is unset.  The  default extract_len is 90 seconds per channel.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>detections</strong> (<em>list</em>) – List of <code class="xref py py-class docutils literal notranslate"><span class="pre">eqcorrscan.core.match_filter.Detection</span></code>.</p></li>
+<li><p><strong>templates</strong> (<em>list</em>) – A list of tuples of the template name and the template Stream used
+to detect detections.</p></li>
+<li><p><strong>archive</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – Either name of archive or path to continuous data, see
+<a class="reference internal" href="../utils.archive_read.html#module-eqcorrscan.utils.archive_read" title="eqcorrscan.utils.archive_read"><code class="xref py py-func docutils literal notranslate"><span class="pre">eqcorrscan.utils.archive_read()</span></code></a> for details</p></li>
+<li><p><strong>arc_type</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – Type of archive, either seishub, FDSN, day_vols</p></li>
+<li><p><strong>extract_len</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – Length to extract around the detection (will be equally cut around
+the detection time) in seconds.  Default is 90.0.</p></li>
+<li><p><strong>outdir</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – Default is None, with None set, no files will be saved,
+if set each detection will be saved into this directory with files
+named according to the detection time, NOT than the waveform
+start time. Detections will be saved into template subdirectories.
+Files written will be multiplexed miniseed files, the encoding will
+be chosen automatically and will likely be float.</p></li>
+<li><p><strong>extract_Z</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – Set to True to also extract Z channels for detections delays will be
+the same as horizontal channels, only applies if only horizontal
+channels were used in the template.</p></li>
+<li><p><strong>additional_stations</strong> (<em>list</em>) – List of tuples of (station, channel) to also extract data
+for using an average delay.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>list of <code class="xref py py-class docutils literal notranslate"><span class="pre">obspy.core.streams.Stream</span></code></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">eqcorrscan.utils.clustering</span> <span class="kn">import</span> <span class="n">extract_detections</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">eqcorrscan.core.match_filter</span> <span class="kn">import</span> <span class="n">Detection</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">obspy</span> <span class="kn">import</span> <span class="n">read</span><span class="p">,</span> <span class="n">UTCDateTime</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Get the path to the test data</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">eqcorrscan</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">os</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">TEST_PATH</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">eqcorrscan</span><span class="o">.</span><span class="vm">__file__</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;/tests/test_data&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Use some dummy detections, you would use real one</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">detections</span> <span class="o">=</span> <span class="p">[</span><span class="n">Detection</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">template_name</span><span class="o">=</span><span class="s1">&#39;temp1&#39;</span><span class="p">,</span> <span class="n">detect_time</span><span class="o">=</span><span class="n">UTCDateTime</span><span class="p">(</span><span class="mi">2012</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">26</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">15</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">no_chans</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">chans</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;WHYM&#39;</span><span class="p">,</span> <span class="s1">&#39;EORO&#39;</span><span class="p">],</span> <span class="n">detect_val</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">1.2</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">typeofdet</span><span class="o">=</span><span class="s1">&#39;corr&#39;</span><span class="p">,</span> <span class="n">threshold_type</span><span class="o">=</span><span class="s1">&#39;MAD&#39;</span><span class="p">,</span> <span class="n">threshold_input</span><span class="o">=</span><span class="mf">8.0</span><span class="p">),</span>
+<span class="gp">... </span>              <span class="n">Detection</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">template_name</span><span class="o">=</span><span class="s1">&#39;temp2&#39;</span><span class="p">,</span> <span class="n">detect_time</span><span class="o">=</span><span class="n">UTCDateTime</span><span class="p">(</span><span class="mi">2012</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">26</span><span class="p">,</span> <span class="mi">18</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">no_chans</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">chans</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;WHYM&#39;</span><span class="p">,</span> <span class="s1">&#39;EORO&#39;</span><span class="p">],</span> <span class="n">detect_val</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">1.2</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">typeofdet</span><span class="o">=</span><span class="s1">&#39;corr&#39;</span><span class="p">,</span> <span class="n">threshold_type</span><span class="o">=</span><span class="s1">&#39;MAD&#39;</span><span class="p">,</span> <span class="n">threshold_input</span><span class="o">=</span><span class="mf">8.0</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">archive</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">TEST_PATH</span><span class="p">,</span> <span class="s1">&#39;day_vols&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">template_files</span> <span class="o">=</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">TEST_PATH</span><span class="p">,</span> <span class="s1">&#39;temp1.ms&#39;</span><span class="p">),</span>
+<span class="gp">... </span>                  <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">TEST_PATH</span><span class="p">,</span> <span class="s1">&#39;temp2.ms&#39;</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">templates</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;temp&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="n">read</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
+<span class="gp">... </span>             <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">filename</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">template_files</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">extracted</span> <span class="o">=</span> <span class="n">extract_detections</span><span class="p">(</span><span class="n">detections</span><span class="p">,</span> <span class="n">templates</span><span class="p">,</span>
+<span class="gp">... </span>                               <span class="n">archive</span><span class="o">=</span><span class="n">archive</span><span class="p">,</span> <span class="n">arc_type</span><span class="o">=</span><span class="s1">&#39;day_vols&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">extracted</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">sort</span><span class="p">())</span>
+<span class="go">2 Trace(s) in Stream:</span>
+<span class="go">AF.EORO..SHZ | 2012-03-26T09:14:15.000000Z - 2012-03-26T09:15:45.000000Z | 1.0 Hz, 91 samples</span>
+<span class="go">AF.WHYM..SHZ | 2012-03-26T09:14:15.000000Z - 2012-03-26T09:15:45.000000Z | 1.0 Hz, 91 samples</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">extracted</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">sort</span><span class="p">())</span>
+<span class="go">2 Trace(s) in Stream:</span>
+<span class="go">AF.EORO..SHZ | 2012-03-26T18:04:15.000000Z - 2012-03-26T18:05:45.000000Z | 1.0 Hz, 91 samples</span>
+<span class="go">AF.WHYM..SHZ | 2012-03-26T18:04:15.000000Z - 2012-03-26T18:05:45.000000Z | 1.0 Hz, 91 samples</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Extract from stations not included in the detections</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">extracted</span> <span class="o">=</span> <span class="n">extract_detections</span><span class="p">(</span>
+<span class="gp">... </span>   <span class="n">detections</span><span class="p">,</span> <span class="n">templates</span><span class="p">,</span> <span class="n">archive</span><span class="o">=</span><span class="n">archive</span><span class="p">,</span> <span class="n">arc_type</span><span class="o">=</span><span class="s1">&#39;day_vols&#39;</span><span class="p">,</span>
+<span class="gp">... </span>   <span class="n">additional_stations</span><span class="o">=</span><span class="p">[(</span><span class="s1">&#39;GOVA&#39;</span><span class="p">,</span> <span class="s1">&#39;SHZ&#39;</span><span class="p">)])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">extracted</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">sort</span><span class="p">())</span>
+<span class="go">3 Trace(s) in Stream:</span>
+<span class="go">AF.EORO..SHZ | 2012-03-26T09:14:15.000000Z - 2012-03-26T09:15:45.000000Z | 1.0 Hz, 91 samples</span>
+<span class="go">AF.GOVA..SHZ | 2012-03-26T09:14:15.000000Z - 2012-03-26T09:15:45.000000Z | 1.0 Hz, 91 samples</span>
+<span class="go">AF.WHYM..SHZ | 2012-03-26T09:14:15.000000Z - 2012-03-26T09:15:45.000000Z | 1.0 Hz, 91 samples</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># The detections can be saved to a file:</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">extract_detections</span><span class="p">(</span><span class="n">detections</span><span class="p">,</span> <span class="n">templates</span><span class="p">,</span> <span class="n">archive</span><span class="o">=</span><span class="n">archive</span><span class="p">,</span>
+<span class="gp">... </span>                   <span class="n">arc_type</span><span class="o">=</span><span class="s1">&#39;day_vols&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                   <span class="n">additional_stations</span><span class="o">=</span><span class="p">[(</span><span class="s1">&#39;GOVA&#39;</span><span class="p">,</span> <span class="s1">&#39;SHZ&#39;</span><span class="p">)],</span> <span class="n">outdir</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2015-2021: EQcorrscan developers.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.2.1.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

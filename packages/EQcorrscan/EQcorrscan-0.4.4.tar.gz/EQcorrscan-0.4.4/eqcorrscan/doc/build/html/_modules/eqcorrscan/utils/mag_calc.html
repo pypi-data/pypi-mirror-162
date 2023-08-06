@@ -1,0 +1,1340 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>eqcorrscan.utils.mag_calc &#8212; EQcorrscan 0.4.3 documentation</title>
+    <link rel="stylesheet" href="../../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="shortcut icon" href="../../../_static/EQcorrscan_logo.ico"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../../_static/js/jquery-1.12.4.min.js "></script>
+<script type="text/javascript" src="../../../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../../../_static/bootstrap-3.4.1/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../../../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../../index.html"><span><img src="../../../_static/EQcorrscan_logo.jpg"></span>
+          EQcorrscan</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.4</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../intro.html">1. Introduction to the EQcorrscan package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">2. EQcorrscan installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../updates.html">3. What’s new</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorial.html">4. EQcorrscan tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">5. EQcorrscan API</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"></ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+              <li class="hidden-sm"></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <h1>Source code for eqcorrscan.utils.mag_calc</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Functions to aid magnitude estimation.</span>
+
+<span class="sd">:copyright:</span>
+<span class="sd">    EQcorrscan developers.</span>
+
+<span class="sd">:license:</span>
+<span class="sd">    GNU Lesser General Public License, Version 3</span>
+<span class="sd">    (https://www.gnu.org/copyleft/lesser.html)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">eqcorrscan</span>  <span class="c1"># Used to get version number</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">import</span> <span class="nn">math</span>
+
+<span class="kn">from</span> <span class="nn">inspect</span> <span class="kn">import</span> <span class="n">currentframe</span>
+<span class="kn">from</span> <span class="nn">scipy.signal</span> <span class="kn">import</span> <span class="n">iirfilter</span><span class="p">,</span> <span class="n">sosfreqz</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">Counter</span>
+<span class="kn">from</span> <span class="nn">obspy</span> <span class="kn">import</span> <span class="n">Trace</span>
+<span class="kn">from</span> <span class="nn">obspy.signal.invsim</span> <span class="kn">import</span> <span class="n">simulate_seismometer</span> <span class="k">as</span> <span class="n">seis_sim</span>
+<span class="kn">from</span> <span class="nn">obspy.core.event</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">Amplitude</span><span class="p">,</span> <span class="n">Pick</span><span class="p">,</span> <span class="n">WaveformStreamID</span><span class="p">,</span> <span class="n">Origin</span><span class="p">,</span> <span class="n">ResourceIdentifier</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">obspy.geodetics</span> <span class="kn">import</span> <span class="n">degrees2kilometers</span>
+
+
+<span class="n">Logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<span class="c1"># Magnitude - frequency funcs</span>
+
+<div class="viewcode-block" id="calc_max_curv"><a class="viewcode-back" href="../../../submodules/autogen/eqcorrscan.utils.mag_calc.calc_max_curv.html#eqcorrscan.utils.mag_calc.calc_max_curv">[docs]</a><span class="k">def</span> <span class="nf">calc_max_curv</span><span class="p">(</span><span class="n">magnitudes</span><span class="p">,</span> <span class="n">bin_size</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">plotvar</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the magnitude of completeness using the maximum curvature method.</span>
+
+<span class="sd">    :type magnitudes: list or numpy array</span>
+<span class="sd">    :param magnitudes:</span>
+<span class="sd">        List of magnitudes from which to compute the maximum curvature which</span>
+<span class="sd">        will give an estimate of the magnitude of completeness given the</span>
+<span class="sd">        assumption of a power-law scaling.</span>
+<span class="sd">    :type bin_size: float</span>
+<span class="sd">    :param bin_size:</span>
+<span class="sd">        Width of magnitude bins used to compute the non-cumulative distribution</span>
+<span class="sd">    :type plotvar: bool</span>
+<span class="sd">    :param plotvar: Turn plotting on and off</span>
+
+<span class="sd">    :rtype: float</span>
+<span class="sd">    :return: Magnitude at maximum curvature</span>
+
+<span class="sd">    .. Note:: Should be used as a guide, often under-estimates Mc.</span>
+
+<span class="sd">    .. rubric:: Example</span>
+
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; mags = np.arange(3, 6, .1)</span>
+<span class="sd">    &gt;&gt;&gt; N = 10 ** (5 - 1 * mags)</span>
+<span class="sd">    &gt;&gt;&gt; magnitudes = [0, 2, 3, 2.5, 2.2, 1.0]  # Some below completeness</span>
+<span class="sd">    &gt;&gt;&gt; for mag, n in zip(mags, N):</span>
+<span class="sd">    ...     magnitudes.extend([mag for _ in range(int(n))])</span>
+<span class="sd">    &gt;&gt;&gt; calc_max_curv(magnitudes, plotvar=False)</span>
+<span class="sd">    3.0</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">min_bin</span><span class="p">,</span> <span class="n">max_bin</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">magnitudes</span><span class="p">)),</span> <span class="nb">int</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">magnitudes</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">bins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">min_bin</span><span class="p">,</span> <span class="n">max_bin</span> <span class="o">+</span> <span class="n">bin_size</span><span class="p">,</span> <span class="n">bin_size</span><span class="p">)</span>
+    <span class="n">df</span><span class="p">,</span> <span class="n">bins</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram</span><span class="p">(</span><span class="n">magnitudes</span><span class="p">,</span> <span class="n">bins</span><span class="p">)</span>
+    <span class="n">grad</span> <span class="o">=</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">df</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="n">bin_size</span>
+    <span class="c1"># Need to find the second order derivative</span>
+    <span class="n">curvature</span> <span class="o">=</span> <span class="p">(</span><span class="n">grad</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">grad</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="n">bin_size</span>
+    <span class="n">max_curv</span> <span class="o">=</span> <span class="n">bins</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">curvature</span><span class="p">))]</span> <span class="o">+</span> <span class="n">bin_size</span>
+    <span class="k">if</span> <span class="n">plotvar</span><span class="p">:</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">bins</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">bin_size</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">,</span>
+                   <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Magnitudes&quot;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">max_curv</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;red&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Maximum curvature&quot;</span><span class="p">)</span>
+        <span class="n">ax1</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">twinx</span><span class="p">()</span>
+        <span class="n">ax1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">bins</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">bin_size</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">df</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])[::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                 <span class="n">color</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Cumulative distribution&quot;</span><span class="p">)</span>
+        <span class="n">ax1</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">bins</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">grad</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Gradient&quot;</span><span class="p">)</span>
+        <span class="n">ax2</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">twinx</span><span class="p">()</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">bins</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">bin_size</span><span class="p">,</span> <span class="n">curvature</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;blue&quot;</span><span class="p">,</span>
+                    <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Curvature&quot;</span><span class="p">)</span>
+        <span class="c1"># Code borrowed from https://matplotlib.org/3.1.1/gallery/ticks_and_</span>
+        <span class="c1"># spines/multiple_yaxis_with_spines.html#sphx-glr-gallery-ticks-and-</span>
+        <span class="c1"># spines-multiple-yaxis-with-spines-py</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s2">&quot;right&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">set_position</span><span class="p">((</span><span class="s2">&quot;axes&quot;</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">))</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">set_frame_on</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">patch</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">sp</span> <span class="ow">in</span> <span class="n">ax2</span><span class="o">.</span><span class="n">spines</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">sp</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s2">&quot;right&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;N earthquakes in bin&quot;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Magnitude&quot;</span><span class="p">)</span>
+        <span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Cumulative events and gradient&quot;</span><span class="p">)</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Curvature&quot;</span><span class="p">)</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">max_curv</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="calc_b_value"><a class="viewcode-back" href="../../../submodules/autogen/eqcorrscan.utils.mag_calc.calc_b_value.html#eqcorrscan.utils.mag_calc.calc_b_value">[docs]</a><span class="k">def</span> <span class="nf">calc_b_value</span><span class="p">(</span><span class="n">magnitudes</span><span class="p">,</span> <span class="n">completeness</span><span class="p">,</span> <span class="n">max_mag</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">plotvar</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the b-value for a range of completeness magnitudes.</span>
+
+<span class="sd">    Calculates a power-law fit to given magnitudes for each completeness</span>
+<span class="sd">    magnitude.  Plots the b-values and residuals for the fitted catalogue</span>
+<span class="sd">    against the completeness values. Computes fits using numpy.polyfit,</span>
+<span class="sd">    which uses a least-squares technique.</span>
+
+<span class="sd">    :type magnitudes: list</span>
+<span class="sd">    :param magnitudes: Magnitudes to compute the b-value for.</span>
+<span class="sd">    :type completeness: list</span>
+<span class="sd">    :param completeness: list of completeness values to compute b-values for.</span>
+<span class="sd">    :type max_mag: float</span>
+<span class="sd">    :param max_mag: Maximum magnitude to attempt to fit in magnitudes.</span>
+<span class="sd">    :type plotvar: bool</span>
+<span class="sd">    :param plotvar: Turn plotting on or off.</span>
+
+<span class="sd">    :rtype: list</span>
+<span class="sd">    :return:</span>
+<span class="sd">        List of tuples of (completeness, b-value, residual, number of</span>
+<span class="sd">        magnitudes used)</span>
+
+<span class="sd">    .. Note::</span>
+<span class="sd">        High &quot;residuals&quot; indicate better fit. Residuals are calculated</span>
+<span class="sd">        according to the Wiemer &amp; Wyss 2000, Minimum Magnitude of Completeness</span>
+<span class="sd">        in Earthquake Catalogs: Examples from Alaska, the Western United</span>
+<span class="sd">        States, and Japan, BSSA.</span>
+
+<span class="sd">    .. rubric:: Example</span>
+
+<span class="sd">    &gt;&gt;&gt; from obspy.clients.fdsn import Client</span>
+<span class="sd">    &gt;&gt;&gt; from obspy import UTCDateTime</span>
+<span class="sd">    &gt;&gt;&gt; from eqcorrscan.utils.mag_calc import calc_b_value</span>
+<span class="sd">    &gt;&gt;&gt; client = Client(&#39;IRIS&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; t1 = UTCDateTime(&#39;2012-03-26T00:00:00&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; t2 = t1 + (3 * 86400)</span>
+<span class="sd">    &gt;&gt;&gt; catalog = client.get_events(starttime=t1, endtime=t2, minmagnitude=3)</span>
+<span class="sd">    &gt;&gt;&gt; magnitudes = [event.magnitudes[0].mag for event in catalog]</span>
+<span class="sd">    &gt;&gt;&gt; b_values = calc_b_value(magnitudes, completeness=np.arange(3, 7, 0.2),</span>
+<span class="sd">    ...                         plotvar=False)</span>
+<span class="sd">    &gt;&gt;&gt; round(b_values[4][1], 1)</span>
+<span class="sd">    1.0</span>
+<span class="sd">    &gt;&gt;&gt; # We can set a maximum magnitude:</span>
+<span class="sd">    &gt;&gt;&gt; b_values = calc_b_value(magnitudes, completeness=np.arange(3, 7, 0.2),</span>
+<span class="sd">    ...                         plotvar=False, max_mag=5)</span>
+<span class="sd">    &gt;&gt;&gt; round(b_values[4][1], 1)</span>
+<span class="sd">    1.0</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">b_values</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="c1"># Calculate the cdf for all magnitudes</span>
+    <span class="n">counts</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">(</span><span class="n">magnitudes</span><span class="p">)</span>
+    <span class="n">cdf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">counts</span><span class="p">))</span>
+    <span class="n">mag_steps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">counts</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">magnitude</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">counts</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)):</span>
+        <span class="n">mag_steps</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">magnitude</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">cdf</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">cdf</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">counts</span><span class="p">[</span><span class="n">magnitude</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cdf</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">counts</span><span class="p">[</span><span class="n">magnitude</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">max_mag</span><span class="p">:</span>
+        <span class="n">max_mag</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">magnitudes</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">m_c</span> <span class="ow">in</span> <span class="n">completeness</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">m_c</span> <span class="o">&gt;=</span> <span class="n">max_mag</span> <span class="ow">or</span> <span class="n">m_c</span> <span class="o">&gt;=</span> <span class="nb">max</span><span class="p">(</span><span class="n">magnitudes</span><span class="p">):</span>
+            <span class="n">Logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Not computing completeness at </span><span class="si">%s</span><span class="s1">, above max_mag&#39;</span> <span class="o">%</span>
+                           <span class="nb">str</span><span class="p">(</span><span class="n">m_c</span><span class="p">))</span>
+            <span class="k">break</span>
+        <span class="n">complete_mags</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">complete_freq</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">mag</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">mag_steps</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">mag</span> <span class="o">&gt;=</span> <span class="n">m_c</span> <span class="o">&lt;=</span> <span class="n">max_mag</span><span class="p">:</span>
+                <span class="n">complete_mags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mag</span><span class="p">)</span>
+                <span class="n">complete_freq</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">cdf</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">complete_mags</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="n">Logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Not computing completeness above &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">m_c</span><span class="p">)</span> <span class="o">+</span>
+                           <span class="s1">&#39;, fewer than 4 events&#39;</span><span class="p">)</span>
+            <span class="k">break</span>
+        <span class="n">fit</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">polyfit</span><span class="p">(</span><span class="n">complete_mags</span><span class="p">,</span> <span class="n">complete_freq</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">full</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="c1"># Calculate the residuals according to the Wiemer &amp; Wys 2000 definition</span>
+        <span class="n">predicted_freqs</span> <span class="o">=</span> <span class="p">[</span><span class="n">fit</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="nb">abs</span><span class="p">(</span><span class="n">fit</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">M</span><span class="p">)</span>
+                           <span class="k">for</span> <span class="n">M</span> <span class="ow">in</span> <span class="n">complete_mags</span><span class="p">]</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">-</span> <span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span><span class="nb">abs</span><span class="p">(</span><span class="n">complete_freq</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">predicted_freqs</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                           <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">complete_freq</span><span class="p">))])</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span> <span class="o">/</span>
+                   <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">complete_freq</span><span class="p">))</span>
+        <span class="n">b_values</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">m_c</span><span class="p">,</span> <span class="nb">abs</span><span class="p">(</span><span class="n">fit</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]),</span> <span class="n">r</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">complete_mags</span><span class="p">)))</span>
+    <span class="k">if</span> <span class="n">plotvar</span><span class="p">:</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">ax1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
+        <span class="n">b_vals</span> <span class="o">=</span> <span class="n">ax1</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">b_values</span><span class="p">))[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">b_values</span><span class="p">))[</span><span class="mi">1</span><span class="p">],</span>
+                             <span class="n">c</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
+        <span class="n">resid</span> <span class="o">=</span> <span class="n">ax1</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">b_values</span><span class="p">))[</span><span class="mi">0</span><span class="p">],</span>
+                            <span class="p">[</span><span class="mi">100</span> <span class="o">-</span> <span class="n">b</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">b_values</span><span class="p">))[</span><span class="mi">2</span><span class="p">]],</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+        <span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;b-value and residual&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Completeness magnitude&#39;</span><span class="p">)</span>
+        <span class="n">ax2</span> <span class="o">=</span> <span class="n">ax1</span><span class="o">.</span><span class="n">twinx</span><span class="p">()</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;Number of events used in fit&#39;</span><span class="p">)</span>
+        <span class="n">n_ev</span> <span class="o">=</span> <span class="n">ax2</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">b_values</span><span class="p">))[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">b_values</span><span class="p">))[</span><span class="mi">3</span><span class="p">],</span>
+                           <span class="n">c</span><span class="o">=</span><span class="s1">&#39;g&#39;</span><span class="p">)</span>
+        <span class="n">fig</span><span class="o">.</span><span class="n">legend</span><span class="p">((</span><span class="n">b_vals</span><span class="p">,</span> <span class="n">resid</span><span class="p">,</span> <span class="n">n_ev</span><span class="p">),</span>
+                   <span class="p">(</span><span class="s1">&#39;b-values&#39;</span><span class="p">,</span> <span class="s1">&#39;residuals&#39;</span><span class="p">,</span> <span class="s1">&#39;number of events&#39;</span><span class="p">),</span>
+                   <span class="s1">&#39;lower right&#39;</span><span class="p">)</span>
+        <span class="n">ax1</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Possible completeness values&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">b_values</span></div>
+
+
+<span class="c1"># Helpers for local magnitude estimation</span>
+<span class="c1"># Note Wood anderson sensitivity is 2080 as per Uhrhammer &amp; Collins 1990</span>
+<span class="n">PAZ_WA</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;poles&#39;</span><span class="p">:</span> <span class="p">[</span><span class="o">-</span><span class="mf">6.283</span> <span class="o">+</span> <span class="mf">4.7124</span><span class="n">j</span><span class="p">,</span> <span class="o">-</span><span class="mf">6.283</span> <span class="o">-</span> <span class="mf">4.7124</span><span class="n">j</span><span class="p">],</span>
+          <span class="s1">&#39;zeros&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span> <span class="o">+</span> <span class="mi">0</span><span class="n">j</span><span class="p">],</span> <span class="s1">&#39;gain&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span> <span class="s1">&#39;sensitivity&#39;</span><span class="p">:</span> <span class="mi">2080</span><span class="p">}</span>
+
+
+<div class="viewcode-block" id="dist_calc"><a class="viewcode-back" href="../../../submodules/autogen/eqcorrscan.utils.mag_calc.dist_calc.html#eqcorrscan.utils.mag_calc.dist_calc">[docs]</a><span class="k">def</span> <span class="nf">dist_calc</span><span class="p">(</span><span class="n">loc1</span><span class="p">,</span> <span class="n">loc2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function to calculate the distance in km between two points.</span>
+
+<span class="sd">    Uses the</span>
+<span class="sd">    `haversine formula &lt;https://en.wikipedia.org/wiki/Haversine_formula&gt;`_</span>
+<span class="sd">    to calculate great circle distance at the Earth&#39;s surface, then uses</span>
+<span class="sd">    trig to include depth.</span>
+
+<span class="sd">    :type loc1: tuple</span>
+<span class="sd">    :param loc1: Tuple of lat, lon, depth (in decimal degrees and km)</span>
+<span class="sd">    :type loc2: tuple</span>
+<span class="sd">    :param loc2: Tuple of lat, lon, depth (in decimal degrees and km)</span>
+
+<span class="sd">    :returns: Distance between points in km.</span>
+<span class="sd">    :rtype: float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">eqcorrscan.utils.libnames</span> <span class="kn">import</span> <span class="n">_load_cdll</span>
+    <span class="kn">import</span> <span class="nn">ctypes</span>
+
+    <span class="n">utilslib</span> <span class="o">=</span> <span class="n">_load_cdll</span><span class="p">(</span><span class="s1">&#39;libutils&#39;</span><span class="p">)</span>
+
+    <span class="n">utilslib</span><span class="o">.</span><span class="n">dist_calc</span><span class="o">.</span><span class="n">argtypes</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">ctypes</span><span class="o">.</span><span class="n">c_float</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_float</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_float</span><span class="p">,</span>
+        <span class="n">ctypes</span><span class="o">.</span><span class="n">c_float</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_float</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_float</span><span class="p">]</span>
+    <span class="n">utilslib</span><span class="o">.</span><span class="n">dist_calc</span><span class="o">.</span><span class="n">restype</span> <span class="o">=</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_float</span>
+
+    <span class="n">dist</span> <span class="o">=</span> <span class="n">utilslib</span><span class="o">.</span><span class="n">dist_calc</span><span class="p">(</span>
+        <span class="nb">float</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">loc1</span><span class="p">[</span><span class="mi">0</span><span class="p">])),</span> <span class="nb">float</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">loc1</span><span class="p">[</span><span class="mi">1</span><span class="p">])),</span>
+        <span class="nb">float</span><span class="p">(</span><span class="n">loc1</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span>
+        <span class="nb">float</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">loc2</span><span class="p">[</span><span class="mi">0</span><span class="p">])),</span> <span class="nb">float</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">loc2</span><span class="p">[</span><span class="mi">1</span><span class="p">])),</span>
+        <span class="nb">float</span><span class="p">(</span><span class="n">loc2</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
+    <span class="k">return</span> <span class="n">dist</span></div>
+
+
+<div class="viewcode-block" id="_sim_WA"><a class="viewcode-back" href="../../../submodules/autogen/eqcorrscan.utils.mag_calc._sim_WA.html#eqcorrscan.utils.mag_calc._sim_WA">[docs]</a><span class="k">def</span> <span class="nf">_sim_WA</span><span class="p">(</span><span class="n">trace</span><span class="p">,</span> <span class="n">inventory</span><span class="p">,</span> <span class="n">water_level</span><span class="p">,</span> <span class="n">velocity</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Remove the instrument response from a trace and simulate a Wood-Anderson.</span>
+
+<span class="sd">    Returns a de-meaned, de-trended, Wood Anderson simulated trace in</span>
+<span class="sd">    its place.</span>
+
+<span class="sd">    Works in-place on data and will destroy your original data, copy the</span>
+<span class="sd">    trace before giving it to this function!</span>
+
+<span class="sd">    :type trace: obspy.core.trace.Trace</span>
+<span class="sd">    :param trace:</span>
+<span class="sd">        A standard obspy trace, generally should be given without</span>
+<span class="sd">        pre-filtering, if given with pre-filtering for use with</span>
+<span class="sd">        amplitude determination for magnitudes you will need to</span>
+<span class="sd">        worry about how you cope with the response of this filter</span>
+<span class="sd">        yourself.</span>
+<span class="sd">    :type inventory: obspy.core.inventory.Inventory</span>
+<span class="sd">    :param inventory:</span>
+<span class="sd">        Inventory containing response information for the stations in st.</span>
+<span class="sd">    :type water_level: float</span>
+<span class="sd">    :param water_level: Water level for the simulation.</span>
+<span class="sd">    :type velocity: bool</span>
+<span class="sd">    :param velocity:</span>
+<span class="sd">        Whether to return a velocity trace or not - velocity is non-standard</span>
+<span class="sd">        for Wood-Anderson instruments, but institutes that use seiscomp3 or</span>
+<span class="sd">        Antelope require picks in velocity.</span>
+
+<span class="sd">    :returns: Trace of Wood-Anderson simulated data</span>
+<span class="sd">    :rtype: :class:`obspy.core.trace.Trace`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">trace</span><span class="p">,</span> <span class="n">Trace</span><span class="p">)</span>
+    <span class="n">paz_wa</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">PAZ_WA</span><span class="p">)</span>
+    <span class="c1"># Need to make a copy because we might edit it.</span>
+    <span class="k">if</span> <span class="n">velocity</span><span class="p">:</span>
+        <span class="n">paz_wa</span><span class="p">[</span><span class="s1">&#39;zeros&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span> <span class="o">+</span> <span class="mi">0</span><span class="n">j</span><span class="p">,</span> <span class="mi">0</span> <span class="o">+</span> <span class="mi">0</span><span class="n">j</span><span class="p">]</span>
+    <span class="c1"># De-trend data</span>
+    <span class="n">trace</span><span class="o">.</span><span class="n">detrend</span><span class="p">(</span><span class="s1">&#39;simple&#39;</span><span class="p">)</span>
+    <span class="c1"># Remove response to Velocity</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">trace</span><span class="o">.</span><span class="n">remove_response</span><span class="p">(</span>
+            <span class="n">inventory</span><span class="o">=</span><span class="n">inventory</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="s2">&quot;VEL&quot;</span><span class="p">,</span> <span class="n">water_level</span><span class="o">=</span><span class="n">water_level</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="n">Logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No response for </span><span class="si">{</span><span class="n">trace</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2"> at </span><span class="si">{</span><span class="n">trace</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="c1"># Simulate Wood Anderson</span>
+    <span class="n">trace</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">seis_sim</span><span class="p">(</span><span class="n">trace</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">trace</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">,</span>
+                          <span class="n">paz_remove</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">paz_simulate</span><span class="o">=</span><span class="n">paz_wa</span><span class="p">,</span>
+                          <span class="n">water_level</span><span class="o">=</span><span class="n">water_level</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">trace</span></div>
+
+
+<div class="viewcode-block" id="_max_p2t"><a class="viewcode-back" href="../../../submodules/autogen/eqcorrscan.utils.mag_calc._max_p2t.html#eqcorrscan.utils.mag_calc._max_p2t">[docs]</a><span class="k">def</span> <span class="nf">_max_p2t</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">delta</span><span class="p">,</span> <span class="n">return_peak_trough</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Finds the maximum peak-to-trough amplitude and period.</span>
+
+<span class="sd">    Originally designed to be used to calculate magnitudes (by</span>
+<span class="sd">    taking half of the peak-to-trough amplitude as the peak amplitude).</span>
+
+<span class="sd">    :type data: numpy.ndarray</span>
+<span class="sd">    :param data: waveform trace to find the peak-to-trough in.</span>
+<span class="sd">    :type delta: float</span>
+<span class="sd">    :param delta: Sampling interval in seconds</span>
+<span class="sd">    :type return_peak_trough: bool</span>
+<span class="sd">    :param return_peak_trough:</span>
+<span class="sd">        Optionally return the peak and trough</span>
+
+<span class="sd">    :returns:</span>
+<span class="sd">        tuple of (amplitude, period, time) with amplitude in the same</span>
+<span class="sd">        scale as given in the input data, and period in seconds, and time in</span>
+<span class="sd">        seconds from the start of the data window.</span>
+<span class="sd">    :rtype: tuple</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">turning_points</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># A list of tuples of (amplitude, sample)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="ow">and</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span> <span class="ow">or</span>\
+           <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="ow">and</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]):</span>
+            <span class="n">turning_points</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">i</span><span class="p">))</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">turning_points</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">amplitudes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">turning_points</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],)</span>
+        <span class="n">half_periods</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">turning_points</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">],)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">Logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+            <span class="s1">&#39;Turning points has length: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">turning_points</span><span class="p">))</span> <span class="o">+</span>
+            <span class="s1">&#39; data have length: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">turning_points</span><span class="p">)):</span>
+        <span class="n">half_periods</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">delta</span> <span class="o">*</span> <span class="p">(</span><span class="n">turning_points</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span>
+                                        <span class="n">turning_points</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="n">amplitudes</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">turning_points</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span>
+                                   <span class="n">turning_points</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">amplitude</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">amplitudes</span><span class="p">)</span>
+    <span class="n">period</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">half_periods</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">amplitudes</span><span class="p">)]</span>
+    <span class="n">delay</span> <span class="o">=</span> <span class="n">delta</span> <span class="o">*</span> <span class="n">turning_points</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">amplitudes</span><span class="p">)][</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">return_peak_trough</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">amplitude</span><span class="p">,</span> <span class="n">period</span><span class="p">,</span> <span class="n">delay</span>
+    <span class="n">max_position</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">amplitudes</span><span class="p">)</span>
+    <span class="n">peak</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span>
+        <span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">turning_points</span><span class="p">[</span><span class="n">max_position</span><span class="p">:</span> <span class="n">max_position</span> <span class="o">+</span> <span class="mi">2</span><span class="p">])</span>
+    <span class="n">trough</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span>
+        <span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">turning_points</span><span class="p">[</span><span class="n">max_position</span><span class="p">:</span> <span class="n">max_position</span> <span class="o">+</span> <span class="mi">2</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">amplitude</span><span class="p">,</span> <span class="n">period</span><span class="p">,</span> <span class="n">delay</span><span class="p">,</span> <span class="n">peak</span><span class="p">,</span> <span class="n">trough</span></div>
+
+
+<div class="viewcode-block" id="_pairwise"><a class="viewcode-back" href="../../../submodules/autogen/eqcorrscan.utils.mag_calc._pairwise.html#eqcorrscan.utils.mag_calc._pairwise">[docs]</a><span class="k">def</span> <span class="nf">_pairwise</span><span class="p">(</span><span class="n">iterable</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Wrapper on itertools for SVD_magnitude.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">tee</span><span class="p">(</span><span class="n">iterable</span><span class="p">)</span>
+    <span class="nb">next</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">zip</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span></div>
+
+
+<span class="c1"># Helpers for relative magnitude calculation</span>
+
+<span class="k">def</span> <span class="nf">_get_pick_for_station</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">station</span><span class="p">,</span> <span class="n">use_s_picks</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get the first reported pick for a given station.</span>
+
+<span class="sd">    :type event: `obspy.core.event.Event`</span>
+<span class="sd">    :param event: Event with at least picks</span>
+<span class="sd">    :type station: str</span>
+<span class="sd">    :param station: Station to get pick for</span>
+<span class="sd">    :type use_s_picks: bool</span>
+<span class="sd">    :param use_s_picks: Whether to allow S-picks to be returned</span>
+
+<span class="sd">    :rtype: `obspy.core.event.Pick`</span>
+<span class="sd">    :return: First reported pick for station</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">picks</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">event</span><span class="o">.</span><span class="n">picks</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">waveform_id</span><span class="o">.</span><span class="n">station_code</span> <span class="o">==</span> <span class="n">station</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">picks</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">Logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;No pick for </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">station</span><span class="p">))</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">picks</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">time</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">pick</span> <span class="ow">in</span> <span class="n">picks</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">pick</span><span class="o">.</span><span class="n">phase_hint</span> <span class="ow">and</span> <span class="n">pick</span><span class="o">.</span><span class="n">phase_hint</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;S&#39;</span>\
+                <span class="ow">and</span> <span class="ow">not</span> <span class="n">use_s_picks</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">return</span> <span class="n">pick</span>
+    <span class="n">Logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;No suitable pick found for </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">station</span><span class="p">))</span>
+    <span class="k">return</span> <span class="kc">None</span>
+
+
+<span class="k">def</span> <span class="nf">_snr</span><span class="p">(</span><span class="n">tr</span><span class="p">,</span> <span class="n">noise_window</span><span class="p">,</span> <span class="n">signal_window</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute ratio of maximum signal amplitude to rms noise amplitude.</span>
+
+<span class="sd">    :param tr: Trace to compute signal-to-noise ratio for</span>
+<span class="sd">    :param noise_window: (start, end) of window to use for noise</span>
+<span class="sd">    :param signal_window: (start, end) of window to use for signal</span>
+
+<span class="sd">    :return: Signal-to-noise ratio, noise amplitude</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">eqcorrscan.core.template_gen</span> <span class="kn">import</span> <span class="n">_rms</span>
+
+    <span class="n">noise_amp</span> <span class="o">=</span> <span class="n">_rms</span><span class="p">(</span>
+        <span class="n">tr</span><span class="o">.</span><span class="n">slice</span><span class="p">(</span><span class="n">starttime</span><span class="o">=</span><span class="n">noise_window</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">endtime</span><span class="o">=</span><span class="n">noise_window</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">noise_amp</span><span class="p">):</span>
+        <span class="n">Logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Could not calculate noise with this data, setting &quot;</span>
+                       <span class="s2">&quot;to 1&quot;</span><span class="p">)</span>
+        <span class="n">noise_amp</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">signal_amp</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">slice</span><span class="p">(</span>
+            <span class="n">starttime</span><span class="o">=</span><span class="n">signal_window</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">endtime</span><span class="o">=</span><span class="n">signal_window</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">Logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="k">return</span> <span class="n">signal_amp</span> <span class="o">/</span> <span class="n">noise_amp</span>
+
+
+<span class="k">def</span> <span class="nf">_get_signal_and_noise</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">seed_id</span><span class="p">,</span> <span class="n">noise_window</span><span class="p">,</span>
+                          <span class="n">signal_window</span><span class="p">,</span> <span class="n">use_s_picks</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get noise and signal RMS-amplitudes and signal standard deviation for an</span>
+<span class="sd">    event on a specific channel.</span>
+
+<span class="sd">    (Until v.0.4.3, this function calculated noise amplitude as the RMS</span>
+<span class="sd">    amplitude of the noise window and signal amplitude as the maximum amplitude</span>
+<span class="sd">    in the signal window. This was changed to only RMS amplitudes to align it</span>
+<span class="sd">    with the methodology in Schaff &amp; Richards 2014-paper.)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">eqcorrscan.core.template_gen</span> <span class="kn">import</span> <span class="n">_rms</span>
+
+    <span class="n">station</span> <span class="o">=</span> <span class="n">seed_id</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">pick</span> <span class="o">=</span> <span class="n">_get_pick_for_station</span><span class="p">(</span>
+        <span class="n">event</span><span class="o">=</span><span class="n">event</span><span class="p">,</span> <span class="n">station</span><span class="o">=</span><span class="n">station</span><span class="p">,</span> <span class="n">use_s_picks</span><span class="o">=</span><span class="n">use_s_picks</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">pick</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">Logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;No pick for </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">station</span><span class="p">))</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+    <span class="n">tr</span> <span class="o">=</span> <span class="n">stream</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">seed_id</span><span class="p">)</span><span class="o">.</span><span class="n">merge</span><span class="p">()</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tr</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+    <span class="n">tr</span> <span class="o">=</span> <span class="n">tr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">noise</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">slice</span><span class="p">(</span>
+        <span class="n">starttime</span><span class="o">=</span><span class="n">pick</span><span class="o">.</span><span class="n">time</span> <span class="o">+</span> <span class="n">noise_window</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+        <span class="n">endtime</span><span class="o">=</span><span class="n">pick</span><span class="o">.</span><span class="n">time</span> <span class="o">+</span> <span class="n">noise_window</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">data</span>
+    <span class="n">noise_amp</span> <span class="o">=</span> <span class="n">_rms</span><span class="p">(</span><span class="n">noise</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">noise_amp</span><span class="p">):</span>
+        <span class="n">noise_amp</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">signal</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">slice</span><span class="p">(</span>
+        <span class="n">starttime</span><span class="o">=</span><span class="n">pick</span><span class="o">.</span><span class="n">time</span> <span class="o">+</span> <span class="n">signal_window</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+        <span class="n">endtime</span><span class="o">=</span><span class="n">pick</span><span class="o">.</span><span class="n">time</span> <span class="o">+</span> <span class="n">signal_window</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">data</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">Logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;No signal data between </span><span class="si">{0}</span><span class="s2"> and </span><span class="si">{1}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">pick</span><span class="o">.</span><span class="n">time</span> <span class="o">+</span> <span class="n">signal_window</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">pick</span><span class="o">.</span><span class="n">time</span> <span class="o">+</span> <span class="n">signal_window</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="n">Logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">tr</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">noise_amp</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+    <span class="n">signal_amp</span> <span class="o">=</span> <span class="n">_rms</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">noise_amp</span><span class="p">,</span> <span class="n">signal_amp</span><span class="p">,</span> <span class="n">signal</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="relative_amplitude"><a class="viewcode-back" href="../../../submodules/autogen/eqcorrscan.utils.mag_calc.relative_amplitude.html#eqcorrscan.utils.mag_calc.relative_amplitude">[docs]</a><span class="k">def</span> <span class="nf">relative_amplitude</span><span class="p">(</span><span class="n">st1</span><span class="p">,</span> <span class="n">st2</span><span class="p">,</span> <span class="n">event1</span><span class="p">,</span> <span class="n">event2</span><span class="p">,</span> <span class="n">noise_window</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span>
+                       <span class="n">signal_window</span><span class="o">=</span><span class="p">(</span><span class="o">-.</span><span class="mi">5</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span> <span class="n">min_snr</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span>
+                       <span class="n">use_s_picks</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the relative amplitudes between two streams.</span>
+
+<span class="sd">    Uses standard deviation of amplitudes within trace. Relative amplitudes are</span>
+<span class="sd">    computed as:</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">       \\frac{std(tr2)}{std(tr1)}</span>
+
+<span class="sd">    where tr1 is a trace from st1 and tr2 is a matching (seed ids match) trace</span>
+<span class="sd">    from st2.  The standard deviation of the amplitudes is computed in the</span>
+<span class="sd">    signal window given. If the ratio of amplitudes between the signal window</span>
+<span class="sd">    and the noise window is below `min_snr` then no result is returned for that</span>
+<span class="sd">    trace. The SNR here is defined as the ratio of RMS-amplitudes of signal</span>
+<span class="sd">    and noise (equal to ratio of L2-norms of signal and noise, but normalized</span>
+<span class="sd">    for signal length). The Windows are computed relative to the first pick</span>
+<span class="sd">    for that station.</span>
+
+<span class="sd">    If one stream has insufficient data to estimate noise amplitude, the noise</span>
+<span class="sd">    amplitude of the other will be used.</span>
+
+<span class="sd">    :type st1: `obspy.core.stream.Stream`</span>
+<span class="sd">    :param st1: Stream for event1</span>
+<span class="sd">    :type st2: `obspy.core.stream.Stream`</span>
+<span class="sd">    :param st2: Stream for event2</span>
+<span class="sd">    :type event1: `obspy.core.event.Event`</span>
+<span class="sd">    :param event1: Event with picks (nothing else is needed)</span>
+<span class="sd">    :type event2: `obspy.core.event.Event`</span>
+<span class="sd">    :param event2: Event with picks (nothing else is needed)</span>
+<span class="sd">    :type noise_window: tuple of float</span>
+<span class="sd">    :param noise_window:</span>
+<span class="sd">        Start and end of noise window in seconds relative to pick</span>
+<span class="sd">    :type signal_window: tuple of float</span>
+<span class="sd">    :param signal_window:</span>
+<span class="sd">        Start and end of signal window in seconds relative to pick</span>
+<span class="sd">    :type min_snr: float</span>
+<span class="sd">    :param min_snr: Minimum signal-to-noise ratio allowed to make a measurement</span>
+<span class="sd">    :type use_s_picks: bool</span>
+<span class="sd">    :param use_s_picks:</span>
+<span class="sd">        Whether to allow relative amplitude estimates to be made from S-picks.</span>
+<span class="sd">        Note that noise and signal windows are relative to pick-times, so using</span>
+<span class="sd">        an S-pick might result in a noise window including P-energy.</span>
+
+<span class="sd">    :rtype: dict, dict, dict</span>
+<span class="sd">    :return:</span>
+<span class="sd">        Dictionary of relative amplitudes keyed by seed-id</span>
+<span class="sd">        Dictionary of signal-to-noise ratios for st1</span>
+<span class="sd">        Dictionary of signal-to-noise ratios for st2</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">seed_ids</span> <span class="o">=</span> <span class="p">{</span><span class="n">tr</span><span class="o">.</span><span class="n">id</span> <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">st1</span><span class="p">}</span><span class="o">.</span><span class="n">intersection</span><span class="p">({</span><span class="n">tr</span><span class="o">.</span><span class="n">id</span> <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">st2</span><span class="p">})</span>
+    <span class="n">amplitudes</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">snrs_1</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">snrs_2</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">seed_id</span> <span class="ow">in</span> <span class="n">seed_ids</span><span class="p">:</span>
+        <span class="n">noise1</span><span class="p">,</span> <span class="n">signal1</span><span class="p">,</span> <span class="n">std1</span> <span class="o">=</span> <span class="n">_get_signal_and_noise</span><span class="p">(</span>
+            <span class="n">stream</span><span class="o">=</span><span class="n">st1</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="n">event1</span><span class="p">,</span> <span class="n">signal_window</span><span class="o">=</span><span class="n">signal_window</span><span class="p">,</span>
+            <span class="n">noise_window</span><span class="o">=</span><span class="n">noise_window</span><span class="p">,</span> <span class="n">use_s_picks</span><span class="o">=</span><span class="n">use_s_picks</span><span class="p">,</span>
+            <span class="n">seed_id</span><span class="o">=</span><span class="n">seed_id</span><span class="p">)</span>
+        <span class="n">noise2</span><span class="p">,</span> <span class="n">signal2</span><span class="p">,</span> <span class="n">std2</span> <span class="o">=</span> <span class="n">_get_signal_and_noise</span><span class="p">(</span>
+            <span class="n">stream</span><span class="o">=</span><span class="n">st2</span><span class="p">,</span> <span class="n">event</span><span class="o">=</span><span class="n">event2</span><span class="p">,</span> <span class="n">signal_window</span><span class="o">=</span><span class="n">signal_window</span><span class="p">,</span>
+            <span class="n">noise_window</span><span class="o">=</span><span class="n">noise_window</span><span class="p">,</span> <span class="n">use_s_picks</span><span class="o">=</span><span class="n">use_s_picks</span><span class="p">,</span>
+            <span class="n">seed_id</span><span class="o">=</span><span class="n">seed_id</span><span class="p">)</span>
+        <span class="n">noise1</span> <span class="o">=</span> <span class="n">noise1</span> <span class="ow">or</span> <span class="n">noise2</span>
+        <span class="n">noise2</span> <span class="o">=</span> <span class="n">noise2</span> <span class="ow">or</span> <span class="n">noise1</span>
+        <span class="k">if</span> <span class="n">noise1</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">noise2</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">Logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Insufficient data for noise to be estimated for &quot;</span>
+                        <span class="s2">&quot;</span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">seed_id</span><span class="p">))</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">signal1</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">signal2</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">Logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;No signal data found for </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">seed_id</span><span class="p">))</span>
+            <span class="k">continue</span>
+        <span class="n">snr1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">signal1</span> <span class="o">/</span> <span class="n">noise1</span><span class="p">)</span>
+        <span class="n">snr2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">signal2</span> <span class="o">/</span> <span class="n">noise2</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">snr1</span> <span class="o">&lt;</span> <span class="n">min_snr</span> <span class="ow">or</span> <span class="n">snr2</span> <span class="o">&lt;</span> <span class="n">min_snr</span><span class="p">:</span>
+            <span class="n">Logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;SNR (event1: </span><span class="si">{0:.2f}</span><span class="s2">, event2: </span><span class="si">{1:.2f}</span><span class="s2"> too low &quot;</span>
+                        <span class="s2">&quot;for </span><span class="si">{2}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">snr1</span><span class="p">,</span> <span class="n">snr2</span><span class="p">,</span> <span class="n">seed_id</span><span class="p">))</span>
+            <span class="k">continue</span>
+        <span class="n">ratio</span> <span class="o">=</span> <span class="n">std2</span> <span class="o">/</span> <span class="n">std1</span>
+        <span class="n">Logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Channel: </span><span class="si">{0}</span><span class="s2"> Relative amplitude: </span><span class="si">{1:.2f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">seed_id</span><span class="p">,</span> <span class="n">ratio</span><span class="p">))</span>
+        <span class="n">amplitudes</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">seed_id</span><span class="p">:</span> <span class="n">ratio</span><span class="p">})</span>
+        <span class="n">snrs_1</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">seed_id</span><span class="p">:</span> <span class="n">snr1</span><span class="p">})</span>
+        <span class="n">snrs_2</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">seed_id</span><span class="p">:</span> <span class="n">snr2</span><span class="p">})</span>
+    <span class="k">return</span> <span class="n">amplitudes</span><span class="p">,</span> <span class="n">snrs_1</span><span class="p">,</span> <span class="n">snrs_2</span></div>
+
+
+<span class="c1"># Magnitude estimation functions</span>
+
+<div class="viewcode-block" id="relative_magnitude"><a class="viewcode-back" href="../../../submodules/autogen/eqcorrscan.utils.mag_calc.relative_magnitude.html#eqcorrscan.utils.mag_calc.relative_magnitude">[docs]</a><span class="k">def</span> <span class="nf">relative_magnitude</span><span class="p">(</span><span class="n">st1</span><span class="p">,</span> <span class="n">st2</span><span class="p">,</span> <span class="n">event1</span><span class="p">,</span> <span class="n">event2</span><span class="p">,</span> <span class="n">noise_window</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span>
+                       <span class="n">signal_window</span><span class="o">=</span><span class="p">(</span><span class="o">-.</span><span class="mi">5</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span> <span class="n">min_snr</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">min_cc</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span>
+                       <span class="n">use_s_picks</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">correlations</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">shift</span><span class="o">=.</span><span class="mi">2</span><span class="p">,</span>
+                       <span class="n">return_correlations</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">correct_mag_bias</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the relative magnitudes between two events.</span>
+
+<span class="sd">    See :func:`eqcorrscan.utils.mag_calc.relative_amplitude` for information</span>
+<span class="sd">    on how relative amplitudes are calculated. To compute relative magnitudes</span>
+<span class="sd">    from relative amplitudes this function can weight the amplitude ratios by</span>
+<span class="sd">    the cross-correlation of the two events. The relation used is similar to</span>
+<span class="sd">    Schaff and Richards (2014), equation 4 and is:</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        \\Delta m = \\log{\\frac{std(tr2)}{std(tr1)}} + \\log{</span>
+<span class="sd">            \\frac{(1+\\frac{1}{snr_x^2})}{1+\\frac{1}{snr_y^2}}\\times CC}</span>
+
+<span class="sd">    If you decide to use this function you should definitely read the paper</span>
+<span class="sd">    to understand what you can use this for and cite the paper!</span>
+
+<span class="sd">    :type st1: `obspy.core.stream.Stream`</span>
+<span class="sd">    :param st1: Stream for event1</span>
+<span class="sd">    :type st2: `obspy.core.stream.Stream`</span>
+<span class="sd">    :param st2: Stream for event2</span>
+<span class="sd">    :type event1: `obspy.core.event.Event`</span>
+<span class="sd">    :param event1: Event with picks (nothing else is needed)</span>
+<span class="sd">    :type event2: `obspy.core.event.Event`</span>
+<span class="sd">    :param event2: Event with picks (nothing else is needed)</span>
+<span class="sd">    :type noise_window: tuple of float</span>
+<span class="sd">    :param noise_window:</span>
+<span class="sd">        Start and end of noise window in seconds relative to pick</span>
+<span class="sd">    :type signal_window: tuple of float</span>
+<span class="sd">    :param signal_window:</span>
+<span class="sd">        Start and end of signal window in seconds relative to pick</span>
+<span class="sd">    :type min_snr: float</span>
+<span class="sd">    :param min_snr: Minimum signal-to-noise ratio allowed to make a measurement</span>
+<span class="sd">    :type min_cc: float</span>
+<span class="sd">    :param min_cc:</span>
+<span class="sd">        Minimum inter-event correlation (between -1 and 1) allowed to make a</span>
+<span class="sd">        measurement.</span>
+<span class="sd">    :type use_s_picks: bool</span>
+<span class="sd">    :param use_s_picks:</span>
+<span class="sd">        Whether to allow relative amplitude estimates to be made from S-picks.</span>
+<span class="sd">        Note that noise and signal windows are relative to pick-times, so using</span>
+<span class="sd">        an S-pick might result in a noise window including P-energy.</span>
+<span class="sd">    :type correlations: dict</span>
+<span class="sd">    :param correlations:</span>
+<span class="sd">        Pre-computed dictionary of correlations keyed by seed-id. If None</span>
+<span class="sd">        (default) then correlations will be computed for the provided data in</span>
+<span class="sd">        the `signal_window`.</span>
+<span class="sd">    :type shift: float</span>
+<span class="sd">    :param shift:</span>
+<span class="sd">        Shift length for correlations in seconds - maximum correlation within</span>
+<span class="sd">        a window between +/- shift of the P-pick will be used to weight the</span>
+<span class="sd">        magnitude.</span>
+<span class="sd">    :type return_correlations: bool</span>
+<span class="sd">    :param return_correlations:</span>
+<span class="sd">        If true will also return maximum correlations as a dictionary.</span>
+<span class="sd">    :type correct_mag_bias: bool</span>
+<span class="sd">    :param correct_mag_bias:</span>
+<span class="sd">        Whether to correct for the magnitude-bias introduced by cc&lt;1 and the</span>
+<span class="sd">        presence of noise (i.e., SNR &lt;&lt; ∞). Without bias-correction, the</span>
+<span class="sd">        relative magnitudes are simple L2-norm-ratio relative magnitudes.</span>
+
+<span class="sd">    :rtype: dict</span>
+<span class="sd">    :return: Dictionary of relative magnitudes keyed by seed-id</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">math</span>
+    <span class="kn">from</span> <span class="nn">obspy.signal.cross_correlation</span> <span class="kn">import</span> <span class="n">correlate</span>
+
+    <span class="n">relative_magnitudes</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">compute_correlations</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="n">correlations</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">correlations</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">compute_correlations</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">relative_amplitudes</span><span class="p">,</span> <span class="n">snrs_1</span><span class="p">,</span> <span class="n">snrs_2</span> <span class="o">=</span> <span class="n">relative_amplitude</span><span class="p">(</span>
+        <span class="n">st1</span><span class="o">=</span><span class="n">st1</span><span class="p">,</span> <span class="n">st2</span><span class="o">=</span><span class="n">st2</span><span class="p">,</span> <span class="n">event1</span><span class="o">=</span><span class="n">event1</span><span class="p">,</span> <span class="n">event2</span><span class="o">=</span><span class="n">event2</span><span class="p">,</span>
+        <span class="n">noise_window</span><span class="o">=</span><span class="n">noise_window</span><span class="p">,</span> <span class="n">signal_window</span><span class="o">=</span><span class="n">signal_window</span><span class="p">,</span>
+        <span class="n">min_snr</span><span class="o">=</span><span class="n">min_snr</span><span class="p">,</span> <span class="n">use_s_picks</span><span class="o">=</span><span class="n">use_s_picks</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">seed_id</span><span class="p">,</span> <span class="n">amplitude_ratio</span> <span class="ow">in</span> <span class="n">relative_amplitudes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">tr1</span> <span class="o">=</span> <span class="n">st1</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">seed_id</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">tr2</span> <span class="o">=</span> <span class="n">st2</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">seed_id</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">pick1</span> <span class="o">=</span> <span class="n">_get_pick_for_station</span><span class="p">(</span>
+            <span class="n">event</span><span class="o">=</span><span class="n">event1</span><span class="p">,</span> <span class="n">station</span><span class="o">=</span><span class="n">tr1</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">station</span><span class="p">,</span> <span class="n">use_s_picks</span><span class="o">=</span><span class="n">use_s_picks</span><span class="p">)</span>
+        <span class="n">pick2</span> <span class="o">=</span> <span class="n">_get_pick_for_station</span><span class="p">(</span>
+            <span class="n">event</span><span class="o">=</span><span class="n">event2</span><span class="p">,</span> <span class="n">station</span><span class="o">=</span><span class="n">tr2</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">station</span><span class="p">,</span> <span class="n">use_s_picks</span><span class="o">=</span><span class="n">use_s_picks</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">compute_correlations</span><span class="p">:</span>
+            <span class="n">cc</span> <span class="o">=</span> <span class="n">correlate</span><span class="p">(</span>
+                <span class="n">tr1</span><span class="o">.</span><span class="n">slice</span><span class="p">(</span>
+                    <span class="n">starttime</span><span class="o">=</span><span class="n">pick1</span><span class="o">.</span><span class="n">time</span> <span class="o">+</span> <span class="n">signal_window</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                    <span class="n">endtime</span><span class="o">=</span><span class="n">pick1</span><span class="o">.</span><span class="n">time</span> <span class="o">+</span> <span class="n">signal_window</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+                <span class="n">tr2</span><span class="o">.</span><span class="n">slice</span><span class="p">(</span>
+                    <span class="n">starttime</span><span class="o">=</span><span class="n">pick2</span><span class="o">.</span><span class="n">time</span> <span class="o">+</span> <span class="n">signal_window</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                    <span class="n">endtime</span><span class="o">=</span><span class="n">pick2</span><span class="o">.</span><span class="n">time</span> <span class="o">+</span> <span class="n">signal_window</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span>
+                <span class="n">shift</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">shift</span> <span class="o">*</span> <span class="n">tr1</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">))</span>
+            <span class="n">cc</span> <span class="o">=</span> <span class="n">cc</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+            <span class="n">correlations</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">seed_id</span><span class="p">:</span> <span class="n">cc</span><span class="p">})</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cc</span> <span class="o">=</span> <span class="n">correlations</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">seed_id</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cc</span> <span class="o">&lt;</span> <span class="n">min_cc</span><span class="p">:</span>
+            <span class="n">Logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Correlation of </span><span class="si">{</span><span class="n">cc</span><span class="si">}</span><span class="s2"> less than </span><span class="si">{</span><span class="n">min_cc</span><span class="si">}</span><span class="s2"> for </span><span class="si">{</span><span class="n">seed_id</span><span class="si">}</span><span class="s2">, &quot;</span>
+                <span class="s2">&quot;skipping.&quot;</span><span class="p">)</span>
+            <span class="k">continue</span>
+        <span class="n">snr_x</span> <span class="o">=</span> <span class="n">snrs_1</span><span class="p">[</span><span class="n">seed_id</span><span class="p">]</span>
+        <span class="n">snr_y</span> <span class="o">=</span> <span class="n">snrs_2</span><span class="p">[</span><span class="n">seed_id</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">correct_mag_bias</span><span class="p">:</span>
+            <span class="n">cc</span> <span class="o">=</span> <span class="n">snr_x</span> <span class="o">=</span> <span class="n">snr_y</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="c1"># Correct for CC and SNR-bias and add to relative_magnitudes</span>
+        <span class="c1"># This is equation 10 from Schaff &amp; Richards 2014:</span>
+        <span class="n">rel_mag</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">amplitude_ratio</span><span class="p">)</span> <span class="o">+</span> <span class="n">math</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span>
+            <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="mi">1</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">snr_y</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">snr_x</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span> <span class="o">*</span> <span class="n">cc</span><span class="p">)</span>
+        <span class="n">Logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Channel: </span><span class="si">{</span><span class="n">seed_id</span><span class="si">}</span><span class="s2"> Magnitude change </span><span class="si">{</span><span class="n">rel_mag</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">relative_magnitudes</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">seed_id</span><span class="p">:</span> <span class="n">rel_mag</span><span class="p">})</span>
+    <span class="k">if</span> <span class="n">return_correlations</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">relative_magnitudes</span><span class="p">,</span> <span class="n">correlations</span>
+    <span class="k">return</span> <span class="n">relative_magnitudes</span></div>
+
+
+<div class="viewcode-block" id="amp_pick_event"><a class="viewcode-back" href="../../../submodules/autogen/eqcorrscan.utils.mag_calc.amp_pick_event.html#eqcorrscan.utils.mag_calc.amp_pick_event">[docs]</a><span class="k">def</span> <span class="nf">amp_pick_event</span><span class="p">(</span><span class="n">event</span><span class="p">,</span> <span class="n">st</span><span class="p">,</span> <span class="n">inventory</span><span class="p">,</span> <span class="n">chans</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;Z&#39;</span><span class="p">,),</span> <span class="n">var_wintype</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                   <span class="n">winlen</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">pre_pick</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">pre_filt</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">lowcut</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+                   <span class="n">highcut</span><span class="o">=</span><span class="mf">20.0</span><span class="p">,</span> <span class="n">corners</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">min_snr</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                   <span class="n">remove_old</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">ps_multiplier</span><span class="o">=</span><span class="mf">0.34</span><span class="p">,</span> <span class="n">velocity</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                   <span class="n">water_level</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">iaspei_standard</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Pick amplitudes for local magnitude for a single event.</span>
+
+<span class="sd">    Looks for maximum peak-to-trough amplitude for a channel in a stream, and</span>
+<span class="sd">    picks this amplitude and period.  There are a few things it does</span>
+<span class="sd">    internally to stabilise the result:</span>
+
+<span class="sd">        1. Applies a given filter to the data using obspy&#39;s bandpass filter.</span>
+<span class="sd">        The filter applied is a time-domain digital SOS filter.</span>
+<span class="sd">        This is often necessary for small magnitude earthquakes.  To correct</span>
+<span class="sd">        for this filter later the gain of the filter at the period of the</span>
+<span class="sd">        maximum amplitude is retrieved using scipy&#39;s sosfreqz, and used to</span>
+<span class="sd">        divide the resulting picked amplitude.</span>
+
+<span class="sd">        2. Picks the peak-to-trough amplitude, but records half of this to</span>
+<span class="sd">        cope with possible DC offsets.</span>
+
+<span class="sd">        3. The maximum amplitude within the given window is picked. Care must</span>
+<span class="sd">        be taken to avoid including surface waves in the window;</span>
+
+<span class="sd">        4. A variable window-length is used by default that takes into account</span>
+<span class="sd">        P-S times if available, this is in an effort to include only the</span>
+<span class="sd">        body waves.  When P-S times are not available the ps_multiplier</span>
+<span class="sd">        variable is used, which defaults to 0.34 x hypocentral distance.</span>
+
+<span class="sd">    :type event: obspy.core.event.event.Event</span>
+<span class="sd">    :param event: Event to pick</span>
+<span class="sd">    :type st: obspy.core.stream.Stream</span>
+<span class="sd">    :param st: Stream associated with event</span>
+<span class="sd">    :type inventory: obspy.core.inventory.Inventory</span>
+<span class="sd">    :param inventory:</span>
+<span class="sd">        Inventory containing response information for the stations in st.</span>
+<span class="sd">    :type chans: tuple</span>
+<span class="sd">    :param chans:</span>
+<span class="sd">        Tuple of the components to pick on, e.g. (Z, 1, 2, N, E)</span>
+<span class="sd">    :type var_wintype: bool</span>
+<span class="sd">    :param var_wintype:</span>
+<span class="sd">        If True, the winlen will be multiplied by the P-S time if both P and</span>
+<span class="sd">        S picks are available, otherwise it will be multiplied by the</span>
+<span class="sd">        hypocentral distance*ps_multiplier, defaults to True</span>
+<span class="sd">    :type winlen: float</span>
+<span class="sd">    :param winlen:</span>
+<span class="sd">        Length of window, see above parameter, if var_wintype is False then</span>
+<span class="sd">        this will be in seconds, otherwise it is the multiplier to the</span>
+<span class="sd">        p-s time, defaults to 0.9.</span>
+<span class="sd">    :type pre_pick: float</span>
+<span class="sd">    :param pre_pick:</span>
+<span class="sd">        Time before the s-pick to start the cut window, defaults to 0.2.</span>
+<span class="sd">    :type pre_filt: bool</span>
+<span class="sd">    :param pre_filt: To apply a pre-filter or not, defaults to True</span>
+<span class="sd">    :type lowcut: float</span>
+<span class="sd">    :param lowcut: Lowcut in Hz for the pre-filter, defaults to 1.0</span>
+<span class="sd">    :type highcut: float</span>
+<span class="sd">    :param highcut: Highcut in Hz for the pre-filter, defaults to 20.0</span>
+<span class="sd">    :type corners: int</span>
+<span class="sd">    :param corners: Number of corners to use in the pre-filter</span>
+<span class="sd">    :type min_snr: float</span>
+<span class="sd">    :param min_snr:</span>
+<span class="sd">        Minimum signal-to-noise ratio to allow a pick - see note below on</span>
+<span class="sd">        signal-to-noise ratio calculation.</span>
+<span class="sd">    :type plot: bool</span>
+<span class="sd">    :param plot: Turn plotting on or off.</span>
+<span class="sd">    :type remove_old: bool</span>
+<span class="sd">    :param remove_old:</span>
+<span class="sd">        If True, will remove old amplitudes and associated picks from event</span>
+<span class="sd">        and overwrite with new picks. Defaults to False.</span>
+<span class="sd">    :type ps_multiplier: float</span>
+<span class="sd">    :param ps_multiplier:</span>
+<span class="sd">        A p-s time multiplier of hypocentral distance - defaults to 0.34,</span>
+<span class="sd">        based on p-s ratio of 1.68 and an S-velocity 0f 1.5km/s, deliberately</span>
+<span class="sd">        chosen to be quite slow.</span>
+<span class="sd">    :type velocity: bool</span>
+<span class="sd">    :param velocity:</span>
+<span class="sd">        Whether to make the pick in velocity space or not. Original definition</span>
+<span class="sd">        of local magnitude used displacement of Wood-Anderson, MLv in seiscomp</span>
+<span class="sd">        and Antelope uses a velocity measurement. *velocity and iaspei_standard</span>
+<span class="sd">        are mutually exclusive*.</span>
+<span class="sd">    :type water_level: float</span>
+<span class="sd">    :param water_level:</span>
+<span class="sd">        Water-level for seismometer simulation, see</span>
+<span class="sd">        https://docs.obspy.org/packages/autogen/obspy.core.trace.Trace.remove_response.html</span>
+<span class="sd">    :type iaspei_standard: bool</span>
+<span class="sd">    :param iaspei_standard:</span>
+<span class="sd">        Whether to output amplitude in IASPEI standard IAML (wood-anderson</span>
+<span class="sd">        static amplification of 1), or AML with wood-anderson static</span>
+<span class="sd">        amplification of 2080. Note: Units are SI (and specified in the</span>
+<span class="sd">        amplitude)</span>
+
+<span class="sd">    :returns: Picked event</span>
+<span class="sd">    :rtype: :class:`obspy.core.event.Event`</span>
+
+<span class="sd">    .. Note::</span>
+<span class="sd">        Signal-to-noise ratio is calculated using the filtered data by</span>
+<span class="sd">        dividing the maximum amplitude in the signal window (pick window)</span>
+<span class="sd">        by the normalized noise amplitude (taken from the whole window</span>
+<span class="sd">        supplied).</span>
+
+<span class="sd">    .. Note::</span>
+<span class="sd">        With `iaspei_standard=False`, picks will be returned in SI units</span>
+<span class="sd">        (m or m/s), with the standard Wood-Anderson sensitivity of 2080 applied</span>
+<span class="sd">        such that the measurements reflect the amplitude measured on a Wood</span>
+<span class="sd">        Anderson instrument, as per the original local magnitude definitions</span>
+<span class="sd">        of Richter and others.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">iaspei_standard</span> <span class="ow">and</span> <span class="n">velocity</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Velocity is not IASPEI standard for IAML.&quot;</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">event_origin</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">preferred_origin</span><span class="p">()</span> <span class="ow">or</span> <span class="n">event</span><span class="o">.</span><span class="n">origins</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+        <span class="n">event_origin</span> <span class="o">=</span> <span class="n">Origin</span><span class="p">()</span>
+    <span class="n">depth</span> <span class="o">=</span> <span class="n">event_origin</span><span class="o">.</span><span class="n">depth</span>
+    <span class="k">if</span> <span class="n">depth</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">Logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;No depth for the event, setting to 0 km&quot;</span><span class="p">)</span>
+        <span class="n">depth</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1"># Remove amplitudes and picks for those amplitudes - this is not always</span>
+    <span class="c1"># safe: picks may not be exclusively linked to amplitudes - hence the</span>
+    <span class="c1"># default is *not* to do this.</span>
+    <span class="k">if</span> <span class="n">remove_old</span> <span class="ow">and</span> <span class="n">event</span><span class="o">.</span><span class="n">amplitudes</span><span class="p">:</span>
+        <span class="n">removal_ids</span> <span class="o">=</span> <span class="p">{</span><span class="n">amp</span><span class="o">.</span><span class="n">pick_id</span> <span class="k">for</span> <span class="n">amp</span> <span class="ow">in</span> <span class="n">event</span><span class="o">.</span><span class="n">amplitudes</span><span class="p">}</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">picks</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">event</span><span class="o">.</span><span class="n">picks</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">resource_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">removal_ids</span><span class="p">]</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">amplitudes</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># We just want to look at P and S picks.</span>
+    <span class="n">picks</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">event</span><span class="o">.</span><span class="n">picks</span>
+             <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">phase_hint</span> <span class="ow">and</span> <span class="n">p</span><span class="o">.</span><span class="n">phase_hint</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;P&quot;</span><span class="p">,</span> <span class="s2">&quot;S&quot;</span><span class="p">)]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">picks</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">Logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;No P or S picks found&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">event</span>
+
+    <span class="n">st</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">merge</span><span class="p">()</span>  <span class="c1"># merge the data, just in case! Work on a copy.</span>
+    <span class="c1"># For each station cut the window</span>
+    <span class="k">for</span> <span class="n">sta</span> <span class="ow">in</span> <span class="p">{</span><span class="n">p</span><span class="o">.</span><span class="n">waveform_id</span><span class="o">.</span><span class="n">station_code</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">picks</span><span class="p">}:</span>
+        <span class="k">for</span> <span class="n">chan</span> <span class="ow">in</span> <span class="n">chans</span><span class="p">:</span>
+            <span class="n">Logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Working on </span><span class="si">{</span><span class="n">sta</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">chan</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">tr</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">station</span><span class="o">=</span><span class="n">sta</span><span class="p">,</span> <span class="n">component</span><span class="o">=</span><span class="n">chan</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">tr</span><span class="p">:</span>
+                <span class="n">Logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">sta</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">chan</span><span class="si">}</span><span class="s1"> not found in the stream.&#39;</span><span class="p">)</span>
+                <span class="k">continue</span>
+            <span class="n">tr</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">merge</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="c1"># Apply the pre-filter</span>
+            <span class="k">if</span> <span class="n">pre_filt</span><span class="p">:</span>
+                <span class="n">tr</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">split</span><span class="p">()</span><span class="o">.</span><span class="n">detrend</span><span class="p">(</span><span class="s1">&#39;simple&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">fill_value</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">tr</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="s1">&#39;bandpass&#39;</span><span class="p">,</span> <span class="n">freqmin</span><span class="o">=</span><span class="n">lowcut</span><span class="p">,</span> <span class="n">freqmax</span><span class="o">=</span><span class="n">highcut</span><span class="p">,</span>
+                          <span class="n">corners</span><span class="o">=</span><span class="n">corners</span><span class="p">)</span>
+            <span class="n">tr</span> <span class="o">=</span> <span class="n">_sim_WA</span><span class="p">(</span><span class="n">tr</span><span class="p">,</span> <span class="n">inventory</span><span class="p">,</span> <span class="n">water_level</span><span class="o">=</span><span class="n">water_level</span><span class="p">,</span>
+                         <span class="n">velocity</span><span class="o">=</span><span class="n">velocity</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">tr</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># None returned when no matching response is found</span>
+                <span class="k">continue</span>
+
+            <span class="c1"># Get the distance from an appropriate arrival</span>
+            <span class="n">sta_picks</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">picks</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">waveform_id</span><span class="o">.</span><span class="n">station_code</span> <span class="o">==</span> <span class="n">sta</span><span class="p">]</span>
+            <span class="n">distances</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">pick</span> <span class="ow">in</span> <span class="n">sta_picks</span><span class="p">:</span>
+                <span class="n">distances</span> <span class="o">+=</span> <span class="p">[</span>
+                    <span class="n">a</span><span class="o">.</span><span class="n">distance</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">event_origin</span><span class="o">.</span><span class="n">arrivals</span>
+                    <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">pick_id</span> <span class="o">==</span> <span class="n">pick</span><span class="o">.</span><span class="n">resource_id</span> <span class="ow">and</span>
+                    <span class="n">a</span><span class="o">.</span><span class="n">distance</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">distances</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">Logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Arrivals for station: </span><span class="si">{</span><span class="n">sta</span><span class="si">}</span><span class="s2"> do not contain &quot;</span>
+                             <span class="s2">&quot;distances. Have you located this event?&quot;</span><span class="p">)</span>
+                <span class="n">hypo_dist</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># They should all be the same, but take the mean to be sure...</span>
+                <span class="n">distance</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">distances</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">distances</span><span class="p">)</span>
+                <span class="n">hypo_dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">degrees2kilometers</span><span class="p">(</span><span class="n">distance</span><span class="p">))</span> <span class="o">+</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">depth</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">))</span>
+
+            <span class="c1"># Get the earliest P and S picks on this station</span>
+            <span class="n">phase_picks</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;P&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;S&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
+            <span class="k">for</span> <span class="n">_hint</span> <span class="ow">in</span> <span class="n">phase_picks</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">_picks</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+                    <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">sta_picks</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">phase_hint</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="n">_hint</span><span class="p">],</span>
+                    <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">time</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">_picks</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">phase_picks</span><span class="p">[</span><span class="n">_hint</span><span class="p">]</span> <span class="o">=</span> <span class="n">_picks</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">p_pick</span> <span class="o">=</span> <span class="n">phase_picks</span><span class="p">[</span><span class="s2">&quot;P&quot;</span><span class="p">]</span>
+            <span class="n">s_pick</span> <span class="o">=</span> <span class="n">phase_picks</span><span class="p">[</span><span class="s2">&quot;S&quot;</span><span class="p">]</span>
+            <span class="c1"># Get the window size.</span>
+            <span class="k">if</span> <span class="n">var_wintype</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">p_pick</span> <span class="ow">and</span> <span class="n">s_pick</span><span class="p">:</span>
+                    <span class="n">p_time</span><span class="p">,</span> <span class="n">s_time</span> <span class="o">=</span> <span class="n">p_pick</span><span class="o">.</span><span class="n">time</span><span class="p">,</span> <span class="n">s_pick</span><span class="o">.</span><span class="n">time</span>
+                <span class="k">elif</span> <span class="n">s_pick</span> <span class="ow">and</span> <span class="n">hypo_dist</span><span class="p">:</span>
+                    <span class="n">s_time</span> <span class="o">=</span> <span class="n">s_pick</span><span class="o">.</span><span class="n">time</span>
+                    <span class="n">p_time</span> <span class="o">=</span> <span class="n">s_time</span> <span class="o">-</span> <span class="p">(</span><span class="n">hypo_dist</span> <span class="o">*</span> <span class="n">ps_multiplier</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">p_pick</span> <span class="ow">and</span> <span class="n">hypo_dist</span><span class="p">:</span>
+                    <span class="n">p_time</span> <span class="o">=</span> <span class="n">p_pick</span><span class="o">.</span><span class="n">time</span>
+                    <span class="n">s_time</span> <span class="o">=</span> <span class="n">p_time</span> <span class="o">+</span> <span class="p">(</span><span class="n">hypo_dist</span> <span class="o">*</span> <span class="n">ps_multiplier</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="p">(</span><span class="n">s_pick</span> <span class="ow">or</span> <span class="n">p_pick</span><span class="p">)</span> <span class="ow">and</span> <span class="n">hypo_dist</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">Logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                        <span class="s2">&quot;No hypocentral distance and no matching P and S &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;picks for </span><span class="si">{</span><span class="n">sta</span><span class="si">}</span><span class="s2">, skipping.&quot;</span><span class="p">)</span>
+                    <span class="k">continue</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                        <span class="s2">&quot;No p or s picks - you should not have been able to &quot;</span>
+                        <span class="s2">&quot;get here&quot;</span><span class="p">)</span>
+                <span class="n">trim_start</span> <span class="o">=</span> <span class="n">s_time</span> <span class="o">-</span> <span class="n">pre_pick</span>
+                <span class="n">trim_end</span> <span class="o">=</span> <span class="n">s_time</span> <span class="o">+</span> <span class="p">(</span><span class="n">s_time</span> <span class="o">-</span> <span class="n">p_time</span><span class="p">)</span> <span class="o">*</span> <span class="n">winlen</span>
+                <span class="c1"># Work out the window length based on p-s time or distance</span>
+            <span class="k">else</span><span class="p">:</span>  <span class="c1"># Fixed window-length</span>
+                <span class="k">if</span> <span class="n">s_pick</span><span class="p">:</span>
+                    <span class="n">s_time</span> <span class="o">=</span> <span class="n">s_pick</span><span class="o">.</span><span class="n">time</span>
+                <span class="k">elif</span> <span class="n">p_pick</span> <span class="ow">and</span> <span class="n">hypo_dist</span><span class="p">:</span>
+                    <span class="c1"># In this case, there is no S-pick and the window length is</span>
+                    <span class="c1"># fixed we need to calculate an expected S_pick based on</span>
+                    <span class="c1"># the hypocentral distance, this will be quite hand-wavey</span>
+                    <span class="c1"># as we are not using any kind of velocity model.</span>
+                    <span class="n">s_time</span> <span class="o">=</span> <span class="n">p_pick</span><span class="o">.</span><span class="n">time</span> <span class="o">+</span> <span class="n">hypo_dist</span> <span class="o">*</span> <span class="n">ps_multiplier</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">Logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                        <span class="s2">&quot;No s-pick or hypocentral distance to predict &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;s-arrival for station </span><span class="si">{</span><span class="n">sta</span><span class="si">}</span><span class="s2">, skipping&quot;</span><span class="p">)</span>
+                    <span class="k">continue</span>
+                <span class="n">trim_start</span> <span class="o">=</span> <span class="n">s_time</span> <span class="o">-</span> <span class="n">pre_pick</span>
+                <span class="n">trim_end</span> <span class="o">=</span> <span class="n">s_time</span> <span class="o">+</span> <span class="n">winlen</span>
+            <span class="n">tr</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">trim</span><span class="p">(</span><span class="n">trim_start</span><span class="p">,</span> <span class="n">trim_end</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">data</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">10</span><span class="p">:</span>
+                <span class="n">Logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Insufficient data for </span><span class="si">{</span><span class="n">sta</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="k">continue</span>
+            <span class="c1"># Get the amplitude</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">amplitude</span><span class="p">,</span> <span class="n">period</span><span class="p">,</span> <span class="n">delay</span><span class="p">,</span> <span class="n">peak</span><span class="p">,</span> <span class="n">trough</span> <span class="o">=</span> <span class="n">_max_p2t</span><span class="p">(</span>
+                    <span class="n">tr</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">delta</span><span class="p">,</span> <span class="n">return_peak_trough</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">Logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+                <span class="n">Logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;No amplitude picked for tr </span><span class="si">{</span><span class="n">tr</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="k">continue</span>
+            <span class="c1"># Calculate the normalized noise amplitude</span>
+            <span class="n">snr</span> <span class="o">=</span> <span class="n">amplitude</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">data</span><span class="p">)))</span>
+            <span class="k">if</span> <span class="n">amplitude</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">snr</span> <span class="o">&lt;</span> <span class="n">min_snr</span><span class="p">:</span>
+                <span class="n">Logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s1">&#39;Signal to noise ratio of </span><span class="si">{</span><span class="n">snr</span><span class="si">}</span><span class="s1"> is below threshold.&#39;</span><span class="p">)</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">data</span><span class="p">)),</span> <span class="n">tr</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="s1">&#39;k&#39;</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span> <span class="o">*</span> <span class="n">delay</span><span class="p">,</span> <span class="n">peak</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span> <span class="o">*</span> <span class="p">(</span><span class="n">delay</span> <span class="o">+</span> <span class="n">period</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span>
+                            <span class="n">trough</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+            <span class="n">Logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Amplitude picked: </span><span class="si">{</span><span class="n">amplitude</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">Logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Signal-to-noise ratio is: </span><span class="si">{</span><span class="n">snr</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="c1"># Note, amplitude should be in meters at the moment!</span>
+            <span class="c1"># Remove the pre-filter response</span>
+            <span class="k">if</span> <span class="n">pre_filt</span><span class="p">:</span>
+                <span class="c1"># Generate poles and zeros for the filter we used earlier.</span>
+                <span class="c1"># We need to get the gain for the digital SOS filter used by</span>
+                <span class="c1"># obspy.</span>
+                <span class="n">sos</span> <span class="o">=</span> <span class="n">iirfilter</span><span class="p">(</span>
+                    <span class="n">corners</span><span class="p">,</span> <span class="p">[</span><span class="n">lowcut</span> <span class="o">/</span> <span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">),</span>
+                              <span class="n">highcut</span> <span class="o">/</span> <span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">)],</span>
+                    <span class="n">btype</span><span class="o">=</span><span class="s1">&#39;band&#39;</span><span class="p">,</span> <span class="n">ftype</span><span class="o">=</span><span class="s1">&#39;butter&#39;</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="s1">&#39;sos&#39;</span><span class="p">)</span>
+                <span class="n">_</span><span class="p">,</span> <span class="n">gain</span> <span class="o">=</span> <span class="n">sosfreqz</span><span class="p">(</span><span class="n">sos</span><span class="p">,</span> <span class="n">worN</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span> <span class="o">/</span> <span class="n">period</span><span class="p">],</span>
+                                   <span class="n">fs</span><span class="o">=</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">)</span>
+                <span class="n">gain</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">gain</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>  <span class="c1"># Convert from complex to real.</span>
+                <span class="k">if</span> <span class="n">gain</span> <span class="o">&lt;</span> <span class="mf">1e-2</span><span class="p">:</span>
+                    <span class="n">Logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;Pick made outside stable pass-band of filter &quot;</span>
+                        <span class="sa">f</span><span class="s2">&quot;on </span><span class="si">{</span><span class="n">tr</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2">, rejecting&quot;</span><span class="p">)</span>
+                    <span class="k">continue</span>
+                <span class="n">amplitude</span> <span class="o">/=</span> <span class="n">gain</span>
+                <span class="n">Logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Removed filter gain: </span><span class="si">{</span><span class="n">gain</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="c1"># Write out the half amplitude, approximately the peak amplitude as</span>
+            <span class="c1"># used directly in magnitude calculations</span>
+            <span class="n">amplitude</span> <span class="o">*=</span> <span class="mf">0.5</span>
+            <span class="c1"># Documentation standards</span>
+            <span class="n">module</span> <span class="o">=</span> <span class="n">_sim_WA</span><span class="o">.</span><span class="vm">__module__</span>
+            <span class="n">fname</span> <span class="o">=</span> <span class="n">currentframe</span><span class="p">()</span><span class="o">.</span><span class="n">f_code</span><span class="o">.</span><span class="n">co_name</span>
+            <span class="c1"># This is here to ensure that if the function name changes this</span>
+            <span class="c1"># is still correct</span>
+            <span class="n">method_id</span> <span class="o">=</span> <span class="n">ResourceIdentifier</span><span class="p">(</span>
+                <span class="nb">id</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">module</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="n">prefix</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;smi:eqcorrscan</span><span class="si">{</span><span class="n">eqcorrscan</span><span class="o">.</span><span class="n">__version__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">filter_id</span> <span class="o">=</span> <span class="n">ResourceIdentifier</span><span class="p">(</span>
+                <span class="nb">id</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">module</span><span class="si">}</span><span class="s2">._sim_WA&quot;</span><span class="p">,</span>
+                <span class="n">prefix</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;smi:eqcorrscan</span><span class="si">{</span><span class="n">eqcorrscan</span><span class="o">.</span><span class="n">__version__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">iaspei_standard</span><span class="p">:</span>
+                <span class="c1"># Remove wood-anderson amplification</span>
+                <span class="n">units</span><span class="p">,</span> <span class="n">phase_hint</span><span class="p">,</span> <span class="n">amplitude_type</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="s2">&quot;m&quot;</span><span class="p">,</span> <span class="s2">&quot;IAML&quot;</span><span class="p">,</span> <span class="s2">&quot;IAML&quot;</span><span class="p">)</span>
+                <span class="c1"># amplitude *= 10 ** 9  # *THIS IS NOT SUPPORTED BY QML*</span>
+                <span class="n">amplitude</span> <span class="o">/=</span> <span class="n">PAZ_WA</span><span class="p">[</span><span class="s2">&quot;sensitivity&quot;</span><span class="p">]</span>  <span class="c1"># Remove WA sensitivity</span>
+                <span class="c1"># Set the filter ID to state that sensitivity was removed</span>
+                <span class="n">filter_id</span> <span class="o">=</span> <span class="n">ResourceIdentifier</span><span class="p">(</span>
+                    <span class="nb">id</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">module</span><span class="si">}</span><span class="s2">._sim_WA.WA_sensitivity_removed&quot;</span><span class="p">,</span>
+                    <span class="n">prefix</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;smi:eqcorrscan</span><span class="si">{</span><span class="n">eqcorrscan</span><span class="o">.</span><span class="n">__version__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>  <span class="c1"># Not IAML, use SI units.</span>
+                <span class="k">if</span> <span class="n">velocity</span><span class="p">:</span>
+                    <span class="n">units</span><span class="p">,</span> <span class="n">phase_hint</span><span class="p">,</span> <span class="n">amplitude_type</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="s2">&quot;m/s&quot;</span><span class="p">,</span> <span class="s2">&quot;AML&quot;</span><span class="p">,</span> <span class="s2">&quot;AML&quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">units</span><span class="p">,</span> <span class="n">phase_hint</span><span class="p">,</span> <span class="n">amplitude_type</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="s2">&quot;m&quot;</span><span class="p">,</span> <span class="s2">&quot;AML&quot;</span><span class="p">,</span> <span class="s2">&quot;AML&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">channel</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;Z&quot;</span><span class="p">):</span>
+                <span class="n">magnitude_hint</span> <span class="o">=</span> <span class="s2">&quot;MLv&quot;</span>
+                <span class="c1"># MLv is ML picked on the vertical channel</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">magnitude_hint</span> <span class="o">=</span> <span class="s2">&quot;ML&quot;</span>
+            <span class="c1"># Append an amplitude reading to the event</span>
+            <span class="n">_waveform_id</span> <span class="o">=</span> <span class="n">WaveformStreamID</span><span class="p">(</span>
+                <span class="n">station_code</span><span class="o">=</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">station</span><span class="p">,</span> <span class="n">channel_code</span><span class="o">=</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">channel</span><span class="p">,</span>
+                <span class="n">network_code</span><span class="o">=</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">network</span><span class="p">)</span>
+            <span class="n">pick</span> <span class="o">=</span> <span class="n">Pick</span><span class="p">(</span>
+                <span class="n">waveform_id</span><span class="o">=</span><span class="n">_waveform_id</span><span class="p">,</span> <span class="n">phase_hint</span><span class="o">=</span><span class="n">phase_hint</span><span class="p">,</span>
+                <span class="n">polarity</span><span class="o">=</span><span class="s1">&#39;undecidable&#39;</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">starttime</span> <span class="o">+</span> <span class="n">delay</span><span class="p">,</span>
+                <span class="n">evaluation_mode</span><span class="o">=</span><span class="s1">&#39;automatic&#39;</span><span class="p">,</span>
+                <span class="n">method_id</span><span class="o">=</span><span class="n">method_id</span><span class="p">,</span> <span class="n">filter_id</span><span class="o">=</span><span class="n">filter_id</span><span class="p">)</span>
+            <span class="n">event</span><span class="o">.</span><span class="n">picks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pick</span><span class="p">)</span>
+            <span class="n">event</span><span class="o">.</span><span class="n">amplitudes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Amplitude</span><span class="p">(</span>
+                <span class="n">generic_amplitude</span><span class="o">=</span><span class="n">amplitude</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="n">period</span><span class="p">,</span>
+                <span class="n">pick_id</span><span class="o">=</span><span class="n">pick</span><span class="o">.</span><span class="n">resource_id</span><span class="p">,</span> <span class="n">waveform_id</span><span class="o">=</span><span class="n">pick</span><span class="o">.</span><span class="n">waveform_id</span><span class="p">,</span>
+                <span class="n">unit</span><span class="o">=</span><span class="n">units</span><span class="p">,</span> <span class="n">magnitude_hint</span><span class="o">=</span><span class="n">magnitude_hint</span><span class="p">,</span>
+                <span class="nb">type</span><span class="o">=</span><span class="n">amplitude_type</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="s1">&#39;point&#39;</span><span class="p">,</span> <span class="n">method_id</span><span class="o">=</span><span class="n">method_id</span><span class="p">,</span>
+                <span class="n">filter_id</span><span class="o">=</span><span class="n">filter_id</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">event</span></div>
+
+
+<div class="viewcode-block" id="svd_moments"><a class="viewcode-back" href="../../../submodules/autogen/eqcorrscan.utils.mag_calc.svd_moments.html#eqcorrscan.utils.mag_calc.svd_moments">[docs]</a><span class="k">def</span> <span class="nf">svd_moments</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">stachans</span><span class="p">,</span> <span class="n">event_list</span><span class="p">,</span> <span class="n">n_svs</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate relative moments/amplitudes using singular-value decomposition.</span>
+
+<span class="sd">    Convert basis vectors calculated by singular value decomposition (see the</span>
+<span class="sd">    SVD functions in clustering) into relative moments.</span>
+
+<span class="sd">    For more information see the paper by</span>
+<span class="sd">    `Rubinstein &amp; Ellsworth (2010).</span>
+<span class="sd">    &lt;http://www.bssaonline.org/content/100/5A/1952.short&gt;`_</span>
+
+<span class="sd">    :type u: list</span>
+<span class="sd">    :param u:</span>
+<span class="sd">        List of the :class:`numpy.ndarray` input basis vectors from the SVD,</span>
+<span class="sd">        one array for each channel used.</span>
+<span class="sd">    :type s: list</span>
+<span class="sd">    :param s:</span>
+<span class="sd">        List of the :class:`numpy.ndarray` of singular values, one array for</span>
+<span class="sd">        each channel.</span>
+<span class="sd">    :type v: list</span>
+<span class="sd">    :param v:</span>
+<span class="sd">        List of :class:`numpy.ndarray` of output basis vectors from SVD, one</span>
+<span class="sd">        array per channel.</span>
+<span class="sd">    :type stachans: list</span>
+<span class="sd">    :param stachans: List of station.channel input</span>
+<span class="sd">    :type event_list: list</span>
+<span class="sd">    :param event_list:</span>
+<span class="sd">        List of events for which you have data, such that event_list[i]</span>
+<span class="sd">        corresponds to stachans[i], U[i] etc. and event_list[i][j] corresponds</span>
+<span class="sd">        to event j in U[i].  These are a series of indexes that map the basis</span>
+<span class="sd">        vectors to their relative events and channels - if you have every</span>
+<span class="sd">        channel for every event generating these is trivial (see example).</span>
+<span class="sd">    :type n_svs: int</span>
+<span class="sd">    :param n_svs: Number of singular values to use, defaults to 4.</span>
+
+<span class="sd">    :returns: M, array of relative moments</span>
+<span class="sd">    :rtype: :class:`numpy.ndarray`</span>
+<span class="sd">    :returns: events_out, list of events that relate to M (in order), \</span>
+<span class="sd">        does not include the magnitude information in the events, see note.</span>
+<span class="sd">    :rtype: :class:`obspy.core.event.event.Event`</span>
+
+<span class="sd">    .. note:: M is an array of relative moments (or amplitudes), these cannot</span>
+<span class="sd">        be directly compared to true moments without calibration.</span>
+
+<span class="sd">    .. note:: When comparing this method with the method used for creation</span>
+<span class="sd">        of subspace detectors (Harris 2006) it is important to note that the</span>
+<span class="sd">        input `design set` matrix in Harris contains waveforms as columns,</span>
+<span class="sd">        whereas in Rubinstein &amp; Ellsworth it contains waveforms as rows</span>
+<span class="sd">        (i.e. the transpose of the Harris data matrix). The U and V matrices</span>
+<span class="sd">        are therefore swapped between the two approaches. This is accounted</span>
+<span class="sd">        for in EQcorrscan but may lead to confusion when reviewing the code.</span>
+<span class="sd">        Here we use the Harris approach.</span>
+
+<span class="sd">    .. rubric:: Example</span>
+
+<span class="sd">    &gt;&gt;&gt; from eqcorrscan.utils.mag_calc import svd_moments</span>
+<span class="sd">    &gt;&gt;&gt; from obspy import read</span>
+<span class="sd">    &gt;&gt;&gt; import glob</span>
+<span class="sd">    &gt;&gt;&gt; import os</span>
+<span class="sd">    &gt;&gt;&gt; from eqcorrscan.utils.clustering import svd</span>
+<span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">    &gt;&gt;&gt; # Do the set-up</span>
+<span class="sd">    &gt;&gt;&gt; testing_path = &#39;eqcorrscan/tests/test_data/similar_events_processed&#39;</span>
+<span class="sd">    &gt;&gt;&gt; stream_files = glob.glob(os.path.join(testing_path, &#39;*&#39;))</span>
+<span class="sd">    &gt;&gt;&gt; stream_list = [read(stream_file) for stream_file in stream_files]</span>
+<span class="sd">    &gt;&gt;&gt; event_list = []</span>
+<span class="sd">    &gt;&gt;&gt; remove_list = [(&#39;WHAT2&#39;, &#39;SH1&#39;), (&#39;WV04&#39;, &#39;SHZ&#39;), (&#39;GCSZ&#39;, &#39;EHZ&#39;)]</span>
+<span class="sd">    &gt;&gt;&gt; for i, stream in enumerate(stream_list):</span>
+<span class="sd">    ...     st_list = []</span>
+<span class="sd">    ...     for tr in stream:</span>
+<span class="sd">    ...         if (tr.stats.station, tr.stats.channel) not in remove_list:</span>
+<span class="sd">    ...             stream.remove(tr)</span>
+<span class="sd">    ...             continue</span>
+<span class="sd">    ...         st_list.append(i)</span>
+<span class="sd">    ...     event_list.append(st_list) # doctest: +SKIP</span>
+<span class="sd">    &gt;&gt;&gt; event_list = np.asarray(event_list).T.tolist()</span>
+<span class="sd">    &gt;&gt;&gt; SVec, SVal, U, stachans = svd(stream_list=stream_list) # doctest: +SKIP</span>
+<span class="sd">    [&#39;GCSZ.EHZ&#39;, &#39;WV04.SHZ&#39;, &#39;WHAT2.SH1&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; M, events_out = svd_moments(u=U, s=SVal, v=SVec, stachans=stachans,</span>
+<span class="sd">    ...                             event_list=event_list) # doctest: +SKIP</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">Logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span>
+        <span class="s2">&quot;Proceed with caution: this function is experimental and somewhat&quot;</span>
+        <span class="s2">&quot; stochastic - you should run this multiple times to ensure you get&quot;</span>
+        <span class="s2">&quot; a stable result.&quot;</span><span class="p">)</span>
+    <span class="c1"># Define maximum number of events, will be the width of K</span>
+    <span class="n">K_width</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="nb">max</span><span class="p">(</span><span class="n">ev_list</span><span class="p">)</span> <span class="k">for</span> <span class="n">ev_list</span> <span class="ow">in</span> <span class="n">event_list</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="c1"># Sometimes the randomisation generates a singular matrix - rather than</span>
+    <span class="c1"># attempting to regulerize this matrix I propose undertaking the</span>
+    <span class="c1"># randomisation step a further time</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">stachans</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">Logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="s1">&#39;Only provided data from one station-channel - &#39;</span>
+                        <span class="s1">&#39;will not try to invert&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">u</span><span class="p">[</span><span class="mi">0</span><span class="p">][:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">event_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">stachan</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">stachans</span><span class="p">):</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># Small kernel matrix for one station - channel</span>
+        <span class="c1"># Copy the relevant vectors so as not to destroy them</span>
+        <span class="c1"># Here we&#39;ll swap into the Rubinstein U and V matrices</span>
+        <span class="n">U_working</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="n">V_working</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">u</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">s_working</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+        <span class="n">ev_list</span> <span class="o">=</span> <span class="n">event_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ev_list</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">U_working</span><span class="p">):</span>
+            <span class="n">Logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;U is : &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">U_working</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+            <span class="n">Logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;ev_list is len </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ev_list</span><span class="p">)))</span>
+            <span class="n">f_dump</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;mag_calc_U_working.pkl&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span>
+            <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">U_working</span><span class="p">,</span> <span class="n">f_dump</span><span class="p">)</span>
+            <span class="n">f_dump</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s1">&#39;More events than represented in U&#39;</span><span class="p">)</span>
+        <span class="c1"># Set all non-important singular values to zero</span>
+        <span class="n">s_working</span><span class="p">[</span><span class="n">n_svs</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">s_working</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">s_working</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">s_working</span><span class="p">)</span>
+        <span class="c1"># Convert to numpy matrices</span>
+        <span class="n">U_working</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">U_working</span><span class="p">)</span>
+        <span class="n">V_working</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">V_working</span><span class="p">)</span>
+        <span class="n">s_working</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">s_working</span><span class="p">)</span>
+        <span class="n">SVD_weights</span> <span class="o">=</span> <span class="n">U_working</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="c1"># If all the weights are negative take the abs</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">SVD_weights</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="n">Logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;All weights are negative - flipping them&#39;</span><span class="p">)</span>
+            <span class="n">SVD_weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">SVD_weights</span><span class="p">)</span>
+        <span class="n">SVD_weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">SVD_weights</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="c1"># Shuffle the SVD_weights prior to pairing - will give one of multiple</span>
+        <span class="c1"># pairwise options - see p1956 of Rubinstein &amp; Ellsworth 2010</span>
+        <span class="c1"># We need to keep the real indexes though, otherwise, if there are</span>
+        <span class="c1"># multiple events with the same weight we will end up with multiple</span>
+        <span class="c1"># -1 values</span>
+        <span class="n">random_SVD_weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">SVD_weights</span><span class="p">)</span>
+        <span class="c1"># Tack on the indexes</span>
+        <span class="n">random_SVD_weights</span> <span class="o">=</span> <span class="n">random_SVD_weights</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">random_SVD_weights</span> <span class="o">=</span> <span class="p">[(</span><span class="n">random_SVD_weights</span><span class="p">[</span><span class="n">_i</span><span class="p">],</span> <span class="n">_i</span><span class="p">)</span>
+                              <span class="k">for</span> <span class="n">_i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">random_SVD_weights</span><span class="p">))]</span>
+        <span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">random_SVD_weights</span><span class="p">)</span>
+        <span class="c1"># Add the first element to the end so all elements will be paired twice</span>
+        <span class="n">random_SVD_weights</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">random_SVD_weights</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="c1"># Take pairs of all the SVD_weights (each weight appears in 2 pairs)</span>
+        <span class="n">pairs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">pair</span> <span class="ow">in</span> <span class="n">_pairwise</span><span class="p">(</span><span class="n">random_SVD_weights</span><span class="p">):</span>
+            <span class="n">pairs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pair</span><span class="p">)</span>
+        <span class="c1"># Deciding values for each place in kernel matrix using the pairs</span>
+        <span class="k">for</span> <span class="n">pairsIndex</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pairs</span><span class="p">)):</span>
+            <span class="c1"># We will normalize by the minimum weight</span>
+            <span class="n">_weights</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="nb">list</span><span class="p">(</span><span class="n">pairs</span><span class="p">[</span><span class="n">pairsIndex</span><span class="p">])))[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">_indeces</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="nb">list</span><span class="p">(</span><span class="n">pairs</span><span class="p">[</span><span class="n">pairsIndex</span><span class="p">])))[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">min_weight</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">_weights</span><span class="p">))</span>
+            <span class="n">max_weight</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">_weights</span><span class="p">))</span>
+            <span class="n">min_index</span> <span class="o">=</span> <span class="n">_indeces</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">_weights</span><span class="p">))]</span>
+            <span class="n">max_index</span> <span class="o">=</span> <span class="n">_indeces</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">_weights</span><span class="p">))]</span>
+            <span class="n">row</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="c1"># Working out values for each row of kernel matrix</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">SVD_weights</span><span class="p">)):</span>
+                <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="n">max_index</span><span class="p">:</span>
+                    <span class="n">result</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+                <span class="k">elif</span> <span class="n">j</span> <span class="o">==</span> <span class="n">min_index</span><span class="p">:</span>
+                    <span class="n">normalised</span> <span class="o">=</span> <span class="n">max_weight</span> <span class="o">/</span> <span class="n">min_weight</span>
+                    <span class="n">result</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">normalised</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">result</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">row</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+            <span class="c1"># Add each row to the K matrix</span>
+            <span class="n">k</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+        <span class="c1"># k is now a square matrix, we need to flesh it out to be K_width</span>
+        <span class="n">k_filled</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">k</span><span class="p">),</span> <span class="n">K_width</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">k</span><span class="p">)):</span>
+            <span class="k">for</span> <span class="n">l</span><span class="p">,</span> <span class="n">ev</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ev_list</span><span class="p">):</span>
+                <span class="n">k_filled</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">ev</span><span class="p">]</span> <span class="o">=</span> <span class="n">k</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="n">l</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s1">&#39;K&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">locals</span><span class="p">():</span>
+            <span class="n">K</span> <span class="o">=</span> <span class="n">k_filled</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">K</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">K</span><span class="p">,</span> <span class="n">k_filled</span><span class="p">])</span>
+    <span class="c1"># Remove any empty rows</span>
+    <span class="n">K_nonempty</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">events_out</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">K_width</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">K</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="n">K_nonempty</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">K</span><span class="p">[:,</span> <span class="n">i</span><span class="p">])</span>
+            <span class="n">events_out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+    <span class="n">K</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">K_nonempty</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">K</span> <span class="o">=</span> <span class="n">K</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="n">K_width</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">K</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="c1"># Add an extra row to K, so average moment = 1</span>
+    <span class="n">K</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">K_width</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">/</span> <span class="n">K_width</span><span class="p">))</span>
+    <span class="n">Logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Created Kernel matrix: &quot;</span><span class="p">)</span>
+    <span class="k">del</span> <span class="n">row</span>
+    <span class="n">Logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">item</span><span class="p">),</span> <span class="mi">3</span><span class="p">))</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+                 <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">row</span><span class="p">])</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">K</span><span class="p">]))</span>
+    <span class="n">Krounded</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">around</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">decimals</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+    <span class="c1"># Create a weighting matrix to put emphasis on the final row.</span>
+    <span class="n">W</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">K</span><span class="p">)))</span>
+    <span class="c1"># the final element of W = the number of stations*number of events</span>
+    <span class="n">W</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">K</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="c1"># Make K into a matrix</span>
+    <span class="n">K</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">K</span><span class="p">)</span>
+    <span class="c1">############</span>
+
+    <span class="c1"># Solve using the weighted least squares equation, K.T is K transpose</span>
+    <span class="n">Kinv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">K</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span> <span class="n">W</span> <span class="o">*</span> <span class="n">K</span><span class="p">)</span> <span class="o">*</span> <span class="n">K</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span> <span class="n">W</span><span class="p">)</span>
+
+    <span class="c1"># M are the relative moments of the events</span>
+    <span class="n">M</span> <span class="o">=</span> <span class="n">Kinv</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="c1"># XXX TODO This still needs an outlier removal step</span>
+    <span class="k">return</span> <span class="n">M</span><span class="p">,</span> <span class="n">events_out</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">doctest</span>
+    <span class="n">doctest</span><span class="o">.</span><span class="n">testmod</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2015-2021: EQcorrscan developers.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.2.1.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

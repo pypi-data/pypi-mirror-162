@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
+
+    <title>core.match_filter.party &#8212; EQcorrscan 0.4.3 documentation</title>
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="shortcut icon" href="../_static/EQcorrscan_logo.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../_static/js/jquery-1.12.4.min.js "></script>
+<script type="text/javascript" src="../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../_static/bootstrap-3.4.1/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html"><span><img src="../_static/EQcorrscan_logo.jpg"></span>
+          EQcorrscan</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.4</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">1. Introduction to the EQcorrscan package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">2. EQcorrscan installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../updates.html">3. What’s new</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">4. EQcorrscan tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api.html">5. EQcorrscan API</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">core.match_filter.party</a></li>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="../_sources/submodules/core.match_filter.party.rst.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <section id="module-eqcorrscan.core.match_filter.party">
+<span id="core-match-filter-party"></span><h1>core.match_filter.party<a class="headerlink" href="#module-eqcorrscan.core.match_filter.party" title="Permalink to this headline">¶</a></h1>
+<p>Functions for network matched-filter detection of seismic data.</p>
+<p>Designed to cross-correlate templates generated by template_gen function
+with data and output the detections.</p>
+<dl class="field-list simple">
+<dt class="field-odd">copyright</dt>
+<dd class="field-odd"><p>EQcorrscan developers.</p>
+</dd>
+<dt class="field-even">license</dt>
+<dd class="field-even"><p>GNU Lesser General Public License, Version 3
+(<a class="reference external" href="https://www.gnu.org/copyleft/lesser.html">https://www.gnu.org/copyleft/lesser.html</a>)</p>
+</dd>
+</dl>
+<hr class="docutils" />
+<dl class="py class">
+<dt id="eqcorrscan.core.match_filter.party.Party">
+<em class="property">class </em><code class="sig-prename descclassname">eqcorrscan.core.match_filter.party.</code><code class="sig-name descname">Party</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">families</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eqcorrscan/core/match_filter/party.html#Party"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eqcorrscan.core.match_filter.party.Party" title="Permalink to this definition">¶</a></dt>
+<dd><p>Container for multiple Family objects.</p>
+<dl class="field-list simple">
+</dl>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#eqcorrscan.core.match_filter.party.Party.copy" title="eqcorrscan.core.match_filter.party.Party.copy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">copy</span></code></a>()</p></td>
+<td><p>Returns a copy of the Party.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#eqcorrscan.core.match_filter.party.Party.filter" title="eqcorrscan.core.match_filter.party.Party.filter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">filter</span></code></a>([dates, min_dets])</p></td>
+<td><p>Return a new Party filtered according to conditions.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#eqcorrscan.core.match_filter.party.Party.plot" title="eqcorrscan.core.match_filter.party.Party.plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot</span></code></a>([plot_grouped, dates, min_dets, rate])</p></td>
+<td><p>Plot the cumulative detections in time.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#eqcorrscan.core.match_filter.party.Party.decluster" title="eqcorrscan.core.match_filter.party.Party.decluster"><code class="xref py py-obj docutils literal notranslate"><span class="pre">decluster</span></code></a>(trig_int[, timing, metric, …])</p></td>
+<td><p>De-cluster a Party of detections by enforcing a detection separation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#eqcorrscan.core.match_filter.party.Party.get_catalog" title="eqcorrscan.core.match_filter.party.Party.get_catalog"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_catalog</span></code></a>()</p></td>
+<td><p>Get an obspy catalog object from the party.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#eqcorrscan.core.match_filter.party.Party.lag_calc" title="eqcorrscan.core.match_filter.party.Party.lag_calc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lag_calc</span></code></a>(stream, pre_processed[, shift_len, …])</p></td>
+<td><p>Compute picks based on cross-correlation alignment.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#eqcorrscan.core.match_filter.party.Party.min_chans" title="eqcorrscan.core.match_filter.party.Party.min_chans"><code class="xref py py-obj docutils literal notranslate"><span class="pre">min_chans</span></code></a>(min_chans)</p></td>
+<td><p>Remove detections using min_chans or fewer channels.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#eqcorrscan.core.match_filter.party.Party.read" title="eqcorrscan.core.match_filter.party.Party.read"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read</span></code></a>([filename, read_detection_catalog, …])</p></td>
+<td><p>Read a Party from a file.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#eqcorrscan.core.match_filter.party.Party.rethreshold" title="eqcorrscan.core.match_filter.party.Party.rethreshold"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rethreshold</span></code></a>(new_threshold[, …])</p></td>
+<td><p>Remove detections from the Party that are below a new threshold.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#eqcorrscan.core.match_filter.party.Party.select" title="eqcorrscan.core.match_filter.party.Party.select"><code class="xref py py-obj docutils literal notranslate"><span class="pre">select</span></code></a>(template_name)</p></td>
+<td><p>Select a specific family from the party.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#eqcorrscan.core.match_filter.party.Party.sort" title="eqcorrscan.core.match_filter.party.Party.sort"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sort</span></code></a>()</p></td>
+<td><p>Sort the families by template name.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#eqcorrscan.core.match_filter.party.Party.write" title="eqcorrscan.core.match_filter.party.Party.write"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write</span></code></a>(filename[, format, …])</p></td>
+<td><p>Write Family out, select output format.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt id="eqcorrscan.core.match_filter.party.Party.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">families</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eqcorrscan/core/match_filter/party.html#Party.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eqcorrscan.core.match_filter.party.Party.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Instantiate the Party object.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="eqcorrscan.core.match_filter.party.Party.copy">
+<code class="sig-name descname">copy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eqcorrscan/core/match_filter/party.html#Party.copy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eqcorrscan.core.match_filter.party.Party.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a copy of the Party.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Copy of party</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">eqcorrscan</span> <span class="kn">import</span> <span class="n">Family</span><span class="p">,</span> <span class="n">Template</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">party</span> <span class="o">=</span> <span class="n">Party</span><span class="p">(</span><span class="n">families</span><span class="o">=</span><span class="p">[</span><span class="n">Family</span><span class="p">(</span><span class="n">template</span><span class="o">=</span><span class="n">Template</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;a&#39;</span><span class="p">))])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">party_b</span> <span class="o">=</span> <span class="n">party</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">party</span> <span class="o">==</span> <span class="n">party_b</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="eqcorrscan.core.match_filter.party.Party.filter">
+<code class="sig-name descname">filter</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dates</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">min_dets</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eqcorrscan/core/match_filter/party.html#Party.filter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eqcorrscan.core.match_filter.party.Party.filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a new Party filtered according to conditions.</p>
+<p>Return a new Party with only detections within a date range and
+only families with a minimum number of detections.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dates</strong> (<em>list of obspy.core.UTCDateTime objects</em>) – A start and end date for the new Party</p></li>
+<li><p><strong>min_dets</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) – Minimum number of detections per family</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">obspy</span> <span class="kn">import</span> <span class="n">UTCDateTime</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Party</span><span class="p">()</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">dates</span><span class="o">=</span><span class="p">[</span><span class="n">UTCDateTime</span><span class="p">(</span><span class="mi">2016</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+<span class="gp">... </span>                             <span class="n">UTCDateTime</span><span class="p">(</span><span class="mi">2017</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)],</span>
+<span class="gp">... </span>                      <span class="n">min_dets</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span> 
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="eqcorrscan.core.match_filter.party.Party.plot">
+<code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">plot_grouped</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">dates</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">min_dets</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">rate</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eqcorrscan/core/match_filter/party.html#Party.plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eqcorrscan.core.match_filter.party.Party.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the cumulative detections in time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>plot_grouped</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – Whether to plot all families together (plot_grouped=True), or each
+as a separate line.</p></li>
+<li><p><strong>dates</strong> (<em>list</em>) – list of obspy.core.UTCDateTime objects bounding the
+plot. The first should be the start date, the last the end date.</p></li>
+<li><p><strong>min_dets</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) – Plot only families with this number of detections
+or more.</p></li>
+<li><p><strong>rate</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – Whether or not to plot the daily rate of detection as
+opposed to cumulative number. Only works with plot_grouped=True.</p></li>
+<li><p><strong>**kwargs</strong> – Any other arguments accepted by
+<a class="reference internal" href="autogen/eqcorrscan.utils.plotting.cumulative_detections.html#eqcorrscan.utils.plotting.cumulative_detections" title="eqcorrscan.utils.plotting.cumulative_detections"><code class="xref py py-func docutils literal notranslate"><span class="pre">eqcorrscan.utils.plotting.cumulative_detections()</span></code></a></p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Plot cumulative detections for all templates individually:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Party</span><span class="p">()</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>  
+</pre></div>
+</div>
+<p>Plot cumulative detections for all templates grouped together:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Party</span><span class="p">()</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">plot_grouped</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> 
+</pre></div>
+</div>
+<p>Plot the rate of detection for all templates grouped together:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Party</span><span class="p">()</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">plot_grouped</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">rate</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> 
+</pre></div>
+</div>
+<p>Plot cumulative detections for all templates with more than five
+detections between June 1st, 2012 and July 31st, 2012:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">obspy</span> <span class="kn">import</span> <span class="n">UTCDateTime</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">Party</span><span class="p">()</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">dates</span><span class="o">=</span><span class="p">[</span><span class="n">UTCDateTime</span><span class="p">(</span><span class="mi">2012</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+<span class="gp">... </span>                           <span class="n">UTCDateTime</span><span class="p">(</span><span class="mi">2012</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">31</span><span class="p">)],</span>
+<span class="gp">... </span>                    <span class="n">min_dets</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span> 
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="eqcorrscan.core.match_filter.party.Party.decluster">
+<code class="sig-name descname">decluster</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">trig_int</span></em>, <em class="sig-param"><span class="n">timing</span><span class="o">=</span><span class="default_value">'detect'</span></em>, <em class="sig-param"><span class="n">metric</span><span class="o">=</span><span class="default_value">'avg_cor'</span></em>, <em class="sig-param"><span class="n">hypocentral_separation</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">min_chans</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">absolute_values</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eqcorrscan/core/match_filter/party.html#Party.decluster"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eqcorrscan.core.match_filter.party.Party.decluster" title="Permalink to this definition">¶</a></dt>
+<dd><p>De-cluster a Party of detections by enforcing a detection separation.</p>
+<p>De-clustering occurs between events detected by different (or the same)
+templates. If multiple detections occur within trig_int then the
+preferred detection will be determined by the metric argument. This
+can be either the average single-station correlation coefficient which
+is calculated as Detection.detect_val / Detection.no_chans, or the
+raw cross channel correlation sum which is simply Detection.detect_val.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>trig_int</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – Minimum detection separation in seconds.</p></li>
+<li><p><strong>metric</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – What metric to sort peaks by. Either ‘avg_cor’ which
+takes the single station average correlation, ‘cor_sum’ which
+takes the total correlation sum across all channels, or
+‘thresh_exc’ which takes the factor by how much the detection
+exceeded the input threshold.</p></li>
+<li><p><strong>timing</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – Either ‘detect’ or ‘origin’ to decluster based on either the
+detection time or the origin time.</p></li>
+<li><p><strong>hypocentral_separation</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – Maximum inter-event separation in km to decluster events within.
+If an event happens within this distance of another event, and
+within the trig_int defined time, then they will be declustered.</p></li>
+<li><p><strong>min_chans</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) – Minimum number of channels for a detection to be retained. If a
+detection was made on very few channels, then the MAD detection
+statistics become much less robust.</p></li>
+<li><p><strong>absolute_values</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – Use the absolute value of the metric to choose the preferred
+detection.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Works in place on object, if you need to keep the original safe
+then run this on a copy of the object!</p>
+</div>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">party</span> <span class="o">=</span> <span class="n">Party</span><span class="p">()</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">party</span><span class="p">)</span>
+<span class="go">4</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">declustered</span> <span class="o">=</span> <span class="n">party</span><span class="o">.</span><span class="n">decluster</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">party</span><span class="p">)</span>
+<span class="go">3</span>
+</pre></div>
+</div>
+<p class="rubric">Example using epicentral-distance</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">party</span> <span class="o">=</span> <span class="n">Party</span><span class="p">()</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">party</span><span class="p">)</span>
+<span class="go">4</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Calculate the expected origins based on the template origin.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">family</span> <span class="ow">in</span> <span class="n">party</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="k">for</span> <span class="n">detection</span> <span class="ow">in</span> <span class="n">family</span><span class="p">:</span>
+<span class="gp">... </span>        <span class="n">_</span> <span class="o">=</span> <span class="n">detection</span><span class="o">.</span><span class="n">_calculate_event</span><span class="p">(</span><span class="n">template</span><span class="o">=</span><span class="n">family</span><span class="o">.</span><span class="n">template</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">declustered</span> <span class="o">=</span> <span class="n">party</span><span class="o">.</span><span class="n">decluster</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="n">hypocentral_separation</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">party</span><span class="p">)</span>
+<span class="go">4</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">declustered</span> <span class="o">=</span> <span class="n">party</span><span class="o">.</span><span class="n">decluster</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="n">hypocentral_separation</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">party</span><span class="p">)</span>
+<span class="go">3</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="eqcorrscan.core.match_filter.party.Party.get_catalog">
+<code class="sig-name descname">get_catalog</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eqcorrscan/core/match_filter/party.html#Party.get_catalog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eqcorrscan.core.match_filter.party.Party.get_catalog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get an obspy catalog object from the party.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.obspy.org/packages/autogen/obspy.core.event.Catalog.html#obspy.core.event.Catalog" title="(in ObsPy Documentation (1.2.0) v1.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">obspy.core.event.Catalog</span></code></a></p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">party</span> <span class="o">=</span> <span class="n">Party</span><span class="p">()</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cat</span> <span class="o">=</span> <span class="n">party</span><span class="o">.</span><span class="n">get_catalog</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cat</span><span class="p">))</span>
+<span class="go">4</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="eqcorrscan.core.match_filter.party.Party.lag_calc">
+<code class="sig-name descname">lag_calc</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">stream</span></em>, <em class="sig-param"><span class="n">pre_processed</span></em>, <em class="sig-param"><span class="n">shift_len</span><span class="o">=</span><span class="default_value">0.2</span></em>, <em class="sig-param"><span class="n">min_cc</span><span class="o">=</span><span class="default_value">0.4</span></em>, <em class="sig-param"><span class="n">min_cc_from_mean_cc_factor</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">horizontal_chans</span><span class="o">=</span><span class="default_value">['E', 'N', '1', '2']</span></em>, <em class="sig-param"><span class="n">vertical_chans</span><span class="o">=</span><span class="default_value">['Z']</span></em>, <em class="sig-param"><span class="n">cores</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">interpolate</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">plot</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">plotdir</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">parallel</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">process_cores</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ignore_length</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">ignore_bad_data</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">export_cc</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">cc_dir</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eqcorrscan/core/match_filter/party.html#Party.lag_calc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eqcorrscan.core.match_filter.party.Party.lag_calc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute picks based on cross-correlation alignment.</p>
+<p>Works in-place on events in Party.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>stream</strong> (<a class="reference external" href="https://docs.obspy.org/packages/autogen/obspy.core.stream.Stream.html#obspy.core.stream.Stream" title="(in ObsPy Documentation (1.2.0) v1.2)"><em>obspy.core.stream.Stream</em></a>) – All the data needed to cut from - can be a gappy Stream.</p></li>
+<li><p><strong>pre_processed</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – Whether the stream has been pre-processed or not to match the
+templates. See note below.</p></li>
+<li><p><strong>shift_len</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – Shift length allowed for the pick in seconds, will be plus/minus
+this amount - default=0.2</p></li>
+<li><p><strong>min_cc</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – Minimum cross-correlation value to be considered a pick,
+default=0.4.</p></li>
+<li><p><strong>min_cc_from_mean_cc_factor</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – If set to a value other than None, then the minimum cross-
+correlation value for a trace is set individually for each
+detection based on:
+min(detect_val / n_chans * min_cc_from_mean_cc_factor, min_cc).</p></li>
+<li><p><strong>horizontal_chans</strong> (<em>list</em>) – List of channel endings for horizontal-channels, on which S-picks
+will be made.</p></li>
+<li><p><strong>vertical_chans</strong> (<em>list</em>) – List of channel endings for vertical-channels, on which P-picks
+will be made.</p></li>
+<li><p><strong>cores</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) – Number of cores to use in parallel processing, defaults to one.</p></li>
+<li><p><strong>interpolate</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – Interpolate the correlation function to achieve sub-sample
+precision.</p></li>
+<li><p><strong>plot</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – To generate a plot for every detection or not, defaults to False</p></li>
+<li><p><strong>plotdir</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – The path to save plots to. If <cite>plotdir=None</cite> (default) then the
+figure will be shown on screen.</p></li>
+<li><p><strong>export_cc</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – To generate a binary file in NumPy for every detection or not,
+defaults to False</p></li>
+<li><p><strong>cc_dir</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – Path to saving folder, NumPy files will be output here.</p></li>
+<li><p><strong>parallel</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – Turn parallel processing on or off.</p></li>
+<li><p><strong>process_cores</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) – Number of processes to use for pre-processing (if different to
+<cite>cores</cite>).</p></li>
+<li><p><strong>ignore_length</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – If using daylong=True, then dayproc will try check that the data
+are there for at least 80% of the day, if you don’t want this check
+(which will raise an error if too much data are missing) then set
+ignore_length=True.  This is not recommended!</p></li>
+<li><p><strong>ignore_bad_data</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – If False (default), errors will be raised if data are excessively
+gappy or are mostly zeros. If True then no error will be raised,
+but an empty trace will be returned (and not used in detection).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Catalog of events with picks.  No origin information is included.
+These events can then be written out via
+<code class="xref py py-func docutils literal notranslate"><span class="pre">obspy.core.event.Catalog.write()</span></code>, or to Nordic Sfiles using
+<code class="xref py py-func docutils literal notranslate"><span class="pre">eqcorrscan.utils.sfile_util.eventtosfile()</span></code> and located
+externally.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.obspy.org/packages/autogen/obspy.core.event.Catalog.html#obspy.core.event.Catalog" title="(in ObsPy Documentation (1.2.0) v1.2)">obspy.core.event.Catalog</a></p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Note on pre-processing: You can provide a pre-processed stream,
+which may be beneficial for detections over large time periods
+(the stream can have gaps, which reduces memory usage).  However,
+in this case the processing steps are not checked, so you must
+ensure that all the template in the Party have the same sampling
+rate and filtering as the stream.
+If pre-processing has not be done then the data will be processed
+according to the parameters in the templates, in this case
+templates will be grouped by processing parameters and run with
+similarly processed data.  In this case, all templates do not have
+to have the same processing parameters.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Picks are corrected for the template pre-pick time.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="eqcorrscan.core.match_filter.party.Party.min_chans">
+<code class="sig-name descname">min_chans</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">min_chans</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eqcorrscan/core/match_filter/party.html#Party.min_chans"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eqcorrscan.core.match_filter.party.Party.min_chans" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove detections using min_chans or fewer channels.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>min_chans</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) – Detections using more than this number of channels are maintained.
+Note that this is a strict <cite>if detection.no_chans &gt; min_chans:</cite>
+rather than &gt;=. Maintained for backwards compatability.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Party</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Works in place on Party.</p>
+</div>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">party</span> <span class="o">=</span> <span class="n">Party</span><span class="p">()</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">party</span><span class="p">))</span>
+<span class="go">4</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">party</span> <span class="o">=</span> <span class="n">party</span><span class="o">.</span><span class="n">min_chans</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">party</span><span class="p">))</span>
+<span class="go">1</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="eqcorrscan.core.match_filter.party.Party.read">
+<code class="sig-name descname">read</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">read_detection_catalog</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">estimate_origin</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eqcorrscan/core/match_filter/party.html#Party.read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eqcorrscan.core.match_filter.party.Party.read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a Party from a file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – File to read from - can be a list of files, and can contain
+wildcards.</p></li>
+<li><p><strong>read_detection_catalog</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – Whether to read the detection catalog or not, if False, catalog
+will be regenerated - for large catalogs this can be faster.</p></li>
+<li><p><strong>estimate_origin</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – If True and no catalog is found, or read_detection_catalog is False
+then new events with origins estimated from the template origin
+time will be created.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">Party</span><span class="p">()</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+<span class="go">Party of 4 Families.</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="eqcorrscan.core.match_filter.party.Party.rethreshold">
+<code class="sig-name descname">rethreshold</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">new_threshold</span></em>, <em class="sig-param"><span class="n">new_threshold_type</span><span class="o">=</span><span class="default_value">'MAD'</span></em>, <em class="sig-param"><span class="n">abs_values</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eqcorrscan/core/match_filter/party.html#Party.rethreshold"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eqcorrscan.core.match_filter.party.Party.rethreshold" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove detections from the Party that are below a new threshold.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>threshold can only be set higher.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Works in place on Party.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>new_threshold</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#float" title="(in Python v2.7)"><em>float</em></a>) – New threshold level</p></li>
+<li><p><strong>new_threshold_type</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – Either ‘MAD’, ‘absolute’ or ‘av_chan_corr’</p></li>
+<li><p><strong>abs_values</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – Whether to compare the absolute value of the detection-value.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Using the MAD threshold on detections made using the MAD threshold:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">party</span> <span class="o">=</span> <span class="n">Party</span><span class="p">()</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">party</span><span class="p">)</span>
+<span class="go">4</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">party</span> <span class="o">=</span> <span class="n">party</span><span class="o">.</span><span class="n">rethreshold</span><span class="p">(</span><span class="mf">10.0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">party</span><span class="p">)</span>
+<span class="go">4</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Note that all detections are self detections</span>
+</pre></div>
+</div>
+<p>Using the absolute thresholding method on the same Party:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">party</span> <span class="o">=</span> <span class="n">Party</span><span class="p">()</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">rethreshold</span><span class="p">(</span><span class="mf">5.9</span><span class="p">,</span> <span class="s1">&#39;absolute&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">party</span><span class="p">)</span>
+<span class="go">1</span>
+</pre></div>
+</div>
+<p>Using the av_chan_corr method on the same Party:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">party</span> <span class="o">=</span> <span class="n">Party</span><span class="p">()</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">rethreshold</span><span class="p">(</span><span class="mf">0.9</span><span class="p">,</span> <span class="s1">&#39;av_chan_corr&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">party</span><span class="p">)</span>
+<span class="go">4</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="eqcorrscan.core.match_filter.party.Party.select">
+<code class="sig-name descname">select</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">template_name</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eqcorrscan/core/match_filter/party.html#Party.select"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eqcorrscan.core.match_filter.party.Party.select" title="Permalink to this definition">¶</a></dt>
+<dd><p>Select a specific family from the party.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>template_name</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – Template name of Family to select from a party.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Family</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="eqcorrscan.core.match_filter.party.Party.sort">
+<code class="sig-name descname">sort</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eqcorrscan/core/match_filter/party.html#Party.sort"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eqcorrscan.core.match_filter.party.Party.sort" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sort the families by template name.</p>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">eqcorrscan</span> <span class="kn">import</span> <span class="n">Family</span><span class="p">,</span> <span class="n">Template</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">party</span> <span class="o">=</span> <span class="n">Party</span><span class="p">(</span><span class="n">families</span><span class="o">=</span><span class="p">[</span><span class="n">Family</span><span class="p">(</span><span class="n">template</span><span class="o">=</span><span class="n">Template</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;b&#39;</span><span class="p">)),</span>
+<span class="gp">... </span>                        <span class="n">Family</span><span class="p">(</span><span class="n">template</span><span class="o">=</span><span class="n">Template</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;a&#39;</span><span class="p">))])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">party</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="go">Family of 0 detections from template b</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">party</span><span class="o">.</span><span class="n">sort</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+<span class="go">Family of 0 detections from template a</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="eqcorrscan.core.match_filter.party.Party.write">
+<code class="sig-name descname">write</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span></em>, <em class="sig-param"><span class="n">format</span><span class="o">=</span><span class="default_value">'tar'</span></em>, <em class="sig-param"><span class="n">write_detection_catalog</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">catalog_format</span><span class="o">=</span><span class="default_value">'QUAKEML'</span></em>, <em class="sig-param"><span class="n">overwrite</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eqcorrscan/core/match_filter/party.html#Party.write"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eqcorrscan.core.match_filter.party.Party.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write Family out, select output format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>format</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – One of either ‘tar’, ‘csv’, or any obspy supported
+catalog output. See note below on formats</p></li>
+<li><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – Path to write file to.</p></li>
+<li><p><strong>write_detection_catalog</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – Whether to write the detection catalog object or not - writing
+large catalog files can be slow, and catalogs can be reconstructed
+from the Tribe.</p></li>
+<li><p><strong>catalog_format</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – What format to write the detection-catalog with. Only Nordic,
+SC3ML, QUAKEML are supported. Note that not all information is
+written for all formats (QUAKEML is the most complete, but is
+slow for IO).</p></li>
+<li><p><strong>overwrite</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#bool" title="(in Python v2.7)"><em>bool</em></a>) – Specifies whether detection-files are overwritten if they exist
+already. By default, no files are overwritten.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>csv format will write out detection objects, all other
+outputs will write the catalog.  These cannot be rebuilt into
+a Family object.  The only format that can be read back into
+Family objects is the ‘tar’ type.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>We recommend writing to the ‘tar’ format, which will write out
+all the template information (wavefiles as miniseed and metadata)
+alongside the detections and store these in a tar archive. This
+is readable by other programs and maintains all information
+required for further study.</p>
+</div>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">party</span> <span class="o">=</span> <span class="n">Party</span><span class="p">()</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">party</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;test_tar_write&#39;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;tar&#39;</span><span class="p">)</span>
+<span class="go">Party of 4 Families.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">party</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;test_csv_write.csv&#39;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;csv&#39;</span><span class="p">)</span>
+<span class="go">Party of 4 Families.</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">party</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;test_quakeml.xml&#39;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;quakeml&#39;</span><span class="p">)</span>
+<span class="go">Party of 4 Families.</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="functions">
+<h1>Functions<a class="headerlink" href="#functions" title="Permalink to this headline">¶</a></h1>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="autogen/eqcorrscan.core.match_filter.party.read_party.html#eqcorrscan.core.match_filter.party.read_party" title="eqcorrscan.core.match_filter.party.read_party"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_party</span></code></a></p></td>
+<td><p>Read detections and metadata from a tar archive.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2015-2021: EQcorrscan developers.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.2.1.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

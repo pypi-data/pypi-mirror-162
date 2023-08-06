@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
+
+    <title>5.2.8.1.5. eqcorrscan.utils.mag_calc.svd_moments &#8212; EQcorrscan 0.4.3 documentation</title>
+    <link rel="stylesheet" href="../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="shortcut icon" href="../../_static/EQcorrscan_logo.ico"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="5.2.8.1.6. eqcorrscan.utils.mag_calc.relative_amplitude" href="eqcorrscan.utils.mag_calc.relative_amplitude.html" />
+    <link rel="prev" title="5.2.8.1.4. eqcorrscan.utils.mag_calc.dist_calc" href="eqcorrscan.utils.mag_calc.dist_calc.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../_static/js/jquery-1.12.4.min.js "></script>
+<script type="text/javascript" src="../../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../../_static/bootstrap-3.4.1/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../index.html"><span><img src="../../_static/EQcorrscan_logo.jpg"></span>
+          EQcorrscan</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.4</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../intro.html">1. Introduction to the EQcorrscan package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">2. EQcorrscan installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../updates.html">3. What’s new</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial.html">4. EQcorrscan tutorials</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../api.html">5. EQcorrscan API</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">5.2.8.1.5. eqcorrscan.utils.mag_calc.svd_moments</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="eqcorrscan.utils.mag_calc.dist_calc.html" title="Previous Chapter: 5.2.8.1.4. eqcorrscan.utils.mag_calc.dist_calc"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; 5.2.8.1.4. eq...</span>
+    </a>
+  </li>
+  <li>
+    <a href="eqcorrscan.utils.mag_calc.relative_amplitude.html" title="Next Chapter: 5.2.8.1.6. eqcorrscan.utils.mag_calc.relative_amplitude"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">5.2.8.1.6. eq... &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="../../_sources/submodules/autogen/eqcorrscan.utils.mag_calc.svd_moments.rst.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <section id="eqcorrscan-utils-mag-calc-svd-moments">
+<h1><span class="section-number">5.2.8.1.5. </span>eqcorrscan.utils.mag_calc.svd_moments<a class="headerlink" href="#eqcorrscan-utils-mag-calc-svd-moments" title="Permalink to this headline">¶</a></h1>
+<dl class="py function">
+<dt id="eqcorrscan.utils.mag_calc.svd_moments">
+<code class="sig-prename descclassname">eqcorrscan.utils.mag_calc.</code><code class="sig-name descname">svd_moments</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">u</span></em>, <em class="sig-param"><span class="n">s</span></em>, <em class="sig-param"><span class="n">v</span></em>, <em class="sig-param"><span class="n">stachans</span></em>, <em class="sig-param"><span class="n">event_list</span></em>, <em class="sig-param"><span class="n">n_svs</span><span class="o">=</span><span class="default_value">2</span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/eqcorrscan/utils/mag_calc.html#svd_moments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eqcorrscan.utils.mag_calc.svd_moments" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate relative moments/amplitudes using singular-value decomposition.</p>
+<p>Convert basis vectors calculated by singular value decomposition (see the
+SVD functions in clustering) into relative moments.</p>
+<p>For more information see the paper by
+<a class="reference external" href="http://www.bssaonline.org/content/100/5A/1952.short">Rubinstein &amp; Ellsworth (2010).</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>u</strong> (<em>list</em>) – List of the <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.21)"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a> input basis vectors from the SVD,
+one array for each channel used.</p></li>
+<li><p><strong>s</strong> (<em>list</em>) – List of the <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.21)"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a> of singular values, one array for
+each channel.</p></li>
+<li><p><strong>v</strong> (<em>list</em>) – List of <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.21)"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a> of output basis vectors from SVD, one
+array per channel.</p></li>
+<li><p><strong>stachans</strong> (<em>list</em>) – List of station.channel input</p></li>
+<li><p><strong>event_list</strong> (<em>list</em>) – List of events for which you have data, such that event_list[i]
+corresponds to stachans[i], U[i] etc. and event_list[i][j] corresponds
+to event j in U[i].  These are a series of indexes that map the basis
+vectors to their relative events and channels - if you have every
+channel for every event generating these is trivial (see example).</p></li>
+<li><p><strong>n_svs</strong> (<a class="reference external" href="https://docs.python.org/2.7/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) – Number of singular values to use, defaults to 4.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>M, array of relative moments</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.21)"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a></p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>events_out, list of events that relate to M (in order),         does not include the magnitude information in the events, see note.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.obspy.org/packages/autogen/obspy.core.event.event.Event.html#obspy.core.event.event.Event" title="(in ObsPy Documentation (1.2.0) v1.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">obspy.core.event.event.Event</span></code></a></p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>M is an array of relative moments (or amplitudes), these cannot
+be directly compared to true moments without calibration.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>When comparing this method with the method used for creation
+of subspace detectors (Harris 2006) it is important to note that the
+input <cite>design set</cite> matrix in Harris contains waveforms as columns,
+whereas in Rubinstein &amp; Ellsworth it contains waveforms as rows
+(i.e. the transpose of the Harris data matrix). The U and V matrices
+are therefore swapped between the two approaches. This is accounted
+for in EQcorrscan but may lead to confusion when reviewing the code.
+Here we use the Harris approach.</p>
+</div>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">eqcorrscan.utils.mag_calc</span> <span class="kn">import</span> <span class="n">svd_moments</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">obspy</span> <span class="kn">import</span> <span class="n">read</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">glob</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">os</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">eqcorrscan.utils.clustering</span> <span class="kn">import</span> <span class="n">svd</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Do the set-up</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">testing_path</span> <span class="o">=</span> <span class="s1">&#39;eqcorrscan/tests/test_data/similar_events_processed&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">stream_files</span> <span class="o">=</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">testing_path</span><span class="p">,</span> <span class="s1">&#39;*&#39;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">stream_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">read</span><span class="p">(</span><span class="n">stream_file</span><span class="p">)</span> <span class="k">for</span> <span class="n">stream_file</span> <span class="ow">in</span> <span class="n">stream_files</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">event_list</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">remove_list</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;WHAT2&#39;</span><span class="p">,</span> <span class="s1">&#39;SH1&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;WV04&#39;</span><span class="p">,</span> <span class="s1">&#39;SHZ&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;GCSZ&#39;</span><span class="p">,</span> <span class="s1">&#39;EHZ&#39;</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">stream</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">stream_list</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">st_list</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="gp">... </span>    <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">stream</span><span class="p">:</span>
+<span class="gp">... </span>        <span class="k">if</span> <span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">station</span><span class="p">,</span> <span class="n">tr</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">channel</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">remove_list</span><span class="p">:</span>
+<span class="gp">... </span>            <span class="n">stream</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">tr</span><span class="p">)</span>
+<span class="gp">... </span>            <span class="k">continue</span>
+<span class="gp">... </span>        <span class="n">st_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">event_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">st_list</span><span class="p">)</span> 
+<span class="gp">&gt;&gt;&gt; </span><span class="n">event_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">event_list</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">SVec</span><span class="p">,</span> <span class="n">SVal</span><span class="p">,</span> <span class="n">U</span><span class="p">,</span> <span class="n">stachans</span> <span class="o">=</span> <span class="n">svd</span><span class="p">(</span><span class="n">stream_list</span><span class="o">=</span><span class="n">stream_list</span><span class="p">)</span> 
+<span class="go">[&#39;GCSZ.EHZ&#39;, &#39;WV04.SHZ&#39;, &#39;WHAT2.SH1&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">M</span><span class="p">,</span> <span class="n">events_out</span> <span class="o">=</span> <span class="n">svd_moments</span><span class="p">(</span><span class="n">u</span><span class="o">=</span><span class="n">U</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="n">SVal</span><span class="p">,</span> <span class="n">v</span><span class="o">=</span><span class="n">SVec</span><span class="p">,</span> <span class="n">stachans</span><span class="o">=</span><span class="n">stachans</span><span class="p">,</span>
+<span class="gp">... </span>                            <span class="n">event_list</span><span class="o">=</span><span class="n">event_list</span><span class="p">)</span> 
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2015-2021: EQcorrscan developers.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.2.1.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

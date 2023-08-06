@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
+
+    <title>5.2.5. correlate &#8212; EQcorrscan 0.4.3 documentation</title>
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    <link rel="shortcut icon" href="../_static/EQcorrscan_logo.ico"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="5.2.5.1.1. eqcorrscan.utils.correlate.fftw_multi_normxcorr" href="autogen/eqcorrscan.utils.correlate.fftw_multi_normxcorr.html" />
+    <link rel="prev" title="5.2.4.1.13. eqcorrscan.utils.clustering.space_time_cluster" href="autogen/eqcorrscan.utils.clustering.space_time_cluster.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../_static/js/jquery-1.12.4.min.js "></script>
+<script type="text/javascript" src="../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../_static/bootstrap-3.4.1/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html"><span><img src="../_static/EQcorrscan_logo.jpg"></span>
+          EQcorrscan</a>
+        <span class="navbar-text navbar-version pull-left"><b>0.4</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">1. Introduction to the EQcorrscan package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">2. EQcorrscan installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../updates.html">3. What’s new</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">4. EQcorrscan tutorials</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">5. EQcorrscan API</a></li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">5.2.5. correlate</a><ul>
+<li><a class="reference internal" href="#classes-functions">5.2.5.1. Classes &amp; Functions</a></li>
+<li><a class="reference internal" href="#selecting-a-correlation-function">5.2.5.2. Selecting a correlation function</a></li>
+<li><a class="reference internal" href="#setting-fft-length">5.2.5.3. Setting FFT length</a></li>
+<li><a class="reference internal" href="#using-fast-matched-filter-within-eqcorrscan">5.2.5.4. Using Fast Matched Filter within EQcorrscan</a></li>
+<li><a class="reference internal" href="#switching-which-correlation-function-is-used">5.2.5.5. Switching which correlation function is used</a></li>
+<li><a class="reference internal" href="#notes-on-accuracy">5.2.5.6. Notes on accuracy</a></li>
+<li><a class="reference internal" href="#warning">5.2.5.7. Warning</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="autogen/eqcorrscan.utils.clustering.space_time_cluster.html" title="Previous Chapter: 5.2.4.1.13. eqcorrscan.utils.clustering.space_time_cluster"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; 5.2.4.1.13. e...</span>
+    </a>
+  </li>
+  <li>
+    <a href="autogen/eqcorrscan.utils.correlate.fftw_multi_normxcorr.html" title="Next Chapter: 5.2.5.1.1. eqcorrscan.utils.correlate.fftw_multi_normxcorr"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">5.2.5.1.1. eq... &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="../_sources/submodules/utils.correlate.rst.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <section id="module-eqcorrscan.utils.correlate">
+<span id="correlate"></span><h1><span class="section-number">5.2.5. </span>correlate<a class="headerlink" href="#module-eqcorrscan.utils.correlate" title="Permalink to this headline">¶</a></h1>
+<p>Correlation functions for multi-channel cross-correlation of seismic data.</p>
+<p>Various routines used mostly for testing, including links to a compiled
+routine using FFTW, a Numpy fft routine which uses bottleneck for normalisation
+and a compiled time-domain routine. These have varying levels of efficiency,
+both in terms of overall speed, and in memory usage.  The time-domain is the
+most memory efficient but slowest routine (although fast for small cases of
+less than a few hundred correlations), the Numpy routine is fast, but memory
+inefficient due to a need to store large double-precision arrays for
+normalisation.  The fftw compiled routine is faster and more memory efficient
+than the Numpy routine.</p>
+<dl class="field-list simple">
+<dt class="field-odd">copyright</dt>
+<dd class="field-odd"><p>EQcorrscan developers.</p>
+</dd>
+<dt class="field-even">license</dt>
+<dd class="field-even"><p>GNU Lesser General Public License, Version 3
+(<a class="reference external" href="https://www.gnu.org/copyleft/lesser.html">https://www.gnu.org/copyleft/lesser.html</a>)</p>
+</dd>
+</dl>
+<section id="classes-functions">
+<h2><span class="section-number">5.2.5.1. </span>Classes &amp; Functions<a class="headerlink" href="#classes-functions" title="Permalink to this headline">¶</a></h2>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="autogen/eqcorrscan.utils.correlate.fftw_multi_normxcorr.html#eqcorrscan.utils.correlate.fftw_multi_normxcorr" title="eqcorrscan.utils.correlate.fftw_multi_normxcorr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fftw_multi_normxcorr</span></code></a></p></td>
+<td><p>Use a C loop rather than a Python loop - in some cases this will be fast.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="autogen/eqcorrscan.utils.correlate.fftw_normxcorr.html#eqcorrscan.utils.correlate.fftw_normxcorr" title="eqcorrscan.utils.correlate.fftw_normxcorr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fftw_normxcorr</span></code></a></p></td>
+<td><p>Normalised cross-correlation using the fftw library.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="autogen/eqcorrscan.utils.correlate.numpy_normxcorr.html#eqcorrscan.utils.correlate.numpy_normxcorr" title="eqcorrscan.utils.correlate.numpy_normxcorr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">numpy_normxcorr</span></code></a></p></td>
+<td><p>Compute the normalized cross-correlation using numpy and bottleneck.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="autogen/eqcorrscan.utils.correlate.time_multi_normxcorr.html#eqcorrscan.utils.correlate.time_multi_normxcorr" title="eqcorrscan.utils.correlate.time_multi_normxcorr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">time_multi_normxcorr</span></code></a></p></td>
+<td><p>Compute cross-correlations in the time-domain using C routine.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="autogen/eqcorrscan.utils.correlate.get_array_xcorr.html#eqcorrscan.utils.correlate.get_array_xcorr" title="eqcorrscan.utils.correlate.get_array_xcorr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_array_xcorr</span></code></a></p></td>
+<td><p>Get an normalized cross correlation function that takes arrays as inputs.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="autogen/eqcorrscan.utils.correlate.get_stream_xcorr.html#eqcorrscan.utils.correlate.get_stream_xcorr" title="eqcorrscan.utils.correlate.get_stream_xcorr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_stream_xcorr</span></code></a></p></td>
+<td><p>Return a function for performing normalized cross correlation on lists of streams.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="autogen/eqcorrscan.utils.correlate.register_array_xcorr.html#eqcorrscan.utils.correlate.register_array_xcorr" title="eqcorrscan.utils.correlate.register_array_xcorr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_array_xcorr</span></code></a></p></td>
+<td><p>Decorator for registering correlation functions.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<p>All functions within this module (and therefore all correlation functions used
+in EQcorrscan) are normalised cross-correlations, which follow the definition
+that Matlab uses for <a href="https://au.mathworks.com/help/images/ref/normxcorr2.html?s_tid=gn_loc_drop" target="_blank">normxcorr2</a>.</p>
+<dl>
+<dt>In the time-domain this is as follows</dt><dd><div class="math notranslate nohighlight">
+\[c(t) = \frac{\sum_{y}(a_{y} - \overline{a})(b_{t+y} - \overline{b_t})}{\sqrt{\sum_{y}(a_{y} - \overline{a})(a_{y} - \overline{a})\sum_{y}(b_{t+y} - \overline{b_t})(b_{t+y} - \overline{b_t})}}\]</div>
+</dd>
+</dl>
+<p>where <span class="math notranslate nohighlight">\(c(t)\)</span> is the normalised cross-correlation at at time <span class="math notranslate nohighlight">\(t\)</span>,
+<span class="math notranslate nohighlight">\(a\)</span> is the template window which has length <span class="math notranslate nohighlight">\(y\)</span>, <span class="math notranslate nohighlight">\(b\)</span> is the
+continuous data, and <span class="math notranslate nohighlight">\(\overline{a}\)</span> is the mean of the template and
+<span class="math notranslate nohighlight">\(\overline{b_t}\)</span> is the local mean of the continuous data.</p>
+<p>In practice the correlations only remove the mean of the template once, but we do
+remove the mean from the continuous data at every time-step.  Without doing this
+(just removing the global mean), correlations are affected by jumps in average
+amplitude, which is most noticeable during aftershock sequences, or when using
+short templates.</p>
+<p>In the frequency domain (functions <a class="reference internal" href="autogen/eqcorrscan.utils.correlate.numpy_normxcorr.html#eqcorrscan.utils.correlate.numpy_normxcorr" title="eqcorrscan.utils.correlate.numpy_normxcorr"><code class="xref py py-func docutils literal notranslate"><span class="pre">eqcorrscan.utils.correlate.numpy_normxcorr()</span></code></a>,
+<a class="reference internal" href="autogen/eqcorrscan.utils.correlate.fftw_normxcorr.html#eqcorrscan.utils.correlate.fftw_normxcorr" title="eqcorrscan.utils.correlate.fftw_normxcorr"><code class="xref py py-func docutils literal notranslate"><span class="pre">eqcorrscan.utils.correlate.fftw_normxcorr()</span></code></a>, <a class="reference internal" href="autogen/eqcorrscan.utils.correlate.fftw_multi_normxcorr.html#eqcorrscan.utils.correlate.fftw_multi_normxcorr" title="eqcorrscan.utils.correlate.fftw_multi_normxcorr"><code class="xref py py-func docutils literal notranslate"><span class="pre">fftw_multi_normxcorr()</span></code></a>),
+correlations are computed using an equivalent method.  All methods are tested
+against one-another to check for internal consistency, and checked against results
+computed using Matlab’s <a href="https://au.mathworks.com/help/images/ref/normxcorr2.html?s_tid=gn_loc_drop" target="_blank">normxcorr2</a> function. These routines also give the same
+(within 0.00001) of openCV cross-correlations.</p>
+<section id="selecting-a-correlation-function">
+<h2><span class="section-number">5.2.5.2. </span>Selecting a correlation function<a class="headerlink" href="#selecting-a-correlation-function" title="Permalink to this headline">¶</a></h2>
+<p>EQcorrscan strives to use sensible default algorithms for calculating
+correlation values, however, you may want to change how correlations are
+caclulated to be more advantageous to your specific needs.</p>
+<p>There are currently 3 different correlations functions currently included in EQcorrscan:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p><a class="reference internal" href="autogen/eqcorrscan.utils.correlate.numpy_normxcorr.html#eqcorrscan.utils.correlate.numpy_normxcorr" title="eqcorrscan.utils.correlate.numpy_normxcorr"><code class="xref py py-func docutils literal notranslate"><span class="pre">eqcorrscan.utils.correlate.numpy_normxcorr()</span></code></a> known as “numpy”</p></li>
+<li><p><a class="reference internal" href="autogen/eqcorrscan.utils.correlate.time_multi_normxcorr.html#eqcorrscan.utils.correlate.time_multi_normxcorr" title="eqcorrscan.utils.correlate.time_multi_normxcorr"><code class="xref py py-func docutils literal notranslate"><span class="pre">eqcorrscan.utils.correlate.time_multi_normxcorr()</span></code></a> known as “time_domain”</p></li>
+<li><p><a class="reference internal" href="autogen/eqcorrscan.utils.correlate.fftw_normxcorr.html#eqcorrscan.utils.correlate.fftw_normxcorr" title="eqcorrscan.utils.correlate.fftw_normxcorr"><code class="xref py py-func docutils literal notranslate"><span class="pre">eqcorrscan.utils.correlate.fftw_normxcorr()</span></code></a> known as “fftw”</p></li>
+</ol>
+</div></blockquote>
+<p>Number 3 is the default.</p>
+</section>
+<section id="setting-fft-length">
+<h2><span class="section-number">5.2.5.3. </span>Setting FFT length<a class="headerlink" href="#setting-fft-length" title="Permalink to this headline">¶</a></h2>
+<p>For version 0.4.0 onwards, the “fftw” backend allows the user to pass an <cite>fft_len</cite>
+keyword to it.  This will set the length of the FFT internally.  Smaller FFT’s use
+less memory, but can be faster. Larger FFTs use more memory and can be slower.
+By default this is set to the minimum of 2 ** 13, or the next fast length of the
+sum of the template length and the stream length. <a href="https://github.com/eqcorrscan/EQcorrscan/pull/285" target="_blank">#285</a> showed that 2 ** 13 was
+consistently fastest over a range of data shapes on an intel i7 with 8-threads.
+Powers of two are generally fastest.</p>
+</section>
+<section id="using-fast-matched-filter-within-eqcorrscan">
+<h2><span class="section-number">5.2.5.4. </span>Using Fast Matched Filter within EQcorrscan<a class="headerlink" href="#using-fast-matched-filter-within-eqcorrscan" title="Permalink to this headline">¶</a></h2>
+<p><a href="https://github.com/beridel/fast_matched_filter" target="_blank">Fast Matched Filter</a> provides fast time-domain correlations for both CPU and GPU
+architectures.  For massively multi-threaded environment this runs faster than
+the frequency-domain routines native to EQcorrscan (when more than 40 CPU cores,
+or an NVIDIA GPU card is available) with less memory consumption. Documentation
+on how to call Fast Matched Filter from within EQcorrscan is provided here:
+<a class="reference external" href="utils.correlate.fast_matched_filter.html">fast_matched_filter</a></p>
+</section>
+<section id="switching-which-correlation-function-is-used">
+<h2><span class="section-number">5.2.5.5. </span>Switching which correlation function is used<a class="headerlink" href="#switching-which-correlation-function-is-used" title="Permalink to this headline">¶</a></h2>
+<p>You can switch between correlation functions using the <cite>xcorr_func</cite> parameter
+included in:
+- <code class="xref py py-func docutils literal notranslate"><span class="pre">eqcorrscan.core.match_filter.match_filter()</span></code>,
+- <code class="xref py py-meth docutils literal notranslate"><span class="pre">eqcorrscan.core.match_filter.Tribe.detect()</span></code>,
+- <code class="xref py py-meth docutils literal notranslate"><span class="pre">eqcorrscan.core.match_filter.Template.detect()</span></code></p>
+<p>by:</p>
+<ol class="arabic simple">
+<li><p>passing a string (eg “numpy”, “time_domain”, or “fftw”) or;</p></li>
+<li><p>passing a function</p></li>
+</ol>
+<p>for example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">obspy</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">eqcorrscan.utils.correlate</span> <span class="kn">import</span> <span class="n">numpy_normxcorr</span><span class="p">,</span> <span class="n">set_xcorr</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">eqcorrscan.core.match_filter</span> <span class="kn">import</span> <span class="n">match_filter</span>
+
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># generate some toy templates and stream</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">random</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">RandomState</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">template</span> <span class="o">=</span> <span class="n">obspy</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">stream</span> <span class="o">=</span> <span class="n">obspy</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">num</span><span class="p">,</span> <span class="n">tr</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">stream</span><span class="p">):</span>  <span class="c1"># iter stream and embed templates</span>
+<span class="gp">... </span>    <span class="n">data</span> <span class="o">=</span> <span class="n">tr</span><span class="o">.</span><span class="n">data</span>
+<span class="gp">... </span>    <span class="n">tr</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">6000</span><span class="p">)</span> <span class="o">*</span> <span class="mi">5</span>
+<span class="gp">... </span>    <span class="n">tr</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">100</span><span class="p">:</span> <span class="mi">100</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)]</span> <span class="o">=</span> <span class="n">data</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># do correlation using numpy rather than fftw</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">detections</span> <span class="o">=</span> <span class="n">match_filter</span><span class="p">([</span><span class="s1">&#39;1&#39;</span><span class="p">],</span> <span class="p">[</span><span class="n">template</span><span class="p">],</span> <span class="n">stream</span><span class="p">,</span> <span class="o">.</span><span class="mi">5</span><span class="p">,</span> <span class="s1">&#39;absolute&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                          <span class="mi">1</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">xcorr_func</span><span class="o">=</span><span class="s1">&#39;numpy&#39;</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># do correlation using a custom function</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">def</span> <span class="nf">custom_normxcorr</span><span class="p">(</span><span class="n">templates</span><span class="p">,</span> <span class="n">stream</span><span class="p">,</span> <span class="n">pads</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="c1"># Just to keep example short call other xcorr function</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;calling custom xcorr function&#39;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="k">return</span> <span class="n">numpy_normxcorr</span><span class="p">(</span><span class="n">templates</span><span class="p">,</span> <span class="n">stream</span><span class="p">,</span> <span class="n">pads</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">detections</span> <span class="o">=</span> <span class="n">match_filter</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="p">[</span><span class="s1">&#39;1&#39;</span><span class="p">],</span> <span class="p">[</span><span class="n">template</span><span class="p">],</span> <span class="n">stream</span><span class="p">,</span> <span class="o">.</span><span class="mi">5</span><span class="p">,</span> <span class="s1">&#39;absolute&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">xcorr_func</span><span class="o">=</span><span class="n">custom_normxcorr</span><span class="p">)</span> 
+<span class="go">calling custom xcorr function...</span>
+</pre></div>
+</div>
+<p>You can also use the set_xcorr object (eqcorrscan.utils.correlate.set_xcorr)
+to change which correlation function is used. This can be done permanently
+or within the scope of a context manager:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># change the default xcorr function for all code in the with block</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">set_xcorr</span><span class="p">(</span><span class="n">custom_normxcorr</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="n">detections</span> <span class="o">=</span> <span class="n">match_filter</span><span class="p">([</span><span class="s1">&#39;1&#39;</span><span class="p">],</span> <span class="p">[</span><span class="n">template</span><span class="p">],</span> <span class="n">stream</span><span class="p">,</span> <span class="o">.</span><span class="mi">5</span><span class="p">,</span>
+<span class="gp">... </span>                              <span class="s1">&#39;absolute&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span> 
+<span class="go">calling custom xcorr function...</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># permanently set the xcorr function (until the python kernel restarts)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">set_xcorr</span><span class="p">(</span><span class="n">custom_normxcorr</span><span class="p">)</span>
+<span class="go">default changed to custom_normxcorr</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">detections</span> <span class="o">=</span> <span class="n">match_filter</span><span class="p">([</span><span class="s1">&#39;1&#39;</span><span class="p">],</span> <span class="p">[</span><span class="n">template</span><span class="p">],</span> <span class="n">stream</span><span class="p">,</span> <span class="o">.</span><span class="mi">5</span><span class="p">,</span> <span class="s1">&#39;absolute&#39;</span><span class="p">,</span>
+<span class="gp">... </span>                          <span class="mi">1</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span> 
+<span class="go">calling custom xcorr function...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">set_xcorr</span><span class="o">.</span><span class="n">revert</span><span class="p">()</span>  <span class="c1"># change it back to the previous state</span>
+</pre></div>
+</div>
+</section>
+<section id="notes-on-accuracy">
+<h2><span class="section-number">5.2.5.6. </span>Notes on accuracy<a class="headerlink" href="#notes-on-accuracy" title="Permalink to this headline">¶</a></h2>
+<p>To cope with floating-point rounding errors, correlations may not be
+calculated for data with low variance.  If you see a warning saying:
+<em>“Some correlations not computed, are there zeros in the data? If not
+consider increasing gain”</em>, check whether your data have zeros, and if not,
+but have low, but real amplitudes, multiply your data by some value.</p>
+</section>
+<section id="warning">
+<h2><span class="section-number">5.2.5.7. </span>Warning<a class="headerlink" href="#warning" title="Permalink to this headline">¶</a></h2>
+<p>If data are padded with zeros prior to filtering then correlations may be
+incorrectly calculated where there are zeros. You should always pad after
+filtering.  If you see warnings saying <em>“Low variance, possible zeros, check
+result”</em>, you should check that you have padded correctly and check that
+correlations haven’t been calculated when you don’t expect them.</p>
+</section>
+</section>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2015-2021: EQcorrscan developers.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.2.1.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>
