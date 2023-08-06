@@ -1,0 +1,39 @@
+import sys
+
+Import('env')
+
+def cppdef_stringify(s):
+    """Add quotes to a string suitable for a C preprocessor -D argument"""
+    s = '"' + s + '"'    # Add " for the C string literal
+    s = "'" + s + "'"    # Add ' for the shell
+    return s
+
+env.Append(
+    CCFLAGS = ['-static'],
+    LINKFLAGS = ['-static'],
+    CPPPATH = [
+        '#libtar',
+        '#libxz',
+    ],
+    CPPDEFINES = {
+        'COMPILER_PATH': cppdef_stringify(env['CC']),
+    }
+)
+
+bootloader = env.Program(
+    target = 'bootloader',
+    source = [
+        'error.c',
+        'elfutil.c',
+        'extract.c',
+        'main.c',
+        'mmap.c',
+        'util.c',
+    ],
+    LIBS = [
+        'tar',
+        'xz',
+    ],
+)
+
+Return('bootloader')
