@@ -1,0 +1,36 @@
+[case testGenericMethod]
+from typing import TypeVar, Generic, Union
+
+T = TypeVar('T')
+T2 = TypeVar('T2')
+
+class A(Generic[T2]):
+    def f(self, t: T, t2: T2) -> Union[T, T2]:
+        reveal_type(t)  # N: Revealed type is "T@f"
+        reveal_type(t2)  # N: Revealed type is "T2@A"
+        return t
+
+reveal_type(A.f)  # N: Revealed type is "def [T2 (from A), T] (self: __main__.A[T2], t: T, t2: T2) -> T | T2"
+reveal_type(A[int]().f)  # N: Revealed type is "def [T] (t: T, t2: int) -> T | int"
+
+
+[case testRenderAny]
+# flags: --allow-any-generics --allow-any-expr --allow-any-explicit
+from typing import Any, List
+a: list
+reveal_type(a)  # N: Revealed type is "list[Untyped]"
+b: List[Any]
+reveal_type(b)  # N: Revealed type is "list[Any]"
+
+
+[case testRenderBareLiterals]
+# flags: --python-version 3.10
+from typing import Literal
+
+a: Literal['1'] = 2  # E: Incompatible types in assignment (expression has type "2", variable has type "'1'")  [assignment]
+reveal_type(a)  # N: Revealed type is "'1'"
+b: Literal[1, 2, 3] = 4  # E: Incompatible types in assignment (expression has type "4", variable has type "1 | 2 | 3")  [assignment]
+reveal_type(b)  # N: Revealed type is "1 | 2 | 3"
+c: Literal[1, 2, 3] | str = 4  # E: Incompatible types in assignment (expression has type "4", variable has type "1 | 2 | 3 | str")  [assignment]
+reveal_type(c)  # N: Revealed type is "1 | 2 | 3 | str"
+[typing fixtures/typing-medium.pyi]
