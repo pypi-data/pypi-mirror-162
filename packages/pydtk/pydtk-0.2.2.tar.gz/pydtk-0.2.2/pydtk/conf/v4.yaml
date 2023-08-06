@@ -1,0 +1,89 @@
+bin:
+  make_meta:
+    common_item:
+      record_id: "Record ID"
+      path: "File to path"
+      contents: "Contents"
+
+db:
+  connection:
+    base:
+      engine: tinymongo
+      host: /tmp/pydtk-base.json
+      username: ""
+      password: ""
+      database: ""
+    database_id:
+      engine: tinymongo
+      host: /tmp/pydtk-database-id.json
+      username: ""
+      password: ""
+      database: ""
+    meta:
+      engine: tinymongo
+      host: /tmp/pydtk-meta.json
+      username: ""
+      password: ""
+      database: ""
+    time_series:
+      engine: tinymongo
+      host: /tmp/pydtk-time-series.json
+      username: ""
+      password: ""
+      database: ""
+    statistics:
+      engine: tinymongo
+      host: /tmp/pydtk-statistics
+      username: ""
+      password: ""
+      database: ""
+
+  df_class:
+    base_df:
+      columns:
+        - name: test
+          dtype: string
+      index_columns:
+        - test
+    database_id_df:
+      columns:
+        - name: database_id
+          dtype: string
+          aggregation: first
+          display_name: Database ID
+        - name: df_name
+          dtype: string
+          aggregation: first
+          display_name: DataFrame name
+      index_columns:
+        - database_id
+    meta_df:
+      _hash_digest_size: 4
+      _df_name: 'db_{database_id}_meta'
+      columns:
+        - name: record_id
+          dtype: string
+          aggregation: first
+          display_name: Record ID
+        - name: path
+          dtype: string
+          aggregation: push
+          display_name: File path
+        - name: contents
+          dtype: dict
+          aggregation: mergeObjects
+          display_name: Contents
+      index_columns:
+        - _kind
+        - record_id
+        - path
+    time_series_df:
+      index_columns:
+        - record_id
+        - timestamp
+    statistics_df:
+      _hash_digest_size: 4
+      _df_name: 'db_{database_id}_span_{span:.0f}'
+      index_columns:
+        - record_id
+        - timestamp
