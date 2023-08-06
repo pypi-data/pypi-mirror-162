@@ -1,0 +1,82 @@
+[tool.poetry]
+name = "mcstatus"
+version = "9.3.0" # version is handled by git tags and poetry-dynamic-versioning
+description = "A library to query Minecraft Servers for their status and capabilities."
+authors = ["Nathan Adams <dinnerbone@dinnerbone.com>"]
+license = "Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/py-mine/mcstatus"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Games/Entertainment",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Monitoring",
+    "Typing :: Typed",
+]
+packages = [
+    { include = "mcstatus" },
+    { include = "protocol", from = "mcstatus" }
+]
+
+[tool.poetry.dependencies]
+python = ">=3.7,<4"
+asyncio-dgram = "2.1.2"
+click = ">=7.1.2,<9"
+dnspython = "2.2.1"
+
+[tool.poetry.dev-dependencies]
+black = "^22.6.0"
+coverage = "^6.4"
+flake8 = "^4.0.1"
+flake8-annotations = "^2.9.0"
+flake8-bugbear = "^22.7.1"
+flake8-isort = "^4.1.2"
+flake8-tidy-imports = "^4.8.0"
+isort = "^5.10.1"
+pep8-naming = "^0.13.1"
+pre-commit = "^2.20.0"
+pyright = "^1.1.261"
+pytest = "^7.1.2"
+pytest-asyncio = "^0.19.0"
+pytest-cov = "^3.0.0"
+tox = "^3.25.1"
+tox-poetry = "^0.4.1"
+twine = "^4.0.1"
+typing-extensions = "^4.3.0"
+
+[tool.poetry.scripts]
+mcstatus = 'mcstatus.__main__:cli'
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "--strict-markers --doctest-modules --cov=mcstatus --cov-append --cov-branch --cov-report=term-missing -vvv --no-cov-on-fail --asyncio-mode=strict"
+testpaths = ["mcstatus/tests"]
+
+[tool.poetry-dynamic-versioning]
+bump = true
+enable = false
+style = "pep440"
+
+[tool.black]
+line-length = 127
+
+[tool.isort]
+profile = "black"
+line_length = 127
+order_by_type = false
+case_sensitive = true
+skip = [".venv", ".git", ".cache", ".tox"]
+
+[build-system]
+requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning"]
+build-backend = "poetry.core.masonry.api"
