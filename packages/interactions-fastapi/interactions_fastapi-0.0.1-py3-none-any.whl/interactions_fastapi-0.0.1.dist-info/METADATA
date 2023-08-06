@@ -1,0 +1,86 @@
+Metadata-Version: 2.1
+Name: interactions-fastapi
+Version: 0.0.1
+Summary: Build an API for your bot with FastAPI
+Home-page: https://github.com/Damego/interactions-fastapi
+Author: Damego
+Author-email: damego.dev@gmail.com
+License: GPL-3.0 License
+Platform: UNKNOWN
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Natural Language :: English
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Topic :: Internet
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Classifier: Topic :: Software Development :: Libraries
+Classifier: Topic :: Utilities
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: discord-py-interactions
+Requires-Dist: fastapi
+Requires-Dist: uvicorn
+
+# FastAPI wrapper for interactions.py
+
+
+
+An Extension library to add Fast API for your interactions.py bot .
+
+
+
+## Installation
+
+
+
+``pip install git+https://github.com/Damego/interactions-fastapi.git``
+
+
+
+
+
+## Examples
+
+
+
+```python
+
+import interactions
+
+from interactions.ext.api import setup
+
+
+
+client = interactions.Client(...)
+
+api = setup(client)
+
+
+
+@api.route("GET", "/")
+
+async def index():
+
+    return {"status": "success"}
+
+
+
+client.start()
+
+```
+
+
+
+Server will run on ``127.0.0.1:32512`` (host and port modifiable)
+
+
+
+More examples in ``examples`` folder.
+
+
+
