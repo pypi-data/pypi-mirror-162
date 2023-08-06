@@ -1,0 +1,78 @@
+#!/usr/bin/env python3
+
+# Standard libraries
+from os import environ
+from re import sub as regex_sub
+from subprocess import CalledProcessError, check_output, DEVNULL
+
+# Components
+from ..package.bundle import Bundle
+
+# Git class
+class Git:
+
+    # Members
+    __binary: str = 'git'
+
+    # Constructor
+    def __init__(self):
+
+        # Configure binary
+        if Bundle.ENV_GIT_BINARY_PATH in environ:
+            self.__binary = environ[Bundle.ENV_GIT_BINARY_PATH]
+
+    # HEAD reference name
+    def head_reference_name(self, workdir=None):
+
+        # Result
+        try:
+            return check_output(
+                [self.__binary, 'rev-parse', '--abbrev-ref', 'HEAD'],
+                cwd=workdir,
+                shell=False,
+                stderr=DEVNULL,
+            ).strip().decode()
+        except (CalledProcessError, FileNotFoundError):
+            return ''
+
+    # HEAD reference slug
+    def head_reference_slug(self, workdir=None, name=None):
+
+        # Get name
+        if name is None: # pragma: no cover
+            name = self.head_reference_name(workdir)
+
+        # Adapt slug
+        slug = name.lower()[0:63]
+        slug = regex_sub(r'[^a-z0-9]', '-', slug).strip('-')
+
+        # Result
+        return slug
+
+    # HEAD revision hash
+    def head_revision_hash(self, workdir=None):
+
+        # Result
+        try:
+            return check_output(
+                [self.__binary, 'rev-parse', 'HEAD'],
+                cwd=workdir,
+                shell=False,
+                stderr=DEVNULL,
+            ).strip().decode()
+        except (CalledProcessError, FileNotFoundError):
+            return ''
+
+    # HEAD revision short hash
+    def head_revision_short_hash(self, workdir=None):
+
+        # Result
+        try:
+            return check_output(
+                [self.__binary, 'rev-parse', '--short', 'HEAD'],
+                cwd=workdir,
+                shell=False,
+                stderr=DEVNULL,
+            ).strip().decode()
+        except (CalledProcessError, FileNotFoundError):
+            return ''
