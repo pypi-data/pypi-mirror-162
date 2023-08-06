@@ -1,0 +1,70 @@
+all:
+  children:
+    windows:
+      children:
+        win_controller:
+          hosts:
+            DC01:
+              ansible_host: 192.168.65.10
+              vagrant_box: jborean93/WindowsServer2022
+        win_children:
+          hosts:
+            SERVER2012R2:
+              ansible_host: 192.168.65.11
+              vagrant_box: jborean93/WindowsServer2012R2
+            SERVER2022:
+              ansible_host: 192.168.65.12
+              vagrant_box: jborean93/WindowsServer2022
+      vars:
+        ansible_connection: psrp
+        ansible_port: 5985
+        python_interpreters:
+        - C:\Program Files\Python36
+        - C:\Program Files (x86)\Python36-32
+        - C:\Program Files\Python37
+        - C:\Program Files (x86)\Python37-32
+        - C:\Program Files\Python38
+        - C:\Program Files (x86)\Python38-32
+        - C:\Program Files\Python39
+        - C:\Program Files (x86)\Python39-32
+        - C:\Program Files\Python310
+        - C:\Program Files (x86)\Python310-32
+        python_venv_path: C:\temp\venv
+        krb_provider: SSPI
+
+    linux:
+      children:
+        linux_children:
+          hosts:
+            CENTOS8-MIT:
+              ansible_host: 192.168.65.13
+              vagrant_box: centos/stream8
+              krb_packages:
+              - gssntlmssp
+              - krb5-devel
+              - krb5-workstation
+              krb_provider: MIT
+            CENTOS8-HEIMDAL:
+              ansible_host: 192.168.65.14
+              vagrant_box: centos/stream8
+              krb_packages:
+              - heimdal-devel
+              - heimdal-libs
+              - heimdal-path
+              - heimdal-workstation
+              - libcom_err-devel
+              krb_provider: Heimdal
+      vars:
+        ansible_ssh_common_args: -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no
+        python_interpreters:
+        - /usr/bin/python3
+        python_venv_path: ~/venv
+
+  vars:
+    ansible_user: vagrant
+    ansible_password: vagrant
+
+    domain_name: spnego.test
+    domain_username: spnego
+    domain_password: Password01
+    domain_upn: '{{ domain_username }}@{{ domain_name | upper }}'

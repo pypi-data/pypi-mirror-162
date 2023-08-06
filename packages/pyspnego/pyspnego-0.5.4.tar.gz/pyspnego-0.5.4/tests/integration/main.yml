@@ -1,0 +1,412 @@
+- name: get network adapter for each Windows host
+  hosts: windows
+  gather_facts: no
+  tasks:
+  - name: get network connection for private adapter
+    win_shell: |
+      foreach ($instance in (Get-CimInstance -ClassName Win32_NetworkAdapter -Filter "Netenabled='True'")) {
+          $instance_config = Get-CimInstance -ClassName WIn32_NetworkAdapterConfiguration -Filter "Index = '$($instance.Index)'"
+          if ($instance_config.IPAddress -contains "{{ansible_host}}") {
+              $instance.NetConnectionID
+          }
+      }
+    changed_when: no
+    register: network_connection_name_raw
+
+  - name: fail if we didn't get a network connection name
+    fail:
+      msg: Failed to get the Windows network connection name
+    when: network_connection_name_raw.stdout_lines | count != 1
+
+  - name: set fact of network connection name
+    set_fact:
+      network_connection_name: '{{ network_connection_name_raw.stdout | trim }}'
+
+- name: create Domain Controller
+  hosts: win_controller
+  gather_facts: no
+  tasks:
+  - name: set the DNS for the specified adapter to localhost
+    win_dns_client:
+      adapter_name: '{{ network_connection_name }}'
+      ipv4_addresses: 127.0.0.1
+
+  - name: ensure domain exists and DC is promoted as a domain controller
+    win_domain:
+      dns_domain_name: '{{ domain_name }}'
+      safe_mode_password: '{{ domain_password }}'
+    register: domain_setup_res
+
+  - name: reboot DC if required after install
+    win_reboot:
+    when: domain_setup_res.reboot_required
+
+  - name: create domain username
+    win_domain_user:
+      name: '{{ domain_username }}'
+      upn: '{{ domain_upn }}'
+      description: '{{ domain_username }} Domain Account'
+      password: '{{ domain_password }}'
+      password_never_expires: yes
+      update_password: on_create
+      groups:
+      - Domain Admins
+      state: present
+    register: domain_user_result
+    # ADWS may not be online after first reboot, need to keep on retrying
+    retries: 30
+    delay: 15
+    until: domain_user_result is successful
+
+  - name: test out domain user that was created
+    win_whoami:
+    register: become_res
+    failed_when: become_res.upn != domain_upn
+    become: yes
+    become_method: runas
+    vars:
+      ansible_become_user: '{{ domain_upn }}'
+      ansible_become_pass: '{{ domain_password }}'
+
+- name: join Windows host to domain
+  hosts: win_children
+  gather_facts: no
+  tasks:
+  - name: set the DNS for the private adapter to point to the DC
+    win_dns_client:
+      adapter_names: '{{ network_connection_name }}'
+      ipv4_addresses: '{{ hostvars[groups["win_controller"][0]]["ansible_host"] }}'
+
+  - name: join host to domain
+    win_domain_membership:
+      dns_domain_name: '{{ domain_name }}'
+      domain_admin_user: '{{ domain_upn }}'
+      domain_admin_password: '{{ domain_password }}'
+      state: domain
+    register: domain_join_result
+
+  - name: trust hosts for delegation in AD
+    win_shell: |
+      $computerName = '{{ inventory_hostname }}'
+      $actual = (Get-ADComputer -Identity $computerName -Property TrustedForDelegation).TrustedForDelegation
+      if ($actual) {
+          $false
+      } else {
+          Set-ADComputer -Identity $computerName -TrustedForDelegation $true
+          $true
+      }
+    when: inventory_hostname == 'SERVER2022'  # We only want to have this hosted with delegation for testing
+    register: delegate_actual
+    changed_when: delegate_actual.stdout | trim | bool
+    delegate_to: '{{ groups["win_controller"][0] }}'
+
+  - name: reboot host to finalise domain join
+    win_reboot:
+    when: domain_join_result.reboot_required
+
+  - name: test out domain user logon
+    win_whoami:
+    register: become_res
+    failed_when: become_res.upn != domain_upn
+    become: yes
+    become_method: runas
+    vars:
+      ansible_become_user: '{{ domain_upn }}'
+      ansible_become_pass: '{{ domain_password }}'
+
+- name: set up Python interpreters on test Windows host
+  hosts: SERVER2012R2
+  gather_facts: no
+  tasks:
+  - name: install Python interpreters
+    win_package:
+      path: '{{ item.url }}'
+      arguments: '{{ item.arguments }}'
+      product_id: '{{ item.product_id }}'
+      state: present
+    with_items:
+    - url: https://www.python.org/ftp/python/3.6.8/python-3.6.8.exe
+      product_id: '{B56829C6-1C25-469E-B351-1467C6295566}'
+      arguments: /quiet InstallAllUsers=1 Shortcuts=0
+    - url: https://www.python.org/ftp/python/3.6.8/python-3.6.8-amd64.exe
+      product_id: '{E1155302-B578-4D8C-8431-FAE677FBC58C}'
+      arguments: /quiet InstallAllUsers=1 Shortcuts=0
+    - url: https://www.python.org/ftp/python/3.7.9/python-3.7.9.exe
+      product_id: '{65048DA1-5996-4FF9-B20A-66EB2E68D0A4}'
+      arguments: /quiet InstallAllUsers=1 Shortcuts=0
+    - url: https://www.python.org/ftp/python/3.7.9/python-3.7.9-amd64.exe
+      product_id: '{FF740026-2FC0-4F8A-A046-8B316AF4ECA6}'
+      arguments: /quiet InstallAllUsers=1 Shortcuts=0
+    - url: https://www.python.org/ftp/python/3.8.10/python-3.8.10.exe
+      product_id: '{4196628C-AE5C-4304-B166-B7C1E93CDC25}'
+      arguments: /quiet InstallAllUsers=1 Shortcuts=0
+    - url: https://www.python.org/ftp/python/3.8.10/python-3.8.10-amd64.exe
+      product_id: '{080E0048-853C-49FB-96ED-30DEF7AB6E34}'
+      arguments: /quiet InstallAllUsers=1 Shortcuts=0
+    - url: https://www.python.org/ftp/python/3.9.7/python-3.9.7.exe
+      product_id: '{E3343646-507D-4269-BF4C-68D78153FD0D}'
+      arguments: /quiet InstallAllUsers=1 Shortcuts=0
+    - url: https://www.python.org/ftp/python/3.9.7/python-3.9.7-amd64.exe
+      product_id: '{05903EEF-72A2-4C1A-AD35-41AD6C7094A8}'
+      arguments: /quiet InstallAllUsers=1 Shortcuts=0
+    - url: https://www.python.org/ftp/python/3.10.0/python-3.10.0.exe
+      product_id: '{88B95F8C-ECD7-42F1-A216-0880C9DE2F34}'
+      arguments: /quiet InstallAllUsers=1 Shortcuts=0
+    - url: https://www.python.org/ftp/python/3.10.0/python-3.10.0-amd64.exe
+      product_id: '{BB3BA776-4C84-43FB-9CE6-5A37FFC23032}'
+      arguments: /quiet InstallAllUsers=1 Shortcuts=0
+
+  - name: ensure virtualenv package is installed for each Python install
+    win_command: '"{{ item }}\python.exe" -m pip install virtualenv'
+    args:
+      creates: '{{ item }}\Scripts\virtualenv.exe'
+    with_items: '{{ python_interpreters }}'
+
+  - name: create virtualenv for each Python install
+    win_command: '"{{ item }}\python.exe" -m virtualenv "{{ python_venv_path }}\{{ item | win_basename }}"'
+    args:
+      creates: '{{ python_venv_path }}\{{ item | win_basename }}'
+    with_items: '{{ python_interpreters }}'
+
+  - name: copy across wheel artifacts
+    win_copy:
+      src: artifact.zip
+      dest: C:\temp\wheels.zip
+
+  - name: ensure wheel dir exists
+    win_file:
+      path: C:\temp\wheels
+      state: directory
+
+  - name: extract wheel from archive
+    win_unzip:
+      src: C:\temp\wheels.zip
+      dest: C:\temp\wheels
+
+  - name: install pyspnego wheel into virtualenv
+    win_shell: |
+      &'{{ python_venv_path }}\{{ item | win_basename }}\Scripts\pip.exe' install --no-index --find-links=C:/temp/wheels --no-deps pyspnego
+      &'{{ python_venv_path }}\{{ item | win_basename }}\Scripts\pip.exe' install pyspnego pytest requests
+    args:
+      creates: '{{ python_venv_path }}\{{ item | win_basename }}\Lib\site-packages\spnego'
+    with_items: '{{ python_interpreters }}'
+
+  - name: template out test integration file
+    win_template:
+      src: test_integration.py.tmpl
+      dest: C:\temp\test_integration.py
+      block_start_string: '{!!'
+      block_end_string: '!!}'
+    tags:
+    - template
+
+- name: set up WinRM config and SMB shares on Windows hosts
+  hosts: windows
+  gather_facts: no
+  tasks:
+  - name: set WinRM Cbt value to Strict
+    win_shell: |
+      $val = (Get-Item -LiteralPath WSMan:\localhost\Service\Auth\CbtHardeningLevel).Value
+      if ($val -eq 'Strict') {
+          $false
+      } else {
+          Set-Item -LiteralPath WSMan:\localhost\Service\Auth\CbtHardeningLevel -Value Strict
+          $true
+      }
+    register: cbt_res
+    changed_when: cbt_res.stdout | trim | bool
+
+  - name: enable WSMan CredSSP Server
+    win_shell: |
+      $val = (Get-Item -LiteralPath WSMan:\localhost\Service\Auth\CredSSP).Value
+      if ($val -eq 'true') {
+          $false
+      } else {
+          $null = Enable-WSManCredSSP -Role Server
+          $true
+      }
+    register: credssp_res
+    changed_when: credssp_res.stdout | trim | bool
+
+  - name: allow SMB traffic in
+    win_firewall_rule:
+      name: File and Printer Sharing (SMB-In)
+      state: present
+      enabled: yes
+
+- name: set up Linux host
+  hosts: linux_children
+  gather_facts: no
+  become: yes
+  handlers:
+  - name: restart NetworkManager.service
+    service:
+      name: NetworkManager.service
+      state: restarted
+
+  tasks:
+  - name: install base packages
+    yum:
+      name:
+      - dnsmasq
+      - epel-release
+      - gcc
+      - python3
+      - python3-devel
+      - unzip
+      - vim
+      state: present
+
+  - name: install kerberos packages
+    yum:
+      name: '{{ krb_packages }}'
+      state: present
+
+  - name: ensure virtualenv is installed on base Python interpreters
+    pip:
+      name:
+      - virtualenv
+      - wheel
+      executable: /usr/bin/pip3
+
+  - name: setup NetworkManager to use dnsmasq
+    copy:
+      dest: /etc/NetworkManager/conf.d/dns.conf
+      content: |
+        [main]
+        dns=dnsmasq
+    notify: restart NetworkManager.service
+
+  - name: set dnsmasq to forward requests for domain to DC
+    copy:
+      dest: /etc/NetworkManager/dnsmasq.d/{{ domain_name }}
+      content: server=/{{ domain_name }}/{{ hostvars[groups['win_controller'][0]]["ansible_host"] }}
+    notify: restart NetworkManager.service
+
+  - name: template krb5.conf file
+    template:
+      src: krb5.conf.tmpl
+      dest: /etc/krb5.conf
+
+  - name: create AD principal for Linux keytabs
+    win_domain_user:
+      name: '{{ inventory_hostname }}_{{ item }}'
+      description: Kerberos principal for {{ inventory_hostname }} {{ item }} keytab
+      password: '{{ domain_password }}'
+      password_never_expires: yes
+      update_password: on_create
+      attributes:
+        msDS-SupportedEncryptionTypes: 16  # AES256_CTS_HMAC_SHA1_96
+      state: present
+    become: no
+    delegate_to: DC01
+    with_items:
+    - HTTP
+    - cifs
+
+  - name: create keytab for Linux hosts
+    win_command: >-
+      ktpass.exe
+      -out C:\temp\{{ inventory_hostname }}-{{ item }}.keytab
+      -princ {{ item }}/{{ inventory_hostname }}.{{ domain_name }}@{{ domain_name | upper }}
+      -mapUser {{ inventory_hostname }}_{{ item }}@{{ domain_name | upper }}
+      +rndpass
+      -mapOp set
+      -crypto AES256-SHA1
+      -ptype KRB5_NT_PRINCIPAL
+    args:
+      creates: C:\temp\{{ inventory_hostname }}-{{ item }}.keytab
+    become: no
+    delegate_to: DC01
+    with_items:
+    - HTTP
+    - cifs
+
+  - name: fetch the keytab
+    fetch:
+      src: C:\temp\{{ inventory_hostname }}-{{ item }}.keytab
+      dest: '{{ inventory_hostname }}-{{ item }}.keytab'
+      flat: yes
+    become: no
+    delegate_to: DC01
+    with_items:
+    - HTTP
+    - cifs
+
+  - name: copy keytabs to host
+    copy:
+      src: '{{ inventory_hostname }}-{{ item }}.keytab'
+      dest: /etc/{{ item }}.keytab
+    with_items:
+    - HTTP
+    - cifs
+
+  - name: create user keytab - MIT
+    command: ktutil
+    args:
+      chdir: ~/
+      creates: ~/user.keytab
+      stdin: "addent -password -p {{ domain_upn }} -k 1 -e aes256-cts\n{{ domain_password }}\nwrite_kt user.keytab"
+    become: no
+    when: krb_provider == 'MIT'
+
+  - name: create user keytab - Heimdal
+    command: >-
+      ktutil
+      --keytab=user.keytab
+      add
+      --principal={{ domain_upn }}
+      --kvno=1
+      --enctype=aes256-cts
+      --password={{ domain_password }}
+    args:
+      chdir: ~/
+      creates: ~/user.keytab
+    become: no
+    when: krb_provider == 'Heimdal'
+
+  - name: ensure wheel dir exists
+    file:
+      path: ~/wheels
+      state: directory
+    become: no
+
+  - name: extract wheel artifacts
+    unarchive:
+      src: artifact.zip
+      dest: ~/wheels
+    become: no
+
+  - name: find the universal wheel
+    find:
+      paths: ~/wheels
+      patterns: pyspnego-*-py2.py3-none-any.whl
+      recurse: no
+      file_type: file
+    become: no
+    register: wheel_artifact
+
+  - name: create a virtualenv for each Python interpeter
+    pip:
+      name:
+      - gssapi
+      - krb5
+      - pytest
+      - pytest-forked
+      - requests
+      - wheel
+      - '{{ wheel_artifact.files[0].path }}'
+      virtualenv: '{{ python_venv_path }}/{{ item | basename }}'
+      virtualenv_python: '{{ item }}'
+    become: no
+    with_items: '{{ python_interpreters }}'
+
+  - name: template out test integration file
+    template:
+      src: test_integration.py.tmpl
+      dest: ~/test_integration.py
+      block_start_string: '{!!'
+      block_end_string: '!!}'
+    tags:
+    - template
+    become: no
