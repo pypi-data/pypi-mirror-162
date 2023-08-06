@@ -1,0 +1,89 @@
+Metadata-Version: 2.1
+Name: logEZ
+Version: 0.0.3
+Summary: A simple(r) logger for Python
+Home-page: https://github.com/KunalGehlot/logEZ
+Author: Zackcodes.ai
+Author-email: gehlotkunal@outlook.com
+License: MIT
+Keywords: logging
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Operating System :: OS Independent
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
+# logEZ
+Make logging easy in your applications! Use this simple library to easily use logs in any of your applications.
+
+# How to run
+
+```python
+from logEZ import MyLogger
+
+logger = MyLogger()
+```
+## `MyLogger()`
+
+The `init` method of class MyLogger takes four default arguments. 
+`log_file_name`, `logging_level`, `disable_console_logs` and `disable_file_logs`
+
+The default values are
+```python
+log_file_name="logEZ.log",
+logging_level="INFO",
+disable_console_logs=False,
+disable_file_logs=False
+```
+
+- `log_file_name`
+
+    You can specify the file name of your log file here.
+
+- `logging_level`
+
+    You can specify the default logging level of your logs.
+
+    It can be `INFO`, `DEBUG`, `WARNING`, `ERROR` or `CRITICAL`
+
+- `disable_console_logs`
+
+    This disables the console logging of your logs, if set `True`.
+
+- `disable_file_logs`
+
+    This disables the file logging of your logs, if set `True`.
+
+## Methods
+Once you have an object initialized, you can use the following methods.
+
+ - `setLoggingLevel(level)`: To change the logging level after initializing `MyLogger()`. (Refer `logging_level` under `MyLogger()` for levels)
+ - `myDebug(str)`: To print a `debug` log. Accepts string input.
+ - `myInfo(str)`: To print an `info` log. Accepts string input.
+ - `myWarn(str)`: To print a `warning` log. Accepts string input.
+ - `myError(str, exc_info[Optional])`: To print an `error` log. Accepts string input. If `exc_info` is set `True`, it appends complete execution information along with the log string.
+ - `myCrit(strm exc_info[Optional])`: To print an `error` log. Accepts string input. If `exc_info` is set `True`, it appends complete execution information along with the log string.
+ - `myExcept(str)`: To print an `exception` log. Accepts string input.
+
+
+Change Log
+===========================================
+
+0.0.1 (05/08/2022)
+------------------------
+- First Release
+- Removed requirements.txt
+- Removed logging from install_requires
+
+0.0.2 (05/08/2022)
+------------------------
+Fixing project directory name
+
+0.0.3 (05/08/2022)
+------------------------
+Updated code with method name fix and logging level method.
+Added How to use with complete method definition in readme.
+
