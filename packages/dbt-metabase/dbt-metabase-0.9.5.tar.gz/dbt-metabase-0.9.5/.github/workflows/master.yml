@@ -1,0 +1,47 @@
+name: master
+
+on:
+  push:
+    branches:
+      - master
+  release:
+    types:
+      - created
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.6.x"
+
+      - name: Requirements
+        run: make requirements
+
+      - name: Build
+        run: make build
+
+      - name: Formatting check (black)
+        run: make check-fmt
+
+      - name: Lint Python check (pylint)
+        run: make check-lint-python
+
+      - name: Lint reStructuredText check (rst-lint)
+        run: make check-lint-rst
+
+      - name: Type check (mypy)
+        run: make check-type
+
+      - name: Test
+        run: make test
+
+      - name: Publish a Python distribution to PyPI
+        if: github.event_name == 'release'
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_TOKEN }}
