@@ -1,0 +1,56 @@
+[tool.poetry]
+name = "linstall"
+version = "0.2.0"
+description = "A Python CLI to generate a list of installation commands for a package to add to README files."
+license = "MIT"
+authors = ["João Palmeiro <joaopalmeiro@proton.me>"]
+readme = "README.md"
+homepage = "https://github.com/joaopalmeiro/linstall"
+repository = "https://github.com/joaopalmeiro/linstall"
+
+# https://github.com/python-poetry/poetry/issues/1440
+# https://python-poetry.org/docs/master/dependency-specification/#exact-requirements
+[tool.poetry.dependencies]
+python = "^3.7"
+click = "8.1.3"
+markdown-subtemplate = "0.2.22"
+pyperclip = "1.8.2"
+
+[tool.poetry.scripts]
+linstall = "linstall.console:run"
+
+[tool.poetry.urls]
+"Bug Tracker" = "https://github.com/joaopalmeiro/linstall/issues"
+
+# https://python-poetry.org/docs/master/managing-dependencies/#dependency-groups
+[tool.poetry.group.dev.dependencies]
+black = "22.6.0"
+isort = "5.10.1"
+flakeheaven = "3.0.0"
+flake8-use-fstring = "1.4"
+
+[tool.poetry-version-plugin]
+source = "init"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.isort]
+profile = "black"
+
+# https://github.com/flakeheaven/flakeheaven
+# https://flakeheaven.readthedocs.io/en/latest/formatters.html
+# https://flakeheaven.readthedocs.io/en/latest/config.html#example
+# https://black.readthedocs.io/en/stable/the_black_code_style/current_style.html#line-length
+# https://github.com/flakeheaven/flakeheaven/blob/main/pyproject.toml#L59
+[tool.flakeheaven]
+format = "grouped"
+max_line_length = 88
+show_source = true
+
+# https://github.com/MichaelKim0407/flake8-use-fstring
+[tool.flakeheaven.plugins]
+pycodestyle = ["+*"]
+pyflakes = ["+*"]
+flake8-use-fstring = ["+*"]
