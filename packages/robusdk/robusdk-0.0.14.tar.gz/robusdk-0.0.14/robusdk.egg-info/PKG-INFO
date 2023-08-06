@@ -1,0 +1,45 @@
+Metadata-Version: 2.1
+Name: robusdk
+Version: 0.0.14
+Summary: robusdk
+Home-page: http://255.255.255.255/
+Author: robusdk
+Author-email: root@localhost.localdomain
+License: UNLISENCED
+Description: ```js
+        (async () => {
+          with (require('robusdk')({
+            url: 'http://localhost/',
+            username: 'username',
+            password: 'password'
+          })) {
+            console.info(await new Coroutine([
+              Sequence(task = () => methodA({...paramsA}), callback = console.info),
+              Sequence(task = () => methodB({...paramsB}), callback = console.info)
+            ]))
+          }
+        })()
+        ```
+        
+        ```python
+        async def future():
+          from robusdk import Client
+          with Client(
+            url='http://localhost/',
+            username='username',
+            password='password',
+          ) as client:
+            print(client.Coroutine([
+                client.Sequence(task=lambda: client.methodA(**paramsA), callback=print),
+                client.Sequence(task=lambda: client.methodB(**paramsB), callback=print),
+            ]))
+        
+        from asyncio import get_event_loop
+        loop = get_event_loop()
+        loop.run_until_complete(future())
+        loop.close()
+        ```
+        
+Keywords: robusdk
+Platform: any
+Description-Content-Type: text/markdown
