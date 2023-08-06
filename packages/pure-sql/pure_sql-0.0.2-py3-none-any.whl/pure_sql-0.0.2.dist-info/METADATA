@@ -1,0 +1,76 @@
+Metadata-Version: 2.1
+Name: pure-sql
+Version: 0.0.2
+Summary: Raw SQL in Python
+Home-page: https://github.com/sysid/pure-sql
+Author: sysid
+Author-email: sysid@gmx.de
+License: BSD 3-Clause License
+Classifier: Development Status :: 3 - Alpha
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: click
+Requires-Dist: markt
+
+# pure-sql
+
+[![PyPI Version][pypi-image]][pypi-url]
+[![Build Status][build-image]][build-url]
+[![Code Coverage][coverage-image]][coverage-url]
+
+> keep sql outside of Python code
+
+This is just a stripped down version of https://github.com/nackjicholson/aiosql. Only the reading and parsing of
+a sql file is being kept. No dynamic SQL query building and no execution.
+
+Reason:
+- reduction of magic and complexity
+- execution of raw SQL is handled by SQLAlchemy already
+- handling SQL dialect variety adds lots of complexity which is already covered by SQLAlchemy
+- major benefit is just to reuse raw sql in `file.sql` and be able to execute it within and outside of Python
+
+Installation:
+```shell
+pip install pure-sql
+```
+
+## Changelog
+[CHANGELOG.md](https://github.com/sysid/sse-starlette/blob/master/CHANGELOG.md)
+
+<!-- Badges -->
+
+[pypi-image]: https://badge.fury.io/py/pure-sql.svg
+[pypi-url]: https://pypi.org/project/pure-sql/
+[build-image]: https://github.com/sysid/pure-sql/actions/workflows/build.yml/badge.svg
+[build-url]: https://github.com/sysid/pure-sql/actions/workflows/build.yml
+[coverage-image]: https://codecov.io/gh/sysid/pure-sql/branch/master/graph/badge.svg
+[coverage-url]: https://codecov.io/gh/sysid/pure-sql
+
+Copyright (c) 2022, sysid
+Copyright (c) 2014-2017, Honza Pokorny
+Copyright (c) 2018, William Vaughn
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
