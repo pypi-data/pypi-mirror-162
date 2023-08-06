@@ -1,0 +1,49 @@
+[build-system]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "pytometry"
+authors = [{name = "Maren Buettner", email = "maren.buettner@helmholtz-muenchen.de"}]
+readme = "README.md"
+dynamic = ["version"]
+description = "Pytometry is a Python package for flow and mass cytometry analysis."
+dependencies = [
+    "nbproject",
+    "numpy",
+    "pandas",
+    "anndata",
+    "scanpy",
+    "scipy",
+    "seaborn",
+    "matplotlib",
+    "readfcs"
+]
+
+[project.urls]
+Home = "https://github.com/buettnerlab/pytometry"
+
+[project.optional-dependencies]
+dev = [
+    "pre-commit",
+    "nox",
+]
+test = [
+    "pytest>=6.0",
+    "pytest-cov",
+]
+
+[tool.black]
+preview = true
+
+[tool.pytest.ini_options]
+testpaths = [
+    "tests",
+    "docs/guides",
+    "docs/tutorials",
+]
+
+[tool.coverage.run]
+omit = [
+    "pytometry/*",
+]
