@@ -1,0 +1,18 @@
+class Color:
+    BLACK = '\33[30m'
+    RED = '\33[31m'
+    GREEN = '\33[32m'
+    YELLOW = '\33[33m'
+    BLUE = '\33[34m'
+    MAGENTA = '\33[35m'
+    CYAN = '\33[36m'
+    WHITE = '\33[37m'
+    GREY = '\33[90m'
+
+    LIGHT_RED = '\33[91m'
+    LIGHT_GREEN = '\33[92m'
+    LIGHT_YELLOW = '\33[93m'
+    LIGHT_BLUE = '\33[94m'
+    LIGHT_MAGENTA = '\33[95m'
+    LIGHT_CYAN = '\33[96m'
+    LIGHT_WHITE = '\33[97m'
