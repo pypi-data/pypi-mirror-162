@@ -1,0 +1,6 @@
+__prog__ = 'jkcli'
+__version_info__ = ('0', '0', '1')
+__version__ = '.'.join(__version_info__)
+
+if __name__ == '__main__':
+   print(__version__)
