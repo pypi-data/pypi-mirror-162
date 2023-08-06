@@ -1,0 +1,97 @@
+name: test and deploy
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - "v*" # Push events to matching v*, i.e. v1.0, v20.15.10
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  check-manifest:
+    name: Check Manifest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
+      - run: pip install check-manifest && check-manifest
+
+  # Won't work without GPU
+
+  # test:
+  #   name: ${{ matrix.platform }} (${{ matrix.python-version }})
+  #   runs-on: ${{ matrix.platform }}
+  #   defaults:
+  #     run:
+  #       shell: bash -l {0}
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       python-version: [3.7, 3.8, 3.9]
+  #       platform: [ubuntu-latest, windows-latest]
+  #   steps:
+  #     - uses: actions/checkout@v2
+
+  #     - uses: conda-incubator/setup-miniconda@v2
+  #       with:
+  #         mamba-version: "*"
+  #         channels: conda-forge,defaults
+  #         channel-priority: true
+  #         python-version: ${{ matrix.python-version }}
+
+  #     - name: Print info
+  #       run: |
+  #         conda info
+  #         conda list
+  #         conda config --show-sources
+  #         conda config --show
+  #         printenv | sort
+
+  #     - name: Install
+  #       run: |
+  #         mamba install cudadecon>=0.0.11 pytest
+  #         pip install -e .
+
+  #     - name: Test
+  #       run: pytest
+
+  # - name: Coverage
+  #   uses: codecov/codecov-action@v1
+
+
+  deploy:
+    name: Deploy
+    needs: check-manifest
+    if: "success() && startsWith(github.ref, 'refs/tags/')"
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.x"
+
+      - name: install
+        run: |
+          git tag
+          pip install -U pip
+          pip install -U build twine
+          python -m build
+          twine check dist/*
+          ls -lh dist
+
+      - name: Build and publish
+        run: twine upload dist/*
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.TWINE_API_KEY }}
+
+      - uses: softprops/action-gh-release@v1
+        with:
+          generate_release_notes: true
