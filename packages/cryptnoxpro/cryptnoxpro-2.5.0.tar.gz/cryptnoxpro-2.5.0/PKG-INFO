@@ -1,0 +1,582 @@
+Metadata-Version: 2.1
+Name: cryptnoxpro
+Version: 2.5.0
+Home-page: https://www.cryptnox.com/
+Author: Cryptnox SA
+Author-email: info@cryptnox.ch
+License: GPLv3+
+Project-URL: Source Code, https://github.com/Cryptnox-Software/cryptnoxpro
+Keywords: python,cryptography,bitcoin,ethereum,cleos,cryptocurrency,wallet
+Platform: any
+Classifier: Development Status :: 4 - Beta
+Classifier: Environment :: Console
+Classifier: License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)
+Classifier: License :: Other/Proprietary License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Topic :: Security :: Cryptography
+Requires-Python: <3.11,>=3.7
+Description-Content-Type: text/x-rst
+License-File: LICENSE
+
+=============
+Cryptnox Pro
+=============
+
+.. image:: https://img.shields.io/pypi/v/cryptnoxpro
+    :target: https://pypi.org/project/cryptnoxpro
+
+
+**Warning: This is a beta release of the software.
+It is released for development purposes.
+Use at your own risk.**
+
+A command line user interface to manage and use of `Cryptnox Smart cards <https://www.cryptnox.com/>`_.
+
+This provides basic wallets for `Bitcoin <https://bitcoin.org>`_ and
+`Ethereum <https://ethereum.org>`_.
+
+It is able to execute `cleos <https://eos.io/for-developers/build/cleos/>`_ commands and use
+the keys on the card for signing.
+
+To buy NFC enabled cards that are supported by this application go to:
+`https://www.cryptnox.com/ <https://www.cryptnox.com/>`_
+
+License
+-------
+
+The library is available under dual licensing. You can use the library under the
+conditions of `GNU GENERAL PUBLIC LICENSE 3.0+ <https://www.gnu.org/licenses/gpl-3.0.en.html>`_
+or `contact us <info@cryptnox.ch>`_ to ask about commercial licensing.
+
+Installation and requirements
+-----------------------------
+
+The package can be installed using pip package manager with:
+
+.. code-block:: bash
+
+    pip install cryptnoxpro
+
+The application can also be installed from source as python package.
+In the root of the project, execute:
+
+.. code-block:: bash
+
+    pip install .
+
+This installs the application into your python packages and makes the
+``crytpnox`` available as executable.
+
+If during python installation its path was added to system path the executable,
+e.g. command is available system wide.
+
+Windows Microsoft Visual C++ 14.x build tools
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you wish to install from pip package on windows, because of dependencies you will
+have to install Microsoft Visual C++ 14.x build tools that you can download from here:
+`https://visualstudio.microsoft.com/visual-cpp-build-tools/ <https://visualstudio.microsoft.com/visual-cpp-build-tools/>`_
+
+Linux additional packages
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+On some Debian/Ubuntu Linux systems there binaries for sme libraries are not
+delivered with the installed package. In this case install the following tools,
+so that they can be compiled during installation process.
+
+Ubuntu / Debian
+
+.. code-block:: bash
+
+    sudo apt-get install build-essential autoconf libtool pkg-config python3-dev swig libpcsclite-dev
+    pip install -U setuptools
+
+Fedora / CentOS / RHEL
+
+.. code-block:: bash
+
+    yum install swig python3-pip python3-setuptools pcsc-lite-ccid
+    pip install -U setuptools
+
+MacOS additional packages
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+On MacOS to install CryptnoxPro with pip you need to add swig to the system as there are some
+dependencies written in C/C++
+
+.. code-block:: bash
+
+    brew install swig
+
+MacOS missing certificates
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you're using macOS and the command CLI is showing issues of missing certificates,
+open Macintosh HD > Applications > Python3.6 folder (or other version of python you're using) >
+double click on **Install Certificates.command** file.
+
+Running the application
+-----------------------
+
+The application can receive commands directly in any command line, or can be started in
+`Interactive Mode <#interactive-mode>`_ by starting without any arguments or options.
+The later will also start if the executable is called from a GUI, like Windows Explorer.
+
+
+Remote mode
+^^^^^^^^^^^
+While running the application without arguments starts a local mode, a port number can be provided
+as argument to start remote mode. This enables the application to connect to an interface on the
+same machine via the provided port.
+
+An example below:
+
+.. code-block:: bash
+
+    cryptnox --port 1234
+    
+Note: An interface to relay commands to remote reader should be developed in advance to accept this connection.    
+
+Exit input
+^^^^^^^^^^
+
+Whenever an input is requested from the user: PIN or PUK code or any other information,
+the command execution can be exited with the keyword ``exit``. When this is used the
+command stops the execution.
+
+To not overcrowd the interface this is not mentioned when information is requested by
+the CLI.
+
+Exiting the CLI closes existing card interface connections for remote mode.
+
+Development environment
+-----------------------
+
+For development purposes or for running separately from the system environment
+pipenv configuration files are provided.
+
+To set it up, use, from the root folder of the project:
+
+.. code-block:: bash
+
+    pipenv install
+
+or, if you want libraries for development purposes like pylint:
+
+.. code-block:: bash
+
+    pipenv install --dev
+
+To enter the new environment use:
+
+.. code-block:: bash
+
+    pipenv shell
+
+This will open a new terminal inside the one it was called from. From here all
+packages will be available to run the application.
+
+From here the CLI is available as a script:
+
+.. code-block:: bash
+
+    python cryptnoxpro/main.py
+
+or as a module:
+
+.. code-block:: bash
+
+    python -m cryptnoxpro.main
+
+Secrets
+-------
+
+Each card is protected by two secrets only known to the owner of the card.
+
+PIN code
+^^^^^^^^
+
+The PIN code must be 4 to 9 number characters ('0'-'9').
+After entering the wrong PIN code 3 times the card PIN code is
+locked, and it must be unlocked using the PUK code.
+
+Entering the correct PIN code resets the number of times the wrong PIN code
+can be entered.
+
+PUK code
+^^^^^^^^
+
+The PUK code must be 15 alphanumerical characters ('a'-'z', 'A'-'Z', '0'-'9').
+
+Easy mode
+---------
+
+**Warning:** Only use for testing purposes.
+
+The card can be initialized in easy mode. This is done for convenience of the
+user as you don't have to enter the card secrets. For this reason it comes at
+the expense of security.
+
+The card is initialized with following infomation:
+
+
+* Owner name: "EASY MODE"
+* Owner email: "EASY MODE"
+* PIN code 000000000
+* PIK code 000000000000 (the length depends on te card type)
+
+When the application asks for any secret, PIN or PUK code, press "ENTER" key.
+The application will use the predefined information to fill it for you.
+
+Easy mode on card is determined from the owner name and email.
+
+Interactive mode
+----------------
+
+An interactive mode is available if the command is entered without any arguments
+and options.
+
+In this mode the user will get a similar interface as a command line with its
+own prompt accepting same commands as regular call.
+
+When the mode starts it will show list of available cards.
+
+The prompt is also showing useful information:
+
+
+* **cryptnoxpro** indicates that the user is in interactive mode
+* Serial number of the selected card on which the command will be executed
+* Indication that the card is in easy mode
+
+Seed generation
+---------------
+
+There are several ways to populate a card with a seed.
+
+Those that need entropy use the random number generator on the card.
+
+
+Backup
+^^^^^^
+
+To use this way of creating a seed access to `AWS <https://aws.amazon.com>`_ is required.
+It is out of the scope of this documentation how to acquire **Access Key ID** and **Secret Access Key**
+from the AWS as it's a third party service and may change.
+
+After getting the entropy from the card the user is asked for AWS access keys, two regions and a
+name for the backup. Two regions are used for using KMS and Secrets Manager services on two
+separate machines to increase the security of the saved entropy. Name of the backup is used to
+identify which entropy will be restored with the Restore command.
+
+The backed up information is retrieved for comparison with the original to make sure the saving
+process was successful and next time when the data is retrieved is the same as the entropy that is
+us for seed generation for the card. After this the seed is uploaded to the card.
+
+After the operation a summary will be shown and saved to a file with the name of the regions and
+name of the backup.
+
+This is safe way to store the entropy as the information for recreating is saved in the cloud in
+two separate regions chosen by the user. It is also simpler then requesting from the user to secure
+the mnemonic.
+
+Dual Initialization
+^^^^^^^^^^^^^^^^^^^
+
+For this process two Cryptnox Cards are required. The seed is generated in both cards in a secure
+way. You will need to start the command with the first card for the host to get information from it.
+After that the user is asked to remove the card and insert the second card into the same reader.
+The information from the first card will be injected into the second card and a seed is generated
+in the second card at this point. The process is not finished. Information will be requested
+from second card and the user needs to remove the second card and insert the first card into
+the same reader. The information from the second card will be injected into the first card. At
+this time the first card will use the information to generate the same seed the second card has
+already generated. When the process has finished the two card will have the same seed in them
+and have access to the same accounts.
+
+This is the most secure way to generate a seed while still having a backup. The seed newer leaves
+the card. The common information is used for it's generation, but the information that was received
+from the card in the process is not enough to generate the seed.
+
+Recover
+^^^^^^^
+
+Create seed from the mnemonic, `BIP39 <https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki>`_,
+entered by the user and upload it onto the card. This mnemonic could be acquired by using the
+command Upload.
+
+Restore
+^^^^^^^
+
+To use this way of creating a seed access to `AWS <https://aws.amazon.com>`_ is required.
+It is out of the scope of this documentation how to acquire **Access Key ID** and **Secret Access Key**
+from the AWS as it's a third party service and may change.
+
+If a Backup operation has been finished this command allows for retrieval of the entropy and it's
+usage in populating a card with a seed. The user will be asked for AWS access keys, two regions
+and the name of the backup to be retrieved. The host tries to acquire the backup from the two given
+regions under the given name. The retrieved information is used to generate a seed that is uploaded
+to the card.
+
+Upload
+^^^^^^
+
+Get the entropy from the card. Generate mnemonic
+`BIP39 <https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki>`_ and seed on the host.
+Upload the seed to the card. Show the mnemonic to the user for saving it, on a paper or electronic
+form for later recovery.
+
+With the mnemonic the seed can be generated by anyone and access to funds connected to accounts
+gained. It is the responsibility of the user to keep the mnemonic safe and secure.
+
+If the mnemonic is lost there is no way to recover the account and funds connected to it.
+
+=========
+Changelog
+=========
+
+All notable changes to this project will be documented in this file.
+
+The format is based on `Keep a Changelog <https://keepachangelog.com/en/1.0.0/>`_\ ,
+and this project adheres to `Semantic Versioning <https://semver.org/spec/v2.0.0.html>`_.
+
+`Unreleased <https://github.com/Cryptnox-Software/cryptnoxpro/compare/v2.5.0...HEAD>`_
+--------------------------------------------------------------------------------------
+
+`2.5.0 <https://github.com/Cryptnox-Software/cryptnoxpro/compare/v2.4.0...v2.5.0>`_ - 2022-08-11
+------------------------------------------------------------------------------------------------
+
+Added
+^^^^^
+
+- Default servers for AWS backup and restore
+- Default randomized alias for AWS backup
+- Use `rootkey.csv` file from download folder for AWS backup and restore, delete credentials after operation
+
+Changed
+^^^^^^^
+
+- In case of exception write the error log into user folder instead of installation folder
+
+Fixed
+^^^^^
+
+- Missing word for retrying PIN code
+- Seed phrase of length other than 12 or 24 words is accepted by the system
+
+`2.4.0 <https://github.com/Cryptnox-Software/cryptnoxpro/compare/v2.3.0...v2.4.0>`_ - 2022-07-19
+------------------------------------------------------------------------------------------------
+
+Added
+^^^^^
+
+- Python 3.10 support
+- For NFT cards abi url parsing
+
+Removed
+^^^^^^^
+
+- Python 3.6 support
+
+Fixed
+^^^^^
+
+- Application crashing when using current key with derivation path
+
+`2.3.0 <https://github.com/Cryptnox-Software/cryptnoxpro/compare/v2.2.2...v2.3.0>`_ - 2022-06-07
+------------------------------------------------------------------------------------------------
+
+Added
+^^^^^
+
+- Remote mode for connecting over a port
+
+Changed
+^^^^^^^
+
+- Installation instructions added missing instructions
+
+`2.2.2 <https://github.com/Cryptnox-Software/cryptnoxpro/compare/v2.2.1...v2.2.2>`_ - 2022-03-17
+------------------------------------------------------------------------------------------------
+
+Fixed
+^^^^^
+
+* Init not finished with NFT card when ABI is large
+
+`2.2.1 <https://github.com/Cryptnox-Software/cryptnoxpro/compare/v2.2.0...v2.2.1>`_ - 2022-03-14
+------------------------------------------------------------------------------------------------
+
+Fixed
+^^^^^
+
+* Application crashes when initializing NFT card
+* Help not show on some commands
+* List of cards is doubled when executing list command
+* Seed backup to KMS name of backup error message not clear enough
+* Card not reloaded after dual seed generation
+* Application crashes during dual seed generation while waiting for second card
+
+`2.2.0 <https://github.com/Cryptnox-Software/cryptnoxpro/compare/v2.1.0...v2.2.0>`_ - 2022-01-31
+------------------------------------------------------------------------------------------------
+
+Changed
+^^^^^^^
+
+* Combined two scripts into one
+* Demo mode renamed to easy mode
+* Application name changed to Cryptnox Pro
+
+Fixed
+^^^^^
+
+* Error handling while waiting for card when timeout is exceeded
+* Error handling when a user enters value for mnemonic that is invalid for BIP39
+* Input for user key description to allow numbers and letters
+* Crash when showing seed backup options for AWS server
+
+`2.1.0 <https://github.com/Cryptnox-Software/cryptnoxpro/compare/v2.0.0...v2.1.0>`_ - 2022-01-04
+------------------------------------------------------------------------------------------------
+
+Added
+^^^^^
+
+* Separate CLI for working with NFT cards
+* eht command contract parameter to send ERC20 tokens
+
+Fixed
+^^^^^
+
+* Exception handling in multiple places.
+
+`2.0.0 <https://github.com/Cryptnox-Software/cryptnoxpro/compare/v1.3.2...v2.0.0>`_ - 2021-10-13
+------------------------------------------------------------------------------------------------
+
+Added
+^^^^^
+
+* Dynamic fee calculation for Bitcoin and Ethereum networks
+
+Changed
+^^^^^^^
+
+* Recovering seed from mnemonic compliant with BIP39
+* Derivation paths to be compliant with BIP44
+
+Fixed
+^^^^^
+
+* Send/transfer memo for EOSIO
+* Signing multi-input transaction for BTC with user key
+* Precision of amounts for sending
+* AWS backup wrong credentials crash the application
+* verbose option is not doing anything
+* EOS transfer doesn't use sender but behaves as send command
+
+
+`1.3.2 <https://github.com/Cryptnox-Software/cryptnoxpro/compare/v1.3.1...v1.3.2>`_ - 2021-10-13
+------------------------------------------------------------------------------------------------
+
+Changed
+^^^^^^^
+
+* Ethereum endpoint through cryptnox node updated to use different domains on standard ports
+* With ``info`` command for balance show the issue instead of "--"
+
+Fixed
+^^^^^
+
+* ``exit`` keyword when input is requested from user, like PIN or PUK code
+* Bitcoin sending with multiple inputs is rejected by the node
+
+`1.3.1 <https://github.com/Cryptnox-Software/cryptnoxpro/compare/v1.3.0...v1.3.1>`_ - 2021-10-07
+------------------------------------------------------------------------------------------------
+
+Fixed
+^^^^^
+
+* Crash when calling config under currencies
+
+`1.3.0 <https://github.com/Cryptnox-Software/cryptnoxpro/compare/v1.2.0...v1.3.0>`_ - 2021-10-06
+------------------------------------------------------------------------------------------------
+
+Added
+^^^^^
+
+* card_config can update the status of PIN-less path and PIN authentication.
+
+Changed
+^^^^^^^
+
+* Configuration is saved into the card instead of a file.
+
+Fixed
+^^^^^
+
+* When waiting for card after card is detected the application crashes.
+* Ethereum network name conversion
+
+`1.2.0 <https://github.com/Cryptnox-Software/cryptnoxpro/compare/v1.1.0...v1.2.0>`_ - 2021-09-16
+------------------------------------------------------------------------------------------------
+
+Added
+^^^^^
+
+* New endpoint for Ethereum network used by default. User can still the infura network with a project key
+
+Changed
+^^^^^^^
+
+* Ordering in config command to BTC, ETH, EOS.
+* When changing PIN or PUK code message made clear that the card is not initialized.
+* Resetting uninitialized card message updated.
+* User key check if card is initialized before continuing.
+* In change_puk check current PUK before asking for new one.
+* Show warning on command if card origin is unknown or fake instead of exiting command.
+
+Fixed
+^^^^^
+
+* In demo mode when asked for PUK code, entering anything will go into loop asking for the code.
+* There is no message when adding piv, but piv is not present
+
+`1.1.0 <https://github.com/Cryptnox-Software/cryptnoxpro/compare/v1.0.2...v1.1.0>`_ - 2021-09-16
+------------------------------------------------------------------------------------------------
+
+Added
+^^^^^
+
+* Backup and restore of entropy for seed generation to KMS in HSM.
+
+
+`1.0.2 <https://github.com/Cryptnox-Software/cryptnoxpro/compare/v1.0.1...v1.0.2>`_ - 2021-09-09
+------------------------------------------------------------------------------------------------
+
+Changed
+^^^^^^^
+
+* Improve setup process.
+
+
+`1.0.1 <https://github.com/Cryptnox-Software/cryptnoxpro/compare/v1.0.0...v1.0.1>`_ - 2021-08-20
+------------------------------------------------------------------------------------------------
+
+Fixed
+^^^^^
+
+* Update package on PiPI.
+
+`1.0.0 <https://github.com/Cryptnox-Software/cryptnoxpro/releases/tag/v1.0.0>`_ - 2021-08-20
+---------------------------------------------------------------------------------------------
+
+Added
+^^^^^
+
+* Command line interface with commands for interacting with Cryptnox cards.
+* Interactive mode.
+* Pipfile and requirements for setting up environment.
+* Setup file to install the library.
