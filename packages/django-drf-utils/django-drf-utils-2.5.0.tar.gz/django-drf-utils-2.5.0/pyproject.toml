@@ -1,0 +1,53 @@
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = ["setuptools >= 40.6.0", "wheel"]
+
+[tool.coverage.run]
+branch = true
+omit = ["*/tests/*"]
+source = ["django_drf_utils"]
+
+[tool.tox]
+legacy_tox_ini = '''
+[tox]
+envlist = py{38,39,310},report
+isolated_build = true
+
+[testenv]
+setenv =
+    py{38,39,310}: COVERAGE_FILE = .coverage.{envname}
+deps =
+    assertpy
+    pytest
+    pytest-django
+    pytest-cov
+    pytest-randomly
+    pytest-xdist
+depends =
+    report: py{38,39,310}
+commands =
+    pytest {posargs: --cov --cov-report=}
+
+[testenv:report]
+deps = coverage[toml]
+skip_install = true
+parallel_show_output = True
+commands =
+    coverage combine
+    coverage report
+'''
+
+[tool.pylint.'MESSAGES CONTROL']
+disable = "line-too-long,invalid-name,too-few-public-methods,too-many-instance-attributes,too-many-arguments,missing-docstring,fixme"
+output-format = "text"
+
+[tool.django-stubs]
+django_settings_module = "tests.settings"
+
+[tool.mypy]
+files = ["django_drf_utils", "tests"]
+plugins = ["mypy_django_plugin.main", "mypy_drf_plugin.main"]
+
+[[tool.mypy.overrides]]
+ignore_missing_imports = true
+module = ["assertpy", "pythonjsonlogger.*"]
