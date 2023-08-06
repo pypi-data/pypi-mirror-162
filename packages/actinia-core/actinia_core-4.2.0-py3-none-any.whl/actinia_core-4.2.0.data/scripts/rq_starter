@@ -1,0 +1,97 @@
+#!python
+# -*- coding: utf-8 -*-
+#######
+# actinia-core - an open source REST API for scalable, distributed, high
+# performance processing of geographical data that uses GRASS GIS for
+# computational tasks. For details, see https://actinia.mundialis.de/
+#
+# Copyright (c) 2016-2018 Sören Gebbert and mundialis GmbH & Co. KG
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+#######
+
+
+"""
+Redis Queue starter
+"""
+import os
+import signal
+import subprocess
+import atexit
+import time
+import argparse
+from actinia_core.core.common.config import Configuration
+
+__license__    = "GPLv3"
+__author__     = "Sören Gebbert"
+__copyright__  = "Copyright 2016-2018, Sören Gebbert and mundialis GmbH & Co. KG"
+__maintainer__ = "Soeren Gebbert"
+__email__      = "soerengebbert@googlemail.com"
+
+# Job handling
+worker_pids = []
+
+
+def create_workers(config_file):
+
+    conf = Configuration()
+    try:
+        if config_file and os.path.isfile(config_file):
+            conf.read(path=config_file)
+        else:
+            conf.read()
+    except IOError as e:
+        print("WARNING: unable to read config file, will use defaults instead, IOError: %s"%str(e))
+
+    # Redis work queue
+    global worker_pids
+
+    for i in range(conf.NUMBER_OF_WORKERS):
+        name = "%s_%i"%(conf.WORKER_QUEUE_PREFIX, i)
+        print("Start worker queue", name)
+        args = ["rq_custom_worker", name]
+        proc = subprocess.Popen(args)
+        worker_pids.append(proc.pid)
+
+
+def kill_all_workers():
+    global worker_pids
+    for worker_pid in worker_pids:
+        print("Terminate worker queue", worker_pid)
+        os.kill(worker_pid, signal.SIGTERM)
+
+
+def main():
+
+    parser = argparse.ArgumentParser(description='Start all Actinia Core custom worker listening to a specific queue'
+                                                 'that are specified in the actinia configuration file '
+                                                 'or in a configuration file specified as an optional path.')
+
+    parser.add_argument("-c", "--config", type=str, required=False,
+                        help="The path to the Actinia Core configuration file")
+
+    args = parser.parse_args()
+
+    atexit.register(kill_all_workers)
+
+    create_workers(args.config)
+
+    # Run the everlasting loop
+    while True:
+        time.sleep(1)
+
+
+if __name__ == '__main__':
+    main()
