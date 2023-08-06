@@ -1,0 +1,86 @@
+{
+"setups": [
+    {"name": "production",
+     "requirements": {
+         "ip": "130.183.206.45",
+         "hostname": "dcor-mpl"},
+     "branding": ["dcor"],
+     "ckan.ini": {
+         "ckan.site_title": "DCOR",
+         "ckan.site_url": "https://dcor.mpl.mpg.de"
+         },
+     "include": ["general", "garching"]
+     },
+    {"name": "development",
+     "requirements": {
+         "ip": "130.183.206.46",
+         "hostname": "dcor-dev-mpl"},
+     "branding": ["testing", "dcor"],
+     "ckan.ini": {
+         "ckan.auth.create_default_api_keys": "true",
+         "ckan.auth.create_user_via_api": "true",
+         "ckan.site_title": "DCOR-dev",
+         "ckan.site_url": "https://dcor-dev.mpl.mpg.de"
+         },
+     "include": ["general", "garching"]
+     },
+    {"name": "colab",
+     "requirements": {
+         "ip": "130.183.206.38",
+         "hostname": "dcor-colab"},
+     "branding": ["medical"],
+     "ckan.ini": {
+         "ckan.auth.create_user_via_web": "false",
+         "ckan.site_title": "DCOR-colab",
+         "ckan.site_url": "https://<TEMPLATE:HOSTNAME>",
+         "ckanext.dcor_schemas.allow_public_datasets": "false",
+         "ckanext.dcor_schemas.json_resource_schema_dir": "<TEMPLATE:PATH_BRANDING>/resource_schema_medical",
+         "licenses_group_url": "file://<TEMPLATE:PATH_BRANDING>/licenses_medical.json"
+         },
+     "include": ["general", "garching"]
+     },
+    {"name": "medical",
+     "requirements": {},
+     "branding": ["medical"],
+     "ckan.ini": {
+         "ckan.auth.create_user_via_web": "false",
+         "ckan.site_title": "DCOR-med",
+         "ckan.site_url": "https://<TEMPLATE:HOSTNAME>",
+         "ckanext.dcor_schemas.allow_public_datasets": "false",
+         "ckanext.dcor_schemas.json_resource_schema_dir": "<TEMPLATE:PATH_BRANDING>/resource_schema_medical",
+         "licenses_group_url": "file://<TEMPLATE:PATH_BRANDING>/licenses_medical.json"
+         },
+     "include": ["general"]
+     },
+    {"name": "testing",
+     "requirements": {},
+     "branding": ["testing"],
+     "ckan.ini": {
+         "ckan.auth.create_default_api_keys": "true",
+         "ckan.auth.create_user_via_api": "true",
+         "ckan.site_title": "DCOR-test",
+         "ckan.site_url": "http://<TEMPLATE:IP>"
+         },
+     "include": ["general"]
+     }
+    ],
+"includes": {
+    "general": {
+     "ckan.ini": {
+        "sqlalchemy.url": "postgresql://ckan_default:<TEMPLATE:PGSQLPASS>@localhost/ckan_default",
+        "ckanext.dcor_depot.users_depot_name": "users-<TEMPLATE:HOSTNAME>",
+        "ckan.storage_path": "/data/ckan-<TEMPLATE:HOSTNAME>"
+     }
+    },
+    "garching": {
+     "ckan.ini": {
+         "smtp.server": "post.mpcdf.mpg.de",
+         "smtp.mail_from": "noreply-<TEMPLATE:HOSTNAME>@mpl.mpg.de",
+         "smtp.user": "",
+         "smtp.password": "",
+         "email_to": "<TEMPLATE:EMAIL>",
+         "error_email_from": "error-<TEMPLATE:HOSTNAME>@mpl.mpg.de"
+         }
+      }
+     }
+}
