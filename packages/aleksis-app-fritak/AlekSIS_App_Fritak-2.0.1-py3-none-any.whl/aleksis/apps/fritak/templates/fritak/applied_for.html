@@ -1,0 +1,31 @@
+{% extends "core/base.html" %}
+{% load msg_box static i18n %}
+
+{% block content %}
+  <div class="container">
+    <div class="card">
+      <div class="card-content">
+        <i class="material-icons left medium green-text iconify" data-icon="mdi:check-circle-outline"></i>
+        <p class="flow-text">
+          {% blocktrans %}
+            Your request for a teaching exemption has been successfully
+            submitted to the school management and will be examined there shortly.
+          {% endblocktrans %}
+        </p>
+      </div>
+      <div class="card-action-light">
+        <a class="btn waves-effect waves-light" href="{% url "fritak_index" %}">
+          <i class="material-icons left iconify" data-icon="mdi:chevron-left"></i>
+          {% trans "Back to the overview" %}
+        </a>
+
+        <a class="btn waves-effect waves-light" href="{% url "index" %}">
+          <i class="material-icons left iconify" data-icon="mdi:home-outline">home</i>
+          {% trans "Back to the dashboard" %}
+        </a>
+      </div>
+    </div>
+  </div>
+
+
+{% endblock %}

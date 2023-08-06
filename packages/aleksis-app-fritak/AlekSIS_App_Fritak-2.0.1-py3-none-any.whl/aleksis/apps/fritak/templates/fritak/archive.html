@@ -1,0 +1,67 @@
+{% extends "core/base.html" %}
+{% load msg_box static i18n %}
+
+{% block page_title %}
+  {% trans "Archive of Exemption Requests" %}
+{% endblock %}
+
+{% block browser_title %}
+  {% trans "Archive of Exemption Requests" %}
+{% endblock %}
+
+{% block content %}
+  <form method="GET">
+    <div class="row">
+      <div class="col s8 m10 l11">
+        {{ filter.form.as_p }}
+      </div>
+      <div class="col s4 m2 l1">
+        <a class="btn col s12" href="{% url "fritak_print_archive" %}">
+          <i class="material-icons center iconify" data-icon="mdi:printer-outline"></i>
+        </a>
+      </div>
+    </div>
+    <button type="submit" class="waves-effect waves-light btn green">
+      <i class="material-icons left iconify" data-icon="mdi:filter-outline"></i>
+      {% trans "Update filters" %}
+    </button>
+  </form>
+
+  <table>
+      <tr>
+      <th>
+        <i class="material-icons left iconify" data-icon="mdi:account-outline"></i>
+        {% trans "Person" %}
+      </th>
+      <th>
+        <i class="material-icons left iconify" data-icon="mdi:clock-outline"></i>
+        {% trans "Time Range" %}
+      </th>
+      <th>
+        <i class="material-icons left iconify" data-icon="mdi:clipboard-text-outline"></i>
+        {% trans "Description" %}
+      </th>
+      <th>
+        <i class="material-icons left iconify" data-icon="mdi:list-status"></i>
+        {% trans "Status" %}
+      </th>
+    </tr>
+    {% for exemption in filter.qs %}
+      <tr>
+        <td>
+          {{ exemption.submitter }}
+        </td>
+        <td>
+          {{ exemption.from_date }}, {{ exemption.from_time }}
+          &mdash; {{ exemption.to_date }}, {{ exemption.to_time }}
+        </td>
+        <td>
+          {{ exemption.description }}
+        </td>
+        <td>
+          <span class="badge new left {{ exemption.get_status.style_class }}">{{ exemption.get_status.name }}</span>
+        </td>
+      </tr>
+    {% endfor %}
+  </table>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends "core/base.html" %}
+{% load msg_box i18n material_form %}
+
+{% block browser_title %}
+  {% trans "New request for exemption from teaching" %}
+{% endblock %}
+
+{% block page_title %}
+  {% trans "Submit new request for exemption from teaching" %}
+{% endblock %}
+
+{% block content %}
+  <form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    {% form form=form %}{% endform %}
+
+    {% include "core/partials/save_button.html" with icon="mdi:send-outline" caption=_("Submit") %}
+  </form>
+
+  <script>
+    function toggle(a, b, select = false) {
+      $(a).change(function () {
+        $(b).val("");
+
+        if (select) {
+          $(b).formSelect();
+        }
+      });
+    }
+
+    $(document).ready(function () {
+      toggle("#id_from_lesson", "#id_from_time");
+      toggle("#id_from_time", "#id_from_lesson", true);
+      toggle("#id_to_lesson", "#id_to_time");
+      toggle("#id_to_time", "#id_to_lesson", true);
+
+      $("#id_from_date").change(function () {
+        $("#id_to_date").val($("#id_from_date").val());
+        initDatePicker("#id_to_date");
+      });
+    });
+  </script>
+{% endblock %}

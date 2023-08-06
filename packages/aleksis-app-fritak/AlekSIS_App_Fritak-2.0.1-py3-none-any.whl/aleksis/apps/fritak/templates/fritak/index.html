@@ -1,0 +1,73 @@
+{% extends "core/base.html" %}
+{% load msg_box static i18n %}
+
+{% block browser_title %}
+  {% trans "Requests for Teaching Exemptions" %}
+{% endblock %}
+
+{% block page_title %}
+  {% trans "Requests for Teaching Exemptions from" %} {{ user.person }}
+{% endblock %}
+
+{% block content %}
+  <a href="{% url 'fritak_apply_for' %}" class="waves-effect waves-light btn green">
+    <i class="material-icons left iconify" data-icon="mdi:clipboard-edit-outline"></i>
+    {% trans "Make a new request" %}
+  </a>
+
+  <ul class="collection">
+    {% for exemption_request in exemption_requests %}
+      <li class="collection-item">
+        <div class="row">
+          <div class="col s12 m6">
+            <p class="title">
+              <i class="material-icons left iconify" data-icon="mdi:clock-outline"></i>
+              {{ exemption_request.from_date }}, {{ exemption_request.from_time }} &mdash; {{ exemption_request.to_date }}, {{ exemption_request.to_time }}
+            </p>
+            <p>
+              <i class="material-icons left iconify" data-icon="mdi:clipboard-text-outline"></i>
+              {{ exemption_request.description }}
+            </p>
+          </div>
+
+          <div class="col s12 m4">
+            <p>
+              {% if exemption_request.status == 0 %}
+                  <a href="{% url 'fritak_edit' exemption_request.id %}" class="waves-effect waves-orange btn-flat btn-flat-medium left green-text"
+                          title="{% trans "Edit" %}">
+                    <i class="material-icons center iconify" data-icon="mdi:pencil-outline"></i>
+                  </a>
+              {% endif %}
+
+              {% if exemption_request.status == 0 or exemption_request.status == 1 %}
+                <form action="" method="POST" class="left">
+                  {% csrf_token %}
+                  <input type="hidden" value="{{ exemption_request.id }}" name="id_">
+                  <button type="submit"
+                          onclick="return confirm('{% trans "Do you really want to delete the request?" %}')"
+                          name="delete" class="waves-effect waves-light btn-flat btn-flat-medium red-text"
+                          title={% trans "Delete" %}>
+                    <i class="material-icons center iconify" data-icon="mdi:cancel"></i>
+                  </button>
+                </form>
+              {% endif %}
+            </p>
+          </div>
+
+          <div class="col s12 m2">
+            <p>
+              <span class="badge new {{ exemption_request.get_status.style_class }}">{{ exemption_request.get_status.name }}</span>
+            </p>
+          </div>
+        </div>
+
+      </li>
+    {% endfor %}
+
+    {% if not exemption_requests %}
+      <li class="collection-item">
+        <p class="flow-text">{% trans "No requests available." %}</p>
+      </li>
+    {% endif %}
+  </ul>
+{% endblock %}
