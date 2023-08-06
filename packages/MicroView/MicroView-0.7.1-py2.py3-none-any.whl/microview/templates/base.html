@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    {% include 'head.html' %}
+</head>
+
+<body>
+    <nav class="navbar has-background-light mb-3 shadow" role="navigation" aria-label="main navigation">
+        <div class="navbar-brand">
+            <span class="is-flex is-align-items-baseline">
+                <h1 class="navbar-item is-size-1 has-text-weight-bold is-family-primary"><span
+                        class="has-text-link">Micro</span><span class="has-text-danger">View</span>
+                </h1>
+                <sub class="subtitle is-size-7 has-text-dark is-family-code">v{{version}}</sub>
+            </span>
+        </div>
+    </nav>
+    <main class="px-3">
+        <div class="columns">
+            <section id="toc" class="column has-background-white-bis border-left-darkgrey">
+                <aside class="menu py-2">
+                    <p class="menu-label">Taxonomy</p>
+                    <ul class="menu-list">
+                        <li><a href="#classified-reads">Classified Reads</a></li>
+                        <li><a href="#common-taxa">Most Common Taxa</a></li>
+                        <li><a href="#diversity">Diversity and Abundance</a></li>
+                    </ul>
+                </aside>
+            </section>
+            <section id="results" class="column is-10">
+                <p class="is-size-6 py-3"><span class="has-text-weight-semibold"><span
+                            class="has-text-link">Micro</span><span class="has-text-danger">View</span></span> report
+                    generated on {{curr_time}}, based on data
+                    in
+                    <code>{{dir_path}}</code>
+                </p>
+                <h2 class="title">Taxonomic Classification Results</h2>
+                <div id="classified-reads">
+                    <h3 class="title is-4">Number of Classified Reads</h3>
+                    {{ tax_plots.assigned_plot }}
+                </div>
+                <div id="common-taxa">
+                    <h3 class="title is-4">Most Common Taxa</h3>
+                    <p>The percentage of reads among the top taxa in each sample</p>
+                    {{ tax_plots.common_taxas_plot }}
+                </div>
+                <div id="diversity">
+                    <h3 class="title is-4">Diversity and Abundance</h3>
+                    <p>Shannon's diversity index and Pielou's evenness among all samples </p>
+                    {{ tax_plots.abund_div_plot }}
+                    <h3 class="title is-5">Beta Diversity (Bray-Curtis)</h3>
+                    <p>Variance explained by each coordinate in a PCoA of Beta diversity across samples</p>
+                    {{tax_plots.pcoa_var_plot}}
+                    <p>Samples across PC1 and PC2</p>
+                    {{tax_plots.beta_div_pcoa}}
+                </div>
+            </section>
+        </div>
+    </main>
+</body>
+
+</html>

@@ -1,0 +1,83 @@
+Metadata-Version: 2.1
+Name: MicroView
+Version: 0.7.1
+Summary: Generate reports from metagenomics data
+Home-page: https://github.com/jvfe/microview
+Author: João Vitor F. Cavalcante
+Author-email: jvfe@ufrn.edu.br
+License: BSD license
+Project-URL: Bug Tracker, https://github.com/jvfe/microview/issues
+Project-URL: Documentation, https://jvfe.github.io/microview/
+Project-URL: Source Code, https://github.com/jvfe/microview
+Keywords: metagenomics workflow visualization report
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Science/Research
+Classifier: Topic :: Scientific/Engineering :: Bio-Informatics
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Natural Language :: English
+Requires-Python: >=3.7
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: scipy (<=1.8)
+Requires-Dist: scikit-bio
+Requires-Dist: pandas
+Requires-Dist: numpy
+Requires-Dist: plotly
+Requires-Dist: jinja2
+Requires-Dist: rich
+Requires-Dist: rich-click
+Requires-Dist: click-option-group
+Requires-Dist: frictionless
+Provides-Extra: dev
+Requires-Dist: mkdocs ; extra == 'dev'
+Requires-Dist: mkdocstrings ; extra == 'dev'
+Requires-Dist: mkdocstrings.python ; extra == 'dev'
+Requires-Dist: click ; extra == 'dev'
+Requires-Dist: wheel ; extra == 'dev'
+Requires-Dist: twine ; extra == 'dev'
+
+# MicroView
+
+MicroView, a reporting tool for taxonomic classification
+
+MicroView agreggates results from taxonomic classification tools,
+such as Kaiju and Kraken, building an interactive HTML report with
+insightful visualizations.
+
+## Quickstart
+
+Install the package:
+
+```sh
+pip install microview
+```
+
+Go to your directory containing Kaiju/Kraken-style results and run:
+
+```sh
+microview -t .
+```
+
+Alternatively, if you have a CSV table defining result paths and contrasts, like this:
+
+```
+sample,group
+result_1.tsv,group_one
+result_2.tsv,group_two
+...etc...
+```
+
+You can run MicroView like this:
+
+```sh
+microview -df contrast_table.csv -o report_with_table.html
+```
+
+Then, an HTML file named `microview_report.html` -
+or the name you defined with the `-o` param -
+should be available in your working directory,
+try opening it with your browser!
+
+
