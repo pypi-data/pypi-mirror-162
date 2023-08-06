@@ -1,0 +1,2 @@
+MESSAGE_ATTRIBUTE_TRACE_ID = "datadogTraceId"
+MESSAGE_ATTRIBUTE_PARENT_ID = "datadogSpanId"
