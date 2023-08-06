@@ -1,0 +1,362 @@
+\chapter{Working with schedules}
+
+In this chapter we describe the module [[nytid.schedules]] that we provide for 
+working with schedules, indirectly TimeEdit.
+We want to be able to use the course schedule and the personal schedules 
+provided by TimeEdit.
+
+The idea is as follows.
+We'll use the [[ics]] package to handle events and schedules (calendars).
+This means that we can use the ICS exports from TimeEdit, Google Calendar etc.
+
+We provide the following short example to demonstrate how to get the schedule 
+for the course DD1310 at KTH.
+There are four instances of this course given each year, we want the one with 
+the round code 51580 (also known as admission ID or round code in LADOK).
+To make it short, we only want the events for the day 2022-09-05.
+The second [[course_query]] merges the events of DD1317 into the same calendar.
+\begin{minted}{python}
+import nytid.schedules
+
+calendar = nytid.schedules.course_query("DD1310",
+  start_time="2022-09-05", end_time="2022-09-06",
+  course_round="51580"
+)
+calendar.events |= nytid.schedules.course_query("DD1317",
+    start_time="2022-09-05", end_time="2022-09-06").events
+
+for event in calendar.timeline:
+  print(f"{event.name} {event.begin} in {event.location}"
+    f"\nDescription: {event.description}")
+\end{minted}
+
+We can also get the schedule directly from TimeEdit by providing the URL to the 
+ICS file.
+\begin{minted}{python}
+import nytid.schedules
+
+calendar = nytid.schedules.read_calendar(
+  "https://cloud.timeedit.net/kth/web/public01/ri.ics?sid=7&p=0.w%2C12.n&objects=360174.3&e=220609&enol=t&ku=29&k=AFC54A7C7A441C7B6EBD92008BF91F9F0")
+
+for event in calendar.timeline:
+  print(f"{event.name} {event.begin} in {event.location}"
+    f"\nDescription: {event.description}")
+\end{minted}
+
+
+\section{Outline}
+
+The module consists only of the file [[__init__.py]].
+<<init.py>>=
+<<constants>>
+<<imports>>
+<<classes>>
+<<functions>>
+@
+
+
+\section{Representing events}
+
+We will use the ICS calendar format to represent events.
+For this we will use the [[ics]] package.
+We will use the [[arrow]] package instead of [[datetime]], as this is suggested 
+by the [[ics]] package.
+<<imports>>=
+import arrow.arrow as arrow
+import calendar
+import dateutil
+import ics.event
+import ics.icalendar
+@ Using the [[ics]] package allows us to work with calendar related things in a 
+standard way, so that we later can just import calendars through [[.ics]] 
+files.
+
+When we print such an object, it will print the ICS formatted version.
+This is useful for creating [[.ics]] files, but not for pretty-printing the 
+schedule to the terminal, for instance.
+We introduce the two following functions to handle that.
+<<functions>>=
+def format_header(event):
+    """
+    Formats the event header, a one-line representation (week, date, time, 
+    event title)
+    """
+    header = f"Week {event.begin.isocalendar()[1]} " + \
+            calendar.day_name[event.begin.weekday()] + " " + \
+            event.begin.to(dateutil.tz.tzlocal()).format('DD/MM HH:mm')
+
+    header += f" {event.name}"
+
+    return header
+
+def format_event(event):
+    """
+    Takes event (ics.event.Event) object,
+    returns long string representation (header, location, description over 
+    several lines)
+    """
+    header = format_header(event)
+    location = event.location
+    description = "\n".join(filter(lambda x: "http" not in x,
+            event.description.splitlines()))
+
+    return f"{header}\n{location}\n{description}".strip()
+@
+
+We also want a shorter version, where we can filter the description.
+<<functions>>=
+def filter_event_description(event_desc, ignore=[
+        "http", "grupp", "group", "ID ", "Daniel Bosk"
+    ], separator="; "):
+    """
+    Takes event description event_desc as string,
+    returns filtered string with newlines replaced by semicolons.
+    Rows of description containing any term in list ignore, will not appear in 
+    the returned string.
+    The filtered rows of the description are joined again by the string in 
+    separator.
+    """
+    desc_parts = event_desc.splitlines()
+    desc_parts_keep = []
+
+    for part in desc_parts:
+        found = False
+        for term in ignore:
+            if term in part:
+                found = True
+                break
+
+        if not found:
+            desc_parts_keep.append(part)
+
+    return separator.join(desc_parts_keep)
+
+def format_event_short(event):
+    """Takes event (ics.event.Event) object,
+    returns a short string representation (one line)"""
+    header = format_header(event)
+    description = filter_event_description(event.description)
+
+    return f"{header} {description}".strip()
+@
+
+\section{The KTH Schedule API}
+
+We will not use TimeEdit directly (in this version).
+KTH has an API for the schedules that fetches the data from TimeEdit:
+\begin{center}
+\url{https://www.kth.se/social/api/schema/v2/apidoc.html}.
+\end{center}
+
+\subsection{Making requests}
+
+We're interested in fetching the schedule for a course.
+<<constants>>=
+SCHEDULE_API_URL = "https://www.kth.se/social/api/schema/v2"
+@
+
+We will use the [[requests]] package to make queries.
+<<imports>>=
+import requests
+@
+
+We will use the following function to pass GET requests to the API.
+<<functions>>=
+def course_query(course_code, /, **kwargs):
+  """
+  Input:
+  course_code is the LADOK course code, e.g. DD1301;
+  keyword arguments:
+  start_term is the LADOK start term, e.g. 2022HT or 2023VT;
+  course_round is the LADOK course round code, e.g. 50855;
+  start_time and end_time are the dates, e.g. 2022-06-08;
+  type specifies which type of entry to fetch, e.g. TEN or all.
+
+  Output:
+  """
+  <<form the request path>>
+  response = requests.get(f"{SCHEDULE_API_URL}/course/{path}")
+  if response.status_code == 200:
+    results = response.json()
+  else:
+    raise Exception(response.text)
+
+  events = set()
+  <<convert results to set of ics.event.Event objects in events>>
+  return ics.icalendar.Calendar(events=events)
+@
+
+According to the API documentation, some parameters are supposed to be part of 
+the path.
+However, that seems to be wrong, that didn't work.
+Everything should be a GET parameter, so we form the request path like this:
+<<form the request path>>=
+path = course_code
+
+parameter_map = {
+  "start_term": "startterm",
+  "course_round": "courseroundcode",
+  "start_time": "startTime",
+  "end_time": "endTime",
+  "type": "type"
+}
+
+parameters = ""
+
+for kw, param in parameter_map.items():
+  try:
+    if not parameters:
+      parameters += f"{param}={kwargs[kw]}"
+    else:
+      parameters += f"&{param}={kwargs[kw]}"
+  except KeyError:
+    pass
+
+if parameters:
+  path += f"?{parameters}"
+@
+
+
+\subsection{Creating [[ics.event.Event]]s from KTH data}
+
+We will introduce an [[EventFromKTH]] class that inherits from the standard 
+[[Event]] class.
+This is just to make constructing the objects easier.
+<<classes>>=
+class EventFromKTH(ics.event.Event):
+  def __init__(self, json_data):
+    """
+    Input: json_data is the data returned from the KTH API
+    """
+    <<process JSON data, initialize attributes>>
+@
+
+This means that we can do the necessary conversion of the results above.
+<<convert results to set of ics.event.Event objects in events>>=
+for event_json in results["entries"]:
+  events.add(EventFromKTH(event_json))
+@
+
+Now we can just pop the different attributes from the JSON data, except for 
+locations, which we will deal with separately.
+Then pass those attributes to the parent class constructor.
+After having popped the attributes, the remaining data will be stored in the 
+[[.extra]] attribute, as per [[ics]] package way.
+We also get two undocumented attributes of an event:
+\begin{description}
+\item[info] provides additional information, \eg comments added by the teacher 
+(through the scheduling department).
+\item[group] provides a list of groups that should attend.
+\end{description}
+
+We will use the locale to determine which language to use for the 
+[[type_name]].
+We will let each group be represented by an [[ics.attendee.Attendee]] object.
+(The groups are undocumented, and they seem to not work for now.)
+<<imports>>=
+import ics.attendee
+import locale
+@
+<<process JSON data, initialize attributes>>=
+attribute_map = {
+  "url": "url",
+  "start": "begin",
+  "end": "end",
+  "type_name": "name",
+  "info": "description",
+  "group": "attendees",
+  "locations": "location"
+}
+
+kwargs = dict()
+
+for attribute, kw in attribute_map.items():
+  try:
+    value = json_data.pop(attribute)
+
+    if attribute == "type_name":
+      <<get type name best suited for current locale>>
+    elif attribute == "locations":
+      <<extract the location for value>>
+
+    kwargs[kw] = value
+  except AttributeError:
+    pass
+
+<<add remaining data to extra>>
+
+super().__init__(**kwargs)
+@
+
+<<get type name best suited for current locale>>=
+try:
+  value = value[locale.getlocale()[0][:2]]
+except AttributeError:
+  value = value["sv"]
+@
+
+We can see in the documentation that the location has a name and a URL to more 
+information.
+However, we cannot preserve this data in the ICS format.
+So we merge the location names into one value.
+<<extract the location for value>>=
+locations = value
+value = ""
+
+for location in locations:
+  if value:
+    value += f", {location['name']}"
+  else:
+    value += location["name"]
+@
+
+Now, any remaining data in [[json_data]] should be added to the [[extra]] 
+attribute.
+<<add remaining data to extra>>=
+self.extra = json_to_ics(json_data)
+@
+
+The function [[json_to_ics]] will recurse down [[json_data]] and convert the 
+dictionaries to [[ics.parse.Container]]s and [[ics.parse.ContentLine]]s.
+<<imports>>=
+import ics.parse
+@
+<<functions>>=
+def json_to_ics(json_data):
+  """
+  Input:
+  json_data being output from json.loads, a directory with lists and values.
+
+  Output:
+  List of ics.parse.Container or ics.parse.ContentLine
+  """
+  items = []
+
+  for kw, value in json_data.items():
+    if isinstance(value, dict):
+      items.append(ics.parse.Container(kw, json_to_ics(value)))
+    else:
+      items.append(ics.parse.ContentLine(name=kw, value=value))
+
+  return items
+@
+
+
+\section{Handling calendars from URLs}
+
+We sometimes would like to provide a URL to an ICS-formatted file.
+Here we provide a function that takes a URL to an ICS-formatted file and 
+returns a calendar, in the same format as the course schedule above.
+This will allow us to easily compare to \eg see which sessions someone can 
+attend.
+<<functions>>=
+def read_calendar(url):
+  """
+  Input: url is a string containing the URL to the ICS-formatted calendar.
+  Output: an [[ics.icalendar.Calendar]] object.
+  """
+  response = requests.get(url)
+  if response.status_code == 200:
+    return ics.icalendar.Calendar(imports=response.text)
+  raise Exception(response.text)
+@

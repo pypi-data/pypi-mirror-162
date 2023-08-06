@@ -1,0 +1,710 @@
+\chapter{Utilities}
+
+In this chapter we cover various utilities.
+The outline of the module is as follows:
+<<utils.py>>=
+import arrow
+import csv
+import datetime
+import ics.attendee
+import ics.event
+import nytid.schedules
+import re
+import requests
+
+<<constants>>
+<<classes>>
+<<functions>>
+
+def main():
+  <<usage examples>>
+
+if __name__ == "__main__":
+    main()
+@
+
+
+\section{Generate sign up sheet for TAs}
+
+We want to generate a sign-up sheet that TAs can use to sign up for teaching 
+sessions, \eg lab or tutorial sessions.
+It takes the course title (used for file name) and a URL to TimeEdit for the 
+course schedule.
+It outputs a CSV that can be imported to Google Sheets that the TAs can fill.
+<<functions>>=
+def needed_TAs(event):
+  """
+  Takes an event and returns the number of TAs needed
+  """
+  <<compute the number of needed TAs>>
+  
+def generate_signup_sheet(course, url, needed_TAs=needed_TAs):
+  """
+  Input:
+  - course is a string containing the file name used for output.
+  - url is the URL to the ICS-formatted calendar.
+  - needed_TAs is a function computing the number of needed TAs based on the 
+    event. The default is the needed_TAs function in this module.
+
+  Output:
+  Returns nothing. Writes output to {course}.csv.
+  """
+  with open(f"{course}.csv", "w") as out:
+    csvout = csv.writer(out)
+    calendar = nytid.schedules.read_calendar(url)
+
+    max_num_TAs = 0
+    rows = []
+
+    <<generate rows of sign-up sheet>>
+
+    csvout.writerow(SIGNUP_SHEET_HEADER +
+      [f"TA username" for n in range(max_num_TAs)] +
+        ["..."])
+
+    csvout.writerows(rows)
+@
+
+The headers that we want are the following.
+<<constants>>=
+SIGNUP_SHEET_HEADER = [
+  "Event", "Start", "End", "#Rooms",
+  "#Needed TAs"
+]
+@
+
+To generate the rows of the sheet, we simply go through the calendar in 
+chronological order.
+We only want the TAs to sign up for tutorials (övningar) and labs (laboration).
+<<generate rows of sign-up sheet>>=
+for event in calendar.timeline:
+  if "Övning" in event.name or \
+      "laboration" in event.name or "Laboration" in event.name:
+    num_TAs = needed_TAs(event)
+    if num_TAs > max_num_TAs:
+      max_num_TAs = num_TAs
+
+    rows.append([
+      event.name,
+      event.begin.to("local").format("YYYY-MM-DD HH:mm"),
+      event.end.to("local").format("YYYY-MM-DD HH:mm"),
+      len(event.location.split(",")),
+      num_TAs
+    ])
+@
+
+<<usage examples>>=
+COURSES = {
+  "DD1310": 
+  "https://cloud.timeedit.net/kth/web/public01/ri.ics?sid=7&p=0.w%2C12.n&objects=453080.10&e=220609&enol=t&ku=29&k=1B9F3AD696BCA5C434C68950EFD376DD",
+  "DD1317": 
+  "https://cloud.timeedit.net/kth/web/public01/ri.ics?sid=7&p=0.w%2C12.n&objects=455995.10&e=220609&enol=t&ku=29&k=BA4400E3C003685549BC65AD9EAD3DC58E"
+}
+
+for course, url in COURSES.items():
+  generate_signup_sheet(course, url)
+@
+
+
+\section{Computing the number of necessary TAs}
+
+We need to compute the number of TAs that we need for various sessions.
+We compute this number from the parameter [[event]], which is an 
+[[ics.event.Event]] object from the schedule.
+The base algorithm counts on one TA per group.
+If there are no groups, we use one TA per room.
+<<compute the number of needed TAs>>=
+num_groups = event.description.split().count("grupp")
+if num_groups == 0:
+  num_groups = event.description.split().count("group")
+
+num_rooms = len(event.location.split(","))
+
+num_TAs = max(num_rooms, num_groups)
+
+if "laboration" in event.name or "Laboration" in event.name:
+  num_TAs = round(num_TAs * 1.5)
+
+return num_TAs
+@
+
+
+\section{Reading the sign-up sheet}
+
+We want to read the sign-up sheet to later parse it to extract interesting 
+data.
+We provide two ways:
+\begin{itemize}
+\item read from a file.
+\item read from a URL.
+\end{itemize}
+In both cases we want to return the rows of the CSV.
+
+\subsection{Reading from a file}
+
+We simply read the rows from the file.
+<<functions>>=
+def read_signup_sheet_from_file(filename):
+  """
+  Input: filename is a string containing the file name of the CSV file of the 
+  sign-up sheet.
+
+  Output: All the rows of the CSV as a Python list.
+  """
+  with open(filename, "r") as f:
+    csvfile = csv.reader(f)
+    return list(filter(any, list(csvfile)[1:]))
+@
+
+\subsection{Reading from a URL}
+
+We simply download the CSV file and read the rows from the file.
+<<functions>>=
+def read_signup_sheet_from_url(url):
+  """
+  Input: url is a string containing the URL of the CSV file of the sign-up 
+  sheet.
+
+  Output: All the rows of the CSV as a Python list.
+  """
+  response = requests.get(url)
+  if response.status_code != 200:
+    raise ValueError(response.text)
+
+  response.encoding = response.apparent_encoding
+  csvdata = response.text.splitlines()
+  return list(filter(any, list(csv.reader(csvdata))[1:]))
+@
+
+We also provide a function that takes the sharing URL of a publicly visible 
+sheet on Google Sheets and changes it into a URL that exports the sheet to CSV.
+<<functions>>=
+def google_sheet_to_csv_url(share_url):
+  """
+  Input: The share URL of a Google Sheets sheet.
+
+  Output: A URL that downloads (exports) the sheet in CSV format.
+  """
+  match = re.search("/edit.*$", share_url)
+  if not match:
+    raise ValueError(f"{share_url} doesn't seem like a Google Sheets URL.")
+
+  url = share_url[:match.start()]
+  return url + "/export?format=csv"
+@
+
+\subsection{Creating [[ics.event.Event]]s from CSV data}
+
+Sometimes we want to convert this CSV-format back to a calendar.
+What we want to do is to be able to convert a row of this CSV (that corresponds 
+to an event) and convert it to an [[ics.event.Event]] object.
+We will introduce an [[EventFromCSV]] class that inherits from the standard 
+[[Event]] class.
+This is just to make constructing the objects easier.
+<<classes>>=
+class EventFromCSV(ics.event.Event):
+  """A class to create an ics.event.Event from an event in CSV format"""
+  def __init__(self, csv_row):
+    """
+    Input: a row from a calendar in CSV format (e.g. the sign-up sheet).
+    """
+    <<process CSV row, initialize attributes>>
+@
+
+The CSV from the sign-up sheet doesn't contain all the data as before.
+It only contains the event (type), start and end times and the TAs that will 
+attend.
+We can put the attributes number of rooms and needed TAs in the description.
+<<process CSV row, initialize attributes>>=
+attribute_map = {
+  SIGNUP_SHEET_HEADER.index("Event"): "name",
+  SIGNUP_SHEET_HEADER.index("Start"): "begin",
+  SIGNUP_SHEET_HEADER.index("End"): "end",
+  SIGNUP_SHEET_HEADER.index("#Rooms"): "description",
+  SIGNUP_SHEET_HEADER.index("#Needed TAs"): "description"
+}
+for idx in range(len(SIGNUP_SHEET_HEADER), len(csv_row)):
+  attribute_map[idx] = "attendees"
+
+kwargs = dict()
+
+for column, attribute in attribute_map.items():
+  try:
+    value = csv_row[column]
+
+    if attribute == "description":
+      if attribute in kwargs:
+        value = kwargs[attribute] + "\n" + value
+    elif attribute == "attendees":
+      <<add value as an ics.attendee.Attendee object>>
+    elif attribute in ["begin", "end"]:
+      value = arrow.get(value, tzinfo="local")
+
+    kwargs[attribute] = value
+  except AttributeError:
+    pass
+
+super().__init__(**kwargs)
+@
+
+If we need to add an attendee, that value is the KTH username.
+The attendee object requires an email, so we can easily form that from the 
+username.
+Then we append the attendee object if there is a list, otherwise we create the 
+list.
+
+Two things to note:
+First, we might have an empty value, due to empty columns in the CSV.
+Second, we must append the list of attendees if there is a list already.
+<<add value as an ics.attendee.Attendee object>>=
+if not value:
+  continue
+
+value = ics.attendee.Attendee(f"{value}@kth.se")
+
+if attribute not in kwargs:
+  value = [value]
+else:
+  value = kwargs[attribute] + [value]
+@
+
+
+\section{Extracting data from sign-up sheet}
+
+We would also like to parse the sign-up sheet.
+Considering the design, we can read out many things.
+We are interested in the following:
+\begin{itemize}
+\item Which TAs are signed up for a particular session? (To organize teaching 
+better, \eg automatically generate presentation events in Canvas' calendar for 
+the students.)
+\item How many hours are spent on TAs on a course? (To keep budget.)
+\item How many hours a particular TA spent during a particular period? (To 
+generate timesheets.)
+\end{itemize}
+
+\subsection{Which TAs signed up for a particular event?}
+
+For this, we just need to take the event (a row of CSV) as input, then cut only 
+the list of TAs.
+<<functions>>=
+def get_TAs_from_csv(csv_row):
+  """
+  Input: takes a CSV data row as from a csv.reader.
+
+  Output: returns the list of signed TAs.
+  """
+  return list(filter(lambda x: x.strip(),
+    csv_row[len(SIGNUP_SHEET_HEADER):]))
+@
+
+We also want to apply the queue.
+Since we have the number of needed TAs, we know how many are needed.
+So we want to return those who are booked and those who are reserves for a 
+slot.
+<<functions>>=
+def get_booked_TAs_from_csv(csv_row):
+  """
+  Input: takes a CSV data row as from a csv.reader.
+
+  Output: returns the list of signed TAs, the first N, where N is the number of 
+  needed TAs specified in the CSV data.
+  """
+  TAs = get_TAs_from_csv(csv_row)
+  num_needed_TAs = int(csv_row[SIGNUP_SHEET_HEADER.index("#Needed TAs")])
+
+  return TAs[:num_needed_TAs], TAs[num_needed_TAs:]
+@
+
+\subsection{Filter events in CSV by TA, or, which events did a TA sign up for?}
+
+Now, let's continue by asking the opposite question: which events did a TA sign 
+up for?
+We want to answer this question when we contract a TA for an amanuensis 
+position.
+We need this for, for instance, if they sign up for more, we want to calculate 
+the difference in hours.
+
+We simply look at the list of TAs for each row.
+If the TA's identifier is there, we include the row in the output.
+<<functions>>=
+def filter_events_by_TA(ta_id, csv_rows):
+  """
+  Input: ta_id is the string to (exactly) match the TAs' identifiers against;
+  csv_rows is a list of CSV rows, as from csv.reader.
+
+  Output: a list of CSV rows containing only the rows containing ta_id.
+  """
+  return list(filter(
+    lambda x: ta_id in get_TAs_from_csv(x),
+    csv_rows))
+@
+
+\subsection{Filtering events in CSV by title}
+
+We also might be interested in filtering the events by type (or title).
+We simply filter by substring on the index of the event title of each row.
+<<functions>>=
+def filter_events_by_title(event_title, csv_rows):
+  """
+  Input: event_title is the substring to match the event title against;
+  csv_rows is a list of CSV rows, as from csv.reader.
+
+  Output: a list of CSV rows containing only the rows with an event title 
+  having event_title as substring.
+  """
+  return list(filter(
+    lambda x: event_title in x[SIGNUP_SHEET_HEADER.index("Event")],
+    csv_rows))
+@
+
+\subsection{How many hours are spent on the course?}
+
+For this, we just want to go through all the events and multiply the time for 
+the event with the number of TAs.
+We also multiply by the standard preparation time that the TAs are paid.
+
+We start with a function to compute the number of hours spent per student.
+<<functions>>=
+def hours_per_student(csv_rows):
+  """
+  Input: The schedule as rows of CSV data as from csv.reader.
+
+  Output: A dictionary mapping event type to the total number of hours per 
+  student.
+  """
+
+  start_index = SIGNUP_SHEET_HEADER.index("Start")
+  end_index = SIGNUP_SHEET_HEADER.index("End")
+  event_index = SIGNUP_SHEET_HEADER.index("Event")
+
+  event_hours = dict()
+
+  for row in csv_rows:
+    time = round_time(arrow.get(row[end_index], "YYYY-MM-DD HH:mm") - \
+      arrow.get(row[start_index], "YYYY-MM-DD HH:mm"))
+    event_type = row[event_index]
+
+    if event_type not in event_hours:
+      event_hours[event_type] = time
+    else:
+      event_hours[event_type] += time
+
+  return event_hours
+@
+
+Now we can compute the hours per TA.
+This is similar to the computation above, except that it adds prep time.
+When we do this calculation, it's important to count booked slots, not slots 
+where the TA is booked as a reserve.
+\label{HoursPerTA}
+<<functions>>=
+def hours_per_TA(csv_rows):
+  """
+  Input: Rows of CSV data as from csv.reader.
+
+  Output: a dictionary mapping a TA to the number of hours they signed up for 
+  (not counting slots where they're in reserve position) in the sign-up sheet, 
+  {TA: hours}. The hours as datetime.timedelta objects.
+  """
+  TA_hours = {}
+
+  start_index = SIGNUP_SHEET_HEADER.index("Start")
+  end_index = SIGNUP_SHEET_HEADER.index("End")
+  event_index = SIGNUP_SHEET_HEADER.index("Event")
+
+  for row in csv_rows:
+    time = (arrow.get(row[end_index], "YYYY-MM-DD HH:mm") - \
+      arrow.get(row[start_index], "YYYY-MM-DD HH:mm"))
+
+    time = round_time(time)
+    time = add_prep_time(time, row[event_index])
+
+    booked, _ = get_booked_TAs_from_csv(row)
+
+    for assistant in booked:
+      if assistant in TA_hours:
+        TA_hours[assistant] += time
+      else:
+        TA_hours[assistant] = time
+
+  return TA_hours
+@
+
+Now, from this data we can easily compute the total number of hours.
+<<functions>>=
+def total_hours(csv_rows):
+  """
+  Input: Rows of CSV data as from csv.reader.
+
+  Output: Total number of hours spent on the course, as a datetime.timedelta 
+  object.
+  """
+  total = datetime.timedelta(0)
+  TA_hours = hours_per_TA(csv_rows)
+
+  for _, hours in TA_hours.items():
+    total += hours
+
+  return total
+@
+
+We also want to compute the maximum number of hours.
+<<functions>>=
+def max_hours(csv_rows):
+  """
+  Input: takes the rows of CSV as output from csv.reader.
+
+  Output: returns the maximum number of hours (using maximum TAs needed), as a 
+  detetime.timedelta object.
+  """
+  start_index = SIGNUP_SHEET_HEADER.index("Start")
+  end_index = SIGNUP_SHEET_HEADER.index("End")
+  event_index = SIGNUP_SHEET_HEADER.index("Event")
+  needed_TAs_index = SIGNUP_SHEET_HEADER.index("#Needed TAs")
+
+  max_hours = datetime.timedelta()
+
+  for row in csv_rows:
+    time = (arrow.get(row[end_index], "YYYY-MM-DD HH:mm") - \
+      arrow.get(row[start_index], "YYYY-MM-DD HH:mm"))
+
+    time = round_time(time)
+    time = add_prep_time(time, row[event_index])
+
+    max_num_TAs = int(row[needed_TAs_index])
+
+    max_hours += time * max_num_TAs
+
+  return max_hours
+@
+
+Finally, we are also interested in computing the number of hours spent on the 
+different types of events.
+This computation is similar to how computed the hours per TA above, it's just a 
+different column in the CSV.
+<<functions>>=
+def hours_per_event(csv_rows):
+  """
+  Input: Rows of CSV data as from csv.reader.
+
+  Output: a dictionary mapping an event type to the number of hours assigned to 
+  that type of event in the sign-up sheet, {event: hours}. The hours as 
+  datetime.timedelta objects.
+  """
+  event_hours = {}
+
+  start_index = SIGNUP_SHEET_HEADER.index("Start")
+  end_index = SIGNUP_SHEET_HEADER.index("End")
+  event_index = SIGNUP_SHEET_HEADER.index("Event")
+
+  for row in csv_rows:
+    time = round_time(arrow.get(row[end_index], "YYYY-MM-DD HH:mm") - \
+      arrow.get(row[start_index], "YYYY-MM-DD HH:mm"))
+
+    if row[event_index] in event_hours:
+      event_hours[row[event_index]] += time
+    else:
+      event_hours[row[event_index]] = time
+
+  return event_hours
+@
+
+
+\subsection{Rounding time and adding prep time correctly}
+
+KTH uses some rounding procedure for worked time.
+We should round to half hours.
+<<functions>>=
+def round_time(time):
+  """
+  Input: a datetime.timedelta object time.
+
+  Output: the time object rounded according to KTH rules.
+  """
+  HOUR = 60*60
+  QUARTER = 15*60
+
+  total_seconds = time.total_seconds()
+  full_hours = (total_seconds // HOUR) * HOUR
+  part_hour = total_seconds % HOUR
+
+  if part_hour >= 3*QUARTER:
+    return datetime.timedelta(seconds=full_hours+HOUR)
+  elif part_hour > 2*QUARTER:
+    return datetime.timedelta(seconds=full_hours+2*QUARTER)
+  elif part_hour >= QUARTER:
+    return datetime.timedelta(seconds=full_hours+2*QUARTER)
+
+  return datetime.timedelta(seconds=full_hours)
+@
+
+We also should add some fixed preparation time that depends on the type of 
+event.
+Lab session time should increase by a third, tutorial session time should 
+double.
+<<functions>>=
+def add_prep_time(time, event_type):
+  """
+  Input: a datetime.timedelta object time,
+    a string containing the title of the event.
+
+  Output: the time object rounded according to KTH rules.
+  """
+  if "laboration" in event_type or "Laboration" in event_type:
+    time *= 1.33
+  elif "Övning" in event_type:
+    time *= 2
+
+  return time
+@
+
+
+\subsection{Compute amanuensis employment data\protect\footnote{%
+  Based on the idea from Mazen Mardini to automatically compute the 
+  percentage.
+  However, we expand on the idea a bit here.
+}}
+
+We want to compute the data needed to start an amanuensis employment.
+We want to compute the following:
+\begin{itemize}
+\item the total number of hours for the employment period,
+\item the employment period and percentage for the employment.
+\end{itemize}
+
+The total number of hours for the TA is already solved above 
+(\cref{HoursPerTA}).
+The key is to compute the employment period and the percentage.
+We want to compute the period and percentage most beneficial for the TA.
+We will take the following appraoch:
+\begin{enumerate}
+\item Check which slots are signed up for.
+\item Round to the semester.
+\item Compute the percentage.
+  If the percentage is above the threshold, \ie 10 percent, use these dates.
+  Otherwise continue.
+\item Round to the month.
+  If the first slot is on 29th August, we start the position at 1st August.
+  If the last slot is on 2nd December, use 31st December.
+\item Compute the percentage.
+  If the percentage is too low, \ie lower than 10 percent, we shrink the period 
+  to the actual first-slot date.
+\end{enumerate}
+This algorithm gives the following benefit.
+The students can have a maximum employment of 50 percent.
+If we stretch it, the students can do more hours in total during the period.
+If the percentage gets too low, we can use the exact dates to get the 
+percentage closer to the minimum 10 percent.
+However, if the period is shorter than a month (25 days), we don't offer an 
+amanuensis contract.
+The rationale for this is that we only trade one time report for a signing the 
+amanuensis contract (which is more work), so it's a more temporary position 
+when it's that short period of time.
+
+This gives us the following function:
+<<functions>>=
+def compute_amanuensis_data(csv_rows, low_percentage=0.1, min_days=25):
+  """
+  Input:
+    - csv_rows, the CSV rows as output from csv.reader.
+    - low_percentage, the lowest acceptable percentage of an amanuensis 
+      contract.
+    - min_days is the minimum number of days we accept for an amanuensis 
+      contract.
+
+  Output: a dictionary {TA: (start, end, hours)} mapping the TA username to a 
+  tuple (start, end, hours) with the start and end time and the total number of 
+  hours.
+  """
+  start_index = SIGNUP_SHEET_HEADER.index("Start")
+  end_index = SIGNUP_SHEET_HEADER.index("End")
+  event_index = SIGNUP_SHEET_HEADER.index("Event")
+  needed_TAs_index = SIGNUP_SHEET_HEADER.index("#Needed TAs")
+
+  ta_hours = hours_per_TA(csv_rows)
+  ta_data = {}
+
+  <<compute the earliest and latest dates for each TA>>
+
+  return ta_data
+@
+
+We start by finding all start and end dates for every TA.
+<<compute the earliest and latest dates for each TA>>=
+for ta in ta_hours.keys():
+  earliest_date = arrow.get(csv_rows[0][start_index], "YYYY-MM-DD")
+  latest_date = arrow.get(csv_rows[0][end_index], "YYYY-MM-DD")
+
+  for row in csv_rows:
+    start_date = arrow.get(row[start_index], "YYYY-MM-DD")
+    end_date = arrow.get(row[end_index], "YYYY-MM-DD")
+
+    if start_date < earliest_date:
+      earliest_date = start_date
+    if end_date > latest_date:
+      latest_date = end_date
+
+  hours = ta_hours[ta].total_seconds()/60/60
+
+  <<expand earliest and latest dates if beneficial>>
+
+  if latest_date - earliest_date < datetime.timedelta(days=min_days):
+    continue
+
+  ta_data[ta] = (earliest_date, latest_date, hours)
+@
+
+Now we want to try to use different start and end dates to optimize the period 
+for the student.
+We first try with the start and end dates expanded to the semester, then the 
+first and last of the months, finally the exact dates.
+If we can't get above the [[low_percentage]] threshold, we continue to the next 
+TA.
+<<expand earliest and latest dates if beneficial>>=
+july = arrow.get(earliest_date.year, 7, 1)
+
+if earliest_date < july:
+  semester_start = arrow.get(earliest_date.year, 1, 1)
+  semester_end = arrow.get(earliest_date.year, 6, 30)
+else:
+  semester_start = arrow.get(earliest_date.year, 8, 1)
+  semester_end = arrow.get(earliest_date.year+1, 1, 31)
+
+earliest_month = arrow.get(earliest_date.year, earliest_date.month, 1)
+latest_month = arrow.get(
+  latest_date.year, latest_date.month, 1).shift(months=1, seconds=-1)
+
+if latest_date > semester_end:
+  semester_end = latest_month
+
+if compute_percentage(semester_start, semester_end, hours) >= low_percentage:
+  earliest_date = semester_start
+  latest_date = semester_end
+elif compute_percentage(semester_start, latest_month, hours) >= low_percentage:
+  earliest_date = earliest_month
+  latest_date = latest_month
+elif compute_percentage(earliest_month, semester_end, hours) >= low_percentage:
+  earliest_date = earliest_month
+  latest_date = latest_month
+elif compute_percentage(earliest_month, latest_month, hours) >= low_percentage:
+  earliest_date = earliest_month
+  latest_date = latest_month
+elif compute_percentage(earliest_date, latest_month, hours) >= low_percentage:
+  latest_date = latest_month
+else:
+  continue
+@
+
+The [[compute_percentage]] function simply computes the average working time.
+<<functions>>=
+def compute_percentage(start, end, hours):
+  """
+  Input: start and end as arrow.arrow.Arrow or datetime.date objects,
+    hours as a float.
+
+  Output: a float in the interval [0, 1], which is the percentage of full time.
+  """
+  days = (end - start).total_seconds()/60/60/24
+  return (hours / 1600) * (365 / days)
+@
