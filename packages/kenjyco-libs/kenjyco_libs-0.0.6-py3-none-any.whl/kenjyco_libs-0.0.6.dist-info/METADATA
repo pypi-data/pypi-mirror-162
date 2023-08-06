@@ -1,0 +1,127 @@
+Metadata-Version: 2.1
+Name: kenjyco-libs
+Version: 0.0.6
+Summary: Easily install kenjyco libs
+Home-page: https://github.com/kenjyco/kenjyco-libs
+Download-URL: https://github.com/kenjyco/kenjyco-libs/tarball/v0.0.6
+Author: Ken
+Author-email: kenjyco@gmail.com
+License: MIT
+Keywords: api,data,libs,cli,command-line,helper,kenjyco
+Classifier: Development Status :: 3 - Alpha
+Classifier: Environment :: Console
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: MacOS :: MacOS X
+Classifier: Operating System :: POSIX :: Linux
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python
+Classifier: Topic :: Software Development :: Libraries
+Classifier: Topic :: Utilities
+License-File: LICENSE.txt
+Requires-Dist: bg-helper
+Requires-Dist: fs-helper
+Requires-Dist: input-helper
+Requires-Dist: settings-helper
+Provides-Extra: bs4
+Requires-Dist: beautifulsoup4 ; extra == 'bs4'
+Requires-Dist: lxml ; extra == 'bs4'
+Provides-Extra: data
+Requires-Dist: aws-info-helper ; extra == 'data'
+Requires-Dist: dt-helper ; extra == 'data'
+Requires-Dist: webclient-helper ; extra == 'data'
+Requires-Dist: expectation-helper ; extra == 'data'
+Requires-Dist: sql-helper ; extra == 'data'
+Requires-Dist: chloop ; extra == 'data'
+Requires-Dist: mongo-helper ; extra == 'data'
+Requires-Dist: redis-helper ; extra == 'data'
+Provides-Extra: dev
+Requires-Dist: readme-helper ; extra == 'dev'
+Requires-Dist: testing-helper ; extra == 'dev'
+Provides-Extra: full
+Requires-Dist: beautifulsoup4 ; extra == 'full'
+Requires-Dist: lxml ; extra == 'full'
+Requires-Dist: aws-info-helper ; extra == 'full'
+Requires-Dist: dt-helper ; extra == 'full'
+Requires-Dist: webclient-helper ; extra == 'full'
+Requires-Dist: expectation-helper ; extra == 'full'
+Requires-Dist: sql-helper ; extra == 'full'
+Requires-Dist: chloop ; extra == 'full'
+Requires-Dist: mongo-helper ; extra == 'full'
+Requires-Dist: redis-helper ; extra == 'full'
+Requires-Dist: readme-helper ; extra == 'full'
+Requires-Dist: testing-helper ; extra == 'full'
+Provides-Extra: nosql
+Requires-Dist: chloop ; extra == 'nosql'
+Requires-Dist: mongo-helper ; extra == 'nosql'
+Requires-Dist: redis-helper ; extra == 'nosql'
+Provides-Extra: sql
+Requires-Dist: expectation-helper ; extra == 'sql'
+Requires-Dist: sql-helper ; extra == 'sql'
+
+Install Options
+---------------
+
+-  ``pip install kenjyco-libs``
+
+   -  Includes:
+      `bg-helper <https://github.com/kenjyco/bg-helper/blob/master/README.md>`__,
+      `fs-helper <https://github.com/kenjyco/fs-helper/blob/master/README.md>`__,
+      `input-helper <https://github.com/kenjyco/input-helper/blob/master/README.md>`__,
+      and
+      `settings-helper <https://github.com/kenjyco/settings-helper/blob/master/README.md>`__
+
+-  ``pip install "kenjyco-libs[bs4]"``
+
+   -  Includes: beautifulsoup4, kenjyco-libs, and lxml
+   -  Also requires system requirements for ``lxml``
+
+   ::
+
+      $ sudo apt-get install -y libxml2 libxslt1.1 libxml2-dev libxslt1-dev
+
+      or
+
+      $ brew install libxml2
+
+-  ``pip install "kenjyco-libs[data]"``
+
+   -  Includes:
+      `aws-info-helper <https://github.com/kenjyco/aws-info-helper/blob/master/README.md>`__,
+      `dt-helper <https://github.com/kenjyco/dt-helper/blob/master/README.md>`__,
+      “kenjyco-libs[nosql,sql]”, and
+      `webclient-helper <https://github.com/kenjyco/webclient-helper/blob/master/README.md>`__
+
+-  ``pip install "kenjyco-libs[dev]"``
+
+   -  Includes: kenjyco-libs,
+      `readme-helper <https://github.com/kenjyco/readme-helper/blob/master/README.md>`__,
+      `testing-helper <https://github.com/kenjyco/testing-helper/blob/master/README.md>`__
+
+-  ``pip install "kenjyco-libs[full]"``
+
+   -  Includes: “kenjyco-libs[bs4,data,dev]”
+
+-  ``pip install "kenjyco-libs[nosql]"``
+
+   -  Includes:
+      `chloop <https://github.com/kenjyco/chloop/blob/master/README.md>`__,
+      kenjyco-libs,
+      `mongo-helper <https://github.com/kenjyco/mongo-helper/blob/master/README.md>`__,
+      `redis-helper <https://github.com/kenjyco/redis-helper/blob/master/README.md>`__
+
+-  ``pip install "kenjyco-libs[sql]"``
+
+   -  Includes:
+      `expectation-helper <https://github.com/kenjyco/expectation-helper/blob/master/README.md>`__,
+      kenjyco-libs, and
+      `sql-helper <https://github.com/kenjyco/sql-helper/blob/master/README.md>`__
+   -  Also requires the ``pg_config`` executable
+
+   ::
+
+      $ sudo apt-get install -y libpq-dev
+
+      or
+
+      $ brew install postgresql
