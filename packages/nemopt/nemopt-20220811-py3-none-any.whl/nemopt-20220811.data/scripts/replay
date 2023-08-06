@@ -1,0 +1,106 @@
+#!python
+#
+# Copyright (C) 2012, 2013, 2014 Ben Elliston
+# Copyright (C) 2014, 2015 The University of New South Wales
+#
+# This file is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+
+"""Replay runs from a text file of generators."""
+import argparse
+import json
+import re
+import sys
+
+from gooey import Gooey
+
+import nemo
+from nemo import costs, demand, scenarios, utils
+
+if len(sys.argv) > 1 and '--ignore-gooey' not in sys.argv:
+    sys.argv.append('--ignore-gooey')
+
+
+@Gooey(program_name="NEMO replay tool",
+       richtext_controls=True,
+       show_success_modal=False,
+       monospaced_font=True,
+       optional_cols=1)
+def process_options():
+    """Process command line options."""
+    epilog = 'Bug reports via https://nemo.ozlabs.org/'
+    parser = argparse.ArgumentParser(epilog=epilog)
+    parser.add_argument("-f", type=str, help='filename of results file',
+                        metavar='FILE', default='results.json')
+    parser.add_argument("-p", "--plot", action="store_true",
+                        help='plot an energy balance')
+    parser.add_argument("-v", action="count", help='verbosity level',
+                        default=0)
+    parser.add_argument("--spills", action="store_true",
+                        help='plot surplus generation')
+    parser.add_argument("--no-legend", action="store_false",
+                        help="hide legend")
+    return parser.parse_args()
+
+
+def run_one(bundle):
+    """Run a single simulation."""
+    options = bundle['options']
+
+    context = nemo.Context()
+    context.nsp_limit = options['nsp_limit']
+    assert 0 <= context.nsp_limit <= 1
+
+    scenario = options['supply_scenario']
+    try:
+        scenarios.supply_scenarios[scenario](context)
+    except KeyError:
+        print(f'unknown scenario: {scenario}')
+        sys.exit(1)
+    print('scenario', scenario)
+
+    # Apply each demand modifier argument (if any) in the given order.
+    for arg in options['demand_modifier'] or []:
+        demand.switch(arg)(context)
+
+    try:
+        cost_class = costs.cost_scenarios[options['costs']]
+    except KeyError:
+        cost_class = options['costs']
+        print(f'unknown cost class: {cost_class}')
+        sys.exit(1)
+    context.costs = cost_class(options['discount_rate'],
+                               options['coal_price'], options['gas_price'],
+                               options['ccs_storage_costs'])
+    context.costs.carbon = options['carbon_price']
+
+    capacities = bundle['parameters']
+    context.set_capacities(capacities)
+
+    context.verbose = args.v > 1
+    nemo.run(context)
+    context.verbose = args.v > 0
+    print(context)
+    print("Done")
+    print()
+
+    if args.plot:
+        utils.plot(context, spills=args.spills, showlegend=args.no_legend)
+
+
+args = process_options()
+with open(args.f, 'r', encoding='utf-8') as resultsfile:
+    for line in resultsfile:
+        if re.search(r'^\s*$', line):
+            continue
+        if re.search(r'^\s*#', line):
+            print(line, end=' ')
+            continue
+        try:
+            json_bundle = json.loads(line)
+        except ValueError:
+            print('skipping malformed input:', line)
+            continue
+        run_one(json_bundle)
