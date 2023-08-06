@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+    <h1>{{ title }}</h1>
+    <p>This site is not affiliated with <a href="https://www.interactivebrokers.com/">Interactive Brokers</a> or <a href ="https://vero.fi/">Verohallinto</a>. The information contained in this site is provided on an "as is" basis with no guarantees of completeness, accuracy, usefulness or timeliness and without any warranties of any kind whatsoever, express or implied.</p>
+    <p><a href="https://github.com/oittaa/ibkr-report-parser">Source code at GitHub</a></p>
+    <h2>1. Download a CSV trades report from Interactive Brokers.</h2>
+    <table class="styled-table">
+      <thead>
+        <tr>
+          <th>Steps</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Go to <strong>Reports</strong> &rarr; <strong>Statements</strong>.</td>
+        </tr>
+        <tr>
+          <td>Create a new <strong>Custom Statement</strong>.</td>
+        </tr>
+        <tr>
+          <td>From <strong>Sections</strong> select <strong>Trades</strong>.</td>
+        </tr>
+        <tr>
+          <td>From <strong>Section Configurations</strong> make sure <strong>Hide Details for Positions, Trades and Client Fees Sections?</strong> is
+            set to <strong>No</strong>.
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <img src="static/images/custom_statement.png" alt="Sections: Trades">
+          </td>
+        </tr>
+        <tr>
+          <td>After saving the statement, run it with a <strong>CSV</strong> output.
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <img src="static/images/run_statement.png" alt="Format: CSV">
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <h2>2. Upload the CSV file.</h2>
+    <form method="post" id="form" action="{{ url_for('website.result') }}#result" enctype="multipart/form-data">
+      <label class="file-button"><input type="file" id="file" name="file" accept=".csv">Choose file</label>
+    </form>
+{%- block result %}{% endblock %}
+    <script src="{{ url_for('static', filename='js/main.js') }}?{{ sri['main.js']|urlencode }}" integrity="{{ sri['main.js'] }}"></script>
+{%- endblock %}
