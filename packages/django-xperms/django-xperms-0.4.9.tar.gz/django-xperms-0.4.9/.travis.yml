@@ -1,0 +1,18 @@
+# Config file for automatic testing at travis-ci.org
+
+language: python
+
+python:
+  - 3.5
+  - 3.6
+
+env:
+  - DJANGO=1.11
+  - DJANGO=2.0
+
+install: pip install -r requirements_test.txt
+
+script: tox
+
+after_success:
+  - codecov -e DJANGO
