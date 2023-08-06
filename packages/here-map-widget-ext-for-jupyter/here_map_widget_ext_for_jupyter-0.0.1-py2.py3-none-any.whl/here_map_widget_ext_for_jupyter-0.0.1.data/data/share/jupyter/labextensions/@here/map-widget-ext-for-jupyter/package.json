@@ -1,0 +1,82 @@
+{
+  "name": "@here/map-widget-ext-for-jupyter",
+  "version": "1.1.3",
+  "description": "Use HERE Maps API for JavaScript in your Jupyter Notebook.",
+  "author": {
+    "name": "HERE Europe B.V.",
+    "url": "https://here.com"
+  },
+  "license": "MIT",
+  "main": "lib/index.js",
+  "repository": {
+    "type": "git",
+    "url": "ssh://git@github.com:heremaps/here-map-widget-ext-for-jupyter.git",
+    "directory": "js"
+  },
+  "keywords": [
+    "jupyter",
+    "widgets",
+    "ipython",
+    "ipywidgets",
+    "jupyterlab-extension"
+  ],
+  "files": [
+    "lib/**/*.js",
+    "dist/*.js",
+    "lib/**/*.css",
+    "dist/*.css",
+    "lib/**/*.png",
+    "dist/*.png",
+    "lib/**/*.gif",
+    "dist/*.gif",
+    "dist/*.map",
+    "LICENSE"
+  ],
+  "scripts": {
+    "clean": "rimraf dist/ && rimraf ../here_map_widget_ext/labextension/ && rimraf ../here_map_widget_ext/nbextension",
+    "prepublish": "webpack",
+    "build": "webpack",
+    "build:extensions": "webpack && jupyter labextension build .",
+    "watch": "webpack --watch --mode=development",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "css-loader": "^3.4.2",
+    "file-loader": "^5.0.2",
+    "install": "^0.13.0",
+    "rimraf": "^2.6.1",
+    "style-loader": "^1.1.2",
+    "webpack": "^5.11.1",
+    "webpack-cli": "^3.3.12",
+    "@jupyterlab/builder": "^3.0.0"
+  },
+  "dependencies": {
+    "@here/maps-api-for-javascript": "^1.20.0",
+    "@jupyter-widgets/base": "^2 || ^3 || ^4",
+    "@phosphor/messaging": "^1.3.0",
+    "@phosphor/widgets": "^1.9.3",
+    "buffer": "^6.0.3",
+    "crypto-browserify": "^3.12.0",
+    "@turf/centroid": "^6.0.2",
+    "@turf/helpers": "^6.1.4",
+    "flat": "^5.0.2",
+    "lodash": "^4.17.20",
+    "run": "^1.4.0",
+    "stream-browserify": "^3.0.0"
+  },
+  "jupyterlab": {
+    "extension": "lib/labplugin",
+    "outputDir": "../here_map_widget_ext/labextension",
+    "webpackConfig": "../jlab/webpack.config.js",
+    "sharedPackages": {
+      "@jupyter-widgets/base": {
+        "bundled": false,
+        "singleton": true
+      }
+    },
+    "_build": {
+      "load": "static/remoteEntry.76d80b3d7b4effef2d67.js",
+      "extension": "./extension"
+    }
+  }
+}
