@@ -1,0 +1,60 @@
+operationId: search_patients
+parameters:
+- description: null
+  in: query
+  name: uuid
+  required: false
+  type: string
+- description: null
+  in: query
+  name: first_name
+  required: false
+  type: string
+- description: null
+  in: query
+  name: last_name
+  required: false
+  type: string
+- description: null
+  in: query
+  name: patient_mrn
+  required: false
+  type: string
+- description: null
+  in: query
+  name: identifier
+  required: false
+  type: string
+- description: null
+  in: query
+  name: race
+  required: false
+  type: string
+- description: null
+  in: query
+  name: gender
+  required: false
+  type: string
+- description: null
+  in: query
+  name: date_of_birth
+  required: false
+  type: string
+- description: null
+  in: query
+  name: status
+  required: false
+  type: string
+responses:
+  '200':
+    description: OK
+    schema:
+      items:
+        $ref: '#/definitions/Patient'
+      type: array
+  default:
+    description: Error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- patients

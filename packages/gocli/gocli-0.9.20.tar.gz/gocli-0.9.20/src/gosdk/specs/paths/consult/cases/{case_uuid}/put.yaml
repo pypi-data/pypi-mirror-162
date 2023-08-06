@@ -1,0 +1,24 @@
+operationId: update_case
+parameters:
+- description: null
+  in: path
+  name: case_uuid
+  required: true
+  type: string
+- description: Case to be updated.
+  in: body
+  name: update_case
+  required: true
+  schema:
+    $ref: '#/definitions/NewCase'
+responses:
+  '200':
+    description: OK
+    schema:
+      $ref: '#/definitions/Case'
+  default:
+    description: Error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- cases

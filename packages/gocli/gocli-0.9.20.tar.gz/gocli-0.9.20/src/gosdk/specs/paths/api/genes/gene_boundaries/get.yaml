@@ -1,0 +1,26 @@
+operationId: gene_boundaries
+parameters:
+- collectionFormat: multi
+  description: Name of gene.
+  in: query
+  items:
+    type: string
+  name: name
+  required: false
+  type: array
+- description: Version of reference genome.
+  in: query
+  name: build
+  required: false
+  type: string
+responses:
+  '200':
+    description: List of genes, chromosomes, start, and end
+    schema:
+      $ref: '#/definitions/GeneBoundariesList'
+  default:
+    description: unexpected error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- genes

@@ -1,0 +1,26 @@
+operationId: match_cases_prognoses
+parameters:
+- description: Retrieve 'prognoses' record using 'id' field value.
+  in: path
+  name: pk
+  required: true
+  type: string
+- collectionFormat: multi
+  description: List of prognosis to filter prognoses.
+  in: query
+  items:
+    type: string
+  name: prognosis
+  required: false
+  type: array
+responses:
+  '200':
+    description: List of Prognoses objects
+    schema:
+      $ref: '#/definitions/PrognosesDocumentList'
+  default:
+    description: unexpected error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- cases

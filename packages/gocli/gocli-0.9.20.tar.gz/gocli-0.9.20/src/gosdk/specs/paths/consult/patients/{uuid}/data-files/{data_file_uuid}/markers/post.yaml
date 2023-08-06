@@ -1,0 +1,32 @@
+operationId: create_data_files_markers
+parameters:
+- description: Data file UUID
+  in: path
+  name: data_file_uuid
+  required: true
+  type: string
+- description: Patient UUID
+  in: path
+  name: uuid
+  required: true
+  type: string
+- description: Markers to be added.
+  in: body
+  name: data
+  required: true
+  schema:
+    $ref: '#/definitions/NewMarker'
+responses:
+  '200':
+    description: OK
+    schema:
+      items:
+        $ref: '#/definitions/Marker'
+      type: array
+    type: object
+  default:
+    description: Error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- patients

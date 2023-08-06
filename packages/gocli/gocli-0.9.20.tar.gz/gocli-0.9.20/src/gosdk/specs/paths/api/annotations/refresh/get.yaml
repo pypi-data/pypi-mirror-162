@@ -1,0 +1,49 @@
+operationId: refresh_annotations
+description: Refresh annotations in annotations merged.
+parameters:
+  - description: Cursor mark for next series of annotations.
+    in: query
+    name: cursor_mark
+    required: false
+    type: string
+  - description: Perform a full annotation rebuild including HGVS.
+    in: query
+    name: recalculate_hgvs
+    required: false
+    type: boolean
+  - description: Number of rows to refresh.
+    format: int32
+    in: query
+    name: rows
+    required: false
+    type: integer
+  - description: Chromosome of variant.
+    in: query
+    name: chromosome
+    required: false
+    type: string
+  - description: Genomic start position of variant.
+    format: int32
+    in: query
+    name: start
+    required: false
+    type: integer
+  - description: Genomic end position of variant.
+    format: int32
+    in: query
+    name: end
+    required: false
+    type: integer
+responses:
+  '200':
+    description: OK
+    schema:
+      $ref: '#/definitions/RefreshCursor'
+  default:
+    description: Error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- annotations
+targets:
+- gocli

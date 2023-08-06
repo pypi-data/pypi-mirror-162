@@ -1,0 +1,24 @@
+operationId: select_case_markers
+parameters:
+- description: null
+  in: path
+  name: case_uuid
+  required: true
+  type: string
+- description: NewSelectedMarker to be added.
+  in: body
+  name: data
+  required: true
+  schema:
+    $ref: '#/definitions/NewSelectedMarker'
+responses:
+  '201':
+    description: New SelectedMarker response.
+    schema:
+      $ref: '#/definitions/SelectedMarker'
+  default:
+    description: unexpected error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- cases

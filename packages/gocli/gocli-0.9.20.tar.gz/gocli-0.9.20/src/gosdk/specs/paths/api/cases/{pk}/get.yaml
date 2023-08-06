@@ -1,0 +1,18 @@
+operationId: get_cases_detail
+parameters:
+- description: Retrieve 'cases' record using 'uuid' field value.
+  in: path
+  name: pk
+  required: true
+  type: string
+responses:
+  '200':
+    description: Cases document response.
+    schema:
+      $ref: '#/definitions/CasesDocument'
+  default:
+    description: unexpected error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- cases

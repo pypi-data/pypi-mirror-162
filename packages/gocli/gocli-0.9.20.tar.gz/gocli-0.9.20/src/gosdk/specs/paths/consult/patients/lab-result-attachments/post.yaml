@@ -1,0 +1,25 @@
+consumes:
+- multipart/form-data
+operationId: add_lab_result_attachment
+parameters:
+- description: File to upload
+  in: formData
+  name: file_upload
+  required: true
+  type: file
+- description: Name=Value pairs separated by pipes
+  in: formData
+  name: arguments
+  required: true
+  type: string
+responses:
+  '201':
+    description: OK
+    schema:
+      $ref: '#/definitions/LabResultAttachmentFile'
+  default:
+    description: Error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- patients

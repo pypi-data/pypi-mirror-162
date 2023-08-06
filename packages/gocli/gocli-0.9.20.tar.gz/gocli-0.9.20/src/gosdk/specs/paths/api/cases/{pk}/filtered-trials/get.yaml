@@ -1,0 +1,156 @@
+operationId: get_cases_filtered_trials
+parameters:
+- description: Retrieve 'trials' record using 'nct_id' field value
+  in: path
+  name: pk
+  required: true
+  type: string
+- description: Page number of the response.
+  format: int32
+  in: query
+  name: page
+  required: false
+  type: integer
+- description: Number of items to return per page.
+  format: int32
+  in: query
+  name: page_size
+  required: false
+  type: integer
+- collectionFormat: multi
+  description: List of fields to be returned in the response. (e.g. blank for default
+    fields, * for all fields)
+  in: query
+  items:
+    type: string
+  name: fields
+  required: false
+  type: array
+- description: Specifies whether to return data as 'object' or 'table'. Fields must
+    be provided in desired order for 'table' as_type
+  in: query
+  name: as_type
+  required: false
+  type: string
+- collectionFormat: multi
+  description: List of fields to do facet counting.
+  in: query
+  items:
+    type: string
+  name: facets
+  required: false
+  type: array
+- description: Sort phrase
+  in: query
+  name: sort
+  required: false
+  type: string
+- collectionFormat: multi
+  description: List of diseases to filter trials
+  in: query
+  items:
+    type: string
+  name: diseases
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of alterations to filter trials
+  in: query
+  items:
+    type: string
+  name: alterations
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of in_alterations to filter trials
+  in: query
+  items:
+    type: string
+  name: in_alterations
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of phases to filter trials
+  in: query
+  items:
+    type: string
+  name: phase
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of recruiting statuses to filter trials
+  in: query
+  items:
+    type: string
+  name: recruiting_status
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of biomarkers to filter trials
+  in: query
+  items:
+    type: string
+  name: biomarkers
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of genes to filter trials
+  in: query
+  items:
+    type: string
+  name: genes
+  required: false
+  type: array
+- description: Zip code is used for calculating distance from the trial location
+  in: query
+  name: zip
+  required: false
+  type: string
+- collectionFormat: multi
+  description: List of NCT IDs to filter trials
+  in: query
+  items:
+    type: string
+  name: nct_id
+  required: false
+  type: array
+- description: Return only trials within this distance in miles from the zip code
+    entered. Empty or 0 to ignore.
+  format: int32
+  in: query
+  name: miles
+  required: false
+  type: integer
+- description: Search is used for looking up a search term against the clinical trial
+    title and bod
+  in: query
+  name: search
+  required: false
+  type: string
+- collectionFormat: multi
+  description: List of drug_categories to filter trials
+  in: query
+  items:
+    type: string
+  name: drug_categories
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of therapeutic_contexts to filter trials
+  in: query
+  items:
+    type: string
+  name: therapeutic_contexts
+  required: false
+  type: array
+responses:
+  '200':
+    description: List of Trials objects
+    schema:
+      $ref: '#/definitions/TrialsDocumentList'
+  default:
+    description: unexpected error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- cases

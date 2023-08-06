@@ -1,0 +1,19 @@
+operationId: create_patient
+parameters:
+- description: Patient to create.
+  in: body
+  name: new_patient
+  required: true
+  schema:
+    $ref: '#/definitions/NewPatient'
+responses:
+  '201':
+    description: OK
+    schema:
+      $ref: '#/definitions/Patient'
+  default:
+    description: Error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- patients

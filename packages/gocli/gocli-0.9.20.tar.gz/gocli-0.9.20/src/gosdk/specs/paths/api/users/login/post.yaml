@@ -1,0 +1,19 @@
+operationId: login
+parameters:
+- description: UserCredentials for login.
+  in: body
+  name: credentials
+  required: true
+  schema:
+    $ref: '#/definitions/UserCredentials'
+responses:
+  '201':
+    description: OK
+    schema:
+      $ref: '#/definitions/UserToken'
+  default:
+    description: Error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- users

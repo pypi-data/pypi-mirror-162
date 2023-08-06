@@ -1,0 +1,27 @@
+allOf:
+- $ref: '#/definitions/NewSample'
+- properties:
+    _refs:
+      $ref: '#/definitions/Refs'
+    created:
+      format: date-time
+      type: string
+    id:
+      format: int32
+      type: integer
+    is_locked:
+      type: boolean
+    lab_results:
+      items:
+        $ref: '#/definitions/NewLabResult'
+      type: array
+    updated:
+      format: date-time
+      type: string
+    uuid:
+      type: string
+    taken:
+#      format: date
+      type: string
+  title: Sample
+  type: object

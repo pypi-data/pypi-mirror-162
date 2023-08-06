@@ -1,0 +1,23 @@
+operationId: get_data_files_markers
+parameters:
+- description: File uuid
+  in: path
+  name: data_file_uuid
+  required: true
+  type: string
+- description: Patient uuid
+  in: path
+  name: uuid
+  required: true
+  type: string
+responses:
+  '200':
+    description: OK
+    schema:
+      $ref: '#/definitions/MarkerList'
+  default:
+    description: Error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- patients

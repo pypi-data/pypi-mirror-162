@@ -1,0 +1,128 @@
+operationId: get_classifications
+parameters:
+- description: Page number of the response.
+  format: int32
+  in: query
+  name: page
+  required: false
+  type: integer
+- description: Number of items to return per page.
+  format: int32
+  in: query
+  name: page_size
+  required: false
+  type: integer
+- collectionFormat: multi
+  description: List of fields to be returned in the response. (e.g. blank for default
+    fields, * for all fields)
+  in: query
+  items:
+    type: string
+  name: fields
+  required: false
+  type: array
+- description: Specifies whether to return data as 'object' or 'table'. Fields must
+    be provided in desired order for 'table' as_type
+  in: query
+  name: as_type
+  required: false
+  type: string
+- collectionFormat: multi
+  description: List of fields to do facet counting.
+  in: query
+  items:
+    type: string
+  name: facets
+  required: false
+  type: array
+- description: Sort phrase
+  in: query
+  name: sort
+  required: false
+  type: string
+- collectionFormat: multi
+  description: List of diseases to filter classifications. (e.g. Non-small cell lung
+    cancer)
+  in: query
+  items:
+    type: string
+  name: diseases
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of alterations to filter classifications. (e.g. BRAF V600E)
+  in: query
+  items:
+    type: string
+  name: alterations
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of gene to filter classifications. (e.g. BRAF)
+  in: query
+  items:
+    type: string
+  name: genes
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of domains to filter classifications. (e.g. Protein_kinase_domain)
+  in: query
+  items:
+    type: string
+  name: domain
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of g_dots to filter classifications. (e.g. GRCh37:070140453136A_T)
+  in: query
+  items:
+    type: string
+  name: g_dot
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of hpo_terms to filter classifications. (e.g. Papillary thyroid
+    carcinoma)
+  in: query
+  items:
+    type: string
+  name: hpo_term
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of hpo_ids to filter classifications. (e.g. Papillary thyroid
+    carcinoma)
+  in: query
+  items:
+    type: string
+  name: hpo_id
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of significance to filter classifications. (e.g. Pathogenic)
+  in: query
+  items:
+    type: string
+  name: significance
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of data_sets to filter classifications. (e.g. MCG)
+  in: query
+  items:
+    type: string
+  name: data_set
+  required: false
+  type: array
+responses:
+  '200':
+    description: List of Classifications objects
+    schema:
+      $ref: '#/definitions/ClassificationsDocumentList'
+  default:
+    description: unexpected error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- classifications

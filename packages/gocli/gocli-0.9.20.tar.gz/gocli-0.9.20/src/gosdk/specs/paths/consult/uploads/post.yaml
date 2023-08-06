@@ -1,0 +1,35 @@
+consumes:
+- multipart/form-data
+operationId: create_upload
+parameters:
+- description: Processor for the file
+  in: formData
+  name: processor
+  required: true
+  type: string
+- description: Path to the file location on the server
+  in: formData
+  name: file_path
+  required: false
+  type: string
+- description: File to upload
+  in: formData
+  name: file_upload
+  required: false
+  type: file
+- description: Name=Value pairs separated by pipes
+  in: formData
+  name: arguments
+  required: false
+  type: string
+responses:
+  '201':
+    description: New Upload response.
+    schema:
+      $ref: '#/definitions/Upload'
+  default:
+    description: unexpected error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- uploads

@@ -1,0 +1,108 @@
+operationId: get_cases_like_mine
+parameters:
+- description: Retrieve 'cases' record using 'uuid' field value
+  in: path
+  name: pk
+  required: true
+  type: string
+- description: Page number of the response.
+  format: int32
+  in: query
+  name: page
+  required: false
+  type: integer
+- description: Number of items to return per page.
+  format: int32
+  in: query
+  name: page_size
+  required: false
+  type: integer
+- collectionFormat: multi
+  description: List of fields to be returned in the response. (e.g. blank for default
+    fields, * for all fields)
+  in: query
+  items:
+    type: string
+  name: fields
+  required: false
+  type: array
+- description: Specifies whether to return data as 'object' or 'table'. Fields must
+    be provided in desired order for 'table' as_type
+  in: query
+  name: as_type
+  required: false
+  type: string
+- collectionFormat: multi
+  description: List of fields to do facet counting.
+  in: query
+  items:
+    type: string
+  name: facets
+  required: false
+  type: array
+- description: Sort phrase
+  in: query
+  name: sort
+  required: false
+  type: string
+- description: Find cases based on a Patient MR
+  in: query
+  name: patient_mrn
+  required: false
+  type: string
+- description: Find cases based on a Case Data Se
+  in: query
+  name: data_set
+  required: false
+  type: string
+- collectionFormat: multi
+  description: List of alterations to filter cases.
+  in: query
+  items:
+    type: string
+  name: alterations
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of race to filter cases.
+  in: query
+  items:
+    type: string
+  name: race
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of gender to filter cases.
+  in: query
+  items:
+    type: string
+  name: gender
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of age_in_months to filter cases.
+  in: query
+  items:
+    type: string
+  name: age_in_months
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of specific_diseases to filter cases.
+  in: query
+  items:
+    type: string
+  name: specific_diseases
+  required: false
+  type: array
+responses:
+  '200':
+    description: List of Cases objects
+    schema:
+      $ref: '#/definitions/CasesDocumentList'
+  default:
+    description: unexpected error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- cases

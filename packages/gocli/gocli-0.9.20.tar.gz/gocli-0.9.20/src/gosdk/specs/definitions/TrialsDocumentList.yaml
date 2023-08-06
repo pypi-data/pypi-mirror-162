@@ -1,0 +1,17 @@
+#allOf:
+#- $ref: '#/definitions/ResponseList'
+#- properties:
+#    results:
+#      items:
+#        $ref: '#/definitions/TrialsDocument'
+#      type: array
+#  type: object
+properties:
+  additionalProperties:
+    items:
+      $ref: '#/definitions/TrialsDocument'
+    type: object
+  errors:
+    items:
+      type: object
+    type: array

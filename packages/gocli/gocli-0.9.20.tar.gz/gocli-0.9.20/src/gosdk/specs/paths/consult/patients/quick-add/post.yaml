@@ -1,0 +1,91 @@
+consumes:
+- multipart/form-data
+operationId: quick_add
+parameters:
+- description: Patient first name
+  in: formData
+  name: first_name
+  required: false
+  type: string
+- description: Patient last name
+  in: formData
+  name: last_name
+  required: false
+  type: string
+- description: Patient last name
+  in: formData
+  name: patient_mrn
+  required: false
+  type: string
+- description: Patient date of birth (YYYY-MM-DD)
+  format: date
+  in: formData
+  name: dob
+  required: false
+  type: string
+- description: Patient gender
+  enum:
+  - Female
+  - Male
+  in: formData
+  name: gender
+  required: false
+  type: string
+- description: Patient race
+  enum:
+  - American Indian or Alaskan Native
+  - Asian
+  - Black
+  - Hispanic/Latino
+  - Native Hawaiian or Pacific Islander
+  - Non-Hispanic/Non-Latino
+  - Other
+  - White
+  in: formData
+  name: race
+  required: false
+  type: string
+- description: Whether to include extra recommendation fields
+  in: formData
+  name: recommendation_extra_fields
+  required: false
+  type: boolean
+- description: Patient diagnosis name
+  in: formData
+  name: diagnosis
+  required: false
+  type: string
+- description: Patient diagnosis date (YYYY-MM-DD)
+  format: date
+  in: formData
+  name: diagnosis_date
+  required: false
+  type: string
+- description: File to upload
+  in: formData
+  name: file_upload
+  required: false
+  type: file
+- enum:
+  - VCF SNV Parser
+  - FMI XML Processor
+  in: formData
+  name: processor
+  required: false
+  type: string
+- description: Zipcode
+  in: formData
+  name: zipcode
+  required: false
+  type: string
+responses:
+  '201':
+    description: OK
+    schema:
+      $ref: '#/definitions/QuickAdd'
+  default:
+    description: Error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- patients

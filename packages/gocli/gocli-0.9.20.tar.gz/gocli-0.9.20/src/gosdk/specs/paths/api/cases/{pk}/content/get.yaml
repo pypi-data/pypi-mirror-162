@@ -1,0 +1,39 @@
+operationId: get_cases_content_match
+parameters:
+- description: Retrieve 'contents' record using case 'uuid' field value.
+  in: path
+  name: pk
+  required: true
+  type: string
+- collectionFormat: multi
+  description: null
+  in: query
+  items:
+    type: string
+  name: types
+  required: false
+  type: array
+- description: null
+  in: query
+  name: include_content
+  required: false
+  type: boolean
+- collectionFormat: multi
+  description: List of data_set to filter contents.
+  in: query
+  items:
+    type: string
+  name: data_set
+  required: false
+  type: array
+responses:
+  '200':
+    description: List of Contents objects
+    schema:
+      $ref: '#/definitions/ContentsDocumentList'
+  default:
+    description: unexpected error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- cases

@@ -1,0 +1,26 @@
+operationId: get_annotations_batch_by_data_set
+parameters:
+- description: null
+  in: path
+  name: data_set
+  required: true
+  type: string
+- collectionFormat: multi
+  description: Provide list of valid g. (e.g. NC_000007.13:g.140453136A>T)
+  in: query
+  items:
+    type: string
+  name: batch
+  required: true
+  type: array
+responses:
+  '200':
+    description: OK
+    schema:
+      $ref: '#/definitions/AnnotationsDocumentAndNotFoundList'
+  default:
+    description: Error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- annotations

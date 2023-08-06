@@ -1,0 +1,19 @@
+operationId: create_alteration
+parameters:
+- description: Alteration to create.
+  in: body
+  name: new_alteration
+  required: true
+  schema:
+    $ref: '#/definitions/NewAlteration'
+responses:
+  '201':
+    description: OK
+    schema:
+      $ref: '#/definitions/Alteration'
+  default:
+    description: Error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- alterations

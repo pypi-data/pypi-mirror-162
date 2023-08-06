@@ -1,0 +1,21 @@
+operationId: region_search_batch
+parameters:
+- collectionFormat: multi
+  description: Provide list of valid chr|start|end strings <br/>chr7|140453136|143499000
+  in: query
+  items:
+    type: string
+  name: batch
+  required: true
+  type: array
+responses:
+  '200':
+    description: OK
+    schema:
+      $ref: '#/definitions/TranscriptList'
+  default:
+    description: Error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- region_search

@@ -1,0 +1,18 @@
+operationId: get_alterations_detail
+parameters:
+- description: Retrieve 'alterations' record using 'name' field value.
+  in: path
+  name: pk
+  required: true
+  type: string
+responses:
+  '200':
+    description: Alterations document response.
+    schema:
+      $ref: '#/definitions/AlterationsDocument'
+  default:
+    description: unexpected error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- alterations

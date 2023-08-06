@@ -1,0 +1,33 @@
+properties:
+  nct_id:
+    type: string
+  recruiting_status:
+    type: string
+  title:
+    type: string
+  phase:
+    type: string
+  last_changed:
+    type: string
+  lead_sponsor:
+    type: string
+  institutions:
+    items:
+      type: string
+    type: array
+  locations:
+    items:
+      type: object
+    type: array
+  location_count:
+    format: int32
+    type: integer
+  miles_to_nearest_recruiting_location:
+    format: float
+    type: integer
+  clinical_trial_arms:
+    items:
+      $ref: '#/definitions/MegaMatchTrialArmObject'
+    type: array
+title: MegaMatchTrialDocument
+type: object

@@ -1,0 +1,19 @@
+operationId: create_classifications
+parameters:
+- description: NewClassification to be added.
+  in: body
+  name: data
+  required: true
+  schema:
+    $ref: '#/definitions/NewClassification'
+responses:
+  '201':
+    description: New Classification response.
+    schema:
+      $ref: '#/definitions/Classification'
+  default:
+    description: unexpected error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- classifications

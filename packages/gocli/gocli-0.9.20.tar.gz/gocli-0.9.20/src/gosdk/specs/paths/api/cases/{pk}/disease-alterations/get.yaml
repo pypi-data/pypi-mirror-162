@@ -1,0 +1,146 @@
+operationId: get_cases_disease_alterations
+parameters:
+- description: Retrieve 'contents' record using 'uuid' field value
+  in: path
+  name: pk
+  required: true
+  type: string
+- description: Page number of the response.
+  format: int32
+  in: query
+  name: page
+  required: false
+  type: integer
+- description: Number of items to return per page.
+  format: int32
+  in: query
+  name: page_size
+  required: false
+  type: integer
+- collectionFormat: multi
+  description: List of fields to be returned in the response. (e.g. blank for default
+    fields, * for all fields)
+  in: query
+  items:
+    type: string
+  name: fields
+  required: false
+  type: array
+- description: Specifies whether to return data as 'object' or 'table'. Fields must
+    be provided in desired order for 'table' as_type
+  in: query
+  name: as_type
+  required: false
+  type: string
+- collectionFormat: multi
+  description: List of fields to do facet counting.
+  in: query
+  items:
+    type: string
+  name: facets
+  required: false
+  type: array
+- description: Sort phrase
+  in: query
+  name: sort
+  required: false
+  type: string
+- collectionFormat: multi
+  description: List of uuid to filter contents.
+  in: query
+  items:
+    type: string
+  name: uuid
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of type to filter contents. (e.g. About Gene, Variant Mutation
+    Prevalence)
+  in: query
+  items:
+    type: string
+  name: type
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of alterations to filter contents. (e.g. BRAF V600E, KRAS G12V)
+  in: query
+  items:
+    type: string
+  name: alterations
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of diseases to filter contents. (e.g. Melanoma, Non-Small Lung
+    Carcinoma)
+  in: query
+  items:
+    type: string
+  name: diseases
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of drugs to filter contents. (e.g. erlotinib, afatinib)
+  in: query
+  items:
+    type: string
+  name: drugs
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of genes to filter contents. (e.g. BRAF, KRAS)
+  in: query
+  items:
+    type: string
+  name: genes
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of pathways to filter contents. (e.g. Apoptosis, Hedgehog signaling)
+  in: query
+  items:
+    type: string
+  name: pathways
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of concepts to filter contents. (e.g. KRAS G12V, Melanoma, BRAF,
+    erlotinib, Apoptosis)
+  in: query
+  items:
+    type: string
+  name: concepts
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of biomarkers to filter contents. (e.g. KRAS)
+  in: query
+  items:
+    type: string
+  name: biomarkers
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of data_set to filter contents. (e.g. MCG, PLS)
+  in: query
+  items:
+    type: string
+  name: data_set
+  required: false
+  type: array
+- description: null
+  in: query
+  name: include_content
+  required: false
+  type: boolean
+responses:
+  '200':
+    description: List of Contents objects
+    schema:
+      $ref: '#/definitions/ContentsDocumentList'
+  default:
+    description: unexpected error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- cases

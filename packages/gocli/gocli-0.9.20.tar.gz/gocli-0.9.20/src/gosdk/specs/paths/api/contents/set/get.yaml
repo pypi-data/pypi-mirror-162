@@ -1,0 +1,42 @@
+operationId: get_contents_set
+parameters:
+- description: null
+  in: query
+  name: alteration
+  required: true
+  type: string
+- collectionFormat: multi
+  description: null
+  in: query
+  items:
+    type: string
+  name: genes
+  required: true
+  type: array
+- collectionFormat: multi
+  description: null
+  in: query
+  items:
+    type: string
+  name: diseases
+  required: true
+  type: array
+- collectionFormat: multi
+  description: List of data_set to filter contents. (e.g. MCG, PLS)
+  in: query
+  items:
+    type: string
+  name: data_sets
+  required: false
+  type: array
+responses:
+  '200':
+    description: List of Contents objects
+    schema:
+      $ref: '#/definitions/ContentsDocumentList'
+  default:
+    description: unexpected error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- contents

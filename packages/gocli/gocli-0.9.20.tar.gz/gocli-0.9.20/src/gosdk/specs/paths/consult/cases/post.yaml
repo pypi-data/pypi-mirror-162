@@ -1,0 +1,19 @@
+operationId: create_case
+parameters:
+- description: Case to be added.
+  in: body
+  name: new_case
+  required: true
+  schema:
+    $ref: '#/definitions/NewCase'
+responses:
+  '201':
+    description: OK
+    schema:
+      $ref: '#/definitions/Case'
+  default:
+    description: Error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- cases
