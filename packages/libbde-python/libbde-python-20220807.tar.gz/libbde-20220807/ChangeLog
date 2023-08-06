@@ -1,0 +1,86 @@
+TODO
+* libbde
+  - move keys into key chain structure
+  - determine if there is a more reliably way to get volume size without the unencrypted volume header
+
+* add profiler
+* sector data create encrypted_data on demand
+* tread safety
+  - libbde_key_protector functions ?
+* add unlock function?
+* deprecate use of open return 0 in favor of is locked function?
+* add support for passing key directly to library
+  - test if keys are valid ?
+  - what about issue with key bit size
+  - info handle (check if tweak_key is not 0) when diffuser is specified
+* update manuals
+* metadata
+  - compare the metadata values ?
+  - check metadata number_of_volume_header_sectors ?
+* error tolerance
+  - add handling of BDE volumes with corrupt metadata, e.g. file header
+* debug print more volume header info
+* check debug output alignment
+* check TODOs
+
+* pybde
+  - add set keys function
+
+Optimizations
+* pass values 32-bit to libcaes
+
+Library
+* add support for smart card + pin?
+* add support for TPM ?
+
+Test suite:
+* add options for
+  - key data
+  - clear key
+  - startup key (bek file)
+  - partial encrypted volume
+* add verify test case
+* test images: for Windows Vista, Windows 7, To Go, Windows 8
+* python get version
+* python read
+
+Tools:
+* bdeinfo
+  - print more metadata ?
+* bdeexport
+  - create tool to export decrypted BDE volume to RAW file?
+* bdemount
+  - implement native MacOS-X version
+
+Format:
+* validation
+* TPM encoded VMK ?
+* VMK date time - change password on USB encrypted drive
+* what is entry type 0x000b ?
+* why does Windows hide the last 4096 bytes of the volume?
+
+20110529
+* see `git log' for more recent change log
+* renamed to library to libbde
+* updated configure.ac
+* updated common, libcstring, liberror, libnotify, libsystem, libbfio, libuna
+* added encryption method debug function
+* worked on encrpyption
+  - basic encryption functions
+
+20110527
+* worked on initial version
+
+20110323
+* worked on initial version
+
+20110322
+* renamed library to libvblde
+* worked on initial version
+
+20110321
+* worked on initial version
+
+20110316
+* initial version
+

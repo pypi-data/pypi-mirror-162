@@ -1,0 +1,65 @@
+Source: libbde
+Priority: extra
+Maintainer: Joachim Metz <joachim.metz@gmail.com>
+Build-Depends: debhelper (>= 9), dh-autoreconf, dh-python, pkg-config, libssl-dev, python3-dev, python3-setuptools, libfuse-dev
+Standards-Version: 4.1.4
+Section: libs
+Homepage: https://github.com/libyal/libbde
+Vcs-Git: https://github.com/libyal/libbde.git
+
+Package: libbde
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Conflicts: libbde1
+Replaces: libbde1
+Suggests: libbde-dbg
+Description: Library to access the BitLocker Drive Encryption (BDE) format
+ libbde is a library to access the BitLocker Drive Encryption (BDE) format.
+
+Package: libbde-dbg
+Architecture: any
+Section: debug
+Depends: libbde (= ${binary:Version}), ${misc:Depends}
+Description: Debugging symbols for libbde
+ Debugging symbols for libbde.
+
+Package: libbde-dev
+Section: libdevel
+Architecture: any
+Depends: libbde (= ${binary:Version}), ${misc:Depends}
+Description: Header files and libraries for developing applications for libbde
+ Header files and libraries for developing applications for libbde.
+
+Package: libbde-tools
+Section: utils
+Architecture: any
+Depends: libbde (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Conflicts: libbde-utils
+Replaces: libbde-utils
+Description: Several tools for reading BitLocker Drive Encryption volumes
+ Several tools for reading BitLocker Drive Encryption volumes.
+
+Package: libbde-tools-dbg
+Section: debug
+Architecture: any
+Depends: libbde-tools (= ${binary:Version}), ${misc:Depends}
+Description: Debugging symbols for libbde-tools
+ Debugging symbols for libbde-tools.
+
+Package: libbde-python3
+Section: python
+Architecture: any
+Depends: libbde (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Conflicts: python3-libbde
+Replaces: python3-libbde
+Suggests: libbde-python3-dbg
+Description: Python 3 bindings for libbde
+ Python 3 bindings for libbde.
+
+Package: libbde-python3-dbg
+Section: debug
+Architecture: any
+Depends: libbde-python3 (= ${binary:Version}), ${misc:Depends}
+Description: Debugging symbols for libbde-python3
+ Debugging symbols for libbde-python3.
+
