@@ -1,0 +1,68 @@
+Metadata-Version: 2.1
+Name: sendsmtp
+Version: 1.0.0
+Summary: CLI SMTP client in pure Python
+Home-page: https://github.com/TitaniumHocker/sendsmtp
+License: MIT
+Keywords: smtp,cli
+Author: Ivan Fedorov
+Author-email: inbox@titaniumhocker.ru
+Requires-Python: >=3.6,<4.0
+Classifier: Development Status :: 4 - Beta
+Classifier: Environment :: Console
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: POSIX :: Linux
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Topic :: Communications :: Email
+Classifier: Topic :: Communications :: Email :: Email Clients (MUA)
+Project-URL: Bug Tracker, https://github.com/TitaniumHocker/sendsmtp/issues
+Description-Content-Type: text/x-rst
+
+########
+sendsmtp
+########
+
+CLI SMTP client in pure Python.
+
+Installation:
+
+.. code:: console
+
+   python3 -m pip install --user --upgrade sendsmtp
+
+Usage:
+
+.. code:: console
+
+   $ sendsmtp --help
+    usage: sendsmtp [-h] [-m MESSAGE] [-i INPUT] [-p PORT] [-u USERNAME] [--password PASSWORD] [-t] [-c CC] [-b BCC] [-s SUBJECT] HOST FROM TO
+
+    CLI SMTP client in pure Python
+
+    positional arguments:
+      HOST                  Host to connect via SMTP.
+      FROM                  Sender email.
+      TO                    Recipient email(s), comma separated.
+
+    options:
+      -h, --help            show this help message and exit
+      -m MESSAGE, --message MESSAGE
+                            Message to send.
+      -i INPUT, --input INPUT
+                            Path to file to read message contents.
+      -p PORT, --port PORT  Port to connect via SMTP.
+      -u USERNAME, --username USERNAME
+                            Username for login.
+      --password PASSWORD   Password for login.
+      -t, --tls             Flag to use TLS.
+      -c CC, --cc CC        Recipient address(es) to send copy to, comma separated.
+      -b BCC, --bcc BCC     Recipient address(es) to send blind copy to, comma separated.
+      -s SUBJECT, --subject SUBJECT
+                            Message subject.
+
