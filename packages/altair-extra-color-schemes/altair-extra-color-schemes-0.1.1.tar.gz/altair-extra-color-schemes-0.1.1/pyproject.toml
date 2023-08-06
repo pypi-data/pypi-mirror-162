@@ -1,0 +1,45 @@
+[tool.poetry]
+name = "altair-extra-color-schemes"
+version = "0.1.1"
+description = "Additional named color schemes for Altair via a custom renderer."
+license = "MIT"
+authors = ["João Palmeiro <joaopalmeiro@proton.me>"]
+readme = "README.md"
+homepage = "https://github.com/joaopalmeiro/altair-extra-color-schemes"
+repository = "https://github.com/joaopalmeiro/altair-extra-color-schemes"
+
+[tool.poetry.urls]
+"Bug Tracker" = "https://github.com/joaopalmeiro/altair-extra-color-schemes/issues"
+"Twitter" = "https://twitter.com/joaompalmeiro"
+
+# https://python-poetry.org/docs/master/dependency-specification/
+[tool.poetry.dependencies]
+python = "^3.7"
+altair = "~4.2"
+
+[tool.poetry.group.dev.dependencies]
+black = { version = "22.6.0", extras = ["jupyter"] }
+isort = "5.10.1"
+flakeheaven = "3.0.0"
+jupyterlab = "3.2.5"
+
+# https://github.com/vega/ipyvega/blob/v3.6.0/pyproject.toml#L40
+# https://github.com/altair-viz/altair/blob/v4.2.0/altair/vegalite/v4/display.py#L28
+[tool.poetry.plugins."altair.vegalite.v4.renderer"]
+extra_color_schemes = "altair_extra_color_schemes.renderer:extra_color_schemes_renderer"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.isort]
+profile = "black"
+
+[tool.flakeheaven]
+format = "grouped"
+max_line_length = 88
+show_source = true
+
+[tool.flakeheaven.plugins]
+pycodestyle = ["+*"]
+pyflakes = ["+*"]
