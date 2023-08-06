@@ -1,0 +1,315 @@
+name: CI
+env:
+  micromamba_version: 0.22.0
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  release:
+    types:
+      - created
+
+  workflow_dispatch:
+
+jobs:
+  lint:
+    name: lint and style checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.9"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 black isort
+      - name: Lint with flake8
+        run: |
+          flake8 .
+      - name: Black style check
+        run: |
+          black --check .
+      - name: Isort import check
+        run: |
+          isort --check .
+
+  build_0:
+    name: wradlib unit tests - linux
+    runs-on: ubuntu-latest
+    needs: [lint]
+    defaults:
+      run:
+        shell: bash -l {0}
+    env:
+      WRADLIB_DATA: ./wradlib-data
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.8", "3.9", "3.10"]
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Install micromamba environment
+      uses: mamba-org/provision-with-micromamba@main
+      with:
+        environment-name: wradlib-tests
+        environment-file: ci/requirements/unittests.yml
+        extra-specs: |
+          python=${{ matrix.python-version }}
+    - name: Install wradlib
+      run: |
+        python -m pip install . --no-deps
+    - name: Clone wradlib-data
+      run: |
+        git clone https://github.com/wradlib/wradlib-data.git
+    - name: Version Info
+      run: |
+        python -c "import wradlib; print(wradlib.version.version)"
+        python -c "import wradlib; print(wradlib.show_versions())"
+    - name: Test with pytest
+      env:
+        WRADLIB_EARTHDATA_BEARER_TOKEN: ${{ secrets.WRADLIB_EARTHDATA_BEARER_TOKEN }}
+      run: |
+        echo $WRADLIB_DATA
+        export WRADLIB_DATA=`realpath $WRADLIB_DATA`
+        pytest -n auto --dist loadfile --verbose --doctest-modules --doctest-plus --durations=15 --cov-report xml:coverage.xml --cov=wradlib --pyargs wradlib
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v1.2.1
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        env_vars: RUNNER_OS,PYTHON_VERSION
+        name: codecov-gha
+        fail_ci_if_error: false
+
+  build_1:
+    name: wradlib unit tests - macosx
+    runs-on: macos-latest
+    needs: [lint]
+    defaults:
+      run:
+        shell: bash -l {0}
+    env:
+      WRADLIB_DATA: ./wradlib-data
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10"]
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Install micromamba environment
+      uses: mamba-org/provision-with-micromamba@main
+      with:
+        environment-name: wradlib-tests
+        environment-file: ci/requirements/unittests.yml
+        extra-specs: |
+          python=${{ matrix.python-version }}
+    - name: Install wradlib
+      run: |
+        cat "$HOME/.bash_profile"
+        python -m pip install . --no-deps
+    - name: Clone wradlib-data
+      run: |
+        git clone https://github.com/wradlib/wradlib-data.git
+    - name: Version Info
+      run: |
+        python -c "import wradlib; print(wradlib.version.version)"
+        python -c "import wradlib; print(wradlib.show_versions())"
+    - name: Test with pytest
+      env:
+        WRADLIB_EARTHDATA_BEARER_TOKEN: ${{ secrets.WRADLIB_EARTHDATA_BEARER_TOKEN }}
+      run: |
+        echo $WRADLIB_DATA
+        export WRADLIB_DATA=`python -c "import os, sys; print(os.path.realpath(sys.argv[1]))" $WRADLIB_DATA`
+        pytest -n auto --verbose --doctest-modules --doctest-plus --durations=15 --cov-report xml:coverage.xml --cov=wradlib --pyargs wradlib
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v1.2.1
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        env_vars: RUNNER_OS,PYTHON_VERSION
+        name: codecov-gha
+        fail_ci_if_error: false
+
+  build_2:
+    name: wradlib unit tests - windows
+    runs-on: windows-latest
+    needs: [lint]
+    defaults:
+      run:
+        shell: powershell
+    env:
+      WRADLIB_DATA: ./wradlib-data
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10"]
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Install micromamba environment
+        uses: mamba-org/provision-with-micromamba@main
+        with:
+          environment-name: wradlib-tests
+          environment-file: ci/requirements/unittests.yml
+          extra-specs: |
+            python=${{ matrix.python-version }}
+      - name: Install wradlib
+        run: |
+          python -m pip install . --no-deps
+      - name: Clone wradlib-data
+        run: |
+          git clone https://github.com/wradlib/wradlib-data.git
+      - name: Version Info
+        run: |
+          python -c "import wradlib; print(wradlib.version.version)"
+          python -c "import wradlib; print(wradlib.show_versions())"
+      - name: Test with pytest
+        env:
+          WRADLIB_EARTHDATA_BEARER_TOKEN: ${{ secrets.WRADLIB_EARTHDATA_BEARER_TOKEN }}
+        run: |
+          pytest -n auto --verbose --doctest-modules --doctest-plus --durations=15 --cov-report xml:coverage.xml --cov=wradlib --pyargs wradlib
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1.2.1
+        with:
+          file: ./coverage.xml
+          flags: unittests
+          env_vars: RUNNER_OS,PYTHON_VERSION
+          name: codecov-gha
+          fail_ci_if_error: false
+
+  build_3:
+    name: wradlib notebook tests
+    runs-on: ubuntu-latest
+    needs: [lint]
+    continue-on-error: true
+    defaults:
+      run:
+        shell: bash -l {0}
+    env:
+      WRADLIB_DATA: ./wradlib-data
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10"]
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Install micromamba environment
+        uses: mamba-org/provision-with-micromamba@main
+        with:
+          environment-name: wradlib-tests
+          environment-file: ci/requirements/notebooktests.yml
+          extra-specs: |
+            python=${{ matrix.python-version }}
+      - name: Install wradlib
+        run: |
+          python -m pip install . --no-deps
+      - name: Clone wradlib-data
+        run: |
+          git clone https://github.com/wradlib/wradlib-data.git
+      - name: Clone wradlib-notebooks
+        run: |
+          git clone --depth 1 https://github.com/wradlib/wradlib-notebooks.git notebooks
+      - name: Version Info
+        run: |
+          python -c "import wradlib; print(wradlib.version.version)"
+          python -c "import wradlib; print(wradlib.show_versions())"
+      - name: Test with pytest
+        env:
+          WRADLIB_EARTHDATA_BEARER_TOKEN: ${{ secrets.WRADLIB_EARTHDATA_BEARER_TOKEN }}
+        run: |
+          echo $WRADLIB_DATA
+          export WRADLIB_DATA=`realpath $WRADLIB_DATA`
+          pytest -n auto --verbose --durations=15 --cov-report xml:coverage.xml --cov=wradlib --pyargs notebooks
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1.2.1
+        with:
+          file: ./coverage.xml
+          flags: notebooktests
+          env_vars: RUNNER_OS,PYTHON_VERSION
+          name: codecov-gha
+          fail_ci_if_error: false
+
+  trigger_rtd:
+    if: github.event_name == 'push' || github.event_name == 'release'
+    needs: [lint, build_0, build_1, build_2]
+    name: trigger readthedocs
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
+    env:
+      RTD_TOKEN: ${{ secrets.RTD_TOKEN }}
+      RTD_URL: ${{ secrets.RTD_URL }}
+    steps:
+    - name: trigger readthedocs
+      run: |
+        curl -X POST -d "token=$RTD_TOKEN" "$RTD_URL"
+
+  upload_testpypi:
+    if: github.event_name == 'push' || github.event_name == 'release'
+    needs: [lint, build_0, build_1, build_2]
+    name: deploy to testpypi
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.10"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install build setuptools wheel twine
+      - name: Package and Upload
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
+        run: |
+          echo 'local_scheme =  "no-local-version"' >> pyproject.toml
+          git update-index --assume-unchanged pyproject.toml
+          python -m build
+          twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+
+  upload_pypi:
+    if: github.event_name == 'release'
+    needs: [lint, build_0, build_1, build_2, upload_testpypi]
+    name: deploy to pypi
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.10"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install build setuptools wheel twine
+      - name: Package and Upload
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        run: |
+          python -m build
+          twine upload dist/*
