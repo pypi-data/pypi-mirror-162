@@ -1,0 +1,265 @@
+## UAT Breeze Connect SDK
+
+This is a package to integrate streaming of stocks or user's order-notification & call APIs through which you can fetch live/historical data, automate your trading strategies, and monitor your portfolio in real time.
+
+## Setup virtual environment
+
+You must install the virtualenv package via pip
+
+```
+pip install virtualenv
+```
+
+You should create breeze virtual environment via virtualenv
+
+```
+virtualenv -p python3 breeze_venv
+```
+
+And then, You can activate virtual environment via source
+
+```
+source breeze_venv/bin/activate
+```
+
+## Installing the client
+
+You can install the latest release via pip
+
+```
+pip install --upgrade uat-breeze-connect
+```
+
+Or, You can also install the specific release version via pip
+
+```
+pip install uat-breeze-connect==1.0.14rc3
+```
+
+## Websocket Usage
+
+```python
+from breeze_connect import BreezeConnect
+
+# Initialize SDK
+breeze = BreezeConnect(api_key="your_api_key")
+
+# Obtain your session key from https://uatapi.icicidirect.com/apiuser/login?api_key=YOUR_API_KEY
+# Incase your api-key has special characters(like +,=,!) then encode the api key before using in the url as shown below.
+import urllib
+print("https://uatapi.icicidirect.com/apiuser/login?api_key="+urllib.parse.quote_plus("your_api_key"))
+
+# Generate Session
+breeze.generate_session(api_secret="your_secret_key",
+                        session_token="your_api_session")
+
+# Connect to websocket
+breeze.ws_connect()
+
+# Callback to receive ticks.
+def on_ticks(ticks):
+    print("Ticks: {}".format(ticks))
+
+# Assign the callbacks.
+breeze.on_ticks = on_ticks
+
+# subscribe stocks feeds
+breeze.subscribe_feeds(exchange_code="NFO", stock_code="ZEEENT", product_type="options", expiry_date="31-Mar-2022", strike_price="350", right="Call", get_exchange_quotes=True, get_market_depth=False)
+
+# subscribe stocks feeds by stock-token
+breeze.subscribe_feeds(stock_token="1.1!500780")
+
+# unsubscribe stocks feeds
+breeze.unsubscribe_feeds(exchange_code="NFO", stock_code="ZEEENT", product_type="options", expiry_date="31-Mar-2022", strike_price="350", right="Call", get_exchange_quotes=True, get_market_depth=False)
+
+# unsubscribe stocks feeds by stock-token
+breeze.unsubscribe_feeds(stock_token="1.1!500780")
+
+# subscribe order notification feeds
+breeze.subscribe_feeds(get_order_notification=True)
+```
+---
+**NOTE**
+
+Examples for stock_token are "4.1!38071" or "1.1!500780".
+
+exchange_code must be 'BSE', 'NSE', 'NDX', 'MCX' or 'NFO'.
+
+stock_code should not be an empty string. Examples for stock_code are "WIPRO" or "ZEEENT".
+
+product_type can be either 'Futures', 'Options' or an empty string. product_type can not be an empty string for exchange_code 'NDX', 'MCX' and 'NFO'. 
+
+strike_date can be in DD-MMM-YYYY(Ex.: 01-Jan-2022) or an empty string. strike_date can not be an empty string for exchange_code 'NDX', 'MCX' and 'NFO'.
+
+strike_price can be float-value in string or an empty string. strike_price can not be an empty string for product_type 'Options'.
+
+right can be either 'Put', 'Call' or an empty string. right can not be an empty string for product_type 'Options'.
+
+Either get_exchange_quotes must be True or get_market_depth must be True. Both get_exchange_quotes and get_market_depth can be True, But both must not be False.
+
+---
+
+## API Usage
+
+```python
+from breeze_connect import BreezeConnect
+
+# Initialize SDK
+breeze = BreezeConnect(api_key="your_api_key")
+
+# Obtain your session key from https://uatapi.icicidirect.com/apiuser/login?api_key=YOUR_API_KEY
+# Incase your api-key has special characters(like +,=,!) then encode the api key before using in the url as shown below.
+import urllib
+print("https://uatapi.icicidirect.com/apiuser/login?api_key="+urllib.parse.quote_plus("your_api_key"))
+
+# Generate Session
+breeze.generate_session(api_secret="your_secret_key",
+                        session_token="your_api_session")
+
+# Generate ISO8601 Date/DateTime String
+import datetime
+iso_date_string = datetime.datetime.strptime("28/02/2021","%d/%m/%Y").isoformat()[:10] + 'T05:30:00.000Z'
+iso_date_time_string = datetime.datetime.strptime("28/02/2021 23:59:59","%d/%m/%Y %H:%M:%S").isoformat()[:19] + '.000Z'
+
+# Following are the complete list of API method:
+
+# Get Customer details by api-session value.
+breeze.get_customer_details(api_session="your_api_session")
+
+# Get Demat Holding details of your account.
+breeze.get_demat_holdings()
+
+# Get Funds details of your account.
+breeze.get_funds()
+
+# Set Funds of your account by transaction-type as "Credit" or "Debit" with amount in numeric string as rupees and segment-type as "Equity" or "FNO".
+breeze.set_funds(transaction_type="debit", 
+                    amount="200",
+                    segment="Equity")
+
+# Get Historical Data for specific stock-code by mentioned interval either as "minute", "5minute", "30minutes" or as "day".
+breeze.get_historical_data(interval="1minute",
+                            from_date= "2021-11-15T07:00:00.000Z",
+                            to_date= "2021-11-17T07:00:00.000Z",
+                            stock_code="AXIBAN",
+                            exchange_code="NFO",
+                            product_type="futures",
+                            expiry_date="2021-11-25T07:00:00.000Z",
+                            right="others",
+                            strike_price="0")
+
+# Add Margin to your account.
+breeze.add_margin(product_type="margin", 
+                    stock_code="TCS", 
+                    exchange_code="BSE", 
+                    settlement_id="2021220", 
+                    add_amount="100", 
+                    margin_amount="3817.10", 
+                    open_quantity="10", 
+                    cover_quantity="0", 
+                    category_index_per_stock="", 
+                    expiry_date="", 
+                    right="", 
+                    contract_tag="", 
+                    strike_price="", 
+                    segment_code="")
+
+# Get Margin of your account.
+breeze.get_margin(exchange_code="NSE")
+
+# Place an order from your account.
+breeze.place_order(stock_code="AXIBAN",
+                    exchange_code="NFO",
+                    product="futures",
+                    action="buy",
+                    order_type="limit",
+                    stoploss="0",
+                    quantity="1200",
+                    price="712.00",
+                    validity="day",
+                    validity_date="2021-12-16T06:00:00.000Z",
+                    disclosed_quantity="0",
+                    expiry_date="2021-12-25T06:00:00.000Z",
+                    right="others",
+                    strike_price="0",
+                    user_remark="Test")
+
+# Get an order details by exchange-code and order-id from your account.
+breeze.get_order_detail(exchange_code="NSE",
+                        order_id="20211116N100000023")
+
+# Get order list of your account.
+breeze.get_order_list(exchange_code="NSE",
+                        from_date="2021-11-01T10:00:00.000Z",
+                        to_date="2021-11-30T10:00:00.000Z")
+
+# Cancel an order from your account whose status are not Executed. 
+breeze.cancel_order(exchange_code="NSE",
+                    order_id="20211116N100000022")
+
+# Modify an order from your account whose status are not Executed. 
+breeze.modify_order(order_id="202111241100000002",
+                    exchange_code="NFO",
+                    order_type="limit",
+                    stoploss="0",
+                    quantity="250",
+                    price="290100",
+                    validity="day",
+                    disclosed_quantity="0",
+                    validity_date="2021-12-30T06:00:00.000Z")
+
+# Get Portfolio Holdings of your account.
+breeze.get_portfolio_holdings(exchange_code="NFO",
+                                from_date="2021-11-01T06:00:00.000Z",
+                                to_date="2021-11-30T06:00:00.000Z",
+                                stock_code="",
+                                portfolio_type="")
+
+# Get Portfolio Positions from your account.
+breeze.get_portfolio_positions()
+
+# Get quotes of mentioned stock-code
+breeze.get_quotes(stock_code="AXIBAN",
+                    exchange_code="NFO",
+                    expiry_date="2021-12-30T06:00:00.000Z",
+                    product_type="futures",
+                    right="others",
+                    strike_price="0")
+
+# Sqauare off an order
+breeze.square_off(source_flag="",
+                    stock_code="NIFTY",
+                    exchange_code="NFO",
+                    quantity="50",
+                    price="0",
+                    action="sell",
+                    order_type="market",
+                    validity="day",
+                    stoploss="0",
+                    disclosed_quantity="0",
+                    protection_percentage="",
+                    settlement_id="",
+                    margin_amount="",
+                    open_quantity="",
+                    cover_quantity="",
+                    product_type="futures",
+                    expiry_date="2021-12-30T06:00:00.000Z",
+                    right="",
+                    strike_price="0",
+                    validity_date="2021-12-16T06:00:00.000Z",
+                    trade_password="",
+                    alias_name="")
+
+# Get trade list of your account.
+breeze.get_trade_list(from_date="2021-09-28T06:00:00.000Z",
+                        to_date="2021-11-15T06:00:00.000Z",
+                        exchange_code="NSE",
+                        product_type="",
+                        action="",
+                        stock_code="")
+
+# Get trade detail of your account.
+breeze.get_trade_detail(exchange_code="NSE",
+                        order_id="20210928N100000067")
+
+```
