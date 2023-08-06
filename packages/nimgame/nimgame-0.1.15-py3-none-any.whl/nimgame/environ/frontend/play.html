@@ -1,0 +1,73 @@
+<!--
+----- About this HTML page ----
+The game can be played in this single-page HTML. All input are handled in one
+page and all output change this page on the fly. JavaScript is used for page
+animation, and all logic is handled by Python, using PyScript.
+
+The PyScript environment needs to list the 3rd party packages (e.g. valid8)
+needed for the program. It also needs to list the local modules to be served
+from the source dir, relative to the location of this HTML file.
+
+The py-script is to be placed into the BODY, if it generates any output in the
+DOM. Otherwise, it can be anywere. It is to import and execute the Python code,
+which starts-up the game, and sets up the call-backs for the interactive
+execution.
+
+Modules can only be loaded up from the server file system, if a web server
+provides the sources. I.e. the "file://" won't work for security reasons. See a
+work-around here: https://github.com/pyscript/pyscript/issues/257
+
+So, for testing purposes, on Windows, run this command in a CLI (when cwd is the
+root project dir):
+> python -m http.server --bind 127.0.0.1
+
+Then, when the server serves the files on the localhost IP address from the
+nimgame source dir, load this HTML with this URL:
+http://localhost:8000/nimgame/environ/frontend/play.html
+-->
+
+<HTML>
+<HEAD>
+<TITLE>Play the Game of Nim</TITLE>
+
+<!-- favicon -->
+<link rel="shortcut icon" href="../images/coinheaps.jpg">
+
+<!-- *** Load PyScript JavaScript code *** -->
+<!-- Commented out, as it seems to disable H1 and such styles
+    <link rel="stylesheet" href="https://pyscript.net/alpha/pyscript.css" />
+-->
+<!-- Commented out, because the patched version (see below) must be used, which
+        loads modules with hierarchy
+    <script defer src="https://pyscript.net/alpha/pyscript.js"></script>
+-->
+<script defer src="../../../pyscript_src_patched/pyscript.js"></script>
+
+<py-env>
+- valid8
+- localpackage:
+    packagebase: ../../
+    paths:
+        - ../../source/playing/cli/play.py
+        - ../../source/playing/cli/ansi.py
+        - ../../source/playing/web/play.py
+        - ../../source/playing/web/playscript.py
+        - ../../source/version.py
+        - ../../source/typedefs.py
+        - ../../source/calculations.py
+        - ../../source/core.py
+        - ../../__init__.py
+</py-env>
+<py-script>
+from source.playing.web import playscript
+playscript.main_dynamics()
+</py-script>
+</HEAD>
+<BODY>
+<H1>The Game of Nim</H1>
+<P>Powered by the source PyPi package <a target="_blank" href="https://pypi.org/project/nimgame">nimgame</a></P>
+<DIV ID="controls"></DIV>
+<DIV ID="heaps"></DIV>
+<DIV ID="results"></DIV>
+</BODY>
+</HTML>

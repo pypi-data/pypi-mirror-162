@@ -1,0 +1,35 @@
+/* 
+Correction for Alabaster source code display
+-----------------------------------------------------
+It creates a too narrow document window (940px) and an 80-character wide code does not fit in.
+    The "bodywrapper" takes 220px for the left navigation.
+    Then "body" uses 30px-30px padding on both sides, and the PRE also uses 30px-30px padding on both sides.
+    This leaves 600px for the source content.
+The font-size=17px (defined in "body") means 17px toll and seems to be 9.37px wide. It is reduced in PRE by setting it to 0.9em.
+So the 600px effective width divided by the 9.37px*90% individual character width only provides the room for 71 characters.
+
+Possible corrections:
+1. reduce the font size (71/80=88.75%)
+    a) set PRE to 0.8em
+    b) set body to 15.1px
+2. increase the document width (If 600px is only enough for 71 characters, we need 675px for 80 characters. I.e. increase the document: 940+75=1015)
+
+Since, the PRE under DIV.highlight only seems to be used in the source code browsing, let's do the 1a.
+*/
+
+/* 1a */
+div.highlight PRE {
+    font-size: 0.8em;
+}
+
+/*
+/* 1b * /
+div.highlight PRE {
+    font-size: 15.1px;
+}
+
+/* 2 * /
+div.document {
+    width: 1015px;
+}
+*/
