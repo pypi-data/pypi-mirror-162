@@ -1,0 +1,153 @@
+{
+  "config-change-notifications-enabled": false,
+  "http":{
+            "request-timeout": 20,
+            "max-connections": 100,
+            "max-keepalive-connections": 20
+    },
+  "logs": {
+      "level": "info",
+      "filter": "*",
+      "transports": {
+          "console": {
+              "enabled": false,
+              "colorize": false
+          },
+          "file": {
+              "enabled": false,
+              "name": "refinitiv-data-platform-lib.log",
+              "size": "10M",
+              "interval": "1d",
+              "maxFiles": 10,
+              "maxSize": "100M",
+              "history": "log-rotation"
+          }
+      }
+  },
+  "sessions": {
+      "platform": {
+          "default-session": {
+              "signon_control": true,
+              "auto-reconnect": true,
+              "server-mode": false,
+              "base-url": "https://api.refinitiv.com",
+              "auth": {
+                  "url": "/auth/oauth2/v1",
+                  "authorize": "/authorize",
+                  "token": "/token"
+              }
+          }
+      },
+      "desktop": {
+          "default-session": {
+              "base-url": "http://localhost:9000",
+              "platform-paths": {
+                  "rdp": "/api/rdp",
+                  "udf": "/api/udf"
+              },
+              "handshake-url": "/api/handshake"
+          }
+      }
+  },
+  "apis": {
+      "data": {
+          "historical-pricing": {
+              "url": "/data/historical-pricing/v1",
+              "endpoints" : {
+                  "events": "/views/events",
+                  "interday-summaries": "/views/interday-summaries",
+                  "intraday-summaries": "/views/intraday-summaries"
+              }
+          },
+          "pricing" : {
+              "url" : "/data/pricing",
+              "endpoints" : {
+                  "snapshots": "/snapshots/v1/",
+                  "chains": "/chains/v1/"
+              }
+
+          },
+          "quantitative-analytics-financial-contracts": {
+              "url": "/data/quantitative-analytics/v1",
+              "endpoints" : {
+                  "financial-contracts": "/financial-contracts"
+              }
+          },
+          "quantitative-analytics-curves-and-surfaces": {
+              "url": "/data/quantitative-analytics-curves-and-surfaces/v1",
+              "endpoints" : {
+                  "forward-curves": "/curves/forward-curves",
+                  "surfaces": "/surfaces",
+                  "zc-curves": "/curves/zc-curves",
+                  "zc-curve-definitions": "/curves/zc-curve-definitions"
+              }
+          },
+          "news": {
+              "url": "/data/news/v1",
+              "endpoints" : {
+                  "headlines": "/headlines",
+                  "stories": "/stories"
+              }
+          },
+          "environmental-social-governance": {
+              "url": "/data/environmental-social-governance/v1",
+              "endpoints" : {
+                  "universe": "/universe",
+                  "basic": "/views/basic",
+                  "measures-full": "/views/measures-full",
+                  "measures-standard": "/views/measures-standard",
+                  "scores-full": "/views/scores-full",
+                  "scores-standard": "/views/scores-standard"
+              }
+          },
+          "datagrid": {
+              "url": "/data/datagrid/beta1",
+              "endpoints" : {
+                  "standard": "/"
+              }
+          }
+      },
+      "discovery": {
+          "search": {
+              "url": "/discovery/search/v1",
+              "endpoints" : {
+                  "search": "/",
+                  "lookup": "/lookup",
+                  "metadata": "/metadata/views"
+              }
+          }
+      },
+      "streaming": {
+          "pricing": {
+              "url": "/streaming/pricing/v1",
+              "endpoints": {
+                  "main": {
+                      "path": "/",
+                      "protocols": ["OMM"],
+                      "locations": []
+                  }
+              }
+          },
+          "trading-analytics": {
+              "url": "/streaming/trading-analytics/trade-data/beta1",
+              "endpoints": {
+                  "redi": {
+                      "path": "/redi",
+                      "protocols": ["OMM", "RDP"],
+                      "locations": []
+                  }
+              }
+          },
+          "benchmark": {
+            "url": "/streaming/benchmark/v1",
+            "endpoints": {
+                "resource": {
+                    "path": "/resource",
+                    "protocols": ["RDP"],
+                    "locations": []
+                }
+            }
+        }
+      }
+  }
+}
