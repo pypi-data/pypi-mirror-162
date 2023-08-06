@@ -1,0 +1,17 @@
+[build-system]
+requires = [
+    "setuptools>=42",
+    "scikit-build>=0.13",
+    "cmake>=3.18",
+    "ninja",
+]
+build-backend = "setuptools.build_meta"
+
+[tool.cibuildwheel]
+# skip musl and pypy
+skip = ["*-musllinux*", "pp*"] 
+test-requires = "pytest"
+test-command = "python -X dev -m pytest {project}/tests"
+
+[tool.cibuildwheel.macos]
+environment = { MACOSX_DEPLOYMENT_TARGET = "10.15" }
