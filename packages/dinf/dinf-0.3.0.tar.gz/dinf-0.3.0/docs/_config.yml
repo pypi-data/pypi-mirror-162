@@ -1,0 +1,73 @@
+# Book settings
+# Learn more at https://jupyterbook.org/customize/config.html
+
+title: Dinf
+author: Graham Gower
+copyright: "2021-2022"
+only_build_toc_files: true
+
+execute:
+  execute_notebooks: cache
+  exclude_patterns:
+    - 'abc.ipynb'
+    - 'accuracy.ipynb'
+  timeout: 300
+
+repository:
+  url: https://github.com/RacimoLab/dinf
+  path_to_book: docs
+  branch: main
+
+## Jupyter-book uses this to set *some* sphinx config variables, but not all.
+## We use sphinx.config.html_theme_options instead.
+#html:
+#  use_issues_button: true
+#  use_repository_button: true
+#  use_edit_page_button: true
+
+sphinx:
+  extra_extensions:
+  - sphinx.ext.autodoc
+  - sphinx.ext.autosummary
+  - sphinx.ext.todo
+  - sphinx.ext.viewcode
+  - sphinx.ext.intersphinx
+  - sphinxcontrib.programoutput
+  #- sphinx_issues
+
+  local_extensions:
+    # Add version string to the navbar and footer.
+    inject_version: _ext
+    # Add short aliases for internal namespaces in external packages.
+    intersphinx_aliases: _ext
+
+  config:
+    # Jupyter-book also has a "html" top-level config property that can be
+    # used to set *some* sphinx config variables, but not all.
+    # Some documented variables will have no effect unless used inside
+    # sphinx.config.html_theme_options, so we just put everything here.
+    html_theme_options:
+        repository_url: https://github.com/RacimoLab/dinf
+        use_fullscreen_button: true
+        use_issues_button: true
+        use_repository_button: true
+        use_edit_page_button: false
+        use_download_button: false
+
+    autodoc_typehints: description
+    autodoc_type_aliases:
+      FeatureCollection: dinf.FeatureCollection
+    autodoc_member_order: bysource
+    autoclass_content: both
+    todo_include_todos: true
+    intersphinx_mapping:
+      python: ["https://docs.python.org/3/", null]
+      numpy: ["https://numpy.org/doc/stable/", null]
+      tskit: ["https://tskit.dev/tskit/docs/stable", null]
+      cyvcf2: ["http://brentp.github.io/cyvcf2/", null]
+      flax: ["https://flax.readthedocs.io/en/latest/", null]
+      matplotlib: ["https://matplotlib.org/stable/", null]
+    #issues_github_path: RacimoLab/dinf
+
+    # TODO: enable this and fix a bunch of problems.
+    nitpicky: false
