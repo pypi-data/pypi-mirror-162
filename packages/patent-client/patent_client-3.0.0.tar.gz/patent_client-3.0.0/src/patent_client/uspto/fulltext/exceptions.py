@@ -1,0 +1,2 @@
+class FullTextNotAvailable(Exception):
+    pass
