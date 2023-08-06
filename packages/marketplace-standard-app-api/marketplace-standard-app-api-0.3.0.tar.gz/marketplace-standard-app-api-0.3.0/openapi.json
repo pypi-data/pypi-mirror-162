@@ -1,0 +1,1966 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "MarketPlace Standard App API",
+    "description": "Standard app API for the MarketPlace applications.",
+    "contact": {
+      "name": "The Materials MarketPlace Consortium",
+      "url": "https://www.materials-marketplace.eu/",
+      "email": "dirk.helm@iwm.fraunhofer.de"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    },
+    "version": "0.3.0"
+  },
+  "paths": {
+    "/": {
+      "get": {
+        "tags": [
+          "FrontPage"
+        ],
+        "summary": "Open the frontend of the app",
+        "description": "Open the frontpage of the app.",
+        "operationId": "frontend",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated."
+          },
+          "500": {
+            "description": "Internal server error."
+          },
+          "503": {
+            "description": "Service unavailable."
+          },
+          "404": {
+            "description": "Not found."
+          }
+        },
+        "security": [
+          {
+            "AuthTokenBearer": []
+          }
+        ]
+      }
+    },
+    "/globalSearch": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Respond to global search queries",
+        "description": "Respond to global search queries.",
+        "operationId": "globalSearch",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Q",
+              "type": "string"
+            },
+            "name": "q",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Limit",
+              "type": "integer",
+              "default": 100
+            },
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Offset",
+              "type": "integer",
+              "default": 0
+            },
+            "name": "offset",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GlobalSearchResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated."
+          },
+          "500": {
+            "description": "Internal server error."
+          },
+          "503": {
+            "description": "Service unavailable."
+          },
+          "422": {
+            "description": "Validation error."
+          },
+          "501": {
+            "description": "Not implemented."
+          }
+        },
+        "security": [
+          {
+            "AuthTokenBearer": []
+          }
+        ]
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Check if the application is running and available",
+        "description": "Check whether the application is running and available.",
+        "operationId": "heartbeat",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated."
+          },
+          "500": {
+            "description": "Internal server error."
+          },
+          "503": {
+            "description": "Service unavailable."
+          }
+        },
+        "security": [
+          {
+            "AuthTokenBearer": []
+          }
+        ]
+      }
+    },
+    "/data": {
+      "get": {
+        "tags": [
+          "DataSource",
+          "DataSink"
+        ],
+        "summary": "List all collections",
+        "description": "List all collections.",
+        "operationId": "listCollections",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Limit",
+              "type": "integer",
+              "default": 100
+            },
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Offset",
+              "type": "integer",
+              "default": 0
+            },
+            "name": "offset",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Listcollections",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CollectionListItemModel"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated."
+          },
+          "500": {
+            "description": "Internal server error."
+          },
+          "503": {
+            "description": "Service unavailable."
+          },
+          "501": {
+            "description": "Not implemented."
+          },
+          "204": {
+            "description": "No collections found."
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthTokenBearer": []
+          }
+        ]
+      }
+    },
+    "/data/{collection_name}": {
+      "get": {
+        "tags": [
+          "DataSource"
+        ],
+        "summary": "List all datasets in a collection",
+        "description": "List all datasets.",
+        "operationId": "listDatasets",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Collection Name",
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string"
+            },
+            "name": "collection_name",
+            "in": "path"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Limit",
+              "type": "integer",
+              "default": 100
+            },
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Offset",
+              "type": "integer",
+              "default": 0
+            },
+            "name": "offset",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Listdatasets",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DatasetModel"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated."
+          },
+          "500": {
+            "description": "Internal server error."
+          },
+          "503": {
+            "description": "Service unavailable."
+          },
+          "501": {
+            "description": "Not implemented."
+          },
+          "204": {
+            "description": "No datasets found."
+          },
+          "404": {
+            "description": "Container not found."
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthTokenBearer": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "DataSink"
+        ],
+        "summary": "Create or update a collection",
+        "description": "Create or update a collection.\n\nTo add custom metadata, add keys to the header of the form:\n\n- X-Object-Meta-name: value\n\nWhere 'name' is the name of the metadata key and 'value' is the\ncorresponding value.\n\nNote: This operation is in compliance with the OpenStack Swift object\nstorage API:\nhttps://docs.openstack.org/api-ref/object-store/index.html#create-container\n",
+        "operationId": "createOrUpdateCollection",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Collection Name",
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string"
+            },
+            "name": "collection_name",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Collection has been created."
+          },
+          "401": {
+            "description": "Not authenticated."
+          },
+          "500": {
+            "description": "Internal server error."
+          },
+          "503": {
+            "description": "Service unavailable."
+          },
+          "501": {
+            "description": "Not implemented."
+          },
+          "202": {
+            "description": "Collection has been updated."
+          },
+          "400": {
+            "description": "Bad request."
+          },
+          "507": {
+            "description": "Insufficient storage."
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthTokenBearer": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "DataSink"
+        ],
+        "summary": "Delete an empty collection",
+        "description": "Delete an empty collection.",
+        "operationId": "deleteCollection",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Collection Name",
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string"
+            },
+            "name": "collection_name",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Collection has been deleted."
+          },
+          "401": {
+            "description": "Not authenticated."
+          },
+          "500": {
+            "description": "Internal server error."
+          },
+          "503": {
+            "description": "Service unavailable."
+          },
+          "501": {
+            "description": "Not implemented."
+          },
+          "404": {
+            "description": "Collection not found."
+          },
+          "409": {
+            "description": "Collection is not empty."
+          },
+          "422": {
+            "description": "Validation error."
+          }
+        },
+        "security": [
+          {
+            "AuthTokenBearer": []
+          }
+        ]
+      },
+      "head": {
+        "tags": [
+          "DataSource"
+        ],
+        "summary": "Get a collection's metadata",
+        "description": "Get the metadata for a collection.",
+        "operationId": "getCollectionMetadata",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Collection Name",
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string"
+            },
+            "name": "collection_name",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Normal response."
+          },
+          "401": {
+            "description": "Not authenticated."
+          },
+          "500": {
+            "description": "Internal server error."
+          },
+          "503": {
+            "description": "Service unavailable."
+          },
+          "501": {
+            "description": "Not implemented."
+          },
+          "404": {
+            "description": "Not found."
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthTokenBearer": []
+          }
+        ]
+      }
+    },
+    "/data/": {
+      "put": {
+        "tags": [
+          "DataSink"
+        ],
+        "summary": "Create a collection",
+        "description": "Create a collection.\n\nTo add custom metadata, add keys to the header of the form:\n\n- X-Object-Meta-name: value\n\nWhere 'name' is the name of the metadata key and 'value' is the\ncorresponding value.\n\nNote: This operation is in compliance with the OpenStack Swift object\nstorage API:\nhttps://docs.openstack.org/api-ref/object-store/index.html#create-container\n",
+        "operationId": "createCollection",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Collection Name",
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string"
+            },
+            "name": "collection_name",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Collection has been created."
+          },
+          "401": {
+            "description": "Not authenticated."
+          },
+          "500": {
+            "description": "Internal server error."
+          },
+          "503": {
+            "description": "Service unavailable."
+          },
+          "501": {
+            "description": "Not implemented."
+          },
+          "400": {
+            "description": "Bad request."
+          },
+          "507": {
+            "description": "Insufficient storage."
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthTokenBearer": []
+          }
+        ]
+      }
+    },
+    "/data/{collection_name}/": {
+      "put": {
+        "tags": [
+          "DataSink"
+        ],
+        "summary": "Create a dataset",
+        "description": "Create a dataset.\n\nTo add custom metadata, add keys to the header of the form:\n\n- X-Object-Meta-name: value\n\nWhere 'name' is the name of the metadata key and 'value' is the\ncorresponding value.\n\nNote: This operation is in compliance with the OpenStack Swift object\nstorage API:\nhttps://docs.openstack.org/api-ref/object-store/index.html#create-or-replace-object\n",
+        "operationId": "createDataset",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Collection Name",
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string"
+            },
+            "name": "collection_name",
+            "in": "path"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Dataset Name",
+              "minLength": 1,
+              "type": "string"
+            },
+            "name": "dataset_name",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_createDataset"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DatasetCreateResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated."
+          },
+          "500": {
+            "description": "Internal server error."
+          },
+          "503": {
+            "description": "Service unavailable."
+          },
+          "501": {
+            "description": "Not implemented."
+          },
+          "507": {
+            "description": "Insufficient storage."
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthTokenBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "DataSink"
+        ],
+        "summary": "Create a dataset's metadata",
+        "description": "Create or replace dataset metadata.\n\nNote: This operation is in compliance with the OpenStack Swift object\nstorage API:\nhttps://docs.openstack.org/api-ref/object-store/index.html#create-or-update-object-metadata",
+        "operationId": "createDatasetMetadata",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Collection Name",
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string"
+            },
+            "name": "collection_name",
+            "in": "path"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Dataset Name",
+              "minLength": 1,
+              "type": "string"
+            },
+            "name": "dataset_name",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Dataset metadata has been created."
+          },
+          "401": {
+            "description": "Not authenticated."
+          },
+          "500": {
+            "description": "Internal server error."
+          },
+          "503": {
+            "description": "Service unavailable."
+          },
+          "501": {
+            "description": "Not implemented."
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthTokenBearer": []
+          }
+        ]
+      }
+    },
+    "/data/{collection_name}/{dataset_name}": {
+      "get": {
+        "tags": [
+          "DataSource"
+        ],
+        "summary": "Get a dataset",
+        "description": "Get a dataset.\n\nReturns the object as part of the request body and metadata as part of the\nresponse headers.\n\nIn addition to the standard response header keys (Content-Type and\nContent-Length), the header may also contain metadata key-value pairs in the\nform of:\n\n- X-Object-Meta-name: value\n\nWhere 'name' is the name of the metadata key and 'value' is the\ncorresponding value.\n\nExample response header for a plain-text file:\n- Content-Type: text/plain;charset=UTF-8\n- Content-Length: 1234\n- X-Object-Meta-my-key: some-value\n\nNote: This operation is in compliance with the OpenStack Swift object\nstorage API:\nhttps://docs.openstack.org/api-ref/object-store/index.html#get-object-content-and-metadata",
+        "operationId": "getDataset",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Collection Name",
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string"
+            },
+            "name": "collection_name",
+            "in": "path"
+          },
+          {
+            "required": true,
+            "schema": {
+              "title": "Dataset Name",
+              "minLength": 1,
+              "type": "string"
+            },
+            "name": "dataset_name",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Not authenticated."
+          },
+          "500": {
+            "description": "Internal server error."
+          },
+          "503": {
+            "description": "Service unavailable."
+          },
+          "501": {
+            "description": "Not implemented."
+          },
+          "404": {
+            "description": "Not found."
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthTokenBearer": []
+          }
+        ]
+      },
+      "put": {
+        "tags": [
+          "DataSink"
+        ],
+        "summary": "Create or replace a dataset",
+        "description": "Create or replace a dataset.\n\nTo add custom metadata, add keys to the header of the form:\n\n- X-Object-Meta-name: value\n\nWhere 'name' is the name of the metadata key and 'value' is the\ncorresponding value.\n\nNote: This operation is in compliance with the OpenStack Swift object\nstorage API:\nhttps://docs.openstack.org/api-ref/object-store/index.html#create-or-replace-object\n",
+        "operationId": "createOrReplaceDataset",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Collection Name",
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string"
+            },
+            "name": "collection_name",
+            "in": "path"
+          },
+          {
+            "required": true,
+            "schema": {
+              "title": "Dataset Name",
+              "minLength": 1,
+              "type": "string"
+            },
+            "name": "dataset_name",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_createOrReplaceDataset"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DatasetCreateResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated."
+          },
+          "500": {
+            "description": "Internal server error."
+          },
+          "503": {
+            "description": "Service unavailable."
+          },
+          "501": {
+            "description": "Not implemented."
+          },
+          "507": {
+            "description": "Insufficient storage."
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthTokenBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "DataSink"
+        ],
+        "summary": "Create or replace a dataset's metadata",
+        "description": "Create or replace dataset metadata.\n\nNote: This operation is in compliance with the OpenStack Swift object\nstorage API:\nhttps://docs.openstack.org/api-ref/object-store/index.html#create-or-update-object-metadata",
+        "operationId": "createOrReplaceDatasetMetadata",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Collection Name",
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string"
+            },
+            "name": "collection_name",
+            "in": "path"
+          },
+          {
+            "required": true,
+            "schema": {
+              "title": "Dataset Name",
+              "minLength": 1,
+              "type": "string"
+            },
+            "name": "dataset_name",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Dataset metadata has been created/updated."
+          },
+          "401": {
+            "description": "Not authenticated."
+          },
+          "500": {
+            "description": "Internal server error."
+          },
+          "503": {
+            "description": "Service unavailable."
+          },
+          "501": {
+            "description": "Not implemented."
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthTokenBearer": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "DataSink"
+        ],
+        "summary": "Delete a dataset",
+        "description": "Delete a dataset with the given dataset id.\n\nNote: This operation is in compliance with the OpenStack Swift object\nstorage API:\nhttps://docs.openstack.org/api-ref/object-store/index.html#delete-object",
+        "operationId": "deleteDataset",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Collection Name",
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string"
+            },
+            "name": "collection_name",
+            "in": "path"
+          },
+          {
+            "required": true,
+            "schema": {
+              "title": "Dataset Name",
+              "minLength": 1,
+              "type": "string"
+            },
+            "name": "dataset_name",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Not authenticated."
+          },
+          "500": {
+            "description": "Internal server error."
+          },
+          "503": {
+            "description": "Service unavailable."
+          },
+          "501": {
+            "description": "Not implemented."
+          },
+          "404": {
+            "description": "Not found."
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthTokenBearer": []
+          }
+        ]
+      },
+      "head": {
+        "tags": [
+          "DataSource"
+        ],
+        "summary": "Get a dataset's metadata",
+        "description": "Get dataset metadata.\n\nReturns the dataset metadata in the response header in the form of:\n\n- X-Object-Meta-name: value\n\nWhere 'name' is the name of the metadata key and 'value' is the\ncorresponding value.\n\nExample response header for a plain-text file:\n- Content-Type: text/plain;charset=UTF-8\n- Content-Length: 1234\n- X-Object-Meta-my-key: some-value\n\nNote: This operation is in compliance with the OpenStack Swift object\nstorage API:\nhttps://docs.openstack.org/api-ref/object-store/index.html#show-object-metadata",
+        "operationId": "getDatasetMetadata",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Collection Name",
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string"
+            },
+            "name": "collection_name",
+            "in": "path"
+          },
+          {
+            "required": true,
+            "schema": {
+              "title": "Dataset Name",
+              "minLength": 1,
+              "type": "string"
+            },
+            "name": "dataset_name",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Not authenticated."
+          },
+          "500": {
+            "description": "Internal server error."
+          },
+          "503": {
+            "description": "Service unavailable."
+          },
+          "501": {
+            "description": "Not implemented."
+          },
+          "404": {
+            "description": "Not found."
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthTokenBearer": []
+          }
+        ]
+      }
+    },
+    "/data/semanticMappings": {
+      "get": {
+        "tags": [
+          "DataSource",
+          "DataSink"
+        ],
+        "summary": "List all semantic mappings",
+        "description": "List all semantic mappings.",
+        "operationId": "listSemanticMappings",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Limit",
+              "type": "integer",
+              "default": 100
+            },
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Offset",
+              "type": "integer",
+              "default": 0
+            },
+            "name": "offset",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "title": "Response Listsemanticmappings",
+                  "type": "array",
+                  "items": {
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated."
+          },
+          "500": {
+            "description": "Internal server error."
+          },
+          "503": {
+            "description": "Service unavailable."
+          },
+          "501": {
+            "description": "Not implemented."
+          },
+          "204": {
+            "description": "No mappings found."
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthTokenBearer": []
+          }
+        ]
+      }
+    },
+    "/data/semanticMappings/{semantic_mapping_id}": {
+      "get": {
+        "tags": [
+          "DataSource",
+          "DataSink"
+        ],
+        "summary": "Get a specific semantic mapping",
+        "description": "Get a semantic mapping.",
+        "operationId": "getSemanticMapping",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Semantic Mapping Id"
+            },
+            "name": "semantic_mapping_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SemanticMappingModel"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated."
+          },
+          "500": {
+            "description": "Internal server error."
+          },
+          "503": {
+            "description": "Service unavailable."
+          },
+          "501": {
+            "description": "Not implemented."
+          },
+          "404": {
+            "description": "Not found."
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthTokenBearer": []
+          }
+        ]
+      }
+    },
+    "/transformations": {
+      "get": {
+        "tags": [
+          "Transformation"
+        ],
+        "summary": "List all transformations",
+        "description": "Retrieve a list of transformations.",
+        "operationId": "getTransformationList",
+        "parameters": [
+          {
+            "required": false,
+            "schema": {
+              "title": "Limit",
+              "type": "integer",
+              "default": 100
+            },
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "required": false,
+            "schema": {
+              "title": "Offset",
+              "type": "integer",
+              "default": 0
+            },
+            "name": "offset",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransformationListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated."
+          },
+          "500": {
+            "description": "Internal server error."
+          },
+          "503": {
+            "description": "Service unavailable."
+          },
+          "501": {
+            "description": "Not implemented."
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthTokenBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Transformation"
+        ],
+        "summary": "Create a new transformation",
+        "description": "Create a new transformation.\n\nBy default when creating a new transformation resource its state is set to\nCREATED, meaning it is created on the remote system, but is not yet\nexecuted. To execute a transformation either set the state field directly to\nRUNNING when creating the transformation or toggle it later via the\nupdateTransformation operation.\n\nNote that the parameters of an existing transformation can not be changed.",
+        "operationId": "newTransformation",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewTransformationModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransformationCreateResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated."
+          },
+          "500": {
+            "description": "Internal server error."
+          },
+          "503": {
+            "description": "Service unavailable."
+          },
+          "501": {
+            "description": "Not implemented."
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthTokenBearer": []
+          }
+        ]
+      }
+    },
+    "/transformations/{transformation_id}": {
+      "get": {
+        "tags": [
+          "Transformation"
+        ],
+        "summary": "Get a transformation",
+        "description": "Retrieve an existing transformation.",
+        "operationId": "getTransformation",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Transformation Id",
+              "type": "string",
+              "format": "uuid4"
+            },
+            "name": "transformation_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransformationModel"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated."
+          },
+          "500": {
+            "description": "Internal server error."
+          },
+          "503": {
+            "description": "Service unavailable."
+          },
+          "501": {
+            "description": "Not implemented."
+          },
+          "404": {
+            "description": "Not found."
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthTokenBearer": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Transformation"
+        ],
+        "summary": "Delete a transformation",
+        "description": "Delete an existing transformation.",
+        "operationId": "deleteTransformation",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Transformation Id",
+              "type": "string",
+              "format": "uuid4"
+            },
+            "name": "transformation_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "description": "Not authenticated."
+          },
+          "500": {
+            "description": "Internal server error."
+          },
+          "503": {
+            "description": "Service unavailable."
+          },
+          "501": {
+            "description": "Not implemented."
+          },
+          "404": {
+            "description": "Not found."
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthTokenBearer": []
+          }
+        ]
+      },
+      "patch": {
+        "tags": [
+          "Transformation"
+        ],
+        "summary": "Update a transformation",
+        "description": "Update an existing transformation.\n\nUsed to change the state of a transformation. When a transformation is first\ncreated it is either in a CREATED or RUNNING state. The state can then be\nchanged from CREATED to RUNNING or from RUNNING to STOPPED.  All other state\nupdate requests will result in a 409 conflict error.",
+        "operationId": "updateTransformation",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Id",
+              "type": "string",
+              "format": "uuid4"
+            },
+            "name": "id",
+            "in": "query"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransformationUpdateModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransformationUpdateResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated."
+          },
+          "500": {
+            "description": "Internal server error."
+          },
+          "503": {
+            "description": "Service unavailable."
+          },
+          "501": {
+            "description": "Not implemented."
+          },
+          "404": {
+            "description": "Not found."
+          },
+          "409": {
+            "description": "The requested state is unavailable (example: trying to stop an already completed transformation)."
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthTokenBearer": []
+          }
+        ]
+      }
+    },
+    "/transformations/{transformation_id}/state": {
+      "get": {
+        "tags": [
+          "Transformation"
+        ],
+        "summary": "Get the state of a transformation",
+        "description": "Retrieve the state of a transformation.",
+        "operationId": "getTransformationState",
+        "parameters": [
+          {
+            "required": true,
+            "schema": {
+              "title": "Transformation Id",
+              "type": "string",
+              "format": "uuid4"
+            },
+            "name": "transformation_id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransformationStateResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authenticated."
+          },
+          "500": {
+            "description": "Internal server error."
+          },
+          "503": {
+            "description": "Service unavailable."
+          },
+          "501": {
+            "description": "Not implemented."
+          },
+          "404": {
+            "description": "Not found."
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "AuthTokenBearer": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Body_createDataset": {
+        "title": "Body_createDataset",
+        "required": [
+          "file"
+        ],
+        "type": "object",
+        "properties": {
+          "file": {
+            "title": "File",
+            "type": "string",
+            "format": "binary"
+          }
+        }
+      },
+      "Body_createOrReplaceDataset": {
+        "title": "Body_createOrReplaceDataset",
+        "required": [
+          "file"
+        ],
+        "type": "object",
+        "properties": {
+          "file": {
+            "title": "File",
+            "type": "string",
+            "format": "binary"
+          }
+        }
+      },
+      "CollectionListItemModel": {
+        "title": "CollectionListItemModel",
+        "required": [
+          "count",
+          "bytes",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "bytes": {
+            "title": "Bytes",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          },
+          "last_modified": {
+            "title": "Last Modified",
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "DatasetCreateResponse": {
+        "title": "DatasetCreateResponse",
+        "required": [
+          "last_modified"
+        ],
+        "type": "object",
+        "properties": {
+          "last_modified": {
+            "title": "Last Modified",
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "DatasetModel": {
+        "title": "DatasetModel",
+        "required": [
+          "id"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "minLength": 1,
+            "type": "string"
+          },
+          "hash": {
+            "title": "Hash",
+            "type": "string"
+          },
+          "bytes": {
+            "title": "Bytes",
+            "type": "integer"
+          },
+          "content_type": {
+            "title": "Content Type",
+            "type": "string"
+          },
+          "last_modified": {
+            "title": "Last Modified",
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "GlobalSearchResponse": {
+        "title": "GlobalSearchResponse",
+        "required": [
+          "items"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "title": "Items",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GlobalSearchResponseItemModel"
+            }
+          }
+        }
+      },
+      "GlobalSearchResponseItemModel": {
+        "title": "GlobalSearchResponseItemModel",
+        "type": "object",
+        "properties": {
+          "label": {
+            "title": "Label",
+            "type": "string",
+            "description": "Short label describing the search result"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string",
+            "description": "Short label describing the search result"
+          },
+          "url": {
+            "title": "Url",
+            "maxLength": 65536,
+            "minLength": 1,
+            "type": "string",
+            "description": "URL to search results",
+            "format": "uri"
+          },
+          "score": {
+            "title": "Score",
+            "type": "number",
+            "description": "Semantic relevance of search result. Can be used to infer the ordering of search result"
+          }
+        },
+        "description": "Default query reply model"
+      },
+      "HTTPValidationError": {
+        "title": "HTTPValidationError",
+        "type": "object",
+        "properties": {
+          "detail": {
+            "title": "Detail",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            }
+          }
+        }
+      },
+      "NewTransformationModel": {
+        "title": "NewTransformationModel",
+        "required": [
+          "parameters"
+        ],
+        "type": "object",
+        "properties": {
+          "parameters": {
+            "title": "Parameters",
+            "type": "object"
+          },
+          "state": {
+            "title": "State",
+            "enum": [
+              "CREATED",
+              "RUNNING"
+            ],
+            "type": "string",
+            "default": "CREATED"
+          }
+        }
+      },
+      "SemanticMappingModel": {
+        "title": "SemanticMappingModel",
+        "required": [
+          "name",
+          "properties"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "minLength": 1,
+            "type": "string"
+          },
+          "properties": {
+            "title": "Properties",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "TransformationCreateResponse": {
+        "title": "TransformationCreateResponse",
+        "required": [
+          "id"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string",
+            "format": "uuid4"
+          }
+        }
+      },
+      "TransformationListResponse": {
+        "title": "TransformationListResponse",
+        "required": [
+          "items"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "title": "Items",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TransformationModel"
+            }
+          }
+        }
+      },
+      "TransformationModel": {
+        "title": "TransformationModel",
+        "required": [
+          "id",
+          "parameters"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string",
+            "format": "uuid4"
+          },
+          "parameters": {
+            "title": "Parameters",
+            "type": "object"
+          },
+          "state": {
+            "$ref": "#/components/schemas/TransformationState"
+          }
+        }
+      },
+      "TransformationState": {
+        "title": "TransformationState",
+        "enum": [
+          "CREATED",
+          "RUNNING",
+          "STOPPED",
+          "COMPLETED",
+          "FAILED"
+        ],
+        "type": "string",
+        "description": "An enumeration."
+      },
+      "TransformationStateResponse": {
+        "title": "TransformationStateResponse",
+        "required": [
+          "id",
+          "state"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string",
+            "format": "uuid4"
+          },
+          "state": {
+            "$ref": "#/components/schemas/TransformationState"
+          }
+        }
+      },
+      "TransformationUpdateModel": {
+        "title": "TransformationUpdateModel",
+        "required": [
+          "state"
+        ],
+        "type": "object",
+        "properties": {
+          "state": {
+            "title": "State",
+            "enum": [
+              "RUNNING",
+              "STOPPED"
+            ],
+            "type": "string"
+          }
+        }
+      },
+      "TransformationUpdateResponse": {
+        "title": "TransformationUpdateResponse",
+        "required": [
+          "id",
+          "state"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string",
+            "format": "uuid4"
+          },
+          "state": {
+            "title": "State",
+            "enum": [
+              "RUNNING",
+              "STOPPED"
+            ],
+            "type": "string"
+          }
+        }
+      },
+      "ValidationError": {
+        "title": "ValidationError",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "type": "object",
+        "properties": {
+          "loc": {
+            "title": "Location",
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            }
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "AuthTokenBearer": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  }
+}
