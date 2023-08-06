@@ -1,0 +1,338 @@
+# Molino
+
+Molino provides a presentation and transformation layer for complex data output, the like found in
+RESTful APIs. Think of this as a view layer for your Database.
+
+When building an API it is common for people to just grab stuff from the database and expose to the http client. This might be passable for "trivial" APIs but if they are in use by the public, or used by mobile applications then this will quickly lead to inconsistent output.
+
+## Goals
+
+* Create a protective "barrier" between source data and output, so schema changes do not affect users
+* Systematic type-casting of data, to avoid `foreach` ing through and casting everything
+* Include (a.k.a embedding, nesting or side-loading) relationships for complex data structures
+* Support the pagination of data results, for small and large data sets alike
+* Generally ease the subtle complexities of outputting data in a non-trivial API
+
+## Install
+
+
+``` bash
+pip install molino
+```
+
+## Simple Example
+
+For the sake of simplicity, this example has been put together as one simple
+route function. In reality, you would create dedicated Transformer classes for
+each model. But we will get there, let's first have a look at this:
+
+```python
+from molino import Forge
+
+users = User.all()
+
+data = Forge.make() \
+  .collection(users, lambda user: {
+    'firstname': user['first_name'],
+    'lastname': user['last_name']
+  }) \
+  .json()
+```
+
+You may notice a few things here: First, we can import `Forge`, and then call a method `collection` on it. This method is called a
+[resources](#resources) and we will cover it in the next section. We pass our
+data to this method along with a [transformer](#transformers). In return, we get
+the transformed data back.
+
+
+## Resources
+
+Resources are objects that represent data and have knowledge of a “Transformer”.
+There are two types of resources:
+
+- **Item** - A singular resource, probably one entry in a data store
+- **Collection** - A collection of resources
+
+The resource accepts a dictionary object or an array as the first argument, representing
+the data that should be transformed. The second argument is the transformer used
+for this resource.
+
+## Transformers
+
+The simplest transformer you can write is a callback transformer. Just return a dictionary
+object that maps your data.
+
+```python
+users = User.all()
+
+data = Forge.make() \
+  .collection(users, lambda user: {
+    'firstname': user['first_name'],
+    'lastname': user['last_name']
+  }) \
+  .json()
+```
+
+But let's be honest, this is not what you want. And we would agree with you, so
+let's have a look at transformer classes.
+
+
+### Transformer Classes
+
+The recommended way to use transformers is to create a transformer class. This
+allows the transformer to be easily reused in multiple places.
+
+#### Creating a Transformer
+
+Create the class yourself, you just have to make sure that the class extends
+`TransformerAbstract` and implements at least a `transform` method.
+
+```python
+from molino import TransformerAbstract
+
+class UserTransformer(TransformerAbstract):
+  def transform(self, model):
+    return {
+      id: model.id,
+      firstname: model.first_name,
+      lastname: model.last_name
+    }
+```
+
+*Note:* A transformer can also return a primitive type, like a string or a
+number, instead of an object. But keep in mind that including additional data,
+as covered in the next section, only work when an object is returned.
+
+
+#### Using the Transformer
+
+Once the transformer class is defined, it can be passed to the resource as the
+second argument.
+
+```python
+users = User.all()
+
+data = Forge.make() \
+  .collection(users, UserTransformer()) \
+  .json()
+```
+
+You have to pass a reference to the transformer class
+directly.
+
+*Note:* Passing the transformer as the second argument will terminate the fluent
+interface. If you want to chain more methods after the call to `collection` or
+`item` you should only pass the first argument and then use the `with_transformer`
+method to define the transformer. See [Fluent Interface](#fluent-interface)
+
+#### Default Includes
+
+Includes defined in the `default_includes` will always be included in the
+returned data.
+
+You have to specify the name of the include by returning an array of all
+includes from the `default_includes`. Then you create an additional method
+for each include, named like in the example: `include{Name}`.
+
+The include method returns a new resource, that can either be an `item` or a
+`collection`.  See [Resources](#resources).
+
+```python
+class BookTransformer(TransformerAbstract):
+  default_includes = [
+    'author'
+  ]
+
+  def transform(self, book):
+    return {
+      id: book.id,
+      title: book.title,
+      year: book.yr
+    }
+
+  def include_author(self, book)
+    return self.item(book.author, AuthorTransformer())
+
+```
+
+*Note:* If you want to use snake_case property names, you would still name the
+include function in camelCase, but list it under `default_includes` in snake_case.
+
+#### Available Include
+
+An `available_includes` is almost the same as a `default_includes`, except it is not
+included by default.
+
+```python
+class BookTransformer(TransformerAbstract):
+  available_includes = [
+    'author'
+  ]
+
+  def transform(self, book):
+    return {
+      id: book.id,
+      title: book.title,
+      year: book.yr
+    }
+
+  def include_author(self, book):
+    return self.item(book.relationships.author, AuthorTransformer())
+```
+
+To include this resource Forge calls the `include_author()` method before transforming.
+
+```python
+return Forge.make() \
+  .item(book, BookTransformer()) \
+  .include('author') \
+  .json()
+```
+
+These includes can be nested with dot notation too, to include resources within
+other resources.
+
+```python
+return Forge.make() \
+  .item(book, BookTransformer()) \
+  .include('author,publisher.something') \
+  .json()
+```
+
+## Eager Loading
+
+When you include additional models in your transformer be sure to eager load
+these relations as this can quickly turn into n+1 database queries. If you have
+default_includes you should load them with your initial query. Forge is framework agnostic, so it will not try to load related data.
+
+## Metadata
+
+Sometimes you need to add just a little bit of extra information about your
+model or response. For these situations, we have the `meta` method.
+
+```python
+users = User.all()
+
+return Forge.make() \
+  .collection(users, UserTransformer) \
+  .meta({
+    access: 'limited'
+  }) \
+  .json()
+```
+
+How this data is added to the response is dependent on the
+[Serializer](#serializers).
+
+
+### DataSerializer
+
+This serializer adds the `data` namespace to all of its items:
+
+```python
+# Item
+{
+  data: {
+    foo: 'bar',
+    included: {
+      data: {
+        name: 'test'
+      }
+    }
+  }
+}
+
+# Collection
+{
+  data: [
+    {
+      foo: bar
+    },
+    {...}
+  ]
+}
+```
+
+The advantage over the `PlainSerializer` is that it does not conflict with meta
+and pagination:
+
+```python
+# Item with meta
+{
+  data: {
+    foo: 'bar'
+  },
+  meta: {
+    ...
+  }
+}
+
+# Collection
+{
+  data: [
+    {...}
+  ],
+  meta: {...},
+  pagination: {...}
+}
+```
+
+
+### SLDataSerializer
+
+This serializer works similarly to the DataSerializer, but it only adds the
+`data` namespace on the first level.
+
+```python
+# Item
+{
+  data: {
+    foo: 'bar',
+    included: {
+      name: 'test'
+    }
+  }
+}
+```
+
+
+## Fluent Interface
+
+Forge has a fluent interface for all the setter methods. This means you can
+chain method calls which makes the API more readable. The following methods are
+available on `Forge.make()`
+(see below).
+
+**Chainable methods:**
+- `collection(data)`
+- `item(data)`
+- `null(data)`
+- `paginate(data)`
+- `meta(metadata)`
+- `include(includes)`
+- `transformer(transformer)`
+- `variant(variant)`
+- `serializer(serializer)`
+- `including(includes)` (alias for `include`)
+- `with_meta(metadata)` (alias for `meta`)
+- `with_transformer(transformer)` (alias for `transformer`)
+- `with_variant(variant)` (alias for `variant`)
+- `with_serializer(serializer)` (alias for `serializer`)
+
+**Terminating methods:**
+- `json()`
+
+## Contributing
+
+All contibutions are welcome
+
+## License
+
+The MIT License (MIT).
+
+## Credits
+
+Special thanks to the creator(s) of [Fractal], a PHP API transformer that was
+the main inspiration for this package.
+
+[Fractal]: https://fractal.thephpleague.com
