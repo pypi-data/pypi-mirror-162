@@ -1,0 +1,75 @@
+on: [push, pull_request]
+name: Run Test Cases
+jobs:
+  unix:
+    name: CI Test On UNIX
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+        rust:
+          - 1.60.0
+        python:
+          - '3.8'
+          - '3.9'
+          - '3.10'
+          - 'pypy-3.8'
+          - 'pypy-3.9'
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+      - name: Install Rust stable
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.rust }}
+          default: true
+          override: true
+          components: rustfmt, clippy
+      - name: Install Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python }}
+          architecture: x64
+      - name: Test
+        run: |
+          export PYO3_PYTHON="$(which python)"
+          make initialize apis docs test
+  windows:
+    name: CI Test On Windows
+    strategy:
+      matrix:
+        os:
+          - windows-latest
+        rust:
+          - 1.60.0
+        python:
+          - '3.10'
+          - 'pypy-3.9'
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+      - name: Install Rust stable
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.rust }}
+          default: true
+          override: true
+          components: rustfmt, clippy
+      - name: Install Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python }}
+          architecture: x64
+      - name: Test
+        run: |
+          $Env:PYO3_PYTHON = "python"
+          make initialize apis docs test
