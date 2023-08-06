@@ -1,0 +1,8 @@
+package my.co.sample.{{ enum.package.parent.name | case_package }}.{{ enum.package.name | case_package }};
+
+
+public enum {{ enum.name | case_class }}()
+{
+    {% for value in enum.values %}
+    {{ value | case_attribute }}{% if loop.last != True %},{% endif %}{% endfor %}
+}
