@@ -1,0 +1,70 @@
+"""
+    Copyright 2016 Inmanta
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+    Contact: code@inmanta.com
+"""
+import web
+import yum
+
+entity Application extends web::Application:
+    """
+        A web application that requires PHP
+    """
+    bool php55w=false
+end
+
+implementation phpApacheRPM for Application:
+    """
+        This modules installs a common set of php modules and support for webservers
+        either through a plugin or a cgi like interface.
+    """
+    php = std::Package(host=container.host, name="php", state="installed")
+    
+    std::Package(host=container.host, name="php-mysqlnd", state="installed", provides=php)
+    std::Package(host=container.host, name="php-gd", state="installed", provides=php)
+    std::Package(host=container.host, name="php-mbstring", state="installed", provides=php)
+end
+
+implementation php55el for Application:
+    """
+        This modules installs a common set of php modules and support for webservers
+        either through a plugin or a cgi like interface.
+    """
+    php = std::Package(host=container.host, name="php55w", state="installed")
+    
+    std::Package(host=container.host, name="php55w-mysqlnd", state="installed", provides=php)
+    std::Package(host=container.host, name="php55w-gd", state="installed", provides=php)
+    std::Package(host=container.host, name="php55w-mbstring", state="installed", provides=php)
+
+    yum::Repository(host=container.host, name="webtatic", enabled=true, gpgcheck=true,
+                    baseurl="https://repo.webtatic.com/yum/el7/$basearch/",
+                    gpgkey="https://repo.webtatic.com/yum/RPM-GPG-KEY-webtatic-el7")
+end
+
+implementation phpApacheDEB for Application:
+    """
+        This modules installs a common set of php modules and support for webservers
+        either through a plugin or a cgi like interface.
+    """
+    php = std::Package(host=container.host, name="php5", state="installed")
+
+    std::Package(host=container.host, name="libapache2-mod-php5", state="installed", provides=php)    
+    std::Package(host=container.host, name="php5-mysqlnd", state="installed", provides=php)    
+    std::Package(host=container.host, name="php5-gd", state="installed", provides=php)
+end
+
+implement Application using phpApacheRPM when std::familyof(host.os, "redhat") and php55w == false
+implement Application using phpApacheDEB when std::familyof(host.os, "ubuntu")
+implement Application using php55el when std::familyof(host.os, "redhat") and php55w == true
