@@ -1,0 +1,35 @@
+[tool.poetry]
+name = "terrascript-core"
+version = "1.0.1"
+description = ""
+authors = ["csylaios <chris.sylaios@gmail.com>"]
+
+packages = [
+    {include = "terrascript", from = "src"}
+]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+pydash = "^5.0.2"
+click = "^8.0.1"
+pybars3 = "^0.9.7"
+attrs = "^21.2.0"
+pytest-asyncio = "^0.16.0"
+
+[tool.poetry.dev-dependencies]
+black = "^21.7b0"
+mypy = "^0.910"
+pytest = "^6.2.5"
+
+[tool.black]
+line-length = 100
+target-version = ['py38']
+
+[tool.pyright]
+include = ['src', 'tests']
+pythonVersion = '3.9'
+useLibraryCodeForTypes = false
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
