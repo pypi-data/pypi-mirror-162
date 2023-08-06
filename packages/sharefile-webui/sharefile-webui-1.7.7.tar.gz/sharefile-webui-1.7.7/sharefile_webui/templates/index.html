@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	{% include "_header.inc.html" %}
+	<link href="{{ url_for('static', filename='css/dropzone.css')}}?v={{data.version}}" rel="stylesheet" type="text/css" />
+	<script type="application/javascript" src="{{ url_for('static', filename='js/promise-polyfill.min.js')}}?v={{data.version}}"></script>
+	<script type="application/javascript" src="{{ url_for('static', filename='js/dropzone.js')}}?v={{data.version}}"></script>
+</head>
+<body>
+	<div class="app">
+		<h1>Share File WEB UI <span class="user">({{ data.user }})</span> <span class="version">v{{data.version}}</span></h1>
+		<div id="main-container"></div>
+		<script type="application/javascript" src="{{ url_for('static', filename='js/sharefile-webui.js')}}?v={{data.version}}"></script>
+	</div>
+	{% include "_footer.inc.html" %}
+</body>
+</html>
