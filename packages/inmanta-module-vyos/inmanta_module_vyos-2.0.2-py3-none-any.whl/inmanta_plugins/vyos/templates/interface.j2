@@ -1,0 +1,31 @@
+{% if dhcp -%}
+{{ node_name }} address dhcp
+{% elif address is defined and address-%}
+{{ node_name }} address {{ address }}
+{% else -%}
+{{ node_name }}
+{% endif %}
+{% if addresses is defined %}{%for address in addresses%}
+{{ node_name }} address {{ address.ip }}
+{%endfor%}{%endif%}
+{% if traffic_policy_out is defined -%}
+{{ node_name }} traffic-policy out {{ traffic_policy_out.name }}
+{% endif %}
+{% if traffic_policy_in is defined -%}
+{{ node_name }} traffic-policy in {{ traffic_policy_in.name }}
+{% endif %}
+{% if duplex -%}
+{{ node_name }} duplex {{duplex}}
+{% endif %}
+{% if speed -%}
+{{ node_name }} speed {{ speed }}
+{% endif %}
+{% if inbound_ruleset is defined -%}
+{{ node_name }} firewall in name {{ inbound_ruleset.name }}
+{% endif %}
+{% if local_ruleset is defined -%}
+{{ node_name }} firewall local name {{ local_ruleset.name }}
+{% endif %}
+{% if outbound_ruleset is defined -%}
+{{ node_name }} firewall out name {{ outbound_ruleset.name }}
+{% endif %}

@@ -1,0 +1,613 @@
+"""
+    Vyos interface module
+
+    :copyright: 2018 Inmanta
+    :contact: code@inmanta.com
+    :license: Inmanta EULA
+"""
+
+import ip
+import net
+import vyos::routemap
+import vyos::firewall
+
+os = std::OS(family=std::linux, name="vyos")
+vyos=os
+vyos_12 = std::OS(family=vyos, name="vyos", version=1.2)
+
+typedef area as number matching self >= 0 and self < 4294967296
+typedef duplex as string matching self == "auto" or self == "half" or self == "full"
+typedef speed as string matching self in ["10", "100", "1000", "2500","10000", "auto"]
+typedef vlan_id as int matching self >= 0 and self < 4095
+
+# General Framework
+entity ConfigItem:
+    string config
+end
+
+
+entity ExtraConfig extends ConfigItem:
+end
+
+implementation extraconfig_depends for ExtraConfig:
+    self.parent.requires = self.requires
+    self.parent.provides = self.provides
+end
+
+implement ExtraConfig using extraconfig_depends
+
+ConfigItem.extra [0:] -- ExtraConfig.parent [1]
+
+
+entity Config extends ConfigItem, std::PurgeableResource:
+    """
+        VYOS config block resource
+
+        This is the central resource, that is used to deploy specific configlets.
+
+        :attr keys_only: Only compare these keys, ignore all other keys that are in the current state
+        :attr ignore_keys: Ignore these keys in the current state
+        :attr facts: When set to true the config is never executed. The value under node is exposed as a fact
+    """
+    string device
+    string node
+    bool never_delete=false
+    bool save=true
+    bool send_event=true
+    string[] keys_only=[]
+    string[] ignore_keys=[]
+    bool facts=false
+    bool skip_on_connect_error
+end
+
+index Config(device, node)
+
+Config.credential [1] -- Credential
+
+implement Config using std::none
+
+entity Credential:
+    string address
+    string user
+    string password
+    number port
+end
+
+implement Credential using std::none
+
+entity BaseHost extends ip::Host:
+    """
+        A vyos (or derivative) based host.
+
+        :attr skip_on_connect_error: When true, vyos resources deployed on this host will be skipped when the handler fails to
+            connect to the host. Otherwise the resource will be marked as failed.
+    """
+    string user="inmanta"
+    string password="inmanta"
+    number port=22
+    bool skip_on_connect_error=false
+end
+
+entity Host extends BaseHost:
+
+end
+
+implementation vyosConfig for BaseHost:
+    std::AgentConfig(autostart=true, agentname=name, uri="local:", provides=self)
+    self.os = vyos::vyos_12
+end
+
+implementation commonConfig for BaseHost:
+    self.credential = vyos::Credential(address=self.ip, user=self.user,
+                                        password=self.password, port=self.port)
+end
+
+
+implement BaseHost using vyosConfig
+implement BaseHost using parents
+
+implement Host using parents
+implement Host using commonConfig
+
+BaseHost.credential [1] -- Credential
+
+entity ConfigNode:
+    string node_name
+    bool purged=false
+    bool purge_on_delete=false
+end
+
+
+ConfigNode.config [0:1] -- ConfigItem
+ConfigNode.host [1] -- BaseHost
+
+entity Address:
+    """
+        An address entity to add multiple addresses to an interface
+    """
+    ip::cidr_v10 ip
+end
+implement Address using std::none
+
+entity BaseInterface extends ConfigNode:
+    string name
+    ip::cidr_v10? address=null
+    bool dhcp=false
+end
+
+BaseInterface.addresses [0:] -- Address
+BaseInterface.policy_route [0:1] -- PolicyRoute
+"""
+    Set a policy route for this interface.
+"""
+
+implement BaseInterface using ifacePolicyRoute when policy_route is defined
+
+entity Interface extends BaseInterface:
+    bool never_delete=false
+    duplex duplex="auto"
+    speed speed="auto"
+end
+
+Interface.inbound_ruleset [0:1] -- vyos::firewall::RuleSet
+Interface.local_ruleset [0:1] -- vyos::firewall::RuleSet
+Interface.outbound_ruleset [0:1] -- vyos::firewall::RuleSet
+
+implement Interface using parents, iface
+
+index Interface(host, name)
+
+entity Loopback extends ConfigNode:
+    ip::cidr address
+end
+
+entity Masquerade extends ConfigNode:
+    string outbound_interface
+    string source_address
+    number rule
+end
+
+index Masquerade(host, rule)
+
+implement Masquerade using masq
+
+implementation masq for Masquerade:
+    self.node_name = "nat source rule {{ rule }}"
+    self.config = vyos::Config(
+        device=self.host.name,
+        node=self.node_name,
+        credential=self.host.credential,
+        config=std::template("vyos/masq.j2"),
+        skip_on_connect_error=self.host.skip_on_connect_error,
+        requires=[self.host.requires, self.requires],
+        provides=self.provides,
+        purged=self.purged,
+    )
+end
+
+typedef tunnel_mtu_t as number matching self >= 64 and self <= 8024
+typedef tunnel_encap_t as string matching self in ["gre", "gre-bridge", "ipip", "sit", "ipip6", "ip6ip6"]
+typedef tunnel_key_t as number matching self >= 0 and self <= 99999
+
+entity Tunnel extends BaseInterface:
+    string? description=null
+    tunnel_mtu_t mtu=1476
+    tunnel_encap_t encapsulation
+    ip::ip_v10 local_ip
+    ip::ip_v10? remote_ip=null
+    tunnel_key_t? key=null
+end
+
+typedef abrtype_t as string matching self in ["cisco", "ibm", "shortcut", "standard"]
+
+index Ospf(host)
+
+entity Ospf extends ConfigNode:
+    area area=0
+    ip::cidr[] network
+    ip::ip router_id
+    string[]? passive_interfaces
+    string[]? passive_interface_excludes
+    abrtype_t abrtype="cisco"
+end
+
+typedef redistribute_t as string matching self in ["bgp", "connected", "kernel", "rip", "static"]
+typedef ospf_metric_t as number matching self > 0 and self <= 16
+typedef ospf_metric_type_t as number matching self in [1, 2]
+
+entity OspfRedistribute:
+    redistribute_t type
+    ospf_metric_t? metric
+    ospf_metric_type_t metric_type=2
+    string? route_map=null
+end
+
+OspfRedistribute.ospf [1] -- Ospf.redistributes [0:]
+
+index OspfRedistribute(ospf, type)
+
+implement OspfRedistribute using std::none
+
+BaseInterface.traffic_policy_out [0:1] -- Shaper.interfaces_in [0:]
+BaseInterface.traffic_policy_in [0:1] -- Shaper.interfaces_out [0:]
+
+implementation ifacePolicyRoute for BaseInterface:
+    if self.policy_route.purged:
+        self.policy_route.requires += [self, self.requires]
+    else:
+        self.config.extra = ExtraConfig(
+            config = "{{ self.node_name }} policy route {{ self.policy_route.name }}",
+            requires = [self.requires, self.host.requires],
+            provides = self.provides,
+        )
+        self.requires += [self.policy_route, self.policy_route.requires]
+    end
+end
+
+implementation iface for Interface:
+    self.node_name = "interfaces ethernet {{ name }}"
+    self.config = vyos::Config(
+        device=self.host.name,
+        node=self.node_name,
+        credential=self.host.credential,
+        config=std::template("vyos/interface.j2"),
+        skip_on_connect_error=self.host.skip_on_connect_error,
+        requires=[self.host.requires, self.requires],
+        provides=self.provides,
+        purged=self.purged,
+        ignore_keys=["interfaces ethernet {{ name }} smp_affinity"]
+    )
+    if self.inbound_ruleset is defined:
+        self.config.requires += self.inbound_ruleset.config
+    end
+    if self.local_ruleset is defined:
+        self.config.requires += self.local_ruleset.config
+    end
+    if self.outbound_ruleset is defined:
+        self.config.requires += self.outbound_ruleset.config
+    end
+end
+
+implementation loopback for Loopback:
+    self.node_name = "interfaces loopback lo"
+    self.config = vyos::Config(
+        device=self.host.name,
+        node=self.node_name,
+        credential=self.host.credential,
+        config=std::template("vyos/lointerface.j2"),
+        skip_on_connect_error=self.host.skip_on_connect_error,
+        requires=[self.host.requires, self.requires],
+        provides=self.provides,
+    )
+end
+
+implementation ospf for Ospf:
+    self.node_name = "protocols ospf"
+    self.config = vyos::Config(
+        device=self.host.name,
+        node=self.node_name,
+        credential=self.host.credential,
+        config=std::template("vyos/ospf.j2"),
+        skip_on_connect_error=self.host.skip_on_connect_error,
+        requires=[self.host.requires, self.requires],
+        provides=self.provides,
+        purged=self.purged,
+        purge_on_delete=self.purge_on_delete
+    )
+    for redistribute in redistributes:
+        self.config.requires += redistribute.requires
+    end
+end
+
+implementation tunnel for Tunnel:
+    self.node_name = "interfaces tunnel {{ name }}"
+    self.config = vyos::Config(
+        device=self.host.name,
+        node=self.node_name,
+        credential=self.host.credential,
+        config=std::template("vyos/tunnel.j2"),
+        skip_on_connect_error=self.host.skip_on_connect_error,
+        requires=[self.host.requires, self.requires],
+        provides=self.provides,
+        purged=self.purged,
+        purge_on_delete=self.purge_on_delete,
+    )
+end
+
+implement Loopback using loopback
+implement Ospf using ospf
+implement Tunnel using parents, tunnel
+
+Vif.parent [1] -- Interface
+
+entity Vif extends BaseInterface:
+    vlan_id vlan
+    string type="vif"
+    string name=""
+end
+
+implement Vif using parents, vif
+
+index Vif(parent, vlan)
+
+implementation vif for Vif:
+    self.host = self.parent.host
+    self.node_name = "{{ parent.node_name}} vif {{ vlan }}"
+    if not self.purged == true:
+        self.config = vyos::ExtraConfig(
+            config=std::template("vyos/vif.j2"),
+            requires=[self.requires, self.host.requires],
+            provides=self.provides
+        )
+    else:
+        self.config = vyos::ExtraConfig(
+            config="",
+            requires=[self.requires, self.host.requires],
+            provides=self.provides
+        )
+    end
+    self.parent.config.extra = self.config
+end
+
+
+entity Bridge extends BaseInterface:
+    string type="bridge"
+end
+
+BaseInterface.bridge_group [0:1] -- Bridge.members [0:]
+
+implement Bridge using parents, bridge
+
+implementation bridge for Bridge:
+    self.node_name = "interfaces bridge {{name}}"
+    self.config = vyos::Config(
+        device=self.host.name,
+        node=self.node_name,
+        credential=self.host.credential,
+        config=std::template("vyos/bridge.j2"),
+        skip_on_connect_error=self.host.skip_on_connect_error,
+        requires=[self.requires, self.host.requires, self.members],
+        provides=self.provides,
+    )
+end
+
+
+entity DhcpServer extends ConfigNode:
+    string name
+    ip::cidr subnet
+    ip::ip default_router
+    ip::ip[] dns_servers
+    ip::ip range_start
+    ip::ip range_end
+end
+
+implementation dhcpServer for DhcpServer:
+    self.node_name = "service dhcp-server shared-network-name {{ name }} subnet {{ subnet }}"
+    self.config = vyos::Config(
+        device=self.host.name,
+        node=self.node_name,
+        credential=self.host.credential,
+        config=std::template("vyos/dhcp.j2"),
+        skip_on_connect_error=self.host.skip_on_connect_error,
+        requires=[self.host.requires, self.requires],
+        provides=self.provides,
+    )
+end
+
+implement DhcpServer using dhcpServer
+
+entity StaticRoute extends ConfigNode:
+    ip::cidr destination
+    ip::ip next_hop
+    number table=0
+end
+
+index StaticRoute(host, destination, table)
+
+implementation staticRouteDefault for StaticRoute:
+    self.node_name = "protocols static route {{destination}}"
+    node_cfg = "protocols static route {{destination}} next-hop {{ next_hop }}"
+
+    self.config = vyos::Config(
+        device=self.host.name,
+        node=self.node_name,
+        credential=self.host.credential,
+        config=node_cfg,
+        skip_on_connect_error=self.host.skip_on_connect_error,
+        requires=[self.host.requires, self.requires],
+        provides=self.provides,
+        purged=self.purged,
+    )
+end
+
+implement StaticRoute using staticRouteDefault when table == 0
+
+implementation staticRouteTable for StaticRoute:
+    self.node_name = "protocols static table {{ table }} route {{destination}} next-hop {{ next_hop }}"
+    self.config = vyos::Config(
+        device=self.host.name,
+        node=self.node_name,
+        credential=self.host.credential,
+        config=self.node_name,
+        skip_on_connect_error=self.host.skip_on_connect_error,
+        requires=[self.host.requires, self.requires],
+        provides=self.provides,
+    )
+end
+
+implement StaticRoute using staticRouteTable when table > 0
+
+entity PolicyRoute extends ConfigNode:
+    """
+        Route policy for Vyos `Polciy Based Routing <https://docs.vyos.io/en/latest/routing/pbr.html>`__.
+
+        :attr name: The name for this policy route
+        :attr rules: The rules for this policy route
+    """
+    # alfanum because of issue inmanta/vyos#28
+    std::alfanum name
+end
+
+index PolicyRoute(name)
+
+PolicyRoute.rules [1:] -- PolicyRouteRule.policy [1]
+
+entity PolicyRouteRule extends ConfigNode:
+    """
+        Rule in a route policy for Vyos `Polciy Based Routing <https://docs.vyos.io/en/latest/routing/pbr.html>`__.
+
+        :attr id: The rule number
+        :attr table: Routing table for traffic matching this rule
+        :attr description: Description for this rule
+        :attr match_source_address: The source address to match traffic on
+        :attr match_destination_address: The destination address to match traffic on. Can only be specified if match_protocol is set
+        :attr match_source_port: The source port to match traffic on. Can only be specified if match_protocol in ["tcp", "udp"]
+        :attr match_destination_port: The destination port to match traffic on
+        :attr match_protocol: The protocol to match traffic on
+    """
+    number id
+    number table
+    # alfanum because of issue inmanta/vyos#28
+    std::alfanum? description = null
+    ip::cidr? match_source_address = null
+    ip::cidr? match_destination_address = null
+    ip::port? match_source_port = null
+    ip::port? match_destination_port = null
+    # alfanum because of issue inmanta/vyos#28
+    std::alfanum? match_protocol = null
+end
+
+index PolicyRouteRule(policy, id)
+
+implementation policyRoute for PolicyRoute:
+    self.node_name = "policy route {{ name }}"
+    self.config = vyos::Config(
+        device = self.host.name,
+        node = self.node_name,
+        credential = self.host.credential,
+        config = self.node_name,
+        skip_on_connect_error=self.host.skip_on_connect_error,
+        requires = [self.requires, self.host.requires],
+        provides = self.provides,
+        purged = self.purged,
+    )
+end
+
+implementation policyRouteRule for PolicyRouteRule:
+    self.host = self.policy.host
+    if not self.match_protocol in ["tcp", "udp"]:
+        # assert these are only set for allowed protocols
+        self.match_source_port = null
+        self.match_destination_port = null
+    end
+    self.node_name = "{{ self.policy.node_name }} rule {{ id }}"
+    self.config = ExtraConfig(
+        requires = [self.requires, self.host.requires],
+        provides = self.provides,
+    )
+    if self.purged:
+        self.config.config = ""
+    else:
+        self.config.config = std::template("vyos/policy_route_rule.j2")
+    end
+    self.policy.config.extra += self.config
+end
+
+implement PolicyRoute using policyRoute
+implement PolicyRouteRule using policyRouteRule
+
+entity Shaper extends ConfigNode:
+    string name
+    string bandwidth
+    string default_bandwidth="50%"
+    string default_ceiling="100%"
+    string default_queue_type="fair-queue"
+end
+
+implementation shaper for Shaper:
+    self.node_name = "traffic-policy shaper {{ name }}"
+    self.config = vyos::Config(
+        device=self.host.name,
+        node=self.node_name,
+        credential=self.host.credential,
+        config=std::template("vyos/shaper.j2"),
+        skip_on_connect_error=self.host.skip_on_connect_error,
+        requires=[self.host.requires, self.requires],
+        provides=self.provides,
+    )
+
+    for iface in self.interfaces_in:
+        iface.config.requires = self.config
+    end
+
+    for iface in self.interfaces_out:
+        iface.config.requires = self.config
+    end
+end
+
+implement Shaper using shaper
+
+entity Hostname extends ConfigNode:
+    string name
+end
+
+index Hostname(host)
+
+implementation hostname for Hostname:
+    self.node_name = "system host-name"
+    self.config = vyos::Config(
+        device=self.host.name,
+        node=self.node_name,
+        credential=self.host.credential,
+        config=std::template("vyos/hostname.j2"),
+        skip_on_connect_error=self.host.skip_on_connect_error,
+        requires=[self.host.requires, self.requires],
+        provides=self.provides
+    )
+end
+
+implement Hostname using hostname
+
+entity RouteMap extends ConfigNode:
+    string name
+    string? description=null
+end
+
+RouteMap.rules [0:] -- vyos::routemap::Rule
+
+implementation routeMap for RouteMap:
+    self.node_name = "policy route-map {{ name }}"
+    self.config = vyos::Config(
+        device=self.host.name,
+        node=self.node_name,
+        credential=self.host.credential,
+        config=std::template("vyos/routemap.j2"),
+        skip_on_connect_error=self.host.skip_on_connect_error,
+        requires=[self.host.requires, self.requires],
+        provides=self.provides,
+        purged=self.purged,
+        purge_on_delete=self.purge_on_delete,
+    )
+end
+
+implement RouteMap using routeMap
+
+entity IpFact extends std::PurgeableResource:
+    """ Discover interface IP """
+    string id
+    string device
+end
+index IpFact(interface)
+
+IpFact.host [1] -- vyos::BaseHost
+IpFact.credential [1] -- vyos::Credential
+IpFact.interface [1] -- vyos::Interface
+
+implementation wireup_ipfact for IpFact:
+    self.host=interface.host
+    self.credential=self.host.credential
+    self.id = interface.name
+    self.device = self.host.name
+end
+
+implement IpFact using wireup_ipfact

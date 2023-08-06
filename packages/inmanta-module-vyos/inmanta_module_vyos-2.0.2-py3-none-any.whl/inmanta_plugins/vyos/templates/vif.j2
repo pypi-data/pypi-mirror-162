@@ -1,0 +1,12 @@
+{% if address is defined and address-%}
+{{ node_name }}  address {{ address }}
+{% endif %}
+{% if addresses is defined %}{%for address in addresses%}
+{{ node_name }} address {{ address.ip }}
+{%endfor%}{%endif%}
+{% if traffic_policy_out is defined -%}
+{{ node_name }} traffic-policy out {{ traffic_policy_out.name }}
+{% endif %}
+{% if traffic_policy_in is defined -%}
+{{ node_name }} traffic-policy in {{ traffic_policy_in.name }}
+{% endif %}
