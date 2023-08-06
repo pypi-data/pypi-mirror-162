@@ -1,0 +1,92 @@
+Metadata-Version: 2.1
+Name: tsapiness
+Version: 0.0.3
+Summary: An open source python package to connect survey data to the survey definition defined by tsapi
+Author-email: Andrew Le Breuilly <andrew@arrowstream.co.uk>
+License: MIT License        
+        Copyright (c) 2022 Arrowstream Analytics Limited        
+        Permission is hereby granted, free of charge, to any person obtaining a copy
+        of this software and associated documentation files (the "Software"), to deal
+        in the Software without restriction, including without limitation the rights
+        to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+        copies of the Software, and to permit persons to whom the Software is
+        furnished to do so, subject to the following conditions:        
+        The above copyright notice and this permission notice shall be included in all
+        copies or substantial portions of the Software.        
+        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+        IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+        FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+        AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+        LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+        OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+        SOFTWARE.        
+Project-URL: Homepage, https://github.com/ArrowstreamUK/TSAPI-py
+Project-URL: Bug Tracker, https://github.com/ArrowstreamUK/TSAPI-py/issues
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: requests
+Requires-Dist: pyreadstat
+
+# tsapiness
+
+tsapiness (pronounced "zappiness") aims to make the TSAPI easy to access via Python. 
+
+Currently, the project provides a python representation of the TSAPI so that the data can be manipulated accordingly. 
+More details on TSAPI can be found here. 
+https://www.tsapi.net/
+
+These are early days for the project, in this early version you can:
+* convert an SPSS sav file to tsapi format
+* convert a triple-s file to tsapi format
+* read tsapi from a webserver
+
+Future development intends to:
+* convert other survey platform APIs to the tsapi format
+* provide tools for converting flat tsapi structures that occur when importing from sav or triple-s into the more native hierarchical tsapi structure
+* provide full documentation on how to use tsapiness effectively. 
+
+A simple implementation is below...
+
+```
+
+
+import tsapiness as ts
+import json
+
+# Create tsapi object from TSAPI demo server
+
+SERVER = 'https://tsapi-demo.azurewebsites.net'
+conn = ts.connector_tsapi.Connection(server=SERVER)
+surveys = ts.connector_tsapi.Surveys(connection=conn)
+survey_id = surveys[0]['id']
+survey_from_api = ts.connector_tsapi.Survey(survey_id=survey_id, connection=conn)
+
+# create tsapi from triple s file:
+
+sss_file = '../data/example.sss'
+asc_file = '../data/example.asc'
+
+conn = ts.connector_sss.Connection(sss_file=sss_file, asc_file=asc_file)
+survey_from_sss = ts.connector_sss.Survey(connection=conn)
+
+# save back to json
+with open('../data/data.json', 'w', encoding='utf8') as f:
+    json.dump(survey_from_sss.metadata.survey.to_tsapi(),
+              f,
+              indent=4,
+              ensure_ascii=False)
+
+# create tsapi from sav file
+
+# source:
+# https://www.pewresearch.org/global/dataset/2014-spring-global-attitudes/
+
+sav_file = '../data/Pew Global Attitudes Spring 2014.sav'
+conn = ts.connector_sav.Connection(sav_file=sav_file)
+survey_from_sav = ts.connector_sav.Survey(connection=conn)
+
+```
