@@ -1,0 +1,28 @@
+operationId: get_alterations
+parameters:
+- description: Filter by name
+  in: query
+  name: name
+  required: false
+  type: string
+- description: Page size
+  in: query
+  name: page_size
+  required: false
+  type: integer
+- description: Page number
+  in: query
+  name: page
+  required: false
+  type: integer
+responses:
+  '200':
+    description: OK
+    schema:
+      $ref: '#/definitions/AlterationList'
+  default:
+    description: Error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- alterations

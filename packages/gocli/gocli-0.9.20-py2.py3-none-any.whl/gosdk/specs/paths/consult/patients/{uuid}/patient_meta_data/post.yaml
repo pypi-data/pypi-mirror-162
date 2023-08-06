@@ -1,0 +1,24 @@
+operationId: create_patient_meta_data
+parameters:
+- description: Patient UUID
+  in: path
+  name: uuid
+  required: true
+  type: string
+- description: Patient Meta Data to create.
+  in: body
+  name: new_meta_data
+  required: true
+  schema:
+    $ref: '#/definitions/NewPatientMetaData'
+responses:
+  '201':
+    description: OK
+    schema:
+      $ref: '#/definitions/PatientMetaData'
+  default:
+    description: Error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- patients

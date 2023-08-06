@@ -1,0 +1,34 @@
+operationId: get_cases_classifications_match
+parameters:
+- description: Retrieve 'classifications' record using 'uuid' field value.
+  in: path
+  name: pk
+  required: true
+  type: string
+- collectionFormat: multi
+  description: List of data_set to filter classifications.
+  in: query
+  items:
+    type: string
+  name: data_set
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of significance to filter classifications.
+  in: query
+  items:
+    type: string
+  name: significance
+  required: false
+  type: array
+responses:
+  '200':
+    description: List of Classifications objects
+    schema:
+      $ref: '#/definitions/ClassificationsDocumentList'
+  default:
+    description: unexpected error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- cases

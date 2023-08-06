@@ -1,0 +1,162 @@
+operationId: match_prognoses_post
+parameters:
+- collectionFormat: multi
+  description: Alterations to match. Use 'ANY' to match on any alteration.
+  in: formData
+  items:
+    type: string
+  name: alterations
+  required: false
+  type: array
+- collectionFormat: multi
+  description: g. notation of alterations to match.
+  in: formData
+  items:
+    type: string
+  name: hgvs_g
+  required: false
+  type: array
+- collectionFormat: multi
+  description: Diseases to match. Use 'ANY' to match on any disease.
+  in: formData
+  items:
+    type: string
+  name: diseases
+  required: true
+  type: array
+- description: Use 'all' to get all matches, 'partial' to get only partial matches, 'full' to get only full matches
+  format: choice
+  in: formData
+  name: match_type
+  required: false
+  type: string
+- collectionFormat: multi
+  description: Assays associated to Samples for match. Leave blank to ignore assay.
+  in: formData
+  items:
+    type: string
+  name: assay
+  required: false
+  type: array
+- collectionFormat: multi
+  description: Genes in SNV Panel. Leave blank to ignore panel.
+  in: formData
+  items:
+    type: string
+  name: snv_panel
+  required: false
+  type: array
+- description: Name of concept list that contains SNV panel gene
+  in: formData
+  name: snv_panel_name
+  required: false
+  type: string
+- collectionFormat: multi
+  description: Genes in CNV Panel. Leave blank to ignore panel.
+  in: formData
+  items:
+    type: string
+  name: cnv_panel
+  required: false
+  type: array
+- description: Name of concept list that contains CNV panel gene
+  in: formData
+  name: cnv_panel_name
+  required: false
+  type: string
+- collectionFormat: multi
+  description: Alterations in CTX Panel. Leave blank to ignore panel.
+  in: formData
+  items:
+    type: string
+  name: ctx_panel
+  required: false
+  type: array
+- description: Name of concept list that contains CTX panel alteration
+  in: formData
+  name: ctx_panel_name
+  required: false
+  type: string
+- collectionFormat: multi
+  description: Alterations in karyotype Panel. Leave blank to ignore panel.
+  in: formData
+  items:
+    type: string
+  name: karyotype_panel
+  required: false
+  type: array
+- description: Name of concept list that contains karyotype panel alteration
+  in: formData
+  name: karyotype_panel_name
+  required: false
+  type: string
+- collectionFormat: multi
+  description: Alterations in biomarker Panel. Leave blank to ignore panel.
+  in: formData
+  items:
+    type: string
+  name: biomarker_panel
+  required: false
+  type: array
+- description: Name of concept list that contains biomarker panel alteration
+  in: formData
+  name: biomarker_panel_name
+  required: false
+  type: string
+- collectionFormat: multi
+  description: Genes in PRX Panel. Leave blank to ignore panel.
+  in: formData
+  items:
+    type: string
+  name: prx_panel
+  required: false
+  type: array
+- description: Name of concept list that contains PRX panel gene
+  in: formData
+  name: prx_panel_name
+  required: false
+  type: string
+- collectionFormat: multi
+  description: Fields to do facet counting.
+  in: formData
+  items:
+    type: string
+  name: facets
+  required: false
+  type: array
+- collectionFormat: multi
+  description: 'Pipe-separated mapping of alteration to gene variant modifier. Example:
+    FLT3 T227M c.680C>T|FLT3 ITD'
+  in: formData
+  items:
+    type: string
+  name: gene_variant_modifiers
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of prognosis to filter prognoses.
+  in: formData
+  items:
+    type: string
+  name: prognosis
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of data_set to filter prognoses.
+  in: formData
+  items:
+    type: string
+  name: data_set
+  required: false
+  type: array
+responses:
+  '200':
+    description: List of Prognoses objects
+    schema:
+      $ref: '#/definitions/PrognosesDocumentList'
+  default:
+    description: unexpected error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- prognoses

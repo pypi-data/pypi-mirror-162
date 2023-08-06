@@ -1,0 +1,24 @@
+operationId: add_marker_meta_data
+parameters:
+- description: Add 'MarkerMetaData' record using marker uuid field value.
+  in: path
+  name: uuid
+  required: true
+  type: string
+- description: MarkerMetaData to be added.
+  in: body
+  name: new_marker_meta_data
+  required: true
+  schema:
+    $ref: '#/definitions/MarkerMetaData'
+responses:
+  '201':
+    description: OK
+    schema:
+      $ref: '#/definitions/MarkerMetaData'
+  default:
+    description: Error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+  - cases

@@ -1,0 +1,27 @@
+operationId: generate_hgvs_g
+description: Return normalized hgvs_g for given pipe-delimited chromosome, start, ref, alt values (CSRA)
+parameters:
+- collectionFormat: multi
+  description: Provide a pipe-delimited chromosome, start, ref, alt values (CSRA) e.g. chr7|140453136|A|T
+  in: query
+  items:
+    type: string
+  name: batch
+  required: true
+  type: array
+- description: Assembly build identifier. (e.g. GRCh37 or GRCh38)
+  in: query
+  name: build
+  required: false
+  type: string
+responses:
+  '200':
+    description: OK
+    schema:
+      $ref: '#/definitions/NormalizedHGVSList'
+  default:
+    description: Error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- annotations

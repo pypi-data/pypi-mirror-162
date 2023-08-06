@@ -1,0 +1,28 @@
+operationId: override_hgvs
+parameters:
+- description: hgvs_g value.
+  in: formData
+  name: hgvs_g
+  required: true
+  type: string
+- description: hgvs_c override for the given hgvs_g
+  in: formData
+  name: override_hgvs_c
+  required: true
+  type: string
+- description: hgvs_c override for the given hgvs_g
+  in: formData
+  name: override_hgvs_p
+  required: true
+  type: string
+responses:
+  '200':
+    description: OK
+    schema:
+      type: string
+  default:
+    description: unexpected error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- annotations

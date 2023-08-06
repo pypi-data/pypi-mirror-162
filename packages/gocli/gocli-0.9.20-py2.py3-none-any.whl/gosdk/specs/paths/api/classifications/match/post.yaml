@@ -1,0 +1,93 @@
+operationId: match_classifications_post
+parameters:
+- description: Page number of the response.
+  format: int32
+  in: formData
+  name: page
+  required: false
+  type: integer
+- description: Number of items to return per page.
+  format: int32
+  in: formData
+  name: page_size
+  required: false
+  type: integer
+- collectionFormat: multi
+  description: List of fields to be returned in the response. (e.g. blank for default
+    fields, * for all fields)
+  in: formData
+  items:
+    type: string
+  name: fields
+  required: false
+  type: array
+- description: Specifies whether to return data as 'object' or 'table'. Fields must
+    be provided in desired order for 'table' as_type
+  in: formData
+  name: as_type
+  required: false
+  type: string
+- collectionFormat: multi
+  description: List of fields to do facet counting.
+  in: formData
+  items:
+    type: string
+  name: facets
+  required: false
+  type: array
+- description: Sort phrase
+  in: formData
+  name: sort
+  required: false
+  type: string
+- collectionFormat: multi
+  description: null
+  in: formData
+  items:
+    type: string
+  name: alterations
+  required: false
+  type: array
+- collectionFormat: multi
+  description: null
+  in: formData
+  items:
+    type: string
+  name: hgvs_g
+  required: false
+  type: array
+- collectionFormat: multi
+  description: null
+  in: formData
+  items:
+    type: string
+  name: diseases
+  required: false
+  type: array
+- collectionFormat: multi
+  description: null
+  in: formData
+  items:
+    type: string
+  name: data_set
+  required: false
+  type: array
+- collectionFormat: multi
+  description: null
+  in: formData
+  items:
+    type: string
+  name: gene_variant_modifiers
+  required: false
+  type: array
+responses:
+  '200':
+    description: List of Classifications objects
+    schema:
+      $ref: '#/definitions/ClassificationsDocumentList'
+  default:
+    description: unexpected error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- classifications

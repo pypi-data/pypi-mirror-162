@@ -1,0 +1,38 @@
+operationId: get_meetings
+parameters:
+- description: Get 'Meeting' objects and filter by title.
+  in: path
+  name: title
+  required: false
+  type: string
+- description: Get 'Meeting' objects and filter by min_date.
+  in: path
+  name: min_date
+  required: false
+  type: string
+- description: Get 'Meeting' objects and filter by max_date.
+  in: path
+  name: max_date
+  required: false
+  type: string
+- description: Get 'Meeting' objects and filter by group.
+  in: path
+  name: group
+  required: false
+  type: string
+- description: Get 'Meeting' objects and filter by zip_code.
+  in: path
+  name: zip_code
+  required: false
+  type: string
+responses:
+  '200':
+    description: OK
+    schema:
+      $ref: '#/definitions/MeetingList'
+  default:
+    description: Error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+  - meetings

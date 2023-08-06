@@ -1,0 +1,175 @@
+operationId: mega_match_post
+parameters:
+- collectionFormat: multi
+  description: Diseases to match. Use 'ANY' to match on any disease.
+  in: formData
+  items:
+    type: string
+  name: diseases
+  required: true
+  type: array
+- collectionFormat: multi
+  description: Detected alterations, eg BRAF V600E. Use ANY to match to any alteration.
+  in: formData
+  items:
+    type: string
+  name: alterations
+  required: false
+  type: array
+- collectionFormat: multi
+  description: Detected alterations that are benign. Match only to themselves, and do not expand based on the biomarker bridge.
+  in: formData
+  items:
+    type: string
+  name: benign_alterations
+  required: false
+  type: array
+- collectionFormat: multi
+  description: Alterations that were not detected.
+  in: formData
+  items:
+    type: string
+  name: negative_alterations
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of alterations that are indeterminate (i.e. considered not tested). Intended to be particular alterations, not broad concepts.
+  in: formData
+  items:
+    type: string
+  name: indeterminate_alterations
+  required: false
+  type: array
+- description: If value is “exclude_preclinical”, preclinical evidence is filtered out. Otherwise, no evidence filtering is applied.
+  in: formData
+  name: evidence_category_filter
+  required: false
+  type: string
+- description: Exclude wild-type non-1A negative therapy matches (default = false)
+  format: boolean
+  in: formData
+  name: exclude_non1A_negative_matches
+  required: false
+  type: boolean
+- description: If value is exclude_adjuvant, therapies and trials that have a therapeutic context of adjuvant or neoadjuvant will be filtered out. Otherwise, no therapeutic context filtering is applied
+  in: formData
+  name: therapeutic_context_filter
+  required: false
+  type: string
+- collectionFormat: multi
+  description: Genes in SNV Panel. Leave blank to ignore panel.
+  in: formData
+  items:
+    type: string
+  name: snv_panel
+  required: false
+  type: array
+- collectionFormat: multi
+  description: Genes in CNV Panel. Leave blank to ignore panel.
+  in: formData
+  items:
+    type: string
+  name: cnv_panel
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of CNV alterations on the panel. Intended to be used when CNV Loss panel is different than CNV Gain panel.
+  in: formData
+  items:
+    type: string
+  name: cnv_panel_alterations
+  required: false
+  type: array
+- collectionFormat: multi
+  description: Alterations in CTX Panel. Leave blank to ignore panel.
+  in: formData
+  items:
+    type: string
+  name: ctx_panel
+  required: false
+  type: array
+- collectionFormat: multi
+  description: Alterations in karyotype Panel. Leave blank to ignore panel.
+  in: formData
+  items:
+    type: string
+  name: karyotype_panel
+  required: false
+  type: array
+- collectionFormat: multi
+  description: Alterations in biomarker Panel. Leave blank to ignore panel.
+  in: formData
+  items:
+    type: string
+  name: biomarker_panel
+  required: false
+  type: array
+- collectionFormat: multi
+  description: Genes in PRX Panel. Leave blank to ignore panel.
+  in: formData
+  items:
+    type: string
+  name: prx_panel
+  required: false
+  type: array
+- collectionFormat: multi
+  description: Genes in PGX Panel. Leave blank to ignore panel.
+  in: formData
+  items:
+    type: string
+  name: pgx_panel
+  required: false
+  type: array
+- collectionFormat: multi
+  description: Names of assays.
+  in: formData
+  items:
+    type: string
+  name: assay
+  required: false
+  type: array
+- description: if value is exclude_non_targeted_therapies, therapies and trials that don’t have a highest level drug type of targeted therapy or immunotherapy will be filtered out. Otherwise, no therapy_type filtering is applied
+  in: formData
+  name: therapy_type_filter
+  required: false
+  type: string
+- description: Remove all non-biomarker trials from therapies that have no gene targets or associations (default = False)
+  format: boolean
+  in: formData
+  name: remove_nbm_trials_if_no_drug_target
+  required: false
+  type: boolean
+- description: Filter results on gender. Possible values are Male or Female
+  in: formData
+  name: gender
+  required: false
+  type: string
+- description: Date format can be written in several ways, eg March 26, 1999; 26 March 1999; 03-26-1999; 03/26/1999; 26-March-1999; 26/03/1999
+  in: formData
+  name: date_of_birth
+  required: false
+  type: string
+- description: Zip code is used for calculating distance from the trial locations
+  in: formData
+  name: zip
+  required: false
+  type: string
+- collectionFormat: multi
+  description: Filter results on countries.
+  in: formData
+  items:
+    type: string
+  name: countries
+  required: false
+  type: array
+responses:
+  '200':
+    description: List of MegaMatch objects
+    schema:
+      $ref: '#/definitions/MegaMatchResult'
+  default:
+    description: unexpected error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- therapies

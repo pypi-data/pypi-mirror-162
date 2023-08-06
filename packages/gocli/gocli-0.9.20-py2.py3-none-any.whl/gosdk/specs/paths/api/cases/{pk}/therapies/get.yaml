@@ -1,0 +1,82 @@
+operationId: match_cases_therapies
+parameters:
+- description: Retrieve 'therapies' record using 'id' field value
+  in: path
+  name: pk
+  required: true
+  type: string
+- collectionFormat: multi
+  description: List of biomarkers to filter therapies.
+  in: query
+  items:
+    type: string
+  name: biomarkers
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of drug_categories to filter therapies.
+  in: query
+  items:
+    type: string
+  name: drug_categories
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of drugs to filter therapies.
+  in: query
+  items:
+    type: string
+  name: drugs
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of genes to filter therapies.
+  in: query
+  items:
+    type: string
+  name: genes
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of responses to filter therapies.
+  in: query
+  items:
+    type: string
+  name: response
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of setting_types to filter therapies.
+  in: query
+  items:
+    type: string
+  name: setting_types
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of sources to filter therapies.
+  in: query
+  items:
+    type: string
+  name: sources
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of statuses to filter therapies.
+  in: query
+  items:
+    type: string
+  name: status
+  required: false
+  type: array
+responses:
+  '200':
+    description: List of Therapies objects
+    schema:
+      $ref: '#/definitions/TherapiesDocumentList'
+  default:
+    description: unexpected error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- cases

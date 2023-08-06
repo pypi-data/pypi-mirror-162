@@ -1,0 +1,22 @@
+operationId: create_warehouse_variants
+parameters:
+- description: Variant to be added.
+  in: body
+  name: data
+  required: true
+  schema:
+    type: array
+    items:
+      type: object
+      $ref: '#/definitions/WarehouseVariant'
+responses:
+  '201':
+    description: OK
+    schema:
+      $ref: '#/definitions/WarehouseVariantList'
+  default:
+    description: Error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- warehouse_variants

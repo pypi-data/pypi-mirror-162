@@ -1,0 +1,51 @@
+operationId: post_annotations_sv_match
+description: Return annotations for a set of SV hashes.
+parameters:
+- collectionFormat: multi
+  description: Provide list of valid g., c., or gene<br/>e.g.<br/> NC_000007.13:g.140453136A>T<br/>NM_005228.3:c.2239_2241delTTA<br/>chr7|140453136|A|T
+  in: formData
+  items:
+    type: string
+  name: batch
+  required: true
+  type: array
+- default: false
+  description: Delete if exists, before recalculating annotation.
+  in: formData
+  name: delete_if_exists
+  required: false
+  enum: [true, false, ]
+  type: boolean
+- default: GRCh37
+  description: Assembly build identifier. (e.g. GRCh37 or GRCh38)
+  in: formData
+  name: build
+  required: false
+  type: string
+- default: 0.5
+  description: This defines the threshold for annotation record matching based on
+    the intersection over union of the given variant and the records, default is 0.5
+  in: formData
+  name: region_match_tolerance
+  required: false
+  type: number
+  format: float
+- default: 0.33
+  description: If the mutation type is CNV, this defines the threshold for annotation
+    record matching based on the percentage of the given copy number, default is 0.33
+  in: formData
+  name: cnv_match_tolerance
+  required: false
+  type: number
+  format: float
+responses:
+  '200':
+    description: List of Annotations objects
+    schema:
+      $ref: '#/definitions/AnnotationsSVDocumentList'
+  default:
+    description: unexpected error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- annotations

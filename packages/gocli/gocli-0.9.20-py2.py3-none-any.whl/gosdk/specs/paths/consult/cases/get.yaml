@@ -1,0 +1,58 @@
+operationId: get_cases
+parameters:
+- description: Filter by 'group'
+  in: query
+  name: group
+  required: false
+  type: string
+- description: Filter by 'min_date'
+  in: query
+  name: min_date
+  required: false
+  type: string
+- description: Filter by 'max_date'
+  in: query
+  name: max_date
+  required: false
+  type: string
+- description: Filter by 'identifier'
+  in: query
+  name: identifier
+  required: false
+  type: string
+- description: Filter by 'patient_uuid'
+  in: query
+  name: patient_uuid
+  required: false
+  type: string
+- description: Filter by 'meeting_id'
+  in: query
+  name: meeting_id
+  required: false
+  type: string
+- description: Filter by 'presenter'
+  in: query
+  name: presenter
+  required: false
+  type: string
+- description: Filter by 'status'
+  in: query
+  name: status
+  required: false
+  type: string
+- description: Filter by 'fields'
+  in: query
+  name: fields
+  required: false
+  type: string
+responses:
+  '200':
+    description: List of Case objects
+    schema:
+      $ref: '#/definitions/CaseList'
+  default:
+    description: Error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- cases

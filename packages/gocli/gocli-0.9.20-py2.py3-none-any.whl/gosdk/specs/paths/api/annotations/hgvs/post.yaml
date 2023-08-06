@@ -1,0 +1,43 @@
+operationId: post_annotations
+description: Return annotations for a set of HGVS mutations.
+parameters:
+- collectionFormat: multi
+  description: Provide list of valid g. or c.<br/>e.g.<br/> NC_000007.13:g.140453136A>T<br/>NM_005228.3:c.2239_2241delTTA<br/>chr7|140453136|A|T
+  in: formData
+  items:
+    type: string
+  name: batch
+  required: true
+  type: array
+- description: Delete if exists, before recalculating annotation.
+  in: formData
+  name: delete_if_exists
+  required: false
+  enum: [true, false, ]
+  type: boolean
+- collectionFormat: multi
+  description: List of canonical transcript overrides.
+  in: formData
+  items:
+    type: string
+  name: canonical_transcripts
+  required: false
+  type: array
+- description: Assembly build identifier. (e.g. GRCh37 or GRCh38)
+  in: formData
+  name: build
+  required: false
+  type: string
+responses:
+  '200':
+    description: OK
+    schema:
+      $ref: '#/definitions/AnnotationList'
+  default:
+    description: Error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- annotations
+targets:
+- hgvs

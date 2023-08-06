@@ -1,0 +1,24 @@
+operationId: post_case_lab_results
+parameters:
+- description: null
+  in: path
+  name: case_uuid
+  required: true
+  type: string
+- description: NewLabResult to be added.
+  in: body
+  name: data
+  required: true
+  schema:
+    $ref: '#/definitions/NewLabResult'
+responses:
+  '201':
+    description: Ok
+    schema:
+      $ref: '#/definitions/LabResult'
+  default:
+    description: Error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- cases

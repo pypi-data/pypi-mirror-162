@@ -1,0 +1,28 @@
+operationId: region_search
+parameters:
+- description: Chromosome number for region search
+  in: query
+  name: chromosome
+  required: true
+  type: string
+- description: Start of region search range
+  in: query
+  name: start
+  required: true
+  type: string
+- description: End of region search range
+  in: query
+  name: end
+  required: true
+  type: string
+responses:
+  '200':
+    description: OK
+    schema:
+      $ref: '#/definitions/TranscriptList'
+  default:
+    description: Error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- region_search

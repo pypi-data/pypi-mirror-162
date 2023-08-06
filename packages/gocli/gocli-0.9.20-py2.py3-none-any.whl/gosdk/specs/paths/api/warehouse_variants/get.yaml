@@ -1,0 +1,62 @@
+operationId: get_warehouse_variants
+parameters:
+- description: Page number of the response.
+  format: int32
+  in: query
+  name: page
+  required: false
+  type: integer
+- description: Number of items to return per page.
+  format: int32
+  in: query
+  name: page_size
+  required: false
+  type: integer
+- collectionFormat: multi
+  description: List of fields to be returned in the response. (e.g. blank for default fields, * for all fields)
+  in: query
+  items:
+    type: string
+  name: fields
+  required: false
+  type: array
+- description: Specifies whether to return data as 'object' or 'table'. Fields must be provided in desired order for 'table' as_type.
+  in: query
+  name: as_type
+  required: false
+  type: string
+- collectionFormat: multi
+  description: List of fields to do facet counting.
+  in: query
+  items:
+    type: string
+  name: facets
+  required: false
+  type: array
+- description: Sort phrase.
+  in: query
+  name: sort
+  required: false
+  type: string
+- description: |
+    <tt>&lt;core&gt;|&lt;solr_query&gt;<br/><br/>Examples:<br/>
+    <span style='white-space:nowrap'>warehouse_variants|+run_id:RUN-01234</span><br/>
+    <span style='white-space:nowrap'>warehouse_variants|+alt_depth:[10 TO *]</span><br/>
+    <span style='white-space:nowrap'>annotations_merged|-mutation_type:(Intergenic Intronic)</span><br/></tt>
+  in: query
+  name: filters
+  required: false
+  type: array
+  items:
+    type: string
+responses:
+  '200':
+    description: OK
+    schema:
+      $ref: '#/definitions/WarehouseVariantPage'
+  default:
+    description: Error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- warehouse_variants

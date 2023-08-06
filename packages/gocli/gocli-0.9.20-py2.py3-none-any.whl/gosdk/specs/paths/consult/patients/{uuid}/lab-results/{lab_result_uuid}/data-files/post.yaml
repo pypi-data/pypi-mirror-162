@@ -1,0 +1,29 @@
+operationId: create_lab_results_data_files
+parameters:
+- description: Lab Result uuid
+  in: path
+  name: lab_result_uuid
+  required: true
+  type: string
+- description: Patient uuid
+  in: path
+  name: uuid
+  required: true
+  type: string
+- description: NewLabResultDataFile to be added.
+  in: body
+  name: data
+  required: false
+  schema:
+    $ref: '#/definitions/NewLabResultDataFile'
+responses:
+  '201':
+    description: OK
+    schema:
+      $ref: '#/definitions/LabResultDataFile'
+  default:
+    description: Error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- patients

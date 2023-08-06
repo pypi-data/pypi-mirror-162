@@ -1,0 +1,77 @@
+operationId: get_contents_counts
+parameters:
+- collectionFormat: multi
+  description: Terms to pivot and provide a final count.
+  in: query
+  items:
+    type: string
+  name: terms
+  required: true
+  type: array
+- description: List of terms to calculate as uniques. Cannot be first term
+  in: query
+  name: uniques
+  required: false
+  type: string
+- description: Sort phrase
+  in: query
+  name: sort
+  required: false
+  type: string
+- description: Page number of the response.
+  format: int32
+  in: query
+  name: page
+  required: false
+  type: integer
+- description: Number of items to return per page.
+  format: int32
+  in: query
+  name: page_size
+  required: false
+  type: integer
+- collectionFormat: multi
+  description: List of type to filter contents. (e.g. About Gene, Variant Mutation
+    Prevalence)
+  in: query
+  items:
+    type: string
+  name: type
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of diseases to filter contents. (e.g. Melanoma, Non-Small Lung
+    Carcinoma)
+  in: query
+  items:
+    type: string
+  name: diseases
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of biomarkers to filter contents. (e.g. KRAS)
+  in: query
+  items:
+    type: string
+  name: biomarkers
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of data_set to filter contents. (e.g. MCG, PLS)
+  in: query
+  items:
+    type: string
+  name: data_set
+  required: false
+  type: array
+responses:
+  '200':
+    description: Counts of Contents objects
+    schema:
+      $ref: '#/definitions/CountsList'
+  default:
+    description: unexpected error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- contents

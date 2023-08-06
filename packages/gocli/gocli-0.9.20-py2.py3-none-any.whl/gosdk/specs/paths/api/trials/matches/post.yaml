@@ -1,0 +1,321 @@
+operationId: match_trials_post
+parameters:
+- collectionFormat: multi
+  description: Alterations to match. Use 'ANY' to match on any alteration.
+  in: formData
+  items:
+    type: string
+  name: alterations
+  required: false
+  type: array
+- collectionFormat: multi
+  description: g. notation of alterations to match.
+  in: formData
+  items:
+    type: string
+  name: hgvs_g
+  required: false
+  type: array
+- collectionFormat: multi
+  description: Diseases to match. Use 'ANY' to match on any disease.
+  in: formData
+  items:
+    type: string
+  name: diseases
+  required: true
+  type: array
+- description: Use 'all' to get all matches, 'partial' to get only partial matches, full to get only full matches.
+  format: choice
+  in: formData
+  name: match_type
+  required: false
+  type: string
+- collectionFormat: multi
+  description: Assays associated to Samples for match. Leave blank to ignore assay.
+  in: formData
+  items:
+    type: string
+  name: assay
+  required: false
+  type: array
+- collectionFormat: multi
+  description: Genes in SNV Panel. Leave blank to ignore panel.
+  in: formData
+  items:
+    type: string
+  name: snv_panel
+  required: false
+  type: array
+- description: Name of concept list that contains SNV panel gene
+  in: formData
+  name: snv_panel_name
+  required: false
+  type: string
+- collectionFormat: multi
+  description: Genes in CNV Panel. Leave blank to ignore panel.
+  in: formData
+  items:
+    type: string
+  name: cnv_panel
+  required: false
+  type: array
+- description: Name of concept list that contains CNV panel gene
+  in: formData
+  name: cnv_panel_name
+  required: false
+  type: string
+- collectionFormat: multi
+  description: Alterations in CTX Panel. Leave blank to ignore panel.
+  in: formData
+  items:
+    type: string
+  name: ctx_panel
+  required: false
+  type: array
+- description: Name of concept list that contains CTX panel alteration
+  in: formData
+  name: ctx_panel_name
+  required: false
+  type: string
+- collectionFormat: multi
+  description: Alterations in karyotype Panel. Leave blank to ignore panel.
+  in: formData
+  items:
+    type: string
+  name: karyotype_panel
+  required: false
+  type: array
+- description: Name of concept list that contains karyotype panel alteration
+  in: formData
+  name: karyotype_panel_name
+  required: false
+  type: string
+- collectionFormat: multi
+  description: Alterations in biomarker Panel. Leave blank to ignore panel.
+  in: formData
+  items:
+    type: string
+  name: biomarker_panel
+  required: false
+  type: array
+- description: Name of concept list that contains biomarker panel alteration
+  in: formData
+  name: biomarker_panel_name
+  required: false
+  type: string
+- collectionFormat: multi
+  description: Genes in PRX Panel. Leave blank to ignore panel.
+  in: formData
+  items:
+    type: string
+  name: prx_panel
+  required: false
+  type: array
+- description: Name of concept list that contains PRX panel gene
+  in: formData
+  name: prx_panel_name
+  required: false
+  type: string
+- collectionFormat: multi
+  description: Fields to do facet counting.
+  in: formData
+  items:
+    type: string
+  name: facets
+  required: false
+  type: array
+- collectionFormat: multi
+  description: 'Pipe-separated mapping of alteration to gene variant modifier. Example:
+    FLT3 T227M c.680C>T|FLT3 ITD'
+  in: formData
+  items:
+    type: string
+  name: gene_variant_modifiers
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of benign alterations to filter trials benign alterations are not expanded with their relevant alterations.
+  in: formData
+  items:
+    type: string
+  name: benign_alterations
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of manually added trials to filter trials manually added trials are returned in the results even if they don''t meet the match or filter criteria.
+  in: formData
+  items:
+    type: string
+  name: manually_added_trials
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of selected trials to filter trials selected trials are displayed above the non-selected ones.
+  in: formData
+  items:
+    type: string
+  name: selected_trials
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of institutional trial institution names to filter trials institutions whose trials should be displayed above the non-institutional ones.
+  in: formData
+  items:
+    type: string
+  name: institutional_trials_list
+  required: false
+  type: array
+- description: Value of blacklist name to filter trials blacklisted trials are displayed after non-blacklisted ones.
+  in: formData
+  name: blacklist_name
+  required: false
+  type: string
+- description: Enter true or 1 to filter out trials that are not in the institutional trials list
+  format: boolean
+  in: formData
+  name: institutional_trials_only
+  required: false
+  type: boolean
+- description: Enter true or 1 to include descendant diseases in the pre-match disease expansion step
+  format: boolean
+  in: formData
+  name: include_descendant_diseases
+  required: false
+  type: boolean
+- description: Return all trials relevant to the disease
+  format: boolean
+  in: formData
+  name: skip_alteration_match
+  required: false
+  type: boolean
+- description: Zip code is used for calculating distance from the trial location
+  in: formData
+  name: zip
+  required: false
+  type: string
+- collectionFormat: multi
+  description: List of matched genes to filter trials
+  in: formData
+  items:
+    type: string
+  name: matched_genes
+  required: false
+  type: array
+- description: Perform match at gene level instead of alteration
+  format: boolean
+  in: formData
+  name: gene_only_match
+  required: false
+  type: boolean
+- description: Perform match without the exclusion criteria
+  format: boolean
+  in: formData
+  name: inclusion_only_match
+  required: false
+  type: boolean
+- description: Value of gender to filter trials possible values are Male or Female
+  format: gender
+  in: formData
+  name: gender
+  required: false
+  type: string
+- description: Value of date of birth to filter trial
+  in: formData
+  name: date_of_birth
+  required: false
+  type: string
+- description: Return only trials within this distance in miles from the zip code
+    entered. Empty or 0 to ignore.
+  format: int32
+  in: formData
+  name: distance_miles
+  required: false
+  type: integer
+- description: Enter a trial ID value to get the details for that tria
+  in: formData
+  name: nct_id
+  required: false
+  type: string
+- collectionFormat: multi
+  description: List of genes to filter trials
+  in: formData
+  items:
+    type: string
+  name: genes
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of disease conditions to filter trials
+  in: formData
+  items:
+    type: string
+  name: conditions
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of phases to filter trials
+  in: formData
+  items:
+    type: string
+  name: phase
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of recruiting statuses to filter trials
+  in: formData
+  items:
+    type: string
+  name: recruiting_status
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of drug categories to filter trials
+  in: formData
+  items:
+    type: string
+  name: drug_categories
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of interventions to filter trials
+  in: formData
+  items:
+    type: string
+  name: interventions
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of countries to filter trials
+  in: formData
+  items:
+    type: string
+  name: countries
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of states to filter trials
+  in: formData
+  items:
+    type: string
+  name: states
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of data_sets to filter trials
+  in: formData
+  items:
+    type: string
+  name: data_set
+  required: false
+  type: array
+responses:
+  '200':
+    description: List of Trials objects
+    schema:
+      $ref: '#/definitions/TrialsDocumentList'
+  default:
+    description: unexpected error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- trials

@@ -1,0 +1,87 @@
+allOf:
+- $ref: '#/definitions/NewCase'
+- properties:
+    _refs:
+      $ref: '#/definitions/Refs'
+    alteration_to_hgvs_g:
+      $ref: '#/definitions/Arguments'
+    alterations:
+      items:
+        type: string
+      type: array
+    biomarkers:
+      items:
+        type: string
+      type: array
+    clinical_information_deadline:
+      type: string
+    created:
+      format: date-time
+      type: string
+    diagnoses:
+      items:
+        $ref: '#/definitions/NewPatientDiagnosis'
+      type: array
+    display_presenter:
+      items:
+        type: string
+      type: array
+    hgvs_g:
+      items:
+        type: string
+      type: array
+    id:
+      format: int32
+      type: integer
+    last_reviewed_date:
+      format: date-time
+      type: string
+    meeting_scheduled_date:
+      type: string
+    meeting_title:
+      type: string
+    meta:
+      $ref: '#/definitions/Arguments'
+    oncologic_treatments:
+      items:
+        $ref: '#/definitions/NewOncologicTreatment'
+      type: array
+      x-nullable: true
+    panel_concepts:
+      items:
+        type: string
+      type: array
+    patient_case_count:
+      type: string
+    patient_first_name:
+      type: string
+    patient_information:
+      items:
+        $ref: '#/definitions/NewPatient'
+      type: array
+    patient_last_name:
+      type: string
+    patient_mrn:
+      type: string
+    patient_name:
+      type: string
+    patient_ordering_physician:
+      type: string
+    patient_pathologist:
+      type: string
+    patient_uuid:
+      type: string
+    recommendations_report:
+      items:
+        $ref: '#/definitions/NewRecommendationsReport'
+      type: array
+    specific_diseases:
+      items:
+        type: string
+      type: array
+    updated:
+      format: date-time
+      type: string
+    uuid:
+      type: string
+  type: object

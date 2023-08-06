@@ -1,0 +1,18 @@
+operationId: get_patient_case
+parameters:
+- description: "Patient uuid to retrieve cases."
+  in: path
+  name: uuid
+  required: true
+  type: string
+responses:
+  '200':
+    description: OK
+    schema:
+      $ref: '#/definitions/CasesDocumentList'
+  default:
+    description: Error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- cases

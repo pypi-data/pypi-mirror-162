@@ -1,0 +1,19 @@
+operationId: create_meeting
+parameters:
+- description: Meeting to be added.
+  in: body
+  name: new_meeting
+  required: true
+  schema:
+    $ref: '#/definitions/Meeting'
+responses:
+  '201':
+    description: OK
+    schema:
+      $ref: '#/definitions/Meeting'
+  default:
+    description: Error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- cases

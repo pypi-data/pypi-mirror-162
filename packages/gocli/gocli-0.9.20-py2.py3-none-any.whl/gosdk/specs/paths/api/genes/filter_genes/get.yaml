@@ -1,0 +1,34 @@
+operationId: filter_genes
+parameters:
+- description: null
+  in: query
+  name: chromosome
+  required: true
+  type: string
+- description: null
+  in: query
+  name: start
+  required: true
+  type: string
+- description: null
+  in: query
+  name: end
+  required: true
+  type: string
+- description: null
+  in: query
+  name: exclude_partial_overlaps
+  required: false
+  type: boolean
+responses:
+  '200':
+    description: List of Genes objects
+    schema:
+      $ref: '#/definitions/GenesList'
+  default:
+  default:
+    description: Error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- genes

@@ -1,0 +1,77 @@
+operationId: get_alterations
+parameters:
+- description: Page number of the response.
+  format: int32
+  in: query
+  name: page
+  required: false
+  type: integer
+- description: Number of items to return per page.
+  format: int32
+  in: query
+  name: page_size
+  required: false
+  type: integer
+- collectionFormat: multi
+  description: List of fields to be returned in the response. (e.g. blank for default
+    fields, * for all fields)
+  in: query
+  items:
+    type: string
+  name: fields
+  required: false
+  type: array
+- description: Specifies whether to return data as 'object' or 'table'. Fields must
+    be provided in desired order for 'table' as_type.
+  in: query
+  name: as_type
+  required: false
+  type: string
+- collectionFormat: multi
+  description: List of fields to do facet counting.
+  in: query
+  items:
+    type: string
+  name: facets
+  required: false
+  type: array
+- description: Sort phrase.
+  in: query
+  name: sort
+  required: false
+  type: string
+- collectionFormat: multi
+  description: Filter alterations by gene name.
+  in: query
+  items:
+    type: string
+  name: gene
+  required: false
+  type: array
+- collectionFormat: multi
+  description: Find relevant alterations using either alteration, g., or c. notation.
+  in: query
+  items:
+    type: string
+  name: alteration
+  required: false
+  type: array
+- collectionFormat: multi
+  description: Find alterations by name.
+  in: query
+  items:
+    type: string
+  name: name
+  required: false
+  type: array
+responses:
+  '200':
+    description: List of Alterations objects
+    schema:
+      $ref: '#/definitions/AlterationsDocumentList'
+  default:
+    description: unexpected error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- alterations

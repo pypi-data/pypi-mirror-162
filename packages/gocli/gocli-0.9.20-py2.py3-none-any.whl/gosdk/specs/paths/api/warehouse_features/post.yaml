@@ -1,0 +1,22 @@
+operationId: create_warehouse_features
+parameters:
+- description: Feature to be added.
+  in: body
+  name: data
+  required: true
+  schema:
+    type: array
+    items:
+      type: object
+      $ref: '#/definitions/WarehouseFeature'
+responses:
+  '201':
+    description: OK
+    schema:
+      $ref: '#/definitions/WarehouseFeatureList'
+  default:
+    description: Error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- warehouse_features

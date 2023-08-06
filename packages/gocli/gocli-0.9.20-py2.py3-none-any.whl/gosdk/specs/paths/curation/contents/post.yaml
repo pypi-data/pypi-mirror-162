@@ -1,0 +1,19 @@
+operationId: create_contents
+parameters:
+- description: NewContent to be added.
+  in: body
+  name: data
+  required: true
+  schema:
+    $ref: '#/definitions/NewContent'
+responses:
+  '201':
+    description: New Content response.
+    schema:
+      $ref: '#/definitions/Content'
+  default:
+    description: unexpected error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- contents

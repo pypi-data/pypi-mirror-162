@@ -1,0 +1,105 @@
+operationId: get_annotations_proximity
+parameters:
+- description: null
+  in: path
+  name: identifier
+  required: true
+  type: string
+- description: Page number of the response.
+  format: int32
+  in: query
+  name: page
+  required: false
+  type: integer
+- description: Number of items to return per page.
+  format: int32
+  in: query
+  name: page_size
+  required: false
+  type: integer
+- collectionFormat: multi
+  description: List of fields to be returned in the response. (e.g. blank for default
+    fields, * for all fields)
+  in: query
+  items:
+    type: string
+  name: fields
+  required: false
+  type: array
+- description: Specifies whether to return data as 'object' or 'table'. Fields must
+    be provided in desired order for 'table' as_type.
+  in: query
+  name: as_type
+  required: false
+  type: string
+- collectionFormat: multi
+  description: List of fields to do facet counting.
+  in: query
+  items:
+    type: string
+  name: facets
+  required: false
+  type: array
+- description: Sort phrase.
+  in: query
+  name: sort
+  required: false
+  type: string
+- description: Query string for searching.
+  in: query
+  name: q
+  required: false
+  type: string
+- description: BED file feature set for filtering.
+  in: query
+  name: feature_set
+  required: false
+  type: string
+- collectionFormat: multi
+  description: List of data_set to filter annotations.
+  in: query
+  items:
+    type: string
+  name: data_set
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of HGVS (g.) to filter annotations.
+  in: query
+  items:
+    type: string
+  name: hgvs_g
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of UUID to filter annotations.
+  in: query
+  items:
+    type: string
+  name: uuid
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of Alteration to filter annotations.
+  in: query
+  items:
+    type: string
+  name: alteration
+  required: false
+  type: array
+- description: Clinical Significance string like Pathogenic
+  in: query
+  name: CLNSIG__string
+  required: false
+  type: string
+responses:
+  '200':
+    description: OK
+    schema:
+      $ref: '#/definitions/Annotations_MergedDocumentList'
+  default:
+    description: Error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- annotations

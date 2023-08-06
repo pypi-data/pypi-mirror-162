@@ -1,0 +1,36 @@
+operationId: load_annotations
+parameters:
+- description: Data Set to load the file under.
+  in: path
+  name: data_set
+  required: true
+  type: string
+- description: Data Set version number to include.
+  in: path
+  name: data_set_version
+  required: true
+  type: string
+- description: A list of new annotation objects to be added.
+  in: body
+  name: data
+  required: true
+  schema:
+    items:
+      additionalProperties:
+        type: string
+      type: object
+    type: array
+responses:
+  '200':
+    description: OK
+    schema:
+      type: integer
+    type: object
+  default:
+    description: unexpected error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- annotations
+targets:
+- load_annotations

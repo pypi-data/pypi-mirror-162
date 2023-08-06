@@ -1,0 +1,24 @@
+operationId: create_marker
+parameters:
+- description: Create 'marker' object using case uuid field value.
+  in: path
+  name: case_uuid
+  required: true
+  type: string
+- description: Marker to be added.
+  in: body
+  name: new_marker
+  required: true
+  schema:
+    $ref: '#/definitions/NewMarker'
+responses:
+  '201':
+    description: OK
+    schema:
+      $ref: '#/definitions/Marker'
+  default:
+    description: Error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- cases

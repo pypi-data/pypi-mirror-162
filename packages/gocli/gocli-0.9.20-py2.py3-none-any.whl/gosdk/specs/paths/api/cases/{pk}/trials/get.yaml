@@ -1,0 +1,77 @@
+operationId: match_cases_trials
+parameters:
+- description: Retrieve 'trials' record using 'nct_id' field value.
+  in: path
+  name: pk
+  required: true
+  type: string
+- collectionFormat: multi
+  description: List of phases to filter trials.
+  in: query
+  items:
+    type: string
+  name: phase
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of recruiting statuses to filter trials.
+  in: query
+  items:
+    type: string
+  name: recruiting_status
+  required: false
+  type: array
+- description: Perform match at gene level instead of alteration
+  format: boolean
+  in: query
+  name: gene_only_match
+  required: false
+  type: boolean
+- description: Perform match without the exclusion criteria
+  format: boolean
+  in: query
+  name: inclusion_only_match
+  required: false
+  type: boolean
+- collectionFormat: multi
+  description: List of the genes in the SNV Panel
+  in: query
+  items:
+    type: string
+  name: snv_panel
+  required: false
+  type: array
+- description: Enter true or 1 to filter out trials that are not in the institutional
+    trials list
+  format: boolean
+  in: query
+  name: institutional_trials_only
+  required: false
+  type: boolean
+- collectionFormat: multi
+  description: List of the diseases
+  in: query
+  items:
+    type: string
+  name: diseases
+  required: false
+  type: array
+- collectionFormat: multi
+  description: List of the alterations
+  in: query
+  items:
+    type: string
+  name: alterations
+  required: false
+  type: array
+responses:
+  '200':
+    description: List of Trials objects
+    schema:
+      $ref: '#/definitions/TrialsDocumentList'
+  default:
+    description: unexpected error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- cases

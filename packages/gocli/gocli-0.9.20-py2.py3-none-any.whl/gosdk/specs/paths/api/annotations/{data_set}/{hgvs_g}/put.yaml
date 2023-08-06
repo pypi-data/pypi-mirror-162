@@ -1,0 +1,29 @@
+operationId: put_annotation_data_set_hgvs
+parameters:
+- description:
+  in: path
+  name: data_set
+  required: true
+  type: string
+- description:
+  in: path
+  name: hgvs_g
+  required: true
+  type: string
+- description:
+  in: body
+  name: data
+  required: true
+  schema:
+    type: object
+responses:
+  '200':
+    description: OK
+    schema:
+      $ref: '#/definitions/AnnotationsDocument'
+  default:
+    description: Error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- annotations

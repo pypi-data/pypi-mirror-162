@@ -1,0 +1,33 @@
+operationId: get_patients
+parameters:
+- description: Filter by 'patient_meta_data_name'
+  in: query
+  name: patient_meta_data_name
+  required: false
+  type: string
+- description: Filter by 'patient_meta_data_value'
+  in: query
+  name: patient_meta_data_value
+  required: false
+  type: string
+- description: Filter by 'min_date'
+  in: query
+  name: min_date
+  required: false
+  type: string
+- description: Filter by 'max_date'
+  in: query
+  name: max_date
+  required: false
+  type: string
+responses:
+  '200':
+    description: OK
+    schema:
+      $ref: '#/definitions/PatientList'
+  default:
+    description: Error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- patients

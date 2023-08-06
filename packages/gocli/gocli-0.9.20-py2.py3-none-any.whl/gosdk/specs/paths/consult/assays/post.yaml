@@ -1,0 +1,20 @@
+operationId: create_assay
+parameters:
+- description: NewAssay to be added.
+  in: body
+  name: data
+  required: true
+  schema:
+    $ref: '#/definitions/NewAssay'
+
+responses:
+  '201':
+    description: OK
+    schema:
+      $ref: '#/definitions/Assay'
+  default:
+    description: Error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+  - assays

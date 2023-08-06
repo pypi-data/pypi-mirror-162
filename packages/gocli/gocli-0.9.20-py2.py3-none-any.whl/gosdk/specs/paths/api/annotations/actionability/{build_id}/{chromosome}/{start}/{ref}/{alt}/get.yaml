@@ -1,0 +1,46 @@
+operationId: get_annotations_actionability_by_csra
+parameters:
+- description: Assembly build identifier. (e.g. GRCh37)
+  in: path
+  name: build_id
+  required: true
+  type: string
+- description: Genomic start position of variant. (e.g. 140453136)
+  in: path
+  name: start
+  required: true
+  type: string
+- description: Alternate allele of variant. (e.g. T)
+  in: path
+  name: alt
+  required: true
+  type: string
+- description: Reference allele of variant. (e.g. A)
+  in: path
+  name: ref
+  required: true
+  type: string
+- description: Chromosome of variant. (e.g. 7)
+  in: path
+  name: chromosome
+  required: true
+  type: string
+- collectionFormat: multi
+  description: Diseases to filter by
+  in: query
+  items:
+    type: string
+  name: diseases
+  required: false
+  type: array
+responses:
+  '200':
+    description: Annotations document response.
+    schema:
+      $ref: '#/definitions/AnnotationsDocument'
+  default:
+    description: unexpected error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- annotations

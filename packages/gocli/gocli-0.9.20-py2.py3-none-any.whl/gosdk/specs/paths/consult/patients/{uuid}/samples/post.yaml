@@ -1,0 +1,31 @@
+operationId: post_patients_samples
+parameters:
+- description:
+  in: query
+  name: case_uuid
+  required: false
+  schema:
+    $ref: '#/definitions/CasesDocument'
+  type: string
+- description: null
+  in: path
+  name: uuid
+  required: true
+  type: string
+- description: NewSample to be added.
+  in: body
+  name: data
+  required: true
+  schema:
+    $ref: '#/definitions/NewSample'
+responses:
+  '201':
+    description: OK
+    schema:
+      $ref: '#/definitions/Sample'
+  default:
+    description: Error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- patients

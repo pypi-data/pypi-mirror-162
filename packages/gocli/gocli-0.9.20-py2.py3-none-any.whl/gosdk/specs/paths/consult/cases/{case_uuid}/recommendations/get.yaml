@@ -1,0 +1,55 @@
+operationId: get_case_recommendations
+parameters:
+- description: null
+  in: path
+  name: case_uuid
+  required: true
+  type: string
+- description: Page number of the response.
+  format: int32
+  in: query
+  name: page
+  required: false
+  type: integer
+- description: Number of items to return per page.
+  format: int32
+  in: query
+  name: page_size
+  required: false
+  type: integer
+- description: Filter by 'omni_type'
+  in: query
+  name: omni_type
+  required: false
+  type: string
+- description: Filter by 'omni_data_set__name'
+  in: query
+  name: omni_data_set__name
+  required: false
+  type: string
+- description: Filter by 'is_on_report'
+  in: query
+  name: is_on_report
+  required: false
+  type: string
+- description: Filter by 'trigger_alterations_rel_delimited'
+  in: query
+  name: trigger_alterations_rel_delimited
+  required: false
+  type: string
+- description: Filter by 'curated_alterations_rel_delimited'
+  in: query
+  name: curated_alterations_rel_delimited
+  required: false
+  type: string
+responses:
+  '200':
+    description: List of Recommendation objects
+    schema:
+      $ref: '#/definitions/RecommendationList'
+  default:
+    description: unexpected error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- cases

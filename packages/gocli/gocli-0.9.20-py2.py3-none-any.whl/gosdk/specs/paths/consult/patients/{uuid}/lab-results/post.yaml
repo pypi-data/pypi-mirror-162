@@ -1,0 +1,23 @@
+operationId: create_lab_result
+parameters:
+- description: Patient UUID
+  in: path
+  name: uuid
+  type: string
+- description: New Lab Result
+  in: body
+  name: data
+  required: true
+  schema:
+    $ref: '#/definitions/NewLabResult'
+responses:
+  '201':
+    description: Created
+    schema:
+      $ref: '#/definitions/LabResult'
+  default:
+    description: Error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- patients

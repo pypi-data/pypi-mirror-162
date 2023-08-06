@@ -1,0 +1,23 @@
+operationId: get_sample
+parameters:
+- description: Patient UUID
+  in: path
+  name: uuid
+  required: true
+  type: string
+- description: Sample Barcode ID
+  in: path
+  name: barcode_id
+  required: true
+  type: string
+responses:
+  '200':
+    description: OK
+    schema:
+      $ref: '#/definitions/Sample'
+  default:
+    description: Error
+    schema:
+      $ref: '#/definitions/Error'
+tags:
+- patients
