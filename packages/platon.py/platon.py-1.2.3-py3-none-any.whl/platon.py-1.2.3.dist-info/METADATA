@@ -1,0 +1,118 @@
+Metadata-Version: 2.1
+Name: platon.py
+Version: 1.2.3
+Summary: platon.py
+Home-page: https://github.com/platonnetwork/platon.py
+Author: Shinnng
+Author-email: shinnng@outlook.com
+License: MIT
+Keywords: platon
+Platform: UNKNOWN
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Natural Language :: English
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Requires-Python: >=3.6,<4
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: aiohttp (<4,>=3.7.4.post0)
+Requires-Dist: platon-abi (>=1.2.0)
+Requires-Dist: platon-account (>=1.2.0)
+Requires-Dist: platon-hash[pycryptodome] (>=1.2.0)
+Requires-Dist: platon-typing (>=1.2.0)
+Requires-Dist: platon-utils (>=1.2.0)
+Requires-Dist: hexbytes (<1.0.0,>=0.1.0)
+Requires-Dist: ipfshttpclient (==0.7.0)
+Requires-Dist: jsonschema (<4.0.0,>=3.2.0)
+Requires-Dist: lru-dict (<2.0.0,>=1.1.6)
+Requires-Dist: protobuf (<4,>=3.10.0)
+Requires-Dist: requests (<3.0.0,>=2.16.0)
+Requires-Dist: websockets (<10,>=9.1)
+Requires-Dist: pywin32 (>=223) ; platform_system == "Windows"
+Requires-Dist: typing-extensions (<4,>=3.7.4.1) ; python_version < "3.8"
+Provides-Extra: dev
+Requires-Dist: platon-tester[py-evm] (>=1.2.0) ; extra == 'dev'
+Requires-Dist: flake8 (==3.8.3) ; extra == 'dev'
+Requires-Dist: isort (<4.3.5,>=4.2.15) ; extra == 'dev'
+Requires-Dist: mypy (==0.812) ; extra == 'dev'
+Requires-Dist: mock ; extra == 'dev'
+Requires-Dist: sphinx-better-theme (>=0.1.4) ; extra == 'dev'
+Requires-Dist: click (>=5.1) ; extra == 'dev'
+Requires-Dist: configparser (==3.5.0) ; extra == 'dev'
+Requires-Dist: contextlib2 (>=0.5.4) ; extra == 'dev'
+Requires-Dist: py-node (<4,>=3.2.0) ; extra == 'dev'
+Requires-Dist: py-solc (>=0.4.0) ; extra == 'dev'
+Requires-Dist: pytest (<5.0.0,>=4.4.0) ; extra == 'dev'
+Requires-Dist: sphinx (<4,>=3.0) ; extra == 'dev'
+Requires-Dist: sphinx-rtd-theme (>=0.1.9) ; extra == 'dev'
+Requires-Dist: toposort (>=1.4) ; extra == 'dev'
+Requires-Dist: towncrier (<20,>=19.2.0) ; extra == 'dev'
+Requires-Dist: urllib3 ; extra == 'dev'
+Requires-Dist: wheel ; extra == 'dev'
+Requires-Dist: bumpversion ; extra == 'dev'
+Requires-Dist: flaky (<4,>=3.7.0) ; extra == 'dev'
+Requires-Dist: hypothesis (<6,>=3.31.2) ; extra == 'dev'
+Requires-Dist: pytest-asyncio (<0.11,>=0.10.0) ; extra == 'dev'
+Requires-Dist: pytest-mock (<2,>=1.10) ; extra == 'dev'
+Requires-Dist: pytest-pythonpath (>=0.3) ; extra == 'dev'
+Requires-Dist: pytest-watch (<5,>=4.2) ; extra == 'dev'
+Requires-Dist: pytest-xdist (<2,>=1.29) ; extra == 'dev'
+Requires-Dist: setuptools (>=38.6.0) ; extra == 'dev'
+Requires-Dist: tox (>=1.8.0) ; extra == 'dev'
+Requires-Dist: tqdm (<5,>4.32) ; extra == 'dev'
+Requires-Dist: twine (<2,>=1.13) ; extra == 'dev'
+Requires-Dist: when-changed (<0.4,>=0.3.0) ; extra == 'dev'
+Provides-Extra: docs
+Requires-Dist: mock ; extra == 'docs'
+Requires-Dist: sphinx-better-theme (>=0.1.4) ; extra == 'docs'
+Requires-Dist: click (>=5.1) ; extra == 'docs'
+Requires-Dist: configparser (==3.5.0) ; extra == 'docs'
+Requires-Dist: contextlib2 (>=0.5.4) ; extra == 'docs'
+Requires-Dist: py-node (<4,>=3.2.0) ; extra == 'docs'
+Requires-Dist: py-solc (>=0.4.0) ; extra == 'docs'
+Requires-Dist: pytest (<5.0.0,>=4.4.0) ; extra == 'docs'
+Requires-Dist: sphinx (<4,>=3.0) ; extra == 'docs'
+Requires-Dist: sphinx-rtd-theme (>=0.1.9) ; extra == 'docs'
+Requires-Dist: toposort (>=1.4) ; extra == 'docs'
+Requires-Dist: towncrier (<20,>=19.2.0) ; extra == 'docs'
+Requires-Dist: urllib3 ; extra == 'docs'
+Requires-Dist: wheel ; extra == 'docs'
+Provides-Extra: linter
+Requires-Dist: flake8 (==3.8.3) ; extra == 'linter'
+Requires-Dist: isort (<4.3.5,>=4.2.15) ; extra == 'linter'
+Requires-Dist: mypy (==0.812) ; extra == 'linter'
+Provides-Extra: tester
+Requires-Dist: platon-tester[py-evm] (>=1.2.0) ; extra == 'tester'
+
+# platon.py
+
+[![Documentation Status](https://readthedocs.org/projects/web3py/badge/?version=latest)](https://web3py.readthedocs.io/en/latest/?badge=latest)
+[![Discord](https://img.shields.io/discord/809793915578089484?color=blue&label=chat&logo=discord&logoColor=white)](https://discord.gg/GHryRvPB84)
+[![Build Status](https://circleci.com/gh/platonnetwork/platon.py.svg?style=shield)](https://circleci.com/gh/platonnetwork/platon.py)
+
+A Python library for interacting with Platon, inspired by [web3.js](https://github.com/platonnetwork/web3.js).
+
+* Python 3.6+ support
+
+## Quickstart
+
+[Get started in 5 minutes](https://web3py.readthedocs.io/en/latest/quickstart.html) or
+[take a tour](https://web3py.readthedocs.io/en/latest/overview.html) of the library.
+
+## Documentation
+
+For additional guides, examples, and APIs, see the [documentation](https://web3py.readthedocs.io/en/latest/).
+
+## Want to help?
+
+Want to file a bug, contribute some code, or improve documentation? Excellent! Read up on our
+guidelines for [contributing](https://web3py.readthedocs.io/en/latest/contributing.html),
+then check out issues that are labeled
+[Good First Issue](https://github.com/platonnetwork/platon.py/issues?q=is%3Aissue+is%3Aopen+label%3A%22Good+First+Issue%22).
+
+
