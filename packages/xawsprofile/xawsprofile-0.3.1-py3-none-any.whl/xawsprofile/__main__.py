@@ -1,0 +1,1 @@
+from xawsprofile import cli
