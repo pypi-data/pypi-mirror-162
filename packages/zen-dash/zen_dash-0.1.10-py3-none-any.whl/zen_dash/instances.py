@@ -1,0 +1,139 @@
+from enum import Enum
+from re import T
+from pydantic import BaseConfig, BaseModel
+from typing import List, Optional, Dict
+from zen_dash.page import InstanceType
+
+BaseConfig.arbitrary_types_allowed = True  # change #1
+
+class BoxData(BaseModel):
+    
+    icon: str
+    name: str
+    value: str
+
+
+class DateTimeData(BaseModel):
+    name: str
+    first_date: str
+    second_date: Optional[str]
+
+class TableColumn(BaseModel):
+    columnDef: str
+    header: str
+
+class TableData(BaseModel):
+    columns: List[TableColumn]
+    data: List[Dict]
+    name: str
+    
+class ChartData(BaseModel):
+    name: str
+    data: Dict
+
+class CheckBoxInstance(BaseModel):
+    name: str
+    selected: bool
+    
+class Style(Enum):
+    horizontal = "Horizontal"
+    vertical = "Vertical"
+
+class CheckBoxData(BaseModel):
+    data: List[CheckBoxInstance]
+    style: Style = Style.horizontal
+    name: str
+
+class RadioData(BaseModel):
+    data: List[str]
+    style: Style = Style.horizontal
+    name: str
+    selected: Optional[str] = ""
+
+class SliderData(BaseModel):
+    name: str
+    max: int
+    min: int
+    step: int
+    thumbLabel: bool = True
+    invert: bool = False
+    vertical: bool = False
+
+class ButtonToggleInstance(BaseModel):
+    name: str
+    selected: bool = False
+
+class ButtonToggleData(BaseModel):
+    name: str
+    multiple: bool = False
+    data: List[ButtonToggleInstance]
+
+
+class GroupedFilterDataInstance(BaseModel):
+    group_name: str
+    group_data: List[str]
+
+
+class GroupedFilterData(BaseModel):
+    multi: bool = False
+    name: str
+    data: List[GroupedFilterDataInstance]
+
+
+class SimpleFilterData(BaseModel):
+    multi: bool = False
+    name: str
+    data: List[str]
+
+
+class ToggleData(BaseModel):
+    data: bool
+    name: str
+
+
+class MultiURLInfo(BaseModel):
+    name: Optional[str]
+    url: str
+
+class MultiData(BaseModel):
+    urls: List[MultiURLInfo]
+
+
+class FlexData(BaseModel):
+    fxFlex: Optional[str] = "25%" 
+    fxFlex_md: Optional[str] = "33%"
+    fxFlex_sm: Optional[str] = "50%" 
+    fxFlex_xs: Optional[str] = "100%" 
+class ReturnData(BaseModel):
+    """
+    Main return object use for everything except /backend/page_detail, /backend/sidebar, and /backend/title
+    depdning upon which type (InstanceType) you select, you have to select corsponding return value 
+
+    for example, if you select BOX as input, you have to choose box_data as one of  input.
+
+    Example: i.ReturnData(type=i.InstanceType.BOX, box_data=i.BoxData(icon="attach_money", name="User Spent", value="$5000"), footer="10% increase compare to last week ")
+
+    :param type: InstanceType this will dectate what type of output will be render
+    :param title: Optional[str] tile of mat box in which output will be render
+    
+    """
+
+    type:InstanceType
+    title: Optional[str]
+    reactive: Optional[bool] = False
+    chart_data: Optional[ChartData]
+    box_data: Optional[BoxData]
+    date_data: Optional[DateTimeData]
+    checkbox_data: Optional[CheckBoxData]
+    radio_data: Optional[RadioData]
+    slider_data: Optional[SliderData]
+    button_toggle_data: Optional[ButtonToggleData]
+    table_data: Optional[TableData]
+    toggle_data: Optional[ToggleData]
+    multi_data: Optional[MultiData]
+    simple_filter_data: Optional[SimpleFilterData] 
+    group_filter_data: Optional[GroupedFilterData ]
+
+    footer: Optional[str]
+    flex: Optional[FlexData]
+
