@@ -1,0 +1,127 @@
+Metadata-Version: 1.1
+Name: imongo-orm
+Version: 0.0.2
+Summary: MongoDB ORM interface for Python
+Home-page: https://github.com/robertocrespond/imongo
+Author: Roberto Crespo
+Author-email: rcrespoa@alumni.nd.edu
+License: UNKNOWN
+Description: imongo ORM
+        ==========
+        
+        Schema-first mongoDB interface (inspired by
+        `Mongoose <https://mongoosejs.com/>`__). Library serves as a thin
+        wrapper around `PyMongo <!https://pymongo.readthedocs.io/en/stable/>`__.
+        
+        | 
+        |  
+        
+        Why use imongo?
+        ---------------
+        
+        -  Schema first API 😎
+        -  Built-In on-write validation for insertions and updates ✅
+        -  Last updated timestamp on every update for `Slowly changing
+           dimensions <https://en.wikipedia.org/wiki/Slowly_changing_dimension>`__
+        -  Support for nested schemas 🪢
+        
+        | 
+        |  
+        
+        Getting Started
+        ---------------
+        
+        0. Install
+        ~~~~~~~~~~
+        
+        .. code:: bash
+        
+           pip install imongo-orm
+        
+        1. Writing your first Model
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        
+        .. code:: python
+        
+           from imongo import Key
+           from imongo import Model
+           from imongo import Schema
+           from imongo import Types
+        
+           EMAIL_REGEX = """(?:[a-z...""" # trimmed because of space
+        
+           user_schema = Schema(
+               {
+                   "name": Key(type=Types.String, required=True, min_length=5, max_length=50, lowercase=True),
+                   "email": Key(type=Types.String, required=True, regex=EMAIL_REGEX),
+                   "role": Key(type=Types.String, required=True, default=None, enum=["A", "B", None]),
+                   "details": {
+                       "last_visit": Key(type=Types.Date, required=False),
+                       "age": Key(type=Types.String, required=False),
+                   }
+               },
+               timestamps=True,
+               validate=True,
+           )
+        
+           User = Model("users", user_schema)
+        
+        2. Connect with MongoDB and link imongo
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        
+        .. code:: python
+        
+           from pymongo import MongoClient
+           def connect_db(db_name: str = "helloworld") -> MongoClient:
+               client = MongoClient("mongodb://root:example@localhost:27017")
+        
+               # register schemas
+               User.register_client(client, db_name)
+        
+               return client
+        
+        3. Use imongo through pyMongo operations
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        
+        .. code:: python
+        
+           connect_db("helloworld")
+        
+           # Insert new user
+           new_user = User({"name": "Roberto", "email": "asd@google.com", "role": "A"})
+           res = User.insert_one(new_user)
+           new_user_id = res.inserted_id
+        
+           # Fail to Update new user due to validation
+           res = User.update_one({"_id": new_user_id}, {"$set": {"name": "Rob"}})
+        
+           # Find users
+           for user in User.find({"name": "roberto"}):
+               print(user, "\n")
+        
+        Validation Config for Key
+        ~~~~~~~~~~~~~~~~~~~~~~~~~
+        
+        .. code:: python
+        
+           required: bool = True                   #   Specify whether key is required
+           default: Union[Any, None] = None        #   Specify default value for key if value is not provided
+           enum: Union[List[Any], None] = None     #   Specify allowed values for key
+           immutable: bool = False                 #   Specify if value is immutable (i.e. it can't be altered after creation)
+           lowercase: bool = False                 #   Apply inline lowercase transformation (Types.String)
+           uppercase: bool = False                 #   Apply inline uppercase transformation (Types.String)
+           regex: str = None                       #   Regex match check against value (Types.String)
+           min: int = None                         #   Specify key's minimum value (Types.Integer, Types.Long, Types.Double)
+           max: int = None                         #   Specify key's maximum value (Types.Integer, Types.Long, Types.Double)
+           min_length: int = None                  #   Specify key's minimum length (Types.String)
+           max_length: int = None                  #   Specify key's minimum length (Types.String)
+        
+Keywords: mongo mongodb orm db database document
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: Topic :: Software Development :: Build Tools
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
