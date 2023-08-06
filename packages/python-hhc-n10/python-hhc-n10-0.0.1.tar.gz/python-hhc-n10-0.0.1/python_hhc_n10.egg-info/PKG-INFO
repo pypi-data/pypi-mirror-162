@@ -1,0 +1,38 @@
+Metadata-Version: 2.1
+Name: python-hhc-n10
+Version: 0.0.1
+Summary: Interfaces with HHC-N10 (Ethernet Relay)
+Home-page: http://github.com/Frankkkkk/python-hhc-n10
+Author: Frank Villaro-Dixon
+Author-email: frank@villaro-dixon.eu
+License: MIT
+Keywords: ethernet relay hhc-n10
+Classifier: Development Status :: 3 - Alpha
+Classifier: Topic :: Utilities
+Classifier: License :: OSI Approved :: MIT License
+Description-Content-Type: text/markdown
+
+# python-hhc-n10
+
+## What is this lib ?
+This library is made to communicate with HHC-N10 devices. They are relays that can be toggled via ethernet (TCP/IP).
+
+## How to use the lib
+```python3
+from hhcn10 import hhcn10
+
+h = hhcn10.HHCN10()
+
+h.set_relay(True)
+print('The relay is: ' + str(h.read_relay()))
+
+time.sleep(1)
+
+h.set_relay(False)
+print('And now the relay is: ' + h.read_relay())
+```
+
+Please note that the implementation of their TCP stack is finnicky and only accepts 5 parallel connections. If you try to open too many sockets at once the relay will hang for some time.
+
+## Default params
+The relay default's IP is `192.168.0.105/24`. If your computer is not in this same subnet, you'll need to add a static route + a static IP in the same subnet as this relay. You can then change the device's IP using the `change_ip(addr, netmask, gw)` method.
