@@ -1,0 +1,98 @@
+Metadata-Version: 2.1
+Name: yaml-translator
+Version: 1.0.1
+Summary: A simple translator using Yaml
+Home-page: https://github.com/osom8979/yaml-translator
+Author: zer0
+Author-email: osom8979@gmail.com
+Maintainer: zer0
+Maintainer-email: osom8979@gmail.com
+License: MIT License
+Project-URL: GitHub: issues, https://github.com/osom8979/yaml-translator/issues
+Project-URL: GitHub: repo, https://github.com/osom8979/yaml-translator
+Keywords: translation
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: Operating System :: POSIX
+Classifier: Operating System :: MacOS :: MacOS X
+Classifier: Operating System :: Microsoft :: Windows
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Topic :: Software Development
+Classifier: Topic :: Utilities
+Classifier: License :: OSI Approved :: MIT License
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: PyYAML (>=6.0)
+
+# yaml-translator
+
+![PyPI](https://img.shields.io/pypi/v/yaml-translator?style=flat-square)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/yaml-translator?style=flat-square)
+![GitHub](https://img.shields.io/github/license/osom8979/yaml-translator?style=flat-square)
+
+A simple translator using Yaml 
+
+## Usage
+
+Create a translation file in your package.
+
+```
+your_package
+your_package/__init__.py
+your_package/translator/__init__.py
+your_package/translator/en.yaml
+your_package/translator/ko.yaml
+```
+
+``your_package/translator/en.yaml`` file:
+```.yaml
+menu:
+  title: "Title"
+  subtitle: "{sub} Subtitle"
+```
+
+``your_package/translator/ko.yaml`` file:
+```.yaml
+menu:
+  title: "제목"
+  subtitle: "소제목 {sub}"
+```
+
+- <i>See "[Installing Package Data](https://docs.python.org/3/distutils/setupscript.html#distutils-installing-package-data)"
+for how to add a yaml file to your deployment package.<i>
+
+
+Import package:
+```.python
+from yaml_translator import Translator
+from your_package import translations
+```
+
+Create ``Translator`` instance:
+```.python
+t = Translator.from_module_dir(translations, "ko")
+```
+
+Get translated text:
+```.python
+t("menu.title")
+t("menu.subtitle", sub="TEMP")
+```
+
+Change language code:
+```.python
+t.lang = "ko"
+```
+
+## License
+
+See the [LICENSE](./LICENSE) file for details. In summary,
+**yaml-translator** is licensed under the **MIT license**.
+
+
