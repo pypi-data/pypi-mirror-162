@@ -1,0 +1,19 @@
+{%- for type_ in input_types %}
+
+
+@dataclass
+class {{type_}}(InputType):
+    {{ '__graphql_map__ = {' }}{%  for field in type_.fields %}
+        '{{ underscore(field) }}': '{{ field }}'{% if not loop.last %}{{ ', ' }}{% endif %}
+    {%- endfor %}
+    {{ '}' }}
+
+    {% for field_name, field in sort_default_fields(type_.fields).items() -%}
+        {{ underscore(field_name) }}: {{ get_type(field.type, enquote=True, strip_class=False) }}
+
+        {%- if not has_default (field) and get_type(field.type, strip_class=False).startswith('Optional') %}{{ ' = EMPTY' }}
+        {%- elif has_default(field) %}{{ ' = ' }}{{ field.default_value }}
+        {%- endif %}
+    {% endfor %}
+
+{%- endfor %}
