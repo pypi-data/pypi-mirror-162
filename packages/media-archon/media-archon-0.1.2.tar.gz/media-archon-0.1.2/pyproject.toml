@@ -1,0 +1,66 @@
+[project]
+name = "media-archon"
+dynamic = []
+description = "Mirror a directory tree of media files, converting the files to a new format if newer or missing"
+authors = [
+    { name = "Matthew Swabey", email = "matthew@swabey.org" },
+]
+dependencies = [
+    "attrs>=21.4.0",
+    "cattrs>=22.1.0",
+    "click>=8.1.3",
+]
+requires-python = ">=3.9"
+readme = "README.md"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Topic :: Multimedia",
+    "Topic :: Multimedia :: Sound/Audio :: Conversion",
+    "Topic :: Multimedia :: Video :: Conversion",
+    "Topic :: Software Development :: Build Tools",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Operating System :: MacOS :: MacOS X",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: POSIX :: BSD",
+    "Operating System :: Unix",
+    "Intended Audience :: End Users/Desktop",
+]
+version = "0.1.2"
+
+[project.license]
+text = "AGPL-3.0-or-later"
+
+[project.scripts]
+media-archon = "media_archon.cli:main"
+
+[project.optional-dependencies]
+
+[project.urls]
+Homepage = "https://github.com/mattaw/media-archon"
+"media-archon.toml" = "https://raw.githubusercontent.com/mattaw/media-archon/main/media-archon.toml"
+
+[tool.pdm.version]
+source = "file"
+path = "media_archon/__about__.py"
+
+[tool.pdm.dev-dependencies]
+test = [
+    "pytest>=7.1.2",
+    "black>=22.6.0",
+    "flake8>=4.0.1",
+    "mypy>=0.971",
+]
+
+[tool.pdm.scripts]
+
+[tool.flake8]
+max-line-length = 88
+
+[build-system]
+requires = [
+    "pdm-pep517>=1.0.0",
+]
+build-backend = "pdm.pep517.api"
