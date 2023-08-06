@@ -1,0 +1,172 @@
+Metadata-Version: 2.1
+Name: index-calculator
+Version: 0.3.3
+Summary: Python index-calculator is an xclim wrapperto calculate climate indices from CMORized netCDF files.
+Home-page: https://github.com/ludwiglierhammer/index_calculator
+Author: Ludwig Lierhammer
+Author-email: ludwig.lierhammer@hereon.de
+License: MIT license
+Keywords: index_calculator
+Classifier: Development Status :: 2 - Pre-Alpha
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Natural Language :: English
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Requires-Python: >=3.6
+License-File: LICENSE
+License-File: AUTHORS.rst
+Requires-Dist: xarray (>=2022.3.0)
+Requires-Dist: dask (>=2021.10.0)
+Requires-Dist: xclim (>=0.34.0)
+Requires-Dist: pyhomogenize (>=0.2.1)
+
+================
+index_calculator
+================
+
+.. image:: https://github.com/ludwiglierhammer/index_calculator/actions/workflows/ci.yml/badge.svg
+    :target: https://github.com/ludwiglierhammer/index_calculator/actions/workflows/ci.yml
+
+.. image:: https://codecov.io/gh/ludwiglierhammer/index_calculator/branch/master/graph/badge.svg
+    :target: https://codecov.io/gh/ludwiglierhammer/index_calculator
+
+.. image:: https://img.shields.io/pypi/v/index_calculator.svg
+    :target: https://pypi.python.org/pypi/index_calculator
+
+.. image:: https://readthedocs.org/projects/index_calculator/badge/?version=latest
+    :target: https://index-calculator.readthedocs.io/en/latest/?version=latest
+    :alt: Documentation Status
+
+.. image:: https://results.pre-commit.ci/badge/github/ludwiglierhammer/index_calculator/master.svg
+   :target: https://results.pre-commit.ci/latest/github/ludwiglierhammer/index_calculator/master
+   :alt: pre-commit.ci status
+
+Python index_calculator is an xclim wrapper to calculate climate indices from CMORized netCDF files.
+
+
+* Free software: MIT license
+* Documentation: https://index-calculator.readthedocs.io.
+
+
+Features
+--------
+
+* Calculate climate indices via xclim.
+* Write standardized netCDF attributes.
+* Write on disk with a project-specific output file name.
+
+Installation
+------------
+
+You can install the package directly with pip:
+
+.. code-block:: console
+
+     pip install index_calculator
+
+If you want to contribute, I recommend cloning the repository and installing the package in development mode, e.g.
+
+.. code-block:: console
+
+    git clone https://github.com/ludwiglierhammer/index_calculator
+    cd index_calculator
+    pip install -e .
+
+This will install the package but you can still edit it and you don't need the package in your :code:`PYTHONPATH`
+
+
+Requirements
+------------
+
+* python3.6 or higher
+
+* numpy
+
+* pandas
+
+* xarray
+
+* xclim
+
+
+Contact
+-------
+In cases of any problems, needs or wishes do not hesitate to contact:
+
+ludwig.lierhammer@hereon.de
+
+Credits
+-------
+
+This package was created with Cookiecutter_ and the `audreyr/cookiecutter-pypackage`_ project template.
+
+.. _Cookiecutter: https://github.com/audreyr/cookiecutter
+.. _`audreyr/cookiecutter-pypackage`: https://github.com/audreyr/cookiecutter-pypackage
+
+
+=======
+History
+=======
+
+0.1.0 (2022-03-08)
+------------------
+
+* First release on PyPI.
+
+0.2.0 (2022-07-07)
+------------------
+
+* documentation on readthedocs
+* tests
+* new cli arguments added
+
+0.2.1 (2022-07-12)
+------------------
+
+* install data and tables via pip
+
+0.3.0 (2022-07-19)
+------------------
+
+* new indices implemented
+
+  * CD: number of cold and dry days
+  * CHDYYx: Maximum number of consecutive heat days
+  * CSDI: Cold spell duration index
+  * CW: Number of cold and wet days
+  * DTR: Mean of daily temperature range
+  * GD: Number of growing degree days
+  * GDYYx: Number of consecutive growing degree days
+  * HD17: Number of heating degree days
+  * PRCPTOT: Total precipitation amount
+  * RDYYp: Number of wet days with precip over percentile
+  * RYYpTOT: Precipitation fraction with precip over percentile
+  * TG10p: Fraction of days with mean temperature under 10th percentile
+  * TG90p: Fraction of days with mean temperature under 90th percentile
+  * TX10p: Fraction of days with maximum temperature under 10th percentile
+  * TX90p: Fraction of days with maximum temperature under 90th percentile
+  * TN10p: Fraction of days with minimum temperature under 10th percentile
+  * TN90p: Fraction of days with minimum temperature under 90th percentile
+  * WD: Number of warm and dry days
+  * WSDI: Warm spell duration index
+  * WW: Number of warm and wet days
+
+0.3.1 (2022-07-20)
+------------------
+
+* adjustments fro automatically project-specific outfile name generation
+
+0.3.2 (2022-07-21)
+------------------
+
+* project-specific directory structure for cordex, cmip5 and cmip6
+
+0.3.3 (2022-08-10)
+------------------
+
+* more documentation
+* properties to classes
+* classes automatically call functions
