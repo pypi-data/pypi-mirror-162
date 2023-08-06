@@ -1,0 +1,36 @@
+[tool.poetry]
+name = "sencore"
+version = "0.1.38"
+description = "sentence nlp parser for multilingua"
+authors = ["Phoenix Grey <phoenix.grey0108@gmail.com>"]
+repository = "https://github.com/qishe-nlp/sencore"
+documentation = "https://qishe-nlp.github.io/sencore/"
+readme = "README.md"
+keywords = ["NLP", "sentence parsing", "spacy"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+click = "^8.0.3"
+spacy = "^3.4.0"
+phrase-detective = "^0.1.32"
+kg-detective = "^0.1.4"
+structure-detective = "^0.1.4"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+Sphinx = "^3.5.3"
+sphinx-rtd-theme = "^0.5.1"
+
+[tool.poetry.scripts]
+parse2vocab = "sencore.entry:vocab" 
+parse2phrase = "sencore.entry:phrase"
+parse2structure = "sencore.entry:structure" 
+parse2kg = "sencore.entry:kg"
+
+
+review_phrase = "sencore.train:generate_review_phrases"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
+
