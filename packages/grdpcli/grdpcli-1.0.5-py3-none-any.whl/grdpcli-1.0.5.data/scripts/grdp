@@ -1,0 +1,22 @@
+#!python
+import sys
+sys.path.insert(0, "/usr/local/share/grdpcli")
+
+from grdpcli import *
+from grdpcli.commands import *
+from grdpcli.logger import logger
+
+if __name__ == "__main__":
+    if not checkKubectl():
+        raise Exception("[GRDPCLI]: Kubectl tool not found, please install kubectl v1.14.")
+    if not os.path.exists(os.path.join(GRDPCLI_HOME_DIR, GRDPCLI_CONFIG_JSON)) or not os.path.exists(os.path.join(GRDPCLI_HOME_DIR, GRDPCLI_PROJECT_JSON)):
+        input("[GRDPCLI]: Authorization is required, please ENTER to open up the browser to login or CTRL+C to cancel:")
+        WEBSERVER = HTTPServer((hostName, serverPort), callbackServer)
+        webbrowser.open(AUTH_ADDRESS, new=0, autoraise=True)
+        logger.info("Waiting for authorization is compleate ...")
+        try:
+            WEBSERVER.serve_forever()
+        except KeyboardInterrupt:
+            pass
+    else:
+        commandHandler(sys.argv)
