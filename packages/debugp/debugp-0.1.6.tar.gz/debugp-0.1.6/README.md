@@ -1,0 +1,158 @@
+# debugprint
+[![pypi](https://img.shields.io/pypi/v/debugp?color=%23a6d&logo=pypi)](https://pypi.org/project/debugp/)
+[![license](https://img.shields.io/pypi/l/debugp?color=a6d&logo=g)](https://choosealicense.com/licenses/mit/)
+[![version](https://img.shields.io/badge/Python-3.10-a6d)](https://img.shields.io/badge/Python-3.10-a6d)
+[![last_commit](https://img.shields.io/github/last-commit/FedDragon1/debugprint?color=a6d)](https://github.com/FedDragon1/debugprint/graphs/commit-activity)
+
+A light weighted module aimed to help debug experience
+
+## Install
+```
+pip install debugp
+```
+
+## Usage
+Use `dp()` to show the expression value and keep  evaluate.
+```py
+import numpy as np
+from debugprint import dp
+
+dp(
+    np.dot(
+        np.array([1, 2, 3]),
+        np.array([[1], [2], [3]]), 
+    )
+)
+```
+```
+[21:37:28] Debug info of line 11 in <module>:                  debugprint.py:50
+        np.dot(np.array([1, 2, 3]), np.array([[1], [2], [3]])): [14]
+```
+
+`dp()` support printing multiple expressions at the same time, and returns the result in a tuple
+```py
+from debugprint import dp as _dp
+
+def print_arguments(*args):
+    print(args)
+
+print_arguments(
+    *_dp(1 + 2 * 3, [x for x in range(10) if x % 3 == 0])
+)
+```
+```
+[08:34:17] Debug info of line 9 in <module>:                      debugprint.py:50                                                                                                                                                         debugprint.py:50
+        1 + 2 * 3: 7
+        [x for x in range(10) if x % 3 == 0]: [0, 3, 6, 9]
+(7, [0, 3, 6, 9])
+```
+You can use `dp()` multiple times in a line
+```py
+from debugprint import dp as _dp
+
+a = 2
+_dp(_dp(1 + 2 * 3) >> _dp(a))
+```
+```
+[08:49:04] Debug info of line 5 in <module>:                                                                                                                                                                              debugprint.py:27
+        1 + 2 * 3: 7
+        a: 2
+        _dp(1 + 2 * 3) >> _dp(a): 1
+```
+
+## Configuration
+
+### Style
+
+You can change the default color with `dp_conf`
+```py
+from debugprint import *
+
+dp_conf.pseudo = "yellow"
+
+a = 2
+dp(dp(1 + 2 * 3) >> dp(a))
+```
+Before:
+
+<img src="./static/dp_conf_change_style_before.png" alt="before" style="width: 400px">
+
+After:
+
+<img src="./static/dp_conf_change_style.png" alt="after" style="width: 400px">
+
+### Enable / Disable
+You can enable or disable debug print by manipulating `dp_conf.enabled`
+```python
+from debugprint import *
+
+a = 1
+dp_conf.enabled = False
+dp(dp(1 + 2 * 3) >> dp(a))  # Won't print a thing!
+```
+
+### Print Hook
+You can use a custom function to convert object to string!
+```python
+from debugprint import *
+from objprint import objstr
+
+class A:
+    def __init__(self, foo, bar):
+        self.foo = foo
+        self.bar = bar
+        self.baz = B()
+
+class B:
+    def __init__(self):
+        self.x = 1
+        self.y = 2
+
+obj = A("foo", "bar")
+dp(obj) # information from repr(obj) is not helpful
+
+dp_conf.print_hook = objstr # change the hook from repr to objstr
+dp(obj)
+```
+
+```
+[09:50:25] Debug info of line 17 in <module>:                                                                                                                                                                             debugprint.py:27
+        obj: <__main__.A object at 0x000001985793E950>
+        
+           Debug info of line 20 in <module>:                                                                                                                                                                             debugprint.py:27
+        obj: <A 0x1985793e950
+                  .bar = 'bar',
+                  .baz = <B 0x1985793e8f0
+                    .x = 1,
+                    .y = 2
+                  >,
+                  .foo = 'foo'
+                >
+```
+
+
+You can find more detail in `debugprint/config.py`
+
+## Known Bugs
+1. Cannot use `dp()` in the python interactive console
+2. `dp()` does not work when [multiple statements in one line](https://peps.python.org/pep-0008/#other-recommendations), i.e. `dp(1); dp(2)`
+3. Three layers of nested `dp()` in different lines produces unexpected context hint
+```python
+dp(
+    dp(
+        (1, (
+            dp(2)))
+    ) + (2,)
+)
+```
+```
+[13:45:35] Debug info of line 9 in <module>:                                                                                                                                                                              debugprint.py:28
+        2: 2
+
+           Debug info of line 7 in <module>:                                                                                                                                                                              debugprint.py:28
+        (1, dp(2)): (1, 2)
+
+           Debug info of line 6 in <module>:                                                                                                                                                                              debugprint.py:28
+        (1, dp(2)): (1, 2, 2) # uh-oh
+
+```
