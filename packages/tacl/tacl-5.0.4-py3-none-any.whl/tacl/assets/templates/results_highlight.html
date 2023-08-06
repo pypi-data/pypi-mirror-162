@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>{{ base_name }} {{ base_siglum }} with matches from each other text highlighted</title>
+    <style>
+      body { margin-left: 4em; color: black; background-color: white; }
+      div.text-list { float: right; width: 15em; margin-left: 3em; }
+      ul { list-style-type: none; }
+    </style>
+    <script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
+  </head>
+  <body>
+    <h1>{{ base_name }} {{ base_siglum }} with matches from each other text highlighted</h1>
+
+    <div class="text-list">
+      <form>
+        <ul>
+          {% for text in text_list %}
+          <li>
+            <input type="checkbox" name="text" value="{{ text }}" /> {{ text }}
+          </li>
+          {% endfor %}
+        </ul>
+      </form>
+    </div>
+
+    <div class="text">{{ text }}</div>
+
+    <script src="heatmap.js"></script>
+  </body>
+</html>
