@@ -1,0 +1,35 @@
+[tool.poetry]
+name = "collagraph"
+version = "0.5.0"
+description = "Reactive user interfaces"
+authors = ["Berend Klein Haneveld <berendkleinhaneveld@gmail.com>", "Korijn van Golen <korijn@gmail.com>"]
+license = "MIT"
+homepage = "https://github.com/fork-tongue/collagraph"
+readme = "README.md"
+
+[tool.poetry.extras]
+pygfx = ["pygfx"]
+pyside = ["pyside6_essentials"]
+
+[tool.poetry.dependencies]
+python = ">=3.9"
+observ = ">=0.9.3"
+pygfx = { version = ">=0.1.9", optional = true }
+pyside6_essentials = { version = "^6.3", python = "<3.11", optional = true }
+
+[tool.poetry.dev-dependencies]
+black = "*"
+flake8 = "*"
+flake8-black = "*"
+flake8-import-order = "*"
+flake8-print = "*"
+pre-commit = "*"
+pytest = "*"
+pytest-cov = "*"
+pytest-qt = "*"
+pytest-xvfb = "*"
+twine = "*"
+
+[build-system]
+requires = ["poetry>=1.0.0"]
+build-backend = "poetry.masonry.api"
