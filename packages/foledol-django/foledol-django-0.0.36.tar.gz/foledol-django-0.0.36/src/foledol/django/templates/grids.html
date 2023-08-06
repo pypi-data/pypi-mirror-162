@@ -1,0 +1,13 @@
+{% extends base %}
+
+{% block content %}
+
+<form method="post" id="form">
+    {% csrf_token %}
+    <input type="hidden" id="action" name="action"/>
+    <input type="hidden" id="sort" name="grid_sort" value="{{grid_sort}}"/>
+    <input type="hidden" name="path" value=":/django/grids"/>
+    {% include "components/table.html" with table=table pagination=pagination sort=grid_sort %}
+</form>
+
+{% endblock %}
