@@ -1,0 +1,102 @@
+[tool.poetry]
+
+name = "python_anvil"
+version = "1.5.0"
+description = "Anvil API"
+
+license = "MIT"
+
+authors = ["Allan Almazan <allan@useanvil.com>"]
+
+readme = "README.md"
+
+homepage = "https://www.useanvil.com/"
+documentation = "https://github.com/anvilco/python-anvil"
+repository = "https://github.com/anvilco/python-anvil"
+
+keywords = [
+    "anvil",
+    "api",
+    "pdf",
+    "signing",
+]
+classifiers = [
+    # Full list here: https://pypi.org/pypi?%3Aaction=list_classifiers
+    "License :: OSI Approved :: MIT License",
+    "Development Status :: 3 - Alpha",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+[tool.poetry.dependencies]
+
+python = "^3.6.2"
+
+click = "^8.0"
+requests = "^2.25.0"
+ratelimit = "^2.2.1"
+tabulate = "^0.8.9"
+pydantic = "^1.8.2"
+
+[tool.poetry.dev-dependencies]
+
+# Formatters
+black = "=22.3.0"
+isort = "=5.10.1"
+
+# Linters
+mypy = "*"
+pydocstyle = "*"
+pylint = "2.13.8"
+
+# Testing
+pytest = "6.2.5"
+pytest-cov = "*"
+pytest-describe = { git = "https://github.com/pytest-dev/pytest-describe", rev = "453aa9045b265e313f356f1492d8991c02a6aea6" } # use 2.0 when released
+pytest-expecter = "^2.1"
+pytest-random = "*"
+freezegun = "*"
+
+# Reports
+coveragespace = {git = "https://github.com/jacebrowning/coverage-space-cli.git", rev = "c167484787a223227b1ad5393300f8ca2bafe7a2"}
+
+# Documentation
+mkdocs = "1.3.0"
+pygments = "^2.5.2"
+
+# Tooling
+pyinstaller = "*"
+sniffer = "*"
+MacFSEvents = { version = "*", platform = "darwin" }
+pync = { version = "*", platform = "darwin" }
+# Updating `ipython` any further will require a minimum Python of >=3.7
+ipython = "^7.12.0"
+pyinotify = {version = "^0.9.6", optional = true}
+tox = "^3.21.2"
+pre-commit = "^2.16.0"
+types-dataclasses = "^0.6.5"
+types-requests = "^2.27.25"
+types-tabulate = "^0.8.9"
+types-setuptools = "^57.4.14"
+
+[tool.poetry.scripts]
+
+anvil = "python_anvil.cli:cli"
+
+[tool.black]
+
+# py39 not supported yet for `black`
+target-version = ["py36", "py37", "py38", "py39"]
+skip-string-normalization = true
+
+[build-system]
+
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
