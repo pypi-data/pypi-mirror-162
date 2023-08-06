@@ -1,0 +1,111 @@
+<center><a href="test3.c">Actual source code: test3.c</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="https://slepc.upv.es/documentation/current/src/sys/classes/rg/tests/test3.c.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2022-08-09T09:05:31+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>slepc-3.17.2 2022-08-09</b></div>
+   <div id="bugreport" align=right><a href="mailto:slepc-maint@upv.es?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: slepc-3.17.2 v3.17.2 src/sys/classes/rg/tests/test3.c.html "><small>Report Typos and Errors</small></a></div>
+<pre width="80">
+<a name="line1">  1: </a><font color="#B22222">/*</font>
+<a name="line2">  2: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line3">  3: </a><font color="#B22222">   SLEPc - Scalable Library for Eigenvalue Problem Computations</font>
+<a name="line4">  4: </a><font color="#B22222">   Copyright (c) 2002-, Universitat Politecnica de Valencia, Spain</font>
+
+<a name="line6">  6: </a><font color="#B22222">   This file is part of SLEPc.</font>
+<a name="line7">  7: </a><font color="#B22222">   SLEPc is distributed under a 2-clause BSD license (see LICENSE).</font>
+<a name="line8">  8: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line9">  9: </a><font color="#B22222">*/</font>
+
+<a name="line11"> 11: </a>static char help[] = <font color="#666666">"Test <a href="../../../../../docs/manualpages/RG/RGIsAxisymmetric.html#RGIsAxisymmetric">RGIsAxisymmetric</a>.\n\n"</font>;
+
+<a name="line13"> 13: </a>#include <A href="../../../../../include/slepcrg.h.html">&lt;slepcrg.h&gt;</A>
+
+<a name="line15"> 15: </a><strong><font color="#4169E1"><a name="main"></a>int main(int argc,char **argv)</font></strong>
+<a name="line16"> 16: </a>{
+<a name="line17"> 17: </a>  <a href="../../../../../docs/manualpages/sys/RG.html#RG">RG</a>             rg;
+<a name="line18"> 18: </a>  PetscBool      vertical=PETSC_FALSE,symm;
+
+<a name="line20"> 20: </a>  <a href="../../../../../docs/manualpages/sys/SlepcInitialize.html#SlepcInitialize">SlepcInitialize</a>(&amp;argc,&amp;argv,(char*)0,help);
+<a name="line21"> 21: </a>  PetscOptionsGetBool(NULL,NULL,<font color="#666666">"-vertical"</font>,&amp;vertical,NULL);
+
+<a name="line23"> 23: </a>  <a href="../../../../../docs/manualpages/RG/RGCreate.html#RGCreate">RGCreate</a>(PETSC_COMM_WORLD,&amp;rg);
+<a name="line24"> 24: </a>  <a href="../../../../../docs/manualpages/RG/RGSetFromOptions.html#RGSetFromOptions">RGSetFromOptions</a>(rg);
+<a name="line25"> 25: </a>  <a href="../../../../../docs/manualpages/RG/RGViewFromOptions.html#RGViewFromOptions">RGViewFromOptions</a>(rg,NULL,<font color="#666666">"-rg_view"</font>);
+<a name="line26"> 26: </a>  <a href="../../../../../docs/manualpages/RG/RGIsAxisymmetric.html#RGIsAxisymmetric">RGIsAxisymmetric</a>(rg,vertical,&amp;symm);
+<a name="line27"> 27: </a>  PetscPrintf(PETSC_COMM_WORLD,<font color="#666666">"The region is %saxisymmetric with respect to the %s axis\n"</font>,symm?<font color="#666666">""</font>:<font color="#666666">"NOT "</font>,vertical?<font color="#666666">"vertical"</font>:<font color="#666666">"horizontal"</font>);
+<a name="line28"> 28: </a>  <a href="../../../../../docs/manualpages/RG/RGDestroy.html#RGDestroy">RGDestroy</a>(&amp;rg);
+<a name="line29"> 29: </a>  <a href="../../../../../docs/manualpages/sys/SlepcFinalize.html#SlepcFinalize">SlepcFinalize</a>();
+<a name="line30"> 30: </a>  <font color="#4169E1">return</font> 0;
+<a name="line31"> 31: </a>}
+
+<a name="line33"> 33: </a><font color="#B22222">/*TEST</font>
+
+<a name="line35"> 35: </a><font color="#B22222">   testset:</font>
+<a name="line36"> 36: </a><font color="#B22222">      output_file: output/test3_hor_yes.out</font>
+<a name="line37"> 37: </a><font color="#B22222">      test:</font>
+<a name="line38"> 38: </a><font color="#B22222">         suffix: 1</font>
+<a name="line39"> 39: </a><font color="#B22222">      test:</font>
+<a name="line40"> 40: </a><font color="#B22222">         suffix: 1_ellipse</font>
+<a name="line41"> 41: </a><font color="#B22222">         args: -rg_type ellipse -rg_ellipse_center 2 -rg_ellipse_radius 1</font>
+<a name="line42"> 42: </a><font color="#B22222">      test:</font>
+<a name="line43"> 43: </a><font color="#B22222">         suffix: 1_interval</font>
+<a name="line44"> 44: </a><font color="#B22222">         args: -rg_type interval -rg_interval_endpoints -2,2,-1,1</font>
+<a name="line45"> 45: </a><font color="#B22222">      test:</font>
+<a name="line46"> 46: </a><font color="#B22222">         suffix: 1_ring</font>
+<a name="line47"> 47: </a><font color="#B22222">         args: -rg_type ring -rg_ring_center 2 -rg_ring_radius 1 -rg_ring_startangle 0.1 -rg_ring_endangle 0.9</font>
+
+<a name="line49"> 49: </a><font color="#B22222">   testset:</font>
+<a name="line50"> 50: </a><font color="#B22222">      output_file: output/test3_ver_yes.out</font>
+<a name="line51"> 51: </a><font color="#B22222">      args: -vertical</font>
+<a name="line52"> 52: </a><font color="#B22222">      test:</font>
+<a name="line53"> 53: </a><font color="#B22222">         suffix: 2</font>
+<a name="line54"> 54: </a><font color="#B22222">      test:</font>
+<a name="line55"> 55: </a><font color="#B22222">         suffix: 2_ellipse</font>
+<a name="line56"> 56: </a><font color="#B22222">         args: -rg_type ellipse -rg_ellipse_center 2i -rg_ellipse_radius 1</font>
+<a name="line57"> 57: </a><font color="#B22222">         requires: complex</font>
+<a name="line58"> 58: </a><font color="#B22222">      test:</font>
+<a name="line59"> 59: </a><font color="#B22222">         suffix: 2_interval</font>
+<a name="line60"> 60: </a><font color="#B22222">         args: -rg_type interval -rg_interval_endpoints -2,2,-1,1</font>
+<a name="line61"> 61: </a><font color="#B22222">      test:</font>
+<a name="line62"> 62: </a><font color="#B22222">         suffix: 2_ring</font>
+<a name="line63"> 63: </a><font color="#B22222">         args: -rg_type ring -rg_ring_center 2i -rg_ring_radius 1 -rg_ring_startangle 0.2 -rg_ring_endangle 0.3</font>
+<a name="line64"> 64: </a><font color="#B22222">         requires: complex</font>
+
+<a name="line66"> 66: </a><font color="#B22222">   testset:</font>
+<a name="line67"> 67: </a><font color="#B22222">      output_file: output/test3_hor_no.out</font>
+<a name="line68"> 68: </a><font color="#B22222">      test:</font>
+<a name="line69"> 69: </a><font color="#B22222">         suffix: 3_ellipse</font>
+<a name="line70"> 70: </a><font color="#B22222">         args: -rg_type ellipse -rg_ellipse_center 2i -rg_ellipse_radius 1</font>
+<a name="line71"> 71: </a><font color="#B22222">         requires: complex</font>
+<a name="line72"> 72: </a><font color="#B22222">      test:</font>
+<a name="line73"> 73: </a><font color="#B22222">         suffix: 3_interval</font>
+<a name="line74"> 74: </a><font color="#B22222">         args: -rg_type interval -rg_interval_endpoints -2,2,0,1</font>
+<a name="line75"> 75: </a><font color="#B22222">         requires: complex</font>
+<a name="line76"> 76: </a><font color="#B22222">      test:</font>
+<a name="line77"> 77: </a><font color="#B22222">         suffix: 3_ring</font>
+<a name="line78"> 78: </a><font color="#B22222">         args: -rg_type ring -rg_ring_center 2 -rg_ring_radius 1 -rg_ring_startangle 0.1 -rg_ring_endangle 0.7</font>
+<a name="line79"> 79: </a><font color="#B22222">         requires: complex</font>
+
+<a name="line81"> 81: </a><font color="#B22222">   testset:</font>
+<a name="line82"> 82: </a><font color="#B22222">      output_file: output/test3_ver_no.out</font>
+<a name="line83"> 83: </a><font color="#B22222">      args: -vertical</font>
+<a name="line84"> 84: </a><font color="#B22222">      test:</font>
+<a name="line85"> 85: </a><font color="#B22222">         suffix: 4_ellipse</font>
+<a name="line86"> 86: </a><font color="#B22222">         args: -rg_type ellipse -rg_ellipse_center 2 -rg_ellipse_radius 1</font>
+<a name="line87"> 87: </a><font color="#B22222">      test:</font>
+<a name="line88"> 88: </a><font color="#B22222">         suffix: 4_interval</font>
+<a name="line89"> 89: </a><font color="#B22222">         args: -rg_type interval -rg_interval_endpoints 0,2,-1,1</font>
+<a name="line90"> 90: </a><font color="#B22222">      test:</font>
+<a name="line91"> 91: </a><font color="#B22222">         suffix: 4_ring</font>
+<a name="line92"> 92: </a><font color="#B22222">         args: -rg_type ring -rg_ring_center 2 -rg_ring_radius 1 -rg_ring_startangle 0.1 -rg_ring_endangle 0.9</font>
+
+<a name="line94"> 94: </a><font color="#B22222">TEST*/</font>
+</pre>
+</body>
+
+</html>

@@ -1,0 +1,698 @@
+<center><a href="sveccuda.cu">Actual source code: sveccuda.cu</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="https://slepc.upv.es/documentation/current/src/sys/classes/bv/impls/svec/sveccuda/sveccuda.cu.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2022-08-09T09:05:26+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>slepc-3.17.2 2022-08-09</b></div>
+   <div id="bugreport" align=right><a href="mailto:slepc-maint@upv.es?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: slepc-3.17.2 v3.17.2 src/sys/classes/bv/impls/svec/sveccuda/sveccuda.cu.html "><small>Report Typos and Errors</small></a></div>
+<pre width="80">
+<a name="line1">  1: </a><font color="#B22222">/*</font>
+<a name="line2">  2: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line3">  3: </a><font color="#B22222">   SLEPc - Scalable Library for Eigenvalue Problem Computations</font>
+<a name="line4">  4: </a><font color="#B22222">   Copyright (c) 2002-, Universitat Politecnica de Valencia, Spain</font>
+
+<a name="line6">  6: </a><font color="#B22222">   This file is part of SLEPc.</font>
+<a name="line7">  7: </a><font color="#B22222">   SLEPc is distributed under a 2-clause BSD license (see LICENSE).</font>
+<a name="line8">  8: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line9">  9: </a><font color="#B22222">*/</font>
+<a name="line10"> 10: </a><font color="#B22222">/*</font>
+<a name="line11"> 11: </a><font color="#B22222">   <a href="../../../../../../../docs/manualpages/sys/BV.html#BV">BV</a> implemented as a single Vec (CUDA version)</font>
+<a name="line12"> 12: </a><font color="#B22222">*/</font>
+
+<a name="line14"> 14: </a>#include <A href="../../../../../../../include/slepc/private/bvimpl.h.html">&lt;slepc/private/bvimpl.h&gt;</A>
+<a name="line15"> 15: </a><font color="#A020F0">#include </font><font color="#666666">"../src/sys/classes/bv/impls/svec/svec.h"</font><font color="#A020F0"></font>
+<a name="line16"> 16: </a>#include <A href="../../../../../../../include/slepccublas.h.html">&lt;slepccublas.h&gt;</A>
+
+<a name="line18"> 18: </a><font color="#A020F0">#if defined(PETSC_USE_COMPLEX)</font>
+<a name="line19"> 19: </a><font color="#A020F0">#include &lt;thrust/device_ptr.h&gt;</font>
+<a name="line20"> 20: </a><font color="#A020F0">#endif</font>
+
+<a name="line22"> 22: </a><strong><font color="#228B22">#define BLOCKSIZE 64</font></strong>
+
+<a name="line24"> 24: </a><font color="#B22222">/*</font>
+<a name="line25"> 25: </a><font color="#B22222">    B := alpha*A + beta*B</font>
+
+<a name="line27"> 27: </a><font color="#B22222">    A,B are nxk (ld=n)</font>
+<a name="line28"> 28: </a><font color="#B22222"> */</font>
+<a name="line29"> 29: </a><strong><font color="#4169E1"><a name="BVAXPY_BLAS_CUDA"></a>static PetscErrorCode BVAXPY_BLAS_CUDA(<a href="../../../../../../../docs/manualpages/sys/BV.html#BV">BV</a> bv,PetscInt n_,PetscInt k_,PetscScalar alpha,const PetscScalar *d_A,PetscScalar beta,PetscScalar *d_B)</font></strong>
+<a name="line30"> 30: </a>{
+<a name="line31"> 31: </a>  PetscCuBLASInt m=0,one=1;
+<a name="line32"> 32: </a>  cublasHandle_t cublasv2handle;
+
+<a name="line34"> 34: </a>  PetscCUBLASGetHandle(&amp;cublasv2handle);
+<a name="line35"> 35: </a>  PetscCuBLASIntCast(n_*k_,&amp;m);
+<a name="line36"> 36: </a>  PetscLogGpuTimeBegin();
+<a name="line37"> 37: </a>  <font color="#4169E1">if</font> (beta!=(PetscScalar)1.0) {
+<a name="line38"> 38: </a>    cublasXscal(cublasv2handle,m,&amp;beta,d_B,one);
+<a name="line39"> 39: </a>    PetscLogGpuFlops(1.0*m);
+<a name="line40"> 40: </a>  }
+<a name="line41"> 41: </a>  cublasXaxpy(cublasv2handle,m,&amp;alpha,d_A,one,d_B,one);
+<a name="line42"> 42: </a>  PetscLogGpuTimeEnd();
+<a name="line43"> 43: </a>  PetscLogGpuFlops(2.0*m);
+<a name="line44"> 44: </a>  PetscFunctionReturn(0);
+<a name="line45"> 45: </a>}
+
+<a name="line47"> 47: </a><font color="#B22222">/*</font>
+<a name="line48"> 48: </a><font color="#B22222">    C := alpha*A*Q + beta*C</font>
+<a name="line49"> 49: </a><font color="#B22222">*/</font>
+<a name="line50"> 50: </a><strong><font color="#4169E1"><a name="BVMult_Svec_CUDA"></a>PetscErrorCode BVMult_Svec_CUDA(<a href="../../../../../../../docs/manualpages/sys/BV.html#BV">BV</a> Y,PetscScalar alpha,PetscScalar beta,<a href="../../../../../../../docs/manualpages/sys/BV.html#BV">BV</a> X,Mat Q)</font></strong>
+<a name="line51"> 51: </a>{
+<a name="line52"> 52: </a>  BV_SVEC           *y = (BV_SVEC*)Y-&gt;data,*x = (BV_SVEC*)X-&gt;data;
+<a name="line53"> 53: </a>  const PetscScalar *d_px,*d_A,*q;
+<a name="line54"> 54: </a>  PetscScalar       *d_py,*d_q,*d_B,*d_C;
+<a name="line55"> 55: </a>  PetscInt          ldq,mq;
+<a name="line56"> 56: </a>  PetscCuBLASInt    m=0,n=0,k=0,ldq_=0;
+<a name="line57"> 57: </a>  cublasHandle_t    cublasv2handle;
+<a name="line58"> 58: </a>  PetscBool         matiscuda;
+
+<a name="line60"> 60: </a>  <font color="#4169E1">if</font> (!Y-&gt;n) PetscFunctionReturn(0);
+<a name="line61"> 61: </a>  VecCUDAGetArrayRead(x-&gt;v,&amp;d_px);
+<a name="line62"> 62: </a>  <font color="#4169E1">if</font> (beta==(PetscScalar)0.0) VecCUDAGetArrayWrite(y-&gt;v,&amp;d_py);
+<a name="line63"> 63: </a>  <font color="#4169E1">else</font> VecCUDAGetArray(y-&gt;v,&amp;d_py);
+<a name="line64"> 64: </a>  d_A = d_px+(X-&gt;nc+X-&gt;l)*X-&gt;n;
+<a name="line65"> 65: </a>  d_C = d_py+(Y-&gt;nc+Y-&gt;l)*Y-&gt;n;
+<a name="line66"> 66: </a>  <font color="#4169E1">if</font> (Q) {
+<a name="line67"> 67: </a>    PetscCuBLASIntCast(Y-&gt;n,&amp;m);
+<a name="line68"> 68: </a>    PetscCuBLASIntCast(Y-&gt;k-Y-&gt;l,&amp;n);
+<a name="line69"> 69: </a>    PetscCuBLASIntCast(X-&gt;k-X-&gt;l,&amp;k);
+<a name="line70"> 70: </a>    PetscCUBLASGetHandle(&amp;cublasv2handle);
+<a name="line71"> 71: </a>    MatGetSize(Q,NULL,&amp;mq);
+<a name="line72"> 72: </a>    MatDenseGetLDA(Q,&amp;ldq);
+<a name="line73"> 73: </a>    PetscCuBLASIntCast(ldq,&amp;ldq_);
+<a name="line74"> 74: </a>    PetscObjectTypeCompare((PetscObject)Q,MATSEQDENSECUDA,&amp;matiscuda);
+<a name="line75"> 75: </a>    <font color="#4169E1">if</font> (matiscuda) MatDenseCUDAGetArrayRead(Q,(const PetscScalar**)&amp;d_q);
+<a name="line76"> 76: </a>    <font color="#4169E1">else</font> {
+<a name="line77"> 77: </a>      MatDenseGetArrayRead(Q,&amp;q);
+<a name="line78"> 78: </a>      cudaMalloc((void**)&amp;d_q,ldq*mq*<font color="#4169E1">sizeof</font>(PetscScalar));
+<a name="line79"> 79: </a>      cudaMemcpy(d_q,q,ldq*mq*<font color="#4169E1">sizeof</font>(PetscScalar),cudaMemcpyHostToDevice);
+<a name="line80"> 80: </a>      PetscLogCpuToGpu(ldq*mq*<font color="#4169E1">sizeof</font>(PetscScalar));
+<a name="line81"> 81: </a>    }
+<a name="line82"> 82: </a>    d_B = d_q+Y-&gt;l*ldq+X-&gt;l;
+<a name="line83"> 83: </a>    PetscLogGpuTimeBegin();
+<a name="line84"> 84: </a>    cublasXgemm(cublasv2handle,CUBLAS_OP_N,CUBLAS_OP_N,m,n,k,&amp;alpha,d_A,m,d_B,ldq_,&amp;beta,d_C,m);
+<a name="line85"> 85: </a>    PetscLogGpuTimeEnd();
+<a name="line86"> 86: </a>    <font color="#4169E1">if</font> (matiscuda) MatDenseCUDARestoreArrayRead(Q,(const PetscScalar**)&amp;d_q);
+<a name="line87"> 87: </a>    <font color="#4169E1">else</font> {
+<a name="line88"> 88: </a>      MatDenseRestoreArrayRead(Q,&amp;q);
+<a name="line89"> 89: </a>      cudaFree(d_q);
+<a name="line90"> 90: </a>    }
+<a name="line91"> 91: </a>    PetscLogGpuFlops(2.0*m*n*k);
+<a name="line92"> 92: </a>  } <font color="#4169E1">else</font> BVAXPY_BLAS_CUDA(Y,Y-&gt;n,Y-&gt;k-Y-&gt;l,alpha,d_A,beta,d_C);
+<a name="line93"> 93: </a>  VecCUDARestoreArrayRead(x-&gt;v,&amp;d_px);
+<a name="line94"> 94: </a>  VecCUDARestoreArrayWrite(y-&gt;v,&amp;d_py);
+<a name="line95"> 95: </a>  PetscFunctionReturn(0);
+<a name="line96"> 96: </a>}
+
+<a name="line98"> 98: </a><font color="#B22222">/*</font>
+<a name="line99"> 99: </a><font color="#B22222">    y := alpha*A*x + beta*y</font>
+<a name="line100">100: </a><font color="#B22222">*/</font>
+<a name="line101">101: </a><strong><font color="#4169E1"><a name="BVMultVec_Svec_CUDA"></a>PetscErrorCode BVMultVec_Svec_CUDA(<a href="../../../../../../../docs/manualpages/sys/BV.html#BV">BV</a> X,PetscScalar alpha,PetscScalar beta,Vec y,PetscScalar *q)</font></strong>
+<a name="line102">102: </a>{
+<a name="line103">103: </a>  BV_SVEC           *x = (BV_SVEC*)X-&gt;data;
+<a name="line104">104: </a>  const PetscScalar *d_px,*d_A;
+<a name="line105">105: </a>  PetscScalar       *d_py,*d_q,*d_x,*d_y;
+<a name="line106">106: </a>  PetscCuBLASInt    n=0,k=0,one=1;
+<a name="line107">107: </a>  cublasHandle_t    cublasv2handle;
+
+<a name="line109">109: </a>  PetscCuBLASIntCast(X-&gt;n,&amp;n);
+<a name="line110">110: </a>  PetscCuBLASIntCast(X-&gt;k-X-&gt;l,&amp;k);
+<a name="line111">111: </a>  PetscCUBLASGetHandle(&amp;cublasv2handle);
+<a name="line112">112: </a>  VecCUDAGetArrayRead(x-&gt;v,&amp;d_px);
+<a name="line113">113: </a>  <font color="#4169E1">if</font> (beta==(PetscScalar)0.0) VecCUDAGetArrayWrite(y,&amp;d_py);
+<a name="line114">114: </a>  <font color="#4169E1">else</font> VecCUDAGetArray(y,&amp;d_py);
+<a name="line115">115: </a>  <font color="#4169E1">if</font> (!q) VecCUDAGetArray(X-&gt;buffer,&amp;d_q);
+<a name="line116">116: </a>  <font color="#4169E1">else</font> {
+<a name="line117">117: </a>    cudaMalloc((void**)&amp;d_q,k*<font color="#4169E1">sizeof</font>(PetscScalar));
+<a name="line118">118: </a>    cudaMemcpy(d_q,q,k*<font color="#4169E1">sizeof</font>(PetscScalar),cudaMemcpyHostToDevice);
+<a name="line119">119: </a>    PetscLogCpuToGpu(k*<font color="#4169E1">sizeof</font>(PetscScalar));
+<a name="line120">120: </a>  }
+<a name="line121">121: </a>  d_A = d_px+(X-&gt;nc+X-&gt;l)*X-&gt;n;
+<a name="line122">122: </a>  d_x = d_q;
+<a name="line123">123: </a>  d_y = d_py;
+<a name="line124">124: </a>  PetscLogGpuTimeBegin();
+<a name="line125">125: </a>  cublasXgemv(cublasv2handle,CUBLAS_OP_N,n,k,&amp;alpha,d_A,n,d_x,one,&amp;beta,d_y,one);
+<a name="line126">126: </a>  PetscLogGpuTimeEnd();
+<a name="line127">127: </a>  VecCUDARestoreArrayRead(x-&gt;v,&amp;d_px);
+<a name="line128">128: </a>  <font color="#4169E1">if</font> (beta==(PetscScalar)0.0) VecCUDARestoreArrayWrite(y,&amp;d_py);
+<a name="line129">129: </a>  <font color="#4169E1">else</font> VecCUDARestoreArray(y,&amp;d_py);
+<a name="line130">130: </a>  <font color="#4169E1">if</font> (!q) VecCUDARestoreArray(X-&gt;buffer,&amp;d_q);
+<a name="line131">131: </a>  <font color="#4169E1">else</font> cudaFree(d_q);
+<a name="line132">132: </a>  PetscLogGpuFlops(2.0*n*k);
+<a name="line133">133: </a>  PetscFunctionReturn(0);
+<a name="line134">134: </a>}
+
+<a name="line136">136: </a><font color="#B22222">/*</font>
+<a name="line137">137: </a><font color="#B22222">    A(:,s:e-1) := A*B(:,s:e-1)</font>
+<a name="line138">138: </a><font color="#B22222">*/</font>
+<a name="line139">139: </a><strong><font color="#4169E1"><a name="BVMultInPlace_Svec_CUDA"></a>PetscErrorCode BVMultInPlace_Svec_CUDA(<a href="../../../../../../../docs/manualpages/sys/BV.html#BV">BV</a> V,Mat Q,PetscInt s,PetscInt e)</font></strong>
+<a name="line140">140: </a>{
+<a name="line141">141: </a>  BV_SVEC           *ctx = (BV_SVEC*)V-&gt;data;
+<a name="line142">142: </a>  PetscScalar       *d_pv,*d_q,*d_A,*d_B,*d_work,sone=1.0,szero=0.0;
+<a name="line143">143: </a>  const PetscScalar *q;
+<a name="line144">144: </a>  PetscInt          ldq,nq;
+<a name="line145">145: </a>  PetscCuBLASInt    m=0,n=0,k=0,l=0,ldq_=0,bs=BLOCKSIZE;
+<a name="line146">146: </a>  size_t            freemem,totmem;
+<a name="line147">147: </a>  cublasHandle_t    cublasv2handle;
+<a name="line148">148: </a>  PetscBool         matiscuda;
+
+<a name="line150">150: </a>  <font color="#4169E1">if</font> (!V-&gt;n) PetscFunctionReturn(0);
+<a name="line151">151: </a>  PetscCuBLASIntCast(V-&gt;n,&amp;m);
+<a name="line152">152: </a>  PetscCuBLASIntCast(e-s,&amp;n);
+<a name="line153">153: </a>  PetscCuBLASIntCast(V-&gt;k-V-&gt;l,&amp;k);
+<a name="line154">154: </a>  MatGetSize(Q,NULL,&amp;nq);
+<a name="line155">155: </a>  MatDenseGetLDA(Q,&amp;ldq);
+<a name="line156">156: </a>  PetscCuBLASIntCast(ldq,&amp;ldq_);
+<a name="line157">157: </a>  VecCUDAGetArray(ctx-&gt;v,&amp;d_pv);
+<a name="line158">158: </a>  PetscObjectTypeCompare((PetscObject)Q,MATSEQDENSECUDA,&amp;matiscuda);
+<a name="line159">159: </a>  <font color="#4169E1">if</font> (matiscuda) MatDenseCUDAGetArrayRead(Q,(const PetscScalar**)&amp;d_q);
+<a name="line160">160: </a>  <font color="#4169E1">else</font> {
+<a name="line161">161: </a>    MatDenseGetArrayRead(Q,&amp;q);
+<a name="line162">162: </a>    cudaMalloc((void**)&amp;d_q,ldq*nq*<font color="#4169E1">sizeof</font>(PetscScalar));
+<a name="line163">163: </a>    cudaMemcpy(d_q,q,ldq*nq*<font color="#4169E1">sizeof</font>(PetscScalar),cudaMemcpyHostToDevice);
+<a name="line164">164: </a>    PetscLogCpuToGpu(ldq*nq*<font color="#4169E1">sizeof</font>(PetscScalar));
+<a name="line165">165: </a>  }
+<a name="line166">166: </a>  PetscCUBLASGetHandle(&amp;cublasv2handle);
+<a name="line167">167: </a>  PetscLogGpuTimeBegin();
+<a name="line168">168: </a>  <font color="#B22222">/* try to allocate the whole matrix */</font>
+<a name="line169">169: </a>  cudaMemGetInfo(&amp;freemem,&amp;totmem);
+<a name="line170">170: </a>  <font color="#4169E1">if</font> (freemem&gt;=m*n*<font color="#4169E1">sizeof</font>(PetscScalar)) {
+<a name="line171">171: </a>    cudaMalloc((void**)&amp;d_work,m*n*<font color="#4169E1">sizeof</font>(PetscScalar));
+<a name="line172">172: </a>    d_A = d_pv+(V-&gt;nc+V-&gt;l)*m;
+<a name="line173">173: </a>    d_B = d_q+V-&gt;l*ldq+V-&gt;l+(s-V-&gt;l)*ldq;
+<a name="line174">174: </a>    cublasXgemm(cublasv2handle,CUBLAS_OP_N,CUBLAS_OP_N,m,n,k,&amp;sone,d_A,m,d_B,ldq_,&amp;szero,d_work,m);
+<a name="line175">175: </a>    cudaMemcpy2D(d_A+(s-V-&gt;l)*m,m*<font color="#4169E1">sizeof</font>(PetscScalar),d_work,m*<font color="#4169E1">sizeof</font>(PetscScalar),m*<font color="#4169E1">sizeof</font>(PetscScalar),n,cudaMemcpyDeviceToDevice);
+<a name="line176">176: </a>  } <font color="#4169E1">else</font> {
+<a name="line177">177: </a>    PetscCuBLASIntCast(freemem/(m*<font color="#4169E1">sizeof</font>(PetscScalar)),&amp;bs);
+<a name="line178">178: </a>    cudaMalloc((void**)&amp;d_work,bs*n*<font color="#4169E1">sizeof</font>(PetscScalar));
+<a name="line179">179: </a>    PetscCuBLASIntCast(m % bs,&amp;l);
+<a name="line180">180: </a>    <font color="#4169E1">if</font> (l) {
+<a name="line181">181: </a>      d_A = d_pv+(V-&gt;nc+V-&gt;l)*m;
+<a name="line182">182: </a>      d_B = d_q+V-&gt;l*ldq+V-&gt;l+(s-V-&gt;l)*ldq;
+<a name="line183">183: </a>      cublasXgemm(cublasv2handle,CUBLAS_OP_N,CUBLAS_OP_N,l,n,k,&amp;sone,d_A,m,d_B,ldq_,&amp;szero,d_work,l);
+<a name="line184">184: </a>      cudaMemcpy2D(d_A+(s-V-&gt;l)*m,m*<font color="#4169E1">sizeof</font>(PetscScalar),d_work,l*<font color="#4169E1">sizeof</font>(PetscScalar),l*<font color="#4169E1">sizeof</font>(PetscScalar),n,cudaMemcpyDeviceToDevice);
+<a name="line185">185: </a>    }
+<a name="line186">186: </a>    <font color="#4169E1">for</font> (;l&lt;m;l+=bs) {
+<a name="line187">187: </a>      d_A = d_pv+(V-&gt;nc+V-&gt;l)*m+l;
+<a name="line188">188: </a>      d_B = d_q+V-&gt;l*ldq+V-&gt;l+(s-V-&gt;l)*ldq;
+<a name="line189">189: </a>      cublasXgemm(cublasv2handle,CUBLAS_OP_N,CUBLAS_OP_N,bs,n,k,&amp;sone,d_A,m,d_B,ldq_,&amp;szero,d_work,bs);
+<a name="line190">190: </a>      cudaMemcpy2D(d_A+(s-V-&gt;l)*m,m*<font color="#4169E1">sizeof</font>(PetscScalar),d_work,bs*<font color="#4169E1">sizeof</font>(PetscScalar),bs*<font color="#4169E1">sizeof</font>(PetscScalar),n,cudaMemcpyDeviceToDevice);
+<a name="line191">191: </a>    }
+<a name="line192">192: </a>  }
+<a name="line193">193: </a>  PetscLogGpuTimeEnd();
+<a name="line194">194: </a>  <font color="#4169E1">if</font> (matiscuda) MatDenseCUDARestoreArrayRead(Q,(const PetscScalar**)&amp;d_q);
+<a name="line195">195: </a>  <font color="#4169E1">else</font> {
+<a name="line196">196: </a>    MatDenseRestoreArrayRead(Q,&amp;q);
+<a name="line197">197: </a>    cudaFree(d_q);
+<a name="line198">198: </a>  }
+<a name="line199">199: </a>  cudaFree(d_work);
+<a name="line200">200: </a>  VecCUDARestoreArray(ctx-&gt;v,&amp;d_pv);
+<a name="line201">201: </a>  PetscLogGpuFlops(2.0*m*n*k);
+<a name="line202">202: </a>  PetscFunctionReturn(0);
+<a name="line203">203: </a>}
+
+<a name="line205">205: </a><font color="#B22222">/*</font>
+<a name="line206">206: </a><font color="#B22222">    A(:,s:e-1) := A*B(:,s:e-1)</font>
+<a name="line207">207: </a><font color="#B22222">*/</font>
+<a name="line208">208: </a><strong><font color="#4169E1"><a name="BVMultInPlaceHermitianTranspose_Svec_CUDA"></a>PetscErrorCode BVMultInPlaceHermitianTranspose_Svec_CUDA(<a href="../../../../../../../docs/manualpages/sys/BV.html#BV">BV</a> V,Mat Q,PetscInt s,PetscInt e)</font></strong>
+<a name="line209">209: </a>{
+<a name="line210">210: </a>  BV_SVEC           *ctx = (BV_SVEC*)V-&gt;data;
+<a name="line211">211: </a>  PetscScalar       *d_pv,*d_q,*d_A,*d_B,*d_work,sone=1.0,szero=0.0;
+<a name="line212">212: </a>  const PetscScalar *q;
+<a name="line213">213: </a>  PetscInt          ldq,nq;
+<a name="line214">214: </a>  PetscCuBLASInt    m=0,n=0,k=0,ldq_=0;
+<a name="line215">215: </a>  cublasHandle_t    cublasv2handle;
+<a name="line216">216: </a>  PetscBool         matiscuda;
+
+<a name="line218">218: </a>  <font color="#4169E1">if</font> (!V-&gt;n) PetscFunctionReturn(0);
+<a name="line219">219: </a>  PetscCuBLASIntCast(V-&gt;n,&amp;m);
+<a name="line220">220: </a>  PetscCuBLASIntCast(e-s,&amp;n);
+<a name="line221">221: </a>  PetscCuBLASIntCast(V-&gt;k-V-&gt;l,&amp;k);
+<a name="line222">222: </a>  MatGetSize(Q,NULL,&amp;nq);
+<a name="line223">223: </a>  MatDenseGetLDA(Q,&amp;ldq);
+<a name="line224">224: </a>  PetscCuBLASIntCast(ldq,&amp;ldq_);
+<a name="line225">225: </a>  VecCUDAGetArray(ctx-&gt;v,&amp;d_pv);
+<a name="line226">226: </a>  PetscObjectTypeCompare((PetscObject)Q,MATSEQDENSECUDA,&amp;matiscuda);
+<a name="line227">227: </a>  <font color="#4169E1">if</font> (matiscuda) MatDenseCUDAGetArrayRead(Q,(const PetscScalar**)&amp;d_q);
+<a name="line228">228: </a>  <font color="#4169E1">else</font> {
+<a name="line229">229: </a>    MatDenseGetArrayRead(Q,&amp;q);
+<a name="line230">230: </a>    cudaMalloc((void**)&amp;d_q,ldq*nq*<font color="#4169E1">sizeof</font>(PetscScalar));
+<a name="line231">231: </a>    cudaMemcpy(d_q,q,ldq*nq*<font color="#4169E1">sizeof</font>(PetscScalar),cudaMemcpyHostToDevice);
+<a name="line232">232: </a>    PetscLogCpuToGpu(ldq*nq*<font color="#4169E1">sizeof</font>(PetscScalar));
+<a name="line233">233: </a>  }
+<a name="line234">234: </a>  PetscCUBLASGetHandle(&amp;cublasv2handle);
+<a name="line235">235: </a>  PetscLogGpuTimeBegin();
+<a name="line236">236: </a>  cudaMalloc((void**)&amp;d_work,m*n*<font color="#4169E1">sizeof</font>(PetscScalar));
+<a name="line237">237: </a>  d_A = d_pv+(V-&gt;nc+V-&gt;l)*m;
+<a name="line238">238: </a>  d_B = d_q+V-&gt;l*ldq+s;
+<a name="line239">239: </a>  cublasXgemm(cublasv2handle,CUBLAS_OP_N,CUBLAS_OP_C,m,n,k,&amp;sone,d_A,m,d_B,ldq_,&amp;szero,d_work,m);
+<a name="line240">240: </a>  cudaMemcpy2D(d_A+(s-V-&gt;l)*m,m*<font color="#4169E1">sizeof</font>(PetscScalar),d_work,m*<font color="#4169E1">sizeof</font>(PetscScalar),m*<font color="#4169E1">sizeof</font>(PetscScalar),n,cudaMemcpyDeviceToDevice);
+<a name="line241">241: </a>  PetscLogGpuTimeEnd();
+<a name="line242">242: </a>  <font color="#4169E1">if</font> (matiscuda) MatDenseCUDARestoreArrayRead(Q,(const PetscScalar**)&amp;d_q);
+<a name="line243">243: </a>  <font color="#4169E1">else</font> {
+<a name="line244">244: </a>    MatDenseRestoreArrayRead(Q,&amp;q);
+<a name="line245">245: </a>    cudaFree(d_q);
+<a name="line246">246: </a>  }
+<a name="line247">247: </a>  cudaFree(d_work);
+<a name="line248">248: </a>  VecCUDARestoreArray(ctx-&gt;v,&amp;d_pv);
+<a name="line249">249: </a>  PetscLogGpuFlops(2.0*m*n*k);
+<a name="line250">250: </a>  PetscFunctionReturn(0);
+<a name="line251">251: </a>}
+
+<a name="line253">253: </a><font color="#B22222">/*</font>
+<a name="line254">254: </a><font color="#B22222">    C := A'*B</font>
+<a name="line255">255: </a><font color="#B22222">*/</font>
+<a name="line256">256: </a><strong><font color="#4169E1"><a name="BVDot_Svec_CUDA"></a>PetscErrorCode BVDot_Svec_CUDA(<a href="../../../../../../../docs/manualpages/sys/BV.html#BV">BV</a> X,<a href="../../../../../../../docs/manualpages/sys/BV.html#BV">BV</a> Y,Mat M)</font></strong>
+<a name="line257">257: </a>{
+<a name="line258">258: </a>  BV_SVEC           *x = (BV_SVEC*)X-&gt;data,*y = (BV_SVEC*)Y-&gt;data;
+<a name="line259">259: </a>  const PetscScalar *d_px,*d_py,*d_A,*d_B;
+<a name="line260">260: </a>  PetscScalar       *pm,*d_work,sone=1.0,szero=0.0,*C,*CC;
+<a name="line261">261: </a>  PetscInt          j,ldm;
+<a name="line262">262: </a>  PetscCuBLASInt    m=0,n=0,k=0,ldm_=0;
+<a name="line263">263: </a>  PetscMPIInt       len;
+<a name="line264">264: </a>  cublasHandle_t    cublasv2handle;
+
+<a name="line266">266: </a>  PetscCuBLASIntCast(Y-&gt;k-Y-&gt;l,&amp;m);
+<a name="line267">267: </a>  PetscCuBLASIntCast(X-&gt;k-X-&gt;l,&amp;n);
+<a name="line268">268: </a>  PetscCuBLASIntCast(X-&gt;n,&amp;k);
+<a name="line269">269: </a>  MatDenseGetLDA(M,&amp;ldm);
+<a name="line270">270: </a>  PetscCuBLASIntCast(ldm,&amp;ldm_);
+<a name="line271">271: </a>  VecCUDAGetArrayRead(x-&gt;v,&amp;d_px);
+<a name="line272">272: </a>  VecCUDAGetArrayRead(y-&gt;v,&amp;d_py);
+<a name="line273">273: </a>  MatDenseGetArrayWrite(M,&amp;pm);
+<a name="line274">274: </a>  PetscCUBLASGetHandle(&amp;cublasv2handle);
+<a name="line275">275: </a>  cudaMalloc((void**)&amp;d_work,m*n*<font color="#4169E1">sizeof</font>(PetscScalar));
+<a name="line276">276: </a>  d_A = d_py+(Y-&gt;nc+Y-&gt;l)*Y-&gt;n;
+<a name="line277">277: </a>  d_B = d_px+(X-&gt;nc+X-&gt;l)*X-&gt;n;
+<a name="line278">278: </a>  C = pm+X-&gt;l*ldm+Y-&gt;l;
+<a name="line279">279: </a>  <font color="#4169E1">if</font> (x-&gt;mpi) {
+<a name="line280">280: </a>    <font color="#4169E1">if</font> (ldm==m) {
+<a name="line281">281: </a>      BVAllocateWork_Private(X,m*n);
+<a name="line282">282: </a>      <font color="#4169E1">if</font> (k) {
+<a name="line283">283: </a>        PetscLogGpuTimeBegin();
+<a name="line284">284: </a>        cublasXgemm(cublasv2handle,CUBLAS_OP_C,CUBLAS_OP_N,m,n,k,&amp;sone,d_A,k,d_B,k,&amp;szero,d_work,ldm_);
+<a name="line285">285: </a>        PetscLogGpuTimeEnd();
+<a name="line286">286: </a>        cudaMemcpy(X-&gt;work,d_work,m*n*<font color="#4169E1">sizeof</font>(PetscScalar),cudaMemcpyDeviceToHost);
+<a name="line287">287: </a>        PetscLogGpuToCpu(m*n*<font color="#4169E1">sizeof</font>(PetscScalar));
+<a name="line288">288: </a>      } <font color="#4169E1">else</font> PetscArrayzero(X-&gt;work,m*n);
+<a name="line289">289: </a>      PetscMPIIntCast(m*n,&amp;len);
+<a name="line290">290: </a>      MPIU_Allreduce(X-&gt;work,C,len,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)X));
+<a name="line291">291: </a>    } <font color="#4169E1">else</font> {
+<a name="line292">292: </a>      BVAllocateWork_Private(X,2*m*n);
+<a name="line293">293: </a>      CC = X-&gt;work+m*n;
+<a name="line294">294: </a>      <font color="#4169E1">if</font> (k) {
+<a name="line295">295: </a>        PetscLogGpuTimeBegin();
+<a name="line296">296: </a>        cublasXgemm(cublasv2handle,CUBLAS_OP_C,CUBLAS_OP_N,m,n,k,&amp;sone,d_A,k,d_B,k,&amp;szero,d_work,m);
+<a name="line297">297: </a>        PetscLogGpuTimeEnd();
+<a name="line298">298: </a>        cudaMemcpy(X-&gt;work,d_work,m*n*<font color="#4169E1">sizeof</font>(PetscScalar),cudaMemcpyDeviceToHost);
+<a name="line299">299: </a>        PetscLogGpuToCpu(m*n*<font color="#4169E1">sizeof</font>(PetscScalar));
+<a name="line300">300: </a>      } <font color="#4169E1">else</font> PetscArrayzero(X-&gt;work,m*n);
+<a name="line301">301: </a>      PetscMPIIntCast(m*n,&amp;len);
+<a name="line302">302: </a>      MPIU_Allreduce(X-&gt;work,CC,len,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)X));
+<a name="line303">303: </a>      <font color="#4169E1">for</font> (j=0;j&lt;n;j++) PetscArraycpy(C+j*ldm,CC+j*m,m);
+<a name="line304">304: </a>    }
+<a name="line305">305: </a>  } <font color="#4169E1">else</font> {
+<a name="line306">306: </a>    <font color="#4169E1">if</font> (k) {
+<a name="line307">307: </a>      BVAllocateWork_Private(X,m*n);
+<a name="line308">308: </a>      PetscLogGpuTimeBegin();
+<a name="line309">309: </a>      cublasXgemm(cublasv2handle,CUBLAS_OP_C,CUBLAS_OP_N,m,n,k,&amp;sone,d_A,k,d_B,k,&amp;szero,d_work,m);
+<a name="line310">310: </a>      PetscLogGpuTimeEnd();
+<a name="line311">311: </a>      cudaMemcpy(X-&gt;work,d_work,m*n*<font color="#4169E1">sizeof</font>(PetscScalar),cudaMemcpyDeviceToHost);
+<a name="line312">312: </a>      PetscLogGpuToCpu(m*n*<font color="#4169E1">sizeof</font>(PetscScalar));
+<a name="line313">313: </a>      <font color="#4169E1">for</font> (j=0;j&lt;n;j++) PetscArraycpy(C+j*ldm,X-&gt;work+j*m,m);
+<a name="line314">314: </a>    }
+<a name="line315">315: </a>  }
+<a name="line316">316: </a>  cudaFree(d_work);
+<a name="line317">317: </a>  MatDenseRestoreArrayWrite(M,&amp;pm);
+<a name="line318">318: </a>  VecCUDARestoreArrayRead(x-&gt;v,&amp;d_px);
+<a name="line319">319: </a>  VecCUDARestoreArrayRead(y-&gt;v,&amp;d_py);
+<a name="line320">320: </a>  PetscLogGpuFlops(2.0*m*n*k);
+<a name="line321">321: </a>  PetscFunctionReturn(0);
+<a name="line322">322: </a>}
+
+<a name="line324">324: </a><font color="#A020F0">#if defined(PETSC_USE_COMPLEX)</font>
+<a name="line325">325: </a><font color="#4169E1"><a name="conjugate"></a>struct conjugate</font>
+<a name="line326">326: </a>{
+<a name="line327">327: </a>  __host__ __device__
+<a name="line328">328: </a>    PetscScalar operator()(PetscScalar x)
+<a name="line329">329: </a>    {
+<a name="line330">330: </a>      <font color="#4169E1">return</font> PetscConj(x);
+<a name="line331">331: </a>    }
+<a name="line332">332: </a>};
+
+<a name="line334">334: </a><strong><font color="#4169E1"><a name="ConjugateCudaArray"></a>PetscErrorCode ConjugateCudaArray(PetscScalar *a, PetscInt n)</font></strong>
+<a name="line335">335: </a>{
+<a name="line336">336: </a><strong><font color="#FF0000">  thrust:</font></strong>:device_ptr&lt;PetscScalar&gt; ptr;
+
+<a name="line338">338: </a>  try {
+<a name="line339">339: </a>    ptr = thrust::device_pointer_cast(a);
+<a name="line340">340: </a><strong><font color="#FF0000">    thrust:</font></strong>:transform(ptr,ptr+n,ptr,conjugate());
+<a name="line341">341: </a>  } catch (char *ex) {
+<a name="line342">342: </a>    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_LIB,<font color="#666666">"Thrust error: %s"</font>, ex);
+<a name="line343">343: </a>  }
+<a name="line344">344: </a>  PetscFunctionReturn(0);
+<a name="line345">345: </a>}
+<a name="line346">346: </a><font color="#A020F0">#endif</font>
+
+<a name="line348">348: </a><font color="#B22222">/*</font>
+<a name="line349">349: </a><font color="#B22222">    y := A'*x computed as y' := x'*A</font>
+<a name="line350">350: </a><font color="#B22222">*/</font>
+<a name="line351">351: </a><strong><font color="#4169E1"><a name="BVDotVec_Svec_CUDA"></a>PetscErrorCode BVDotVec_Svec_CUDA(<a href="../../../../../../../docs/manualpages/sys/BV.html#BV">BV</a> X,Vec y,PetscScalar *q)</font></strong>
+<a name="line352">352: </a>{
+<a name="line353">353: </a>  BV_SVEC           *x = (BV_SVEC*)X-&gt;data;
+<a name="line354">354: </a>  const PetscScalar *d_A,*d_x,*d_px,*d_py;
+<a name="line355">355: </a>  PetscScalar       *d_work,szero=0.0,sone=1.0,*qq=q;
+<a name="line356">356: </a>  PetscCuBLASInt    n=0,k=0,one=1;
+<a name="line357">357: </a>  PetscMPIInt       len;
+<a name="line358">358: </a>  Vec               z = y;
+<a name="line359">359: </a>  cublasHandle_t    cublasv2handle;
+
+<a name="line361">361: </a>  PetscCuBLASIntCast(X-&gt;n,&amp;n);
+<a name="line362">362: </a>  PetscCuBLASIntCast(X-&gt;k-X-&gt;l,&amp;k);
+<a name="line363">363: </a>  PetscCUBLASGetHandle(&amp;cublasv2handle);
+<a name="line364">364: </a>  <font color="#4169E1">if</font> (X-&gt;matrix) {
+<a name="line365">365: </a>    BV_IPMatMult(X,y);
+<a name="line366">366: </a>    z = X-&gt;Bx;
+<a name="line367">367: </a>  }
+<a name="line368">368: </a>  VecCUDAGetArrayRead(x-&gt;v,&amp;d_px);
+<a name="line369">369: </a>  VecCUDAGetArrayRead(z,&amp;d_py);
+<a name="line370">370: </a>  <font color="#4169E1">if</font> (!q) VecCUDAGetArrayWrite(X-&gt;buffer,&amp;d_work);
+<a name="line371">371: </a>  <font color="#4169E1">else</font> cudaMalloc((void**)&amp;d_work,k*<font color="#4169E1">sizeof</font>(PetscScalar));
+<a name="line372">372: </a>  d_A = d_px+(X-&gt;nc+X-&gt;l)*X-&gt;n;
+<a name="line373">373: </a>  d_x = d_py;
+<a name="line374">374: </a>  <font color="#4169E1">if</font> (x-&gt;mpi) {
+<a name="line375">375: </a>    BVAllocateWork_Private(X,k);
+<a name="line376">376: </a>    <font color="#4169E1">if</font> (n) {
+<a name="line377">377: </a>      PetscLogGpuTimeBegin();
+<a name="line378">378: </a><font color="#A020F0">#if defined(PETSC_USE_COMPLEX)</font>
+<a name="line379">379: </a>      cublasXgemm(cublasv2handle,CUBLAS_OP_C,CUBLAS_OP_N,one,k,n,&amp;sone,d_x,n,d_A,n,&amp;szero,d_work,one);
+<a name="line380">380: </a>      ConjugateCudaArray(d_work,k);
+<a name="line381">381: </a><font color="#A020F0">#else</font>
+<a name="line382">382: </a>      cublasXgemm(cublasv2handle,CUBLAS_OP_N,CUBLAS_OP_N,one,k,n,&amp;sone,d_x,one,d_A,n,&amp;szero,d_work,one);
+<a name="line383">383: </a><font color="#A020F0">#endif</font>
+<a name="line384">384: </a>      PetscLogGpuTimeEnd();
+<a name="line385">385: </a>      cudaMemcpy(X-&gt;work,d_work,k*<font color="#4169E1">sizeof</font>(PetscScalar),cudaMemcpyDeviceToHost);
+<a name="line386">386: </a>      PetscLogGpuToCpu(k*<font color="#4169E1">sizeof</font>(PetscScalar));
+<a name="line387">387: </a>    } <font color="#4169E1">else</font> PetscArrayzero(X-&gt;work,k);
+<a name="line388">388: </a>    <font color="#4169E1">if</font> (!q) {
+<a name="line389">389: </a>      VecCUDARestoreArrayWrite(X-&gt;buffer,&amp;d_work);
+<a name="line390">390: </a>      VecGetArray(X-&gt;buffer,&amp;qq);
+<a name="line391">391: </a>    } <font color="#4169E1">else</font> cudaFree(d_work);
+<a name="line392">392: </a>    PetscMPIIntCast(k,&amp;len);
+<a name="line393">393: </a>    MPIU_Allreduce(X-&gt;work,qq,len,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)X));
+<a name="line394">394: </a>    <font color="#4169E1">if</font> (!q) VecRestoreArray(X-&gt;buffer,&amp;qq);
+<a name="line395">395: </a>  } <font color="#4169E1">else</font> {
+<a name="line396">396: </a>    <font color="#4169E1">if</font> (n) {
+<a name="line397">397: </a>      PetscLogGpuTimeBegin();
+<a name="line398">398: </a><font color="#A020F0">#if defined(PETSC_USE_COMPLEX)</font>
+<a name="line399">399: </a>      cublasXgemm(cublasv2handle,CUBLAS_OP_C,CUBLAS_OP_N,one,k,n,&amp;sone,d_x,n,d_A,n,&amp;szero,d_work,one);
+<a name="line400">400: </a>      ConjugateCudaArray(d_work,k);
+<a name="line401">401: </a><font color="#A020F0">#else</font>
+<a name="line402">402: </a>      cublasXgemm(cublasv2handle,CUBLAS_OP_N,CUBLAS_OP_N,one,k,n,&amp;sone,d_x,one,d_A,n,&amp;szero,d_work,one);
+<a name="line403">403: </a><font color="#A020F0">#endif</font>
+<a name="line404">404: </a>      PetscLogGpuTimeEnd();
+<a name="line405">405: </a>    }
+<a name="line406">406: </a>    <font color="#4169E1">if</font> (!q) VecCUDARestoreArrayWrite(X-&gt;buffer,&amp;d_work);
+<a name="line407">407: </a>    <font color="#4169E1">else</font> {
+<a name="line408">408: </a>      cudaMemcpy(q,d_work,k*<font color="#4169E1">sizeof</font>(PetscScalar),cudaMemcpyDeviceToHost);
+<a name="line409">409: </a>      PetscLogGpuToCpu(k*<font color="#4169E1">sizeof</font>(PetscScalar));
+<a name="line410">410: </a>      cudaFree(d_work);
+<a name="line411">411: </a>    }
+<a name="line412">412: </a>  }
+<a name="line413">413: </a>  VecCUDARestoreArrayRead(z,&amp;d_py);
+<a name="line414">414: </a>  VecCUDARestoreArrayRead(x-&gt;v,&amp;d_px);
+<a name="line415">415: </a>  PetscLogGpuFlops(2.0*n*k);
+<a name="line416">416: </a>  PetscFunctionReturn(0);
+<a name="line417">417: </a>}
+
+<a name="line419">419: </a><font color="#B22222">/*</font>
+<a name="line420">420: </a><font color="#B22222">    y := A'*x computed as y' := x'*A</font>
+<a name="line421">421: </a><font color="#B22222">*/</font>
+<a name="line422">422: </a><strong><font color="#4169E1"><a name="BVDotVec_Local_Svec_CUDA"></a>PetscErrorCode BVDotVec_Local_Svec_CUDA(<a href="../../../../../../../docs/manualpages/sys/BV.html#BV">BV</a> X,Vec y,PetscScalar *m)</font></strong>
+<a name="line423">423: </a>{
+<a name="line424">424: </a>  BV_SVEC           *x = (BV_SVEC*)X-&gt;data;
+<a name="line425">425: </a>  const PetscScalar *d_A,*d_x,*d_px,*d_py;
+<a name="line426">426: </a>  PetscScalar       *d_y,szero=0.0,sone=1.0;
+<a name="line427">427: </a>  PetscCuBLASInt    n=0,k=0,one=1;
+<a name="line428">428: </a>  Vec               z = y;
+<a name="line429">429: </a>  cublasHandle_t    cublasv2handle;
+
+<a name="line431">431: </a>  PetscCuBLASIntCast(X-&gt;n,&amp;n);
+<a name="line432">432: </a>  PetscCuBLASIntCast(X-&gt;k-X-&gt;l,&amp;k);
+<a name="line433">433: </a>  <font color="#4169E1">if</font> (X-&gt;matrix) {
+<a name="line434">434: </a>    BV_IPMatMult(X,y);
+<a name="line435">435: </a>    z = X-&gt;Bx;
+<a name="line436">436: </a>  }
+<a name="line437">437: </a>  PetscCUBLASGetHandle(&amp;cublasv2handle);
+<a name="line438">438: </a>  VecCUDAGetArrayRead(x-&gt;v,&amp;d_px);
+<a name="line439">439: </a>  VecCUDAGetArrayRead(z,&amp;d_py);
+<a name="line440">440: </a>  d_A = d_px+(X-&gt;nc+X-&gt;l)*X-&gt;n;
+<a name="line441">441: </a>  d_x = d_py;
+<a name="line442">442: </a>  <font color="#4169E1">if</font> (n) {
+<a name="line443">443: </a>    cudaMalloc((void**)&amp;d_y,k*<font color="#4169E1">sizeof</font>(PetscScalar));
+<a name="line444">444: </a>    PetscLogGpuTimeBegin();
+<a name="line445">445: </a><font color="#A020F0">#if defined(PETSC_USE_COMPLEX)</font>
+<a name="line446">446: </a>    cublasXgemm(cublasv2handle,CUBLAS_OP_C,CUBLAS_OP_N,one,k,n,&amp;sone,d_x,n,d_A,n,&amp;szero,d_y,one);
+<a name="line447">447: </a>    ConjugateCudaArray(d_y,k);
+<a name="line448">448: </a><font color="#A020F0">#else</font>
+<a name="line449">449: </a>    cublasXgemm(cublasv2handle,CUBLAS_OP_N,CUBLAS_OP_N,one,k,n,&amp;sone,d_x,one,d_A,n,&amp;szero,d_y,one);
+<a name="line450">450: </a><font color="#A020F0">#endif</font>
+<a name="line451">451: </a>    PetscLogGpuTimeEnd();
+<a name="line452">452: </a>    cudaMemcpy(m,d_y,k*<font color="#4169E1">sizeof</font>(PetscScalar),cudaMemcpyDeviceToHost);
+<a name="line453">453: </a>    PetscLogGpuToCpu(k*<font color="#4169E1">sizeof</font>(PetscScalar));
+<a name="line454">454: </a>    cudaFree(d_y);
+<a name="line455">455: </a>  }
+<a name="line456">456: </a>  VecCUDARestoreArrayRead(z,&amp;d_py);
+<a name="line457">457: </a>  VecCUDARestoreArrayRead(x-&gt;v,&amp;d_px);
+<a name="line458">458: </a>  PetscLogGpuFlops(2.0*n*k);
+<a name="line459">459: </a>  PetscFunctionReturn(0);
+<a name="line460">460: </a>}
+
+<a name="line462">462: </a><font color="#B22222">/*</font>
+<a name="line463">463: </a><font color="#B22222">    Scale n scalars</font>
+<a name="line464">464: </a><font color="#B22222">*/</font>
+<a name="line465">465: </a><strong><font color="#4169E1"><a name="BVScale_Svec_CUDA"></a>PetscErrorCode BVScale_Svec_CUDA(<a href="../../../../../../../docs/manualpages/sys/BV.html#BV">BV</a> bv,PetscInt j,PetscScalar alpha)</font></strong>
+<a name="line466">466: </a>{
+<a name="line467">467: </a>  BV_SVEC        *ctx = (BV_SVEC*)bv-&gt;data;
+<a name="line468">468: </a>  PetscScalar    *d_array, *d_A;
+<a name="line469">469: </a>  PetscCuBLASInt n=0,one=1;
+<a name="line470">470: </a>  cublasHandle_t cublasv2handle;
+
+<a name="line472">472: </a>  VecCUDAGetArray(ctx-&gt;v,&amp;d_array);
+<a name="line473">473: </a>  <font color="#4169E1">if</font> (j&lt;0) {
+<a name="line474">474: </a>    d_A = d_array+(bv-&gt;nc+bv-&gt;l)*bv-&gt;n;
+<a name="line475">475: </a>    PetscCuBLASIntCast((bv-&gt;k-bv-&gt;l)*bv-&gt;n,&amp;n);
+<a name="line476">476: </a>  } <font color="#4169E1">else</font> {
+<a name="line477">477: </a>    d_A = d_array+(bv-&gt;nc+j)*bv-&gt;n;
+<a name="line478">478: </a>    PetscCuBLASIntCast(bv-&gt;n,&amp;n);
+<a name="line479">479: </a>  }
+<a name="line480">480: </a>  <font color="#4169E1">if</font> (alpha == (PetscScalar)0.0) cudaMemset(d_A,0,n*<font color="#4169E1">sizeof</font>(PetscScalar));
+<a name="line481">481: </a>  <font color="#4169E1">else</font> <font color="#4169E1">if</font> (alpha != (PetscScalar)1.0) {
+<a name="line482">482: </a>    PetscCUBLASGetHandle(&amp;cublasv2handle);
+<a name="line483">483: </a>    PetscLogGpuTimeBegin();
+<a name="line484">484: </a>    cublasXscal(cublasv2handle,n,&amp;alpha,d_A,one);
+<a name="line485">485: </a>    PetscLogGpuTimeEnd();
+<a name="line486">486: </a>    PetscLogGpuFlops(1.0*n);
+<a name="line487">487: </a>  }
+<a name="line488">488: </a>  VecCUDARestoreArray(ctx-&gt;v,&amp;d_array);
+<a name="line489">489: </a>  PetscFunctionReturn(0);
+<a name="line490">490: </a>}
+
+<a name="line492">492: </a><strong><font color="#4169E1"><a name="BVMatMult_Svec_CUDA"></a>PetscErrorCode BVMatMult_Svec_CUDA(<a href="../../../../../../../docs/manualpages/sys/BV.html#BV">BV</a> V,Mat A,<a href="../../../../../../../docs/manualpages/sys/BV.html#BV">BV</a> W)</font></strong>
+<a name="line493">493: </a>{
+<a name="line494">494: </a>  BV_SVEC           *v = (BV_SVEC*)V-&gt;data,*w = (BV_SVEC*)W-&gt;data;
+<a name="line495">495: </a>  Mat               Vmat,Wmat;
+<a name="line496">496: </a>  const PetscScalar *d_pv;
+<a name="line497">497: </a>  PetscScalar       *d_pw;
+<a name="line498">498: </a>  PetscInt          j;
+
+<a name="line500">500: </a>  <font color="#4169E1">if</font> (V-&gt;vmm) {
+<a name="line501">501: </a>    <a href="../../../../../../../docs/manualpages/BV/BVGetMat.html#BVGetMat">BVGetMat</a>(V,&amp;Vmat);
+<a name="line502">502: </a>    <a href="../../../../../../../docs/manualpages/BV/BVGetMat.html#BVGetMat">BVGetMat</a>(W,&amp;Wmat);
+<a name="line503">503: </a>    MatProductCreateWithMat(A,Vmat,NULL,Wmat);
+<a name="line504">504: </a>    MatProductSetType(Wmat,MATPRODUCT_AB);
+<a name="line505">505: </a>    MatProductSetFromOptions(Wmat);
+<a name="line506">506: </a>    MatProductSymbolic(Wmat);
+<a name="line507">507: </a>    MatProductNumeric(Wmat);
+<a name="line508">508: </a>    MatProductClear(Wmat);
+<a name="line509">509: </a>    <a href="../../../../../../../docs/manualpages/BV/BVRestoreMat.html#BVRestoreMat">BVRestoreMat</a>(V,&amp;Vmat);
+<a name="line510">510: </a>    <a href="../../../../../../../docs/manualpages/BV/BVRestoreMat.html#BVRestoreMat">BVRestoreMat</a>(W,&amp;Wmat);
+<a name="line511">511: </a>  } <font color="#4169E1">else</font> {
+<a name="line512">512: </a>    VecCUDAGetArrayRead(v-&gt;v,&amp;d_pv);
+<a name="line513">513: </a>    VecCUDAGetArrayWrite(w-&gt;v,&amp;d_pw);
+<a name="line514">514: </a>    <font color="#4169E1">for</font> (j=0;j&lt;V-&gt;k-V-&gt;l;j++) {
+<a name="line515">515: </a>      VecCUDAPlaceArray(V-&gt;cv[1],(PetscScalar *)d_pv+(V-&gt;nc+V-&gt;l+j)*V-&gt;n);
+<a name="line516">516: </a>      VecCUDAPlaceArray(W-&gt;cv[1],d_pw+(W-&gt;nc+W-&gt;l+j)*W-&gt;n);
+<a name="line517">517: </a>      MatMult(A,V-&gt;cv[1],W-&gt;cv[1]);
+<a name="line518">518: </a>      VecCUDAResetArray(V-&gt;cv[1]);
+<a name="line519">519: </a>      VecCUDAResetArray(W-&gt;cv[1]);
+<a name="line520">520: </a>    }
+<a name="line521">521: </a>    VecCUDARestoreArrayRead(v-&gt;v,&amp;d_pv);
+<a name="line522">522: </a>    VecCUDARestoreArrayWrite(w-&gt;v,&amp;d_pw);
+<a name="line523">523: </a>  }
+<a name="line524">524: </a>  PetscFunctionReturn(0);
+<a name="line525">525: </a>}
+
+<a name="line527">527: </a><strong><font color="#4169E1"><a name="BVCopy_Svec_CUDA"></a>PetscErrorCode BVCopy_Svec_CUDA(<a href="../../../../../../../docs/manualpages/sys/BV.html#BV">BV</a> V,<a href="../../../../../../../docs/manualpages/sys/BV.html#BV">BV</a> W)</font></strong>
+<a name="line528">528: </a>{
+<a name="line529">529: </a>  BV_SVEC           *v = (BV_SVEC*)V-&gt;data,*w = (BV_SVEC*)W-&gt;data;
+<a name="line530">530: </a>  const PetscScalar *d_pv,*d_pvc;
+<a name="line531">531: </a>  PetscScalar       *d_pw,*d_pwc;
+
+<a name="line533">533: </a>  VecCUDAGetArrayRead(v-&gt;v,&amp;d_pv);
+<a name="line534">534: </a>  VecCUDAGetArrayWrite(w-&gt;v,&amp;d_pw);
+<a name="line535">535: </a>  d_pvc = d_pv+(V-&gt;nc+V-&gt;l)*V-&gt;n;
+<a name="line536">536: </a>  d_pwc = d_pw+(W-&gt;nc+W-&gt;l)*W-&gt;n;
+<a name="line537">537: </a>  cudaMemcpy(d_pwc,d_pvc,(V-&gt;k-V-&gt;l)*V-&gt;n*<font color="#4169E1">sizeof</font>(PetscScalar),cudaMemcpyDeviceToDevice);
+<a name="line538">538: </a>  VecCUDARestoreArrayRead(v-&gt;v,&amp;d_pv);
+<a name="line539">539: </a>  VecCUDARestoreArrayWrite(w-&gt;v,&amp;d_pw);
+<a name="line540">540: </a>  PetscFunctionReturn(0);
+<a name="line541">541: </a>}
+
+<a name="line543">543: </a><strong><font color="#4169E1"><a name="BVCopyColumn_Svec_CUDA"></a>PetscErrorCode BVCopyColumn_Svec_CUDA(<a href="../../../../../../../docs/manualpages/sys/BV.html#BV">BV</a> V,PetscInt j,PetscInt i)</font></strong>
+<a name="line544">544: </a>{
+<a name="line545">545: </a>  BV_SVEC        *v = (BV_SVEC*)V-&gt;data;
+<a name="line546">546: </a>  PetscScalar    *d_pv;
+
+<a name="line548">548: </a>  VecCUDAGetArray(v-&gt;v,&amp;d_pv);
+<a name="line549">549: </a>  cudaMemcpy(d_pv+(V-&gt;nc+i)*V-&gt;n,d_pv+(V-&gt;nc+j)*V-&gt;n,V-&gt;n*<font color="#4169E1">sizeof</font>(PetscScalar),cudaMemcpyDeviceToDevice);
+<a name="line550">550: </a>  VecCUDARestoreArray(v-&gt;v,&amp;d_pv);
+<a name="line551">551: </a>  PetscFunctionReturn(0);
+<a name="line552">552: </a>}
+
+<a name="line554">554: </a><strong><font color="#4169E1"><a name="BVResize_Svec_CUDA"></a>PetscErrorCode BVResize_Svec_CUDA(<a href="../../../../../../../docs/manualpages/sys/BV.html#BV">BV</a> bv,PetscInt m,PetscBool copy)</font></strong>
+<a name="line555">555: </a>{
+<a name="line556">556: </a>  BV_SVEC           *ctx = (BV_SVEC*)bv-&gt;data;
+<a name="line557">557: </a>  const PetscScalar *d_pv;
+<a name="line558">558: </a>  PetscScalar       *d_pnew;
+<a name="line559">559: </a>  PetscInt          bs;
+<a name="line560">560: </a>  Vec               vnew;
+<a name="line561">561: </a>  char              str[50];
+
+<a name="line563">563: </a>  VecGetBlockSize(bv-&gt;t,&amp;bs);
+<a name="line564">564: </a>  VecCreate(PetscObjectComm((PetscObject)bv-&gt;t),&amp;vnew);
+<a name="line565">565: </a>  VecSetType(vnew,((PetscObject)bv-&gt;t)-&gt;type_name);
+<a name="line566">566: </a>  VecSetSizes(vnew,m*bv-&gt;n,PETSC_DECIDE);
+<a name="line567">567: </a>  VecSetBlockSize(vnew,bs);
+<a name="line568">568: </a>  PetscLogObjectParent((PetscObject)bv,(PetscObject)vnew);
+<a name="line569">569: </a>  <font color="#4169E1">if</font> (((PetscObject)bv)-&gt;name) {
+<a name="line570">570: </a>    PetscSNPrintf(str,<font color="#4169E1">sizeof</font>(str),<font color="#666666">"%s_0"</font>,((PetscObject)bv)-&gt;name);
+<a name="line571">571: </a>    PetscObjectSetName((PetscObject)vnew,str);
+<a name="line572">572: </a>  }
+<a name="line573">573: </a>  <font color="#4169E1">if</font> (copy) {
+<a name="line574">574: </a>    VecCUDAGetArrayRead(ctx-&gt;v,&amp;d_pv);
+<a name="line575">575: </a>    VecCUDAGetArrayWrite(vnew,&amp;d_pnew);
+<a name="line576">576: </a>    cudaMemcpy(d_pnew,d_pv,PetscMin(m,bv-&gt;m)*bv-&gt;n*<font color="#4169E1">sizeof</font>(PetscScalar),cudaMemcpyDeviceToDevice);
+<a name="line577">577: </a>    VecCUDARestoreArrayRead(ctx-&gt;v,&amp;d_pv);
+<a name="line578">578: </a>    VecCUDARestoreArrayWrite(vnew,&amp;d_pnew);
+<a name="line579">579: </a>  }
+<a name="line580">580: </a>  VecDestroy(&amp;ctx-&gt;v);
+<a name="line581">581: </a>  ctx-&gt;v = vnew;
+<a name="line582">582: </a>  PetscFunctionReturn(0);
+<a name="line583">583: </a>}
+
+<a name="line585">585: </a><strong><font color="#4169E1"><a name="BVGetColumn_Svec_CUDA"></a>PetscErrorCode BVGetColumn_Svec_CUDA(<a href="../../../../../../../docs/manualpages/sys/BV.html#BV">BV</a> bv,PetscInt j,Vec *v)</font></strong>
+<a name="line586">586: </a>{
+<a name="line587">587: </a>  BV_SVEC        *ctx = (BV_SVEC*)bv-&gt;data;
+<a name="line588">588: </a>  PetscScalar    *d_pv;
+<a name="line589">589: </a>  PetscInt       l;
+
+<a name="line591">591: </a>  l = BVAvailableVec;
+<a name="line592">592: </a>  VecCUDAGetArray(ctx-&gt;v,&amp;d_pv);
+<a name="line593">593: </a>  VecCUDAPlaceArray(bv-&gt;cv[l],d_pv+(bv-&gt;nc+j)*bv-&gt;n);
+<a name="line594">594: </a>  PetscFunctionReturn(0);
+<a name="line595">595: </a>}
+
+<a name="line597">597: </a><strong><font color="#4169E1"><a name="BVRestoreColumn_Svec_CUDA"></a>PetscErrorCode BVRestoreColumn_Svec_CUDA(<a href="../../../../../../../docs/manualpages/sys/BV.html#BV">BV</a> bv,PetscInt j,Vec *v)</font></strong>
+<a name="line598">598: </a>{
+<a name="line599">599: </a>  BV_SVEC        *ctx = (BV_SVEC*)bv-&gt;data;
+<a name="line600">600: </a>  PetscInt       l;
+
+<a name="line602">602: </a>  l = (j==bv-&gt;ci[0])? 0: 1;
+<a name="line603">603: </a>  VecCUDAResetArray(bv-&gt;cv[l]);
+<a name="line604">604: </a>  VecCUDARestoreArray(ctx-&gt;v,NULL);
+<a name="line605">605: </a>  PetscFunctionReturn(0);
+<a name="line606">606: </a>}
+
+<a name="line608">608: </a><strong><font color="#4169E1"><a name="BVRestoreSplit_Svec_CUDA"></a>PetscErrorCode BVRestoreSplit_Svec_CUDA(<a href="../../../../../../../docs/manualpages/sys/BV.html#BV">BV</a> bv,<a href="../../../../../../../docs/manualpages/sys/BV.html#BV">BV</a> *L,<a href="../../../../../../../docs/manualpages/sys/BV.html#BV">BV</a> *R)</font></strong>
+<a name="line609">609: </a>{
+<a name="line610">610: </a>  Vec               v;
+<a name="line611">611: </a>  const PetscScalar *d_pv;
+<a name="line612">612: </a>  PetscObjectState  lstate,rstate;
+<a name="line613">613: </a>  PetscBool         change=PETSC_FALSE;
+
+<a name="line615">615: </a>  <font color="#B22222">/* force sync flag to PETSC_CUDA_BOTH */</font>
+<a name="line616">616: </a>  <font color="#4169E1">if</font> (L) {
+<a name="line617">617: </a>    PetscObjectStateGet((PetscObject)*L,&amp;lstate);
+<a name="line618">618: </a>    <font color="#4169E1">if</font> (lstate != bv-&gt;lstate) {
+<a name="line619">619: </a>      v = ((BV_SVEC*)bv-&gt;L-&gt;data)-&gt;v;
+<a name="line620">620: </a>      VecCUDAGetArrayRead(v,&amp;d_pv);
+<a name="line621">621: </a>      VecCUDARestoreArrayRead(v,&amp;d_pv);
+<a name="line622">622: </a>      change = PETSC_TRUE;
+<a name="line623">623: </a>    }
+<a name="line624">624: </a>  }
+<a name="line625">625: </a>  <font color="#4169E1">if</font> (R) {
+<a name="line626">626: </a>    PetscObjectStateGet((PetscObject)*R,&amp;rstate);
+<a name="line627">627: </a>    <font color="#4169E1">if</font> (rstate != bv-&gt;rstate) {
+<a name="line628">628: </a>      v = ((BV_SVEC*)bv-&gt;R-&gt;data)-&gt;v;
+<a name="line629">629: </a>      VecCUDAGetArrayRead(v,&amp;d_pv);
+<a name="line630">630: </a>      VecCUDARestoreArrayRead(v,&amp;d_pv);
+<a name="line631">631: </a>      change = PETSC_TRUE;
+<a name="line632">632: </a>    }
+<a name="line633">633: </a>  }
+<a name="line634">634: </a>  <font color="#4169E1">if</font> (change) {
+<a name="line635">635: </a>    v = ((BV_SVEC*)bv-&gt;data)-&gt;v;
+<a name="line636">636: </a>    VecCUDAGetArray(v,(PetscScalar **)&amp;d_pv);
+<a name="line637">637: </a>    VecCUDARestoreArray(v,(PetscScalar **)&amp;d_pv);
+<a name="line638">638: </a>  }
+<a name="line639">639: </a>  PetscFunctionReturn(0);
+<a name="line640">640: </a>}
+
+<a name="line642">642: </a><strong><font color="#4169E1"><a name="BVGetMat_Svec_CUDA"></a>PetscErrorCode BVGetMat_Svec_CUDA(<a href="../../../../../../../docs/manualpages/sys/BV.html#BV">BV</a> bv,Mat *A)</font></strong>
+<a name="line643">643: </a>{
+<a name="line644">644: </a>  BV_SVEC        *ctx = (BV_SVEC*)bv-&gt;data;
+<a name="line645">645: </a>  PetscScalar    *vv,*aa;
+<a name="line646">646: </a>  PetscBool      create=PETSC_FALSE;
+<a name="line647">647: </a>  PetscInt       m,cols;
+
+<a name="line649">649: </a>  m = bv-&gt;k-bv-&gt;l;
+<a name="line650">650: </a>  <font color="#4169E1">if</font> (!bv-&gt;Aget) create=PETSC_TRUE;
+<a name="line651">651: </a>  <font color="#4169E1">else</font> {
+<a name="line652">652: </a>    MatDenseCUDAGetArray(bv-&gt;Aget,&amp;aa);
+<a name="line654">654: </a>    MatGetSize(bv-&gt;Aget,NULL,&amp;cols);
+<a name="line655">655: </a>    <font color="#4169E1">if</font> (cols!=m) {
+<a name="line656">656: </a>      MatDestroy(&amp;bv-&gt;Aget);
+<a name="line657">657: </a>      create=PETSC_TRUE;
+<a name="line658">658: </a>    }
+<a name="line659">659: </a>  }
+<a name="line660">660: </a>  VecCUDAGetArray(ctx-&gt;v,&amp;vv);
+<a name="line661">661: </a>  <font color="#4169E1">if</font> (create) {
+<a name="line662">662: </a>    MatCreateDenseCUDA(PetscObjectComm((PetscObject)bv),bv-&gt;n,PETSC_DECIDE,bv-&gt;N,m,vv,&amp;bv-&gt;Aget); <font color="#B22222">/* pass a pointer to avoid allocation of storage */</font>
+<a name="line663">663: </a>    MatDenseCUDAReplaceArray(bv-&gt;Aget,NULL);  <font color="#B22222">/* replace with a null pointer, the value after <a href="../../../../../../../docs/manualpages/BV/BVRestoreMat.html#BVRestoreMat">BVRestoreMat</a> */</font>
+<a name="line664">664: </a>    PetscLogObjectParent((PetscObject)bv,(PetscObject)bv-&gt;Aget);
+<a name="line665">665: </a>  }
+<a name="line666">666: </a>  MatDenseCUDAPlaceArray(bv-&gt;Aget,vv+(bv-&gt;nc+bv-&gt;l)*bv-&gt;n);  <font color="#B22222">/* set the actual pointer */</font>
+<a name="line667">667: </a>  *A = bv-&gt;Aget;
+<a name="line668">668: </a>  PetscFunctionReturn(0);
+<a name="line669">669: </a>}
+
+<a name="line671">671: </a><strong><font color="#4169E1"><a name="BVRestoreMat_Svec_CUDA"></a>PetscErrorCode BVRestoreMat_Svec_CUDA(<a href="../../../../../../../docs/manualpages/sys/BV.html#BV">BV</a> bv,Mat *A)</font></strong>
+<a name="line672">672: </a>{
+<a name="line673">673: </a>  BV_SVEC        *ctx = (BV_SVEC*)bv-&gt;data;
+<a name="line674">674: </a>  PetscScalar    *vv,*aa;
+
+<a name="line676">676: </a>  MatDenseCUDAGetArray(bv-&gt;Aget,&amp;aa);
+<a name="line677">677: </a>  vv = aa-(bv-&gt;nc+bv-&gt;l)*bv-&gt;n;
+<a name="line678">678: </a>  MatDenseCUDAResetArray(bv-&gt;Aget);
+<a name="line679">679: </a>  VecCUDARestoreArray(ctx-&gt;v,&amp;vv);
+<a name="line680">680: </a>  *A = NULL;
+<a name="line681">681: </a>  PetscFunctionReturn(0);
+<a name="line682">682: </a>}
+</pre>
+</body>
+
+</html>

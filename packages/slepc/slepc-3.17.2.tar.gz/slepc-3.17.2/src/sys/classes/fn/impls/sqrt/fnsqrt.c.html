@@ -1,0 +1,429 @@
+<center><a href="fnsqrt.c">Actual source code: fnsqrt.c</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="https://slepc.upv.es/documentation/current/src/sys/classes/fn/impls/sqrt/fnsqrt.c.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2022-08-09T09:05:18+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>slepc-3.17.2 2022-08-09</b></div>
+   <div id="bugreport" align=right><a href="mailto:slepc-maint@upv.es?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: slepc-3.17.2 v3.17.2 src/sys/classes/fn/impls/sqrt/fnsqrt.c.html "><small>Report Typos and Errors</small></a></div>
+<pre width="80">
+<a name="line1">  1: </a><font color="#B22222">/*</font>
+<a name="line2">  2: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line3">  3: </a><font color="#B22222">   SLEPc - Scalable Library for Eigenvalue Problem Computations</font>
+<a name="line4">  4: </a><font color="#B22222">   Copyright (c) 2002-, Universitat Politecnica de Valencia, Spain</font>
+
+<a name="line6">  6: </a><font color="#B22222">   This file is part of SLEPc.</font>
+<a name="line7">  7: </a><font color="#B22222">   SLEPc is distributed under a 2-clause BSD license (see LICENSE).</font>
+<a name="line8">  8: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line9">  9: </a><font color="#B22222">*/</font>
+<a name="line10"> 10: </a><font color="#B22222">/*</font>
+<a name="line11"> 11: </a><font color="#B22222">   Square root function  sqrt(x)</font>
+<a name="line12"> 12: </a><font color="#B22222">*/</font>
+
+<a name="line14"> 14: </a>#include <A href="../../../../../../include/slepc/private/fnimpl.h.html">&lt;slepc/private/fnimpl.h&gt;</A>
+<a name="line15"> 15: </a>#include <A href="../../../../../../include/slepcblaslapack.h.html">&lt;slepcblaslapack.h&gt;</A>
+
+<a name="line17"> 17: </a><strong><font color="#4169E1"><a name="FNEvaluateFunction_Sqrt"></a>PetscErrorCode FNEvaluateFunction_Sqrt(<a href="../../../../../../docs/manualpages/sys/FN.html#FN">FN</a> fn,PetscScalar x,PetscScalar *y)</font></strong>
+<a name="line18"> 18: </a>{
+<a name="line19"> 19: </a><font color="#A020F0">#if !defined(PETSC_USE_COMPLEX)</font>
+<a name="line21"> 21: </a><font color="#A020F0">#endif</font>
+<a name="line22"> 22: </a>  *y = PetscSqrtScalar(x);
+<a name="line23"> 23: </a>  PetscFunctionReturn(0);
+<a name="line24"> 24: </a>}
+
+<a name="line26"> 26: </a><strong><font color="#4169E1"><a name="FNEvaluateDerivative_Sqrt"></a>PetscErrorCode FNEvaluateDerivative_Sqrt(<a href="../../../../../../docs/manualpages/sys/FN.html#FN">FN</a> fn,PetscScalar x,PetscScalar *y)</font></strong>
+<a name="line27"> 27: </a>{
+<a name="line29"> 29: </a><font color="#A020F0">#if !defined(PETSC_USE_COMPLEX)</font>
+<a name="line31"> 31: </a><font color="#A020F0">#endif</font>
+<a name="line32"> 32: </a>  *y = 1.0/(2.0*PetscSqrtScalar(x));
+<a name="line33"> 33: </a>  PetscFunctionReturn(0);
+<a name="line34"> 34: </a>}
+
+<a name="line36"> 36: </a><strong><font color="#4169E1"><a name="FNEvaluateFunctionMat_Sqrt_Schur"></a>PetscErrorCode FNEvaluateFunctionMat_Sqrt_Schur(<a href="../../../../../../docs/manualpages/sys/FN.html#FN">FN</a> fn,Mat A,Mat B)</font></strong>
+<a name="line37"> 37: </a>{
+<a name="line38"> 38: </a>  PetscBLASInt   n=0;
+<a name="line39"> 39: </a>  PetscScalar    *T;
+<a name="line40"> 40: </a>  PetscInt       m;
+
+<a name="line42"> 42: </a>  <font color="#4169E1">if</font> (A!=B) MatCopy(A,B,SAME_NONZERO_PATTERN);
+<a name="line43"> 43: </a>  MatDenseGetArray(B,&amp;T);
+<a name="line44"> 44: </a>  MatGetSize(A,&amp;m,NULL);
+<a name="line45"> 45: </a>  PetscBLASIntCast(m,&amp;n);
+<a name="line46"> 46: </a>  FNSqrtmSchur(fn,n,T,n,PETSC_FALSE);
+<a name="line47"> 47: </a>  MatDenseRestoreArray(B,&amp;T);
+<a name="line48"> 48: </a>  PetscFunctionReturn(0);
+<a name="line49"> 49: </a>}
+
+<a name="line51"> 51: </a><strong><font color="#4169E1"><a name="FNEvaluateFunctionMatVec_Sqrt_Schur"></a>PetscErrorCode FNEvaluateFunctionMatVec_Sqrt_Schur(<a href="../../../../../../docs/manualpages/sys/FN.html#FN">FN</a> fn,Mat A,Vec v)</font></strong>
+<a name="line52"> 52: </a>{
+<a name="line53"> 53: </a>  PetscBLASInt   n=0;
+<a name="line54"> 54: </a>  PetscScalar    *T;
+<a name="line55"> 55: </a>  PetscInt       m;
+<a name="line56"> 56: </a>  Mat            B;
+
+<a name="line58"> 58: </a>  FN_AllocateWorkMat(fn,A,&amp;B);
+<a name="line59"> 59: </a>  MatDenseGetArray(B,&amp;T);
+<a name="line60"> 60: </a>  MatGetSize(A,&amp;m,NULL);
+<a name="line61"> 61: </a>  PetscBLASIntCast(m,&amp;n);
+<a name="line62"> 62: </a>  FNSqrtmSchur(fn,n,T,n,PETSC_TRUE);
+<a name="line63"> 63: </a>  MatDenseRestoreArray(B,&amp;T);
+<a name="line64"> 64: </a>  MatGetColumnVector(B,v,0);
+<a name="line65"> 65: </a>  FN_FreeWorkMat(fn,&amp;B);
+<a name="line66"> 66: </a>  PetscFunctionReturn(0);
+<a name="line67"> 67: </a>}
+
+<a name="line69"> 69: </a><strong><font color="#4169E1"><a name="FNEvaluateFunctionMat_Sqrt_DBP"></a>PetscErrorCode FNEvaluateFunctionMat_Sqrt_DBP(<a href="../../../../../../docs/manualpages/sys/FN.html#FN">FN</a> fn,Mat A,Mat B)</font></strong>
+<a name="line70"> 70: </a>{
+<a name="line71"> 71: </a>  PetscBLASInt   n=0;
+<a name="line72"> 72: </a>  PetscScalar    *T;
+<a name="line73"> 73: </a>  PetscInt       m;
+
+<a name="line75"> 75: </a>  <font color="#4169E1">if</font> (A!=B) MatCopy(A,B,SAME_NONZERO_PATTERN);
+<a name="line76"> 76: </a>  MatDenseGetArray(B,&amp;T);
+<a name="line77"> 77: </a>  MatGetSize(A,&amp;m,NULL);
+<a name="line78"> 78: </a>  PetscBLASIntCast(m,&amp;n);
+<a name="line79"> 79: </a>  FNSqrtmDenmanBeavers(fn,n,T,n,PETSC_FALSE);
+<a name="line80"> 80: </a>  MatDenseRestoreArray(B,&amp;T);
+<a name="line81"> 81: </a>  PetscFunctionReturn(0);
+<a name="line82"> 82: </a>}
+
+<a name="line84"> 84: </a><strong><font color="#4169E1"><a name="FNEvaluateFunctionMat_Sqrt_NS"></a>PetscErrorCode FNEvaluateFunctionMat_Sqrt_NS(<a href="../../../../../../docs/manualpages/sys/FN.html#FN">FN</a> fn,Mat A,Mat B)</font></strong>
+<a name="line85"> 85: </a>{
+<a name="line86"> 86: </a>  PetscBLASInt   n=0;
+<a name="line87"> 87: </a>  PetscScalar    *Ba;
+<a name="line88"> 88: </a>  PetscInt       m;
+
+<a name="line90"> 90: </a>  <font color="#4169E1">if</font> (A!=B) MatCopy(A,B,SAME_NONZERO_PATTERN);
+<a name="line91"> 91: </a>  MatDenseGetArray(B,&amp;Ba);
+<a name="line92"> 92: </a>  MatGetSize(A,&amp;m,NULL);
+<a name="line93"> 93: </a>  PetscBLASIntCast(m,&amp;n);
+<a name="line94"> 94: </a>  FNSqrtmNewtonSchulz(fn,n,Ba,n,PETSC_FALSE);
+<a name="line95"> 95: </a>  MatDenseRestoreArray(B,&amp;Ba);
+<a name="line96"> 96: </a>  PetscFunctionReturn(0);
+<a name="line97"> 97: </a>}
+
+<a name="line99"> 99: </a><strong><font color="#228B22">#define MAXIT 50</font></strong>
+
+<a name="line101">101: </a><font color="#B22222">/*</font>
+<a name="line102">102: </a><font color="#B22222">   Computes the principal square root of the matrix A using the</font>
+<a name="line103">103: </a><font color="#B22222">   Sadeghi iteration. A is overwritten with sqrtm(A).</font>
+<a name="line104">104: </a><font color="#B22222"> */</font>
+<a name="line105">105: </a><strong><font color="#4169E1"><a name="FNSqrtmSadeghi"></a>PetscErrorCode FNSqrtmSadeghi(<a href="../../../../../../docs/manualpages/sys/FN.html#FN">FN</a> fn,PetscBLASInt n,PetscScalar *A,PetscBLASInt ld)</font></strong>
+<a name="line106">106: </a>{
+<a name="line107">107: </a>  PetscScalar    *M,*M2,*G,*X=A,*work,work1,sqrtnrm;
+<a name="line108">108: </a>  PetscScalar    szero=0.0,sone=1.0,smfive=-5.0,s1d16=1.0/16.0;
+<a name="line109">109: </a>  PetscReal      tol,Mres=0.0,nrm,rwork[1],done=1.0;
+<a name="line110">110: </a>  PetscInt       i,it;
+<a name="line111">111: </a>  PetscBLASInt   N,*piv=NULL,info,lwork=0,query=-1,one=1,zero=0;
+<a name="line112">112: </a>  PetscBool      converged=PETSC_FALSE;
+<a name="line113">113: </a>  unsigned int   ftz;
+
+<a name="line115">115: </a>  N = n*n;
+<a name="line116">116: </a>  tol = PetscSqrtReal((PetscReal)n)*PETSC_MACHINE_EPSILON/2;
+<a name="line117">117: </a>  SlepcSetFlushToZero(&amp;ftz);
+
+<a name="line119">119: </a>  <font color="#B22222">/* query work size */</font>
+<a name="line120">120: </a>  PetscStackCallBLAS(<font color="#666666">"LAPACKgetri"</font>,LAPACKgetri_(&amp;n,A,&amp;ld,piv,&amp;work1,&amp;query,&amp;info));
+<a name="line121">121: </a>  PetscBLASIntCast((PetscInt)PetscRealPart(work1),&amp;lwork);
+
+<a name="line123">123: </a>  PetscMalloc5(N,&amp;M,N,&amp;M2,N,&amp;G,lwork,&amp;work,n,&amp;piv);
+<a name="line124">124: </a>  PetscArraycpy(M,A,N);
+
+<a name="line126">126: </a>  <font color="#B22222">/* scale M */</font>
+<a name="line127">127: </a>  nrm = LAPACKlange_(<font color="#666666">"fro"</font>,&amp;n,&amp;n,M,&amp;n,rwork);
+<a name="line128">128: </a>  <font color="#4169E1">if</font> (nrm&gt;1.0) {
+<a name="line129">129: </a>    sqrtnrm = PetscSqrtReal(nrm);
+<a name="line130">130: </a>    PetscStackCallBLAS(<font color="#666666">"LAPACKlascl"</font>,LAPACKlascl_(<font color="#666666">"G"</font>,&amp;zero,&amp;zero,&amp;nrm,&amp;done,&amp;N,&amp;one,M,&amp;N,&amp;info));
+<a name="line131">131: </a>    SlepcCheckLapackInfo(<font color="#666666">"lascl"</font>,info);
+<a name="line132">132: </a>    tol *= nrm;
+<a name="line133">133: </a>  }
+<a name="line134">134: </a>  PetscInfo(fn,<font color="#666666">"||A||_F = %g, new tol: %g\n"</font>,(double)nrm,(double)tol);
+
+<a name="line136">136: </a>  <font color="#B22222">/* X = I */</font>
+<a name="line137">137: </a>  PetscArrayzero(X,N);
+<a name="line138">138: </a>  <font color="#4169E1">for</font> (i=0;i&lt;n;i++) X[i+i*ld] = 1.0;
+
+<a name="line140">140: </a>  <font color="#4169E1">for</font> (it=0;it&lt;MAXIT &amp;&amp; !converged;it++) {
+
+<a name="line142">142: </a>    <font color="#B22222">/* G = (5/16)*I + (1/16)*M*(15*I-5*M+M*M) */</font>
+<a name="line143">143: </a>    PetscStackCallBLAS(<font color="#666666">"BLASgemm"</font>,BLASgemm_(<font color="#666666">"N"</font>,<font color="#666666">"N"</font>,&amp;n,&amp;n,&amp;n,&amp;sone,M,&amp;ld,M,&amp;ld,&amp;szero,M2,&amp;ld));
+<a name="line144">144: </a>    PetscStackCallBLAS(<font color="#666666">"BLASaxpy"</font>,BLASaxpy_(&amp;N,&amp;smfive,M,&amp;one,M2,&amp;one));
+<a name="line145">145: </a>    <font color="#4169E1">for</font> (i=0;i&lt;n;i++) M2[i+i*ld] += 15.0;
+<a name="line146">146: </a>    PetscStackCallBLAS(<font color="#666666">"BLASgemm"</font>,BLASgemm_(<font color="#666666">"N"</font>,<font color="#666666">"N"</font>,&amp;n,&amp;n,&amp;n,&amp;s1d16,M,&amp;ld,M2,&amp;ld,&amp;szero,G,&amp;ld));
+<a name="line147">147: </a>    <font color="#4169E1">for</font> (i=0;i&lt;n;i++) G[i+i*ld] += 5.0/16.0;
+
+<a name="line149">149: </a>    <font color="#B22222">/* X = X*G */</font>
+<a name="line150">150: </a>    PetscArraycpy(M2,X,N);
+<a name="line151">151: </a>    PetscStackCallBLAS(<font color="#666666">"BLASgemm"</font>,BLASgemm_(<font color="#666666">"N"</font>,<font color="#666666">"N"</font>,&amp;n,&amp;n,&amp;n,&amp;sone,M2,&amp;ld,G,&amp;ld,&amp;szero,X,&amp;ld));
+
+<a name="line153">153: </a>    <font color="#B22222">/* M = M*inv(G*G) */</font>
+<a name="line154">154: </a>    PetscStackCallBLAS(<font color="#666666">"BLASgemm"</font>,BLASgemm_(<font color="#666666">"N"</font>,<font color="#666666">"N"</font>,&amp;n,&amp;n,&amp;n,&amp;sone,G,&amp;ld,G,&amp;ld,&amp;szero,M2,&amp;ld));
+<a name="line155">155: </a>    PetscStackCallBLAS(<font color="#666666">"LAPACKgetrf"</font>,LAPACKgetrf_(&amp;n,&amp;n,M2,&amp;ld,piv,&amp;info));
+<a name="line156">156: </a>    SlepcCheckLapackInfo(<font color="#666666">"getrf"</font>,info);
+<a name="line157">157: </a>    PetscStackCallBLAS(<font color="#666666">"LAPACKgetri"</font>,LAPACKgetri_(&amp;n,M2,&amp;ld,piv,work,&amp;lwork,&amp;info));
+<a name="line158">158: </a>    SlepcCheckLapackInfo(<font color="#666666">"getri"</font>,info);
+
+<a name="line160">160: </a>    PetscArraycpy(G,M,N);
+<a name="line161">161: </a>    PetscStackCallBLAS(<font color="#666666">"BLASgemm"</font>,BLASgemm_(<font color="#666666">"N"</font>,<font color="#666666">"N"</font>,&amp;n,&amp;n,&amp;n,&amp;sone,G,&amp;ld,M2,&amp;ld,&amp;szero,M,&amp;ld));
+
+<a name="line163">163: </a>    <font color="#B22222">/* check ||I-M|| */</font>
+<a name="line164">164: </a>    PetscArraycpy(M2,M,N);
+<a name="line165">165: </a>    <font color="#4169E1">for</font> (i=0;i&lt;n;i++) M2[i+i*ld] -= 1.0;
+<a name="line166">166: </a>    Mres = LAPACKlange_(<font color="#666666">"fro"</font>,&amp;n,&amp;n,M2,&amp;n,rwork);
+<a name="line168">168: </a>    <font color="#4169E1">if</font> (Mres&lt;=tol) converged = PETSC_TRUE;
+<a name="line169">169: </a>    PetscInfo(fn,<font color="#666666">"it: %"</font> PetscInt_FMT <font color="#666666">" res: %g\n"</font>,it,(double)Mres);
+<a name="line170">170: </a>    PetscLogFlops(8.0*n*n*n+2.0*n*n+2.0*n*n*n/3.0+4.0*n*n*n/3.0+2.0*n*n*n+2.0*n*n);
+<a name="line171">171: </a>  }
+
+
+<a name="line175">175: </a>  <font color="#B22222">/* undo scaling */</font>
+<a name="line176">176: </a>  <font color="#4169E1">if</font> (nrm&gt;1.0) PetscStackCallBLAS(<font color="#666666">"BLASscal"</font>,BLASscal_(&amp;N,&amp;sqrtnrm,A,&amp;one));
+
+<a name="line178">178: </a>  PetscFree5(M,M2,G,work,piv);
+<a name="line179">179: </a>  SlepcResetFlushToZero(&amp;ftz);
+<a name="line180">180: </a>  PetscFunctionReturn(0);
+<a name="line181">181: </a>}
+
+<a name="line183">183: </a><font color="#A020F0">#if defined(PETSC_HAVE_CUDA)</font>
+<a name="line184">184: </a><font color="#A020F0">#include </font><font color="#666666">"../src/sys/classes/fn/impls/cuda/fnutilcuda.h"</font><font color="#A020F0"></font>
+<a name="line185">185: </a>#include <A href="../../../../../../include/slepccublas.h.html">&lt;slepccublas.h&gt;</A>
+
+<a name="line187">187: </a><font color="#A020F0">#if defined(PETSC_HAVE_MAGMA)</font>
+<a name="line188">188: </a>#include <A href="../../../../../../include/slepcmagma.h.html">&lt;slepcmagma.h&gt;</A>
+
+<a name="line190">190: </a><font color="#B22222">/*</font>
+<a name="line191">191: </a><font color="#B22222"> * Matrix square root by Sadeghi iteration. CUDA version.</font>
+<a name="line192">192: </a><font color="#B22222"> * Computes the principal square root of the matrix T using the</font>
+<a name="line193">193: </a><font color="#B22222"> * Sadeghi iteration. T is overwritten with sqrtm(T).</font>
+<a name="line194">194: </a><font color="#B22222"> */</font>
+<a name="line195">195: </a><strong><font color="#4169E1"><a name="FNSqrtmSadeghi_CUDAm"></a>PetscErrorCode FNSqrtmSadeghi_CUDAm(<a href="../../../../../../docs/manualpages/sys/FN.html#FN">FN</a> fn,PetscBLASInt n,PetscScalar *A,PetscBLASInt ld)</font></strong>
+<a name="line196">196: </a>{
+<a name="line197">197: </a>  PetscScalar        *d_X,*d_M,*d_M2,*d_G,*d_work,alpha;
+<a name="line198">198: </a>  const PetscScalar  szero=0.0,sone=1.0,smfive=-5.0,s15=15.0,s1d16=1.0/16.0;
+<a name="line199">199: </a>  PetscReal          tol,Mres=0.0,nrm,sqrtnrm=1.0;
+<a name="line200">200: </a>  PetscInt           it,nb,lwork;
+<a name="line201">201: </a>  PetscBLASInt       *piv,N;
+<a name="line202">202: </a>  const PetscBLASInt one=1;
+<a name="line203">203: </a>  PetscBool          converged=PETSC_FALSE;
+<a name="line204">204: </a>  cublasHandle_t     cublasv2handle;
+
+<a name="line206">206: </a>  PetscDeviceInitialize(PETSC_DEVICE_CUDA); <font color="#B22222">/* For CUDA event timers */</font>
+<a name="line207">207: </a>  PetscCUBLASGetHandle(&amp;cublasv2handle);
+<a name="line208">208: </a>  magma_init();
+<a name="line209">209: </a>  N = n*n;
+<a name="line210">210: </a>  tol = PetscSqrtReal((PetscReal)n)*PETSC_MACHINE_EPSILON/2;
+
+<a name="line212">212: </a>  PetscMalloc1(n,&amp;piv);
+<a name="line213">213: </a>  cudaMalloc((void **)&amp;d_X,<font color="#4169E1">sizeof</font>(PetscScalar)*N);
+<a name="line214">214: </a>  cudaMalloc((void **)&amp;d_M,<font color="#4169E1">sizeof</font>(PetscScalar)*N);
+<a name="line215">215: </a>  cudaMalloc((void **)&amp;d_M2,<font color="#4169E1">sizeof</font>(PetscScalar)*N);
+<a name="line216">216: </a>  cudaMalloc((void **)&amp;d_G,<font color="#4169E1">sizeof</font>(PetscScalar)*N);
+
+<a name="line218">218: </a>  nb = magma_get_xgetri_nb(n);
+<a name="line219">219: </a>  lwork = nb*n;
+<a name="line220">220: </a>  cudaMalloc((void **)&amp;d_work,<font color="#4169E1">sizeof</font>(PetscScalar)*lwork);
+<a name="line221">221: </a>  PetscLogGpuTimeBegin();
+
+<a name="line223">223: </a>  <font color="#B22222">/* M = A */</font>
+<a name="line224">224: </a>  cudaMemcpy(d_M,A,<font color="#4169E1">sizeof</font>(PetscScalar)*N,cudaMemcpyHostToDevice);
+
+<a name="line226">226: </a>  <font color="#B22222">/* scale M */</font>
+<a name="line227">227: </a>  cublasXnrm2(cublasv2handle,N,d_M,one,&amp;nrm);
+<a name="line228">228: </a>  <font color="#4169E1">if</font> (nrm&gt;1.0) {
+<a name="line229">229: </a>    sqrtnrm = PetscSqrtReal(nrm);
+<a name="line230">230: </a>    alpha = 1.0/nrm;
+<a name="line231">231: </a>    cublasXscal(cublasv2handle,N,&amp;alpha,d_M,one);
+<a name="line232">232: </a>    tol *= nrm;
+<a name="line233">233: </a>  }
+<a name="line234">234: </a>  PetscInfo(fn,<font color="#666666">"||A||_F = %g, new tol: %g\n"</font>,(double)nrm,(double)tol);
+
+<a name="line236">236: </a>  <font color="#B22222">/* X = I */</font>
+<a name="line237">237: </a>  cudaMemset(d_X,0,<font color="#4169E1">sizeof</font>(PetscScalar)*N);
+<a name="line238">238: </a>  set_diagonal(n,d_X,ld,sone);
+
+<a name="line240">240: </a>  <font color="#4169E1">for</font> (it=0;it&lt;MAXIT &amp;&amp; !converged;it++) {
+
+<a name="line242">242: </a>    <font color="#B22222">/* G = (5/16)*I + (1/16)*M*(15*I-5*M+M*M) */</font>
+<a name="line243">243: </a>    cublasXgemm(cublasv2handle,CUBLAS_OP_N,CUBLAS_OP_N,n,n,n,&amp;sone,d_M,ld,d_M,ld,&amp;szero,d_M2,ld);
+<a name="line244">244: </a>    cublasXaxpy(cublasv2handle,N,&amp;smfive,d_M,one,d_M2,one);
+<a name="line245">245: </a>    shift_diagonal(n,d_M2,ld,s15);
+<a name="line246">246: </a>    cublasXgemm(cublasv2handle,CUBLAS_OP_N,CUBLAS_OP_N,n,n,n,&amp;s1d16,d_M,ld,d_M2,ld,&amp;szero,d_G,ld);
+<a name="line247">247: </a>    shift_diagonal(n,d_G,ld,5.0/16.0);
+
+<a name="line249">249: </a>    <font color="#B22222">/* X = X*G */</font>
+<a name="line250">250: </a>    cudaMemcpy(d_M2,d_X,<font color="#4169E1">sizeof</font>(PetscScalar)*N,cudaMemcpyDeviceToDevice);
+<a name="line251">251: </a>    cublasXgemm(cublasv2handle,CUBLAS_OP_N,CUBLAS_OP_N,n,n,n,&amp;sone,d_M2,ld,d_G,ld,&amp;szero,d_X,ld);
+
+<a name="line253">253: </a>    <font color="#B22222">/* M = M*inv(G*G) */</font>
+<a name="line254">254: </a>    cublasXgemm(cublasv2handle,CUBLAS_OP_N,CUBLAS_OP_N,n,n,n,&amp;sone,d_G,ld,d_G,ld,&amp;szero,d_M2,ld);
+<a name="line255">255: </a>    <font color="#B22222">/* magma */</font>
+<a name="line256">256: </a>    magma_xgetrf_gpu,n,n,d_M2,ld,piv;
+<a name="line257">257: </a>    magma_xgetri_gpu,n,d_M2,ld,piv,d_work,lwork;
+<a name="line258">258: </a>    <font color="#B22222">/* magma */</font>
+<a name="line259">259: </a>    cudaMemcpy(d_G,d_M,<font color="#4169E1">sizeof</font>(PetscScalar)*N,cudaMemcpyDeviceToDevice);
+<a name="line260">260: </a>    cublasXgemm(cublasv2handle,CUBLAS_OP_N,CUBLAS_OP_N,n,n,n,&amp;sone,d_G,ld,d_M2,ld,&amp;szero,d_M,ld);
+
+<a name="line262">262: </a>    <font color="#B22222">/* check ||I-M|| */</font>
+<a name="line263">263: </a>    cudaMemcpy(d_M2,d_M,<font color="#4169E1">sizeof</font>(PetscScalar)*N,cudaMemcpyDeviceToDevice);
+<a name="line264">264: </a>    shift_diagonal(n,d_M2,ld,-1.0);
+<a name="line265">265: </a>    cublasXnrm2(cublasv2handle,N,d_M2,one,&amp;Mres);
+<a name="line267">267: </a>    <font color="#4169E1">if</font> (Mres&lt;=tol) converged = PETSC_TRUE;
+<a name="line268">268: </a>    PetscInfo(fn,<font color="#666666">"it: %"</font> PetscInt_FMT <font color="#666666">" res: %g\n"</font>,it,(double)Mres);
+<a name="line269">269: </a>    PetscLogGpuFlops(8.0*n*n*n+2.0*n*n+2.0*n*n*n/3.0+4.0*n*n*n/3.0+2.0*n*n*n+2.0*n*n);
+<a name="line270">270: </a>  }
+
+
+<a name="line274">274: </a>  <font color="#4169E1">if</font> (nrm&gt;1.0) {
+<a name="line275">275: </a>    alpha = sqrtnrm;
+<a name="line276">276: </a>    cublasXscal(cublasv2handle,N,&amp;alpha,d_X,one);
+<a name="line277">277: </a>  }
+<a name="line278">278: </a>  cudaMemcpy(A,d_X,<font color="#4169E1">sizeof</font>(PetscScalar)*N,cudaMemcpyDeviceToHost);
+<a name="line279">279: </a>  PetscLogGpuTimeEnd();
+
+<a name="line281">281: </a>  cudaFree(d_X);
+<a name="line282">282: </a>  cudaFree(d_M);
+<a name="line283">283: </a>  cudaFree(d_M2);
+<a name="line284">284: </a>  cudaFree(d_G);
+<a name="line285">285: </a>  cudaFree(d_work);
+<a name="line286">286: </a>  PetscFree(piv);
+
+<a name="line288">288: </a>  magma_finalize();
+<a name="line289">289: </a>  PetscFunctionReturn(0);
+<a name="line290">290: </a>}
+<a name="line291">291: </a><font color="#A020F0">#endif </font><font color="#B22222">/* PETSC_HAVE_MAGMA */</font><font color="#A020F0"></font>
+<a name="line292">292: </a><font color="#A020F0">#endif </font><font color="#B22222">/* PETSC_HAVE_CUDA */</font><font color="#A020F0"></font>
+
+<a name="line294">294: </a><strong><font color="#4169E1"><a name="FNEvaluateFunctionMat_Sqrt_Sadeghi"></a>PetscErrorCode FNEvaluateFunctionMat_Sqrt_Sadeghi(<a href="../../../../../../docs/manualpages/sys/FN.html#FN">FN</a> fn,Mat A,Mat B)</font></strong>
+<a name="line295">295: </a>{
+<a name="line296">296: </a>  PetscBLASInt   n=0;
+<a name="line297">297: </a>  PetscScalar    *Ba;
+<a name="line298">298: </a>  PetscInt       m;
+
+<a name="line300">300: </a>  <font color="#4169E1">if</font> (A!=B) MatCopy(A,B,SAME_NONZERO_PATTERN);
+<a name="line301">301: </a>  MatDenseGetArray(B,&amp;Ba);
+<a name="line302">302: </a>  MatGetSize(A,&amp;m,NULL);
+<a name="line303">303: </a>  PetscBLASIntCast(m,&amp;n);
+<a name="line304">304: </a>  FNSqrtmSadeghi(fn,n,Ba,n);
+<a name="line305">305: </a>  MatDenseRestoreArray(B,&amp;Ba);
+<a name="line306">306: </a>  PetscFunctionReturn(0);
+<a name="line307">307: </a>}
+
+<a name="line309">309: </a><font color="#A020F0">#if defined(PETSC_HAVE_CUDA)</font>
+<a name="line310">310: </a><strong><font color="#4169E1"><a name="FNEvaluateFunctionMat_Sqrt_NS_CUDA"></a>PetscErrorCode FNEvaluateFunctionMat_Sqrt_NS_CUDA(<a href="../../../../../../docs/manualpages/sys/FN.html#FN">FN</a> fn,Mat A,Mat B)</font></strong>
+<a name="line311">311: </a>{
+<a name="line312">312: </a>  PetscBLASInt   n=0;
+<a name="line313">313: </a>  PetscScalar    *Ba;
+<a name="line314">314: </a>  PetscInt       m;
+
+<a name="line316">316: </a>  <font color="#4169E1">if</font> (A!=B) MatCopy(A,B,SAME_NONZERO_PATTERN);
+<a name="line317">317: </a>  MatDenseGetArray(B,&amp;Ba);
+<a name="line318">318: </a>  MatGetSize(A,&amp;m,NULL);
+<a name="line319">319: </a>  PetscBLASIntCast(m,&amp;n);
+<a name="line320">320: </a>  FNSqrtmNewtonSchulz_CUDA(fn,n,Ba,n,PETSC_FALSE);
+<a name="line321">321: </a>  MatDenseRestoreArray(B,&amp;Ba);
+<a name="line322">322: </a>  PetscFunctionReturn(0);
+<a name="line323">323: </a>}
+
+<a name="line325">325: </a><font color="#A020F0">#if defined(PETSC_HAVE_MAGMA)</font>
+<a name="line326">326: </a><strong><font color="#4169E1"><a name="FNEvaluateFunctionMat_Sqrt_DBP_CUDAm"></a>PetscErrorCode FNEvaluateFunctionMat_Sqrt_DBP_CUDAm(<a href="../../../../../../docs/manualpages/sys/FN.html#FN">FN</a> fn,Mat A,Mat B)</font></strong>
+<a name="line327">327: </a>{
+<a name="line328">328: </a>  PetscBLASInt   n=0;
+<a name="line329">329: </a>  PetscScalar    *T;
+<a name="line330">330: </a>  PetscInt       m;
+
+<a name="line332">332: </a>  <font color="#4169E1">if</font> (A!=B) MatCopy(A,B,SAME_NONZERO_PATTERN);
+<a name="line333">333: </a>  MatDenseGetArray(B,&amp;T);
+<a name="line334">334: </a>  MatGetSize(A,&amp;m,NULL);
+<a name="line335">335: </a>  PetscBLASIntCast(m,&amp;n);
+<a name="line336">336: </a>  FNSqrtmDenmanBeavers_CUDAm(fn,n,T,n,PETSC_FALSE);
+<a name="line337">337: </a>  MatDenseRestoreArray(B,&amp;T);
+<a name="line338">338: </a>  PetscFunctionReturn(0);
+<a name="line339">339: </a>}
+
+<a name="line341">341: </a><strong><font color="#4169E1"><a name="FNEvaluateFunctionMat_Sqrt_Sadeghi_CUDAm"></a>PetscErrorCode FNEvaluateFunctionMat_Sqrt_Sadeghi_CUDAm(<a href="../../../../../../docs/manualpages/sys/FN.html#FN">FN</a> fn,Mat A,Mat B)</font></strong>
+<a name="line342">342: </a>{
+<a name="line343">343: </a>  PetscBLASInt   n=0;
+<a name="line344">344: </a>  PetscScalar    *Ba;
+<a name="line345">345: </a>  PetscInt       m;
+
+<a name="line347">347: </a>  <font color="#4169E1">if</font> (A!=B) MatCopy(A,B,SAME_NONZERO_PATTERN);
+<a name="line348">348: </a>  MatDenseGetArray(B,&amp;Ba);
+<a name="line349">349: </a>  MatGetSize(A,&amp;m,NULL);
+<a name="line350">350: </a>  PetscBLASIntCast(m,&amp;n);
+<a name="line351">351: </a>  FNSqrtmSadeghi_CUDAm(fn,n,Ba,n);
+<a name="line352">352: </a>  MatDenseRestoreArray(B,&amp;Ba);
+<a name="line353">353: </a>  PetscFunctionReturn(0);
+<a name="line354">354: </a>}
+<a name="line355">355: </a><font color="#A020F0">#endif </font><font color="#B22222">/* PETSC_HAVE_MAGMA */</font><font color="#A020F0"></font>
+<a name="line356">356: </a><font color="#A020F0">#endif </font><font color="#B22222">/* PETSC_HAVE_CUDA */</font><font color="#A020F0"></font>
+
+<a name="line358">358: </a><strong><font color="#4169E1"><a name="FNView_Sqrt"></a>PetscErrorCode FNView_Sqrt(<a href="../../../../../../docs/manualpages/sys/FN.html#FN">FN</a> fn,PetscViewer viewer)</font></strong>
+<a name="line359">359: </a>{
+<a name="line360">360: </a>  PetscBool      isascii;
+<a name="line361">361: </a>  char           str[50];
+<a name="line362">362: </a>  const char     *methodname[] = {
+<a name="line363">363: </a>                  <font color="#666666">"Schur method for the square root"</font>,
+<a name="line364">364: </a>                  <font color="#666666">"Denman-Beavers (product form)"</font>,
+<a name="line365">365: </a>                  <font color="#666666">"Newton-Schulz iteration"</font>,
+<a name="line366">366: </a>                  <font color="#666666">"Sadeghi iteration"</font>
+<a name="line367">367: </a><font color="#A020F0">#if defined(PETSC_HAVE_CUDA)</font>
+<a name="line368">368: </a>                 ,<font color="#666666">"Newton-Schulz iteration CUDA"</font>
+<a name="line369">369: </a><font color="#A020F0">#if defined(PETSC_HAVE_MAGMA)</font>
+<a name="line370">370: </a>                 ,<font color="#666666">"Denman-Beavers (product form) CUDA/MAGMA"</font>,
+<a name="line371">371: </a>                  <font color="#666666">"Sadeghi iteration CUDA/MAGMA"</font>
+<a name="line372">372: </a><font color="#A020F0">#endif</font>
+<a name="line373">373: </a><font color="#A020F0">#endif</font>
+<a name="line374">374: </a>  };
+<a name="line375">375: </a>  const int      nmeth=<font color="#4169E1">sizeof</font>(methodname)/<font color="#4169E1">sizeof</font>(methodname[0]);
+
+<a name="line377">377: </a>  PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&amp;isascii);
+<a name="line378">378: </a>  <font color="#4169E1">if</font> (isascii) {
+<a name="line379">379: </a>    <font color="#4169E1">if</font> (fn-&gt;beta==(PetscScalar)1.0) {
+<a name="line380">380: </a>      <font color="#4169E1">if</font> (fn-&gt;alpha==(PetscScalar)1.0) PetscViewerASCIIPrintf(viewer,<font color="#666666">"  Square root: sqrt(x)\n"</font>);
+<a name="line381">381: </a>      <font color="#4169E1">else</font> {
+<a name="line382">382: </a>        <a href="../../../../../../docs/manualpages/sys/SlepcSNPrintfScalar.html#SlepcSNPrintfScalar">SlepcSNPrintfScalar</a>(str,<font color="#4169E1">sizeof</font>(str),fn-&gt;alpha,PETSC_TRUE);
+<a name="line383">383: </a>        PetscViewerASCIIPrintf(viewer,<font color="#666666">"  Square root: sqrt(%s*x)\n"</font>,str);
+<a name="line384">384: </a>      }
+<a name="line385">385: </a>    } <font color="#4169E1">else</font> {
+<a name="line386">386: </a>      <a href="../../../../../../docs/manualpages/sys/SlepcSNPrintfScalar.html#SlepcSNPrintfScalar">SlepcSNPrintfScalar</a>(str,<font color="#4169E1">sizeof</font>(str),fn-&gt;beta,PETSC_TRUE);
+<a name="line387">387: </a>      <font color="#4169E1">if</font> (fn-&gt;alpha==(PetscScalar)1.0) PetscViewerASCIIPrintf(viewer,<font color="#666666">"  Square root: %s*sqrt(x)\n"</font>,str);
+<a name="line388">388: </a>      <font color="#4169E1">else</font> {
+<a name="line389">389: </a>        PetscViewerASCIIPrintf(viewer,<font color="#666666">"  Square root: %s"</font>,str);
+<a name="line390">390: </a>        PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);
+<a name="line391">391: </a>        <a href="../../../../../../docs/manualpages/sys/SlepcSNPrintfScalar.html#SlepcSNPrintfScalar">SlepcSNPrintfScalar</a>(str,<font color="#4169E1">sizeof</font>(str),fn-&gt;alpha,PETSC_TRUE);
+<a name="line392">392: </a>        PetscViewerASCIIPrintf(viewer,<font color="#666666">"*sqrt(%s*x)\n"</font>,str);
+<a name="line393">393: </a>        PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);
+<a name="line394">394: </a>      }
+<a name="line395">395: </a>    }
+<a name="line396">396: </a>    <font color="#4169E1">if</font> (fn-&gt;method&lt;nmeth) PetscViewerASCIIPrintf(viewer,<font color="#666666">"  computing matrix functions with: %s\n"</font>,methodname[fn-&gt;method]);
+<a name="line397">397: </a>  }
+<a name="line398">398: </a>  PetscFunctionReturn(0);
+<a name="line399">399: </a>}
+
+<a name="line401">401: </a><strong><font color="#4169E1"><a name="FNCreate_Sqrt"></a>SLEPC_EXTERN PetscErrorCode FNCreate_Sqrt(<a href="../../../../../../docs/manualpages/sys/FN.html#FN">FN</a> fn)</font></strong>
+<a name="line402">402: </a>{
+<a name="line403">403: </a>  fn-&gt;ops-&gt;evaluatefunction          = FNEvaluateFunction_Sqrt;
+<a name="line404">404: </a>  fn-&gt;ops-&gt;evaluatederivative        = FNEvaluateDerivative_Sqrt;
+<a name="line405">405: </a>  fn-&gt;ops-&gt;evaluatefunctionmat[0]    = FNEvaluateFunctionMat_Sqrt_Schur;
+<a name="line406">406: </a>  fn-&gt;ops-&gt;evaluatefunctionmat[1]    = FNEvaluateFunctionMat_Sqrt_DBP;
+<a name="line407">407: </a>  fn-&gt;ops-&gt;evaluatefunctionmat[2]    = FNEvaluateFunctionMat_Sqrt_NS;
+<a name="line408">408: </a>  fn-&gt;ops-&gt;evaluatefunctionmat[3]    = FNEvaluateFunctionMat_Sqrt_Sadeghi;
+<a name="line409">409: </a><font color="#A020F0">#if defined(PETSC_HAVE_CUDA)</font>
+<a name="line410">410: </a>  fn-&gt;ops-&gt;evaluatefunctionmat[4]    = FNEvaluateFunctionMat_Sqrt_NS_CUDA;
+<a name="line411">411: </a><font color="#A020F0">#if defined(PETSC_HAVE_MAGMA)</font>
+<a name="line412">412: </a>  fn-&gt;ops-&gt;evaluatefunctionmat[5]    = FNEvaluateFunctionMat_Sqrt_DBP_CUDAm;
+<a name="line413">413: </a>  fn-&gt;ops-&gt;evaluatefunctionmat[6]    = FNEvaluateFunctionMat_Sqrt_Sadeghi_CUDAm;
+<a name="line414">414: </a><font color="#A020F0">#endif </font><font color="#B22222">/* PETSC_HAVE_MAGMA */</font><font color="#A020F0"></font>
+<a name="line415">415: </a><font color="#A020F0">#endif </font><font color="#B22222">/* PETSC_HAVE_CUDA */</font><font color="#A020F0"></font>
+<a name="line416">416: </a>  fn-&gt;ops-&gt;evaluatefunctionmatvec[0] = FNEvaluateFunctionMatVec_Sqrt_Schur;
+<a name="line417">417: </a>  fn-&gt;ops-&gt;view                      = FNView_Sqrt;
+<a name="line418">418: </a>  PetscFunctionReturn(0);
+<a name="line419">419: </a>}
+</pre>
+</body>
+
+</html>

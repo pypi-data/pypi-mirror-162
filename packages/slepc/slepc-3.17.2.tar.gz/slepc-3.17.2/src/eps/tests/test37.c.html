@@ -1,0 +1,150 @@
+<center><a href="test37.c">Actual source code: test37.c</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="https://slepc.upv.es/documentation/current/src/eps/tests/test37.c.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2022-08-09T09:05:39+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>slepc-3.17.2 2022-08-09</b></div>
+   <div id="bugreport" align=right><a href="mailto:slepc-maint@upv.es?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: slepc-3.17.2 v3.17.2 src/eps/tests/test37.c.html "><small>Report Typos and Errors</small></a></div>
+<pre width="80">
+<a name="line1">  1: </a><font color="#B22222">/*</font>
+<a name="line2">  2: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line3">  3: </a><font color="#B22222">   SLEPc - Scalable Library for Eigenvalue Problem Computations</font>
+<a name="line4">  4: </a><font color="#B22222">   Copyright (c) 2002-, Universitat Politecnica de Valencia, Spain</font>
+
+<a name="line6">  6: </a><font color="#B22222">   This file is part of SLEPc.</font>
+<a name="line7">  7: </a><font color="#B22222">   SLEPc is distributed under a 2-clause BSD license (see LICENSE).</font>
+<a name="line8">  8: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line9">  9: </a><font color="#B22222">*/</font>
+
+<a name="line11"> 11: </a>static char help[] = <font color="#666666">"Tests solving an eigenproblem defined with MatNest. "</font>
+<a name="line12"> 12: </a>  <font color="#666666">"Based on ex9.\n"</font>
+<a name="line13"> 13: </a>  <font color="#666666">"The command line options are:\n"</font>
+<a name="line14"> 14: </a>  <font color="#666666">"  -n &lt;n&gt;, where &lt;n&gt; = block dimension of the 2x2 block matrix.\n"</font>
+<a name="line15"> 15: </a>  <font color="#666666">"  -L &lt;L&gt;, where &lt;L&gt; = bifurcation parameter.\n"</font>
+<a name="line16"> 16: </a>  <font color="#666666">"  -alpha &lt;alpha&gt;, -beta &lt;beta&gt;, -delta1 &lt;delta1&gt;,  -delta2 &lt;delta2&gt;,\n"</font>
+<a name="line17"> 17: </a>  <font color="#666666">"       where &lt;alpha&gt; &lt;beta&gt; &lt;delta1&gt; &lt;delta2&gt; = model parameters.\n\n"</font>;
+
+<a name="line19"> 19: </a>#include <A href="../../../include/slepceps.h.html">&lt;slepceps.h&gt;</A>
+
+<a name="line21"> 21: </a><font color="#B22222">/*</font>
+<a name="line22"> 22: </a><font color="#B22222">   This example computes the eigenvalues with largest real part of the</font>
+<a name="line23"> 23: </a><font color="#B22222">   following matrix</font>
+
+<a name="line25"> 25: </a><font color="#B22222">        A = [ tau1*T+(beta-1)*I     alpha^2*I</font>
+<a name="line26"> 26: </a><font color="#B22222">                  -beta*I        tau2*T-alpha^2*I ],</font>
+
+<a name="line28"> 28: </a><font color="#B22222">   where</font>
+
+<a name="line30"> 30: </a><font color="#B22222">        T = tridiag{1,-2,1}</font>
+<a name="line31"> 31: </a><font color="#B22222">        h = 1/(n+1)</font>
+<a name="line32"> 32: </a><font color="#B22222">        tau1 = delta1/(h*L)^2</font>
+<a name="line33"> 33: </a><font color="#B22222">        tau2 = delta2/(h*L)^2</font>
+<a name="line34"> 34: </a><font color="#B22222"> */</font>
+
+<a name="line36"> 36: </a><strong><font color="#4169E1"><a name="main"></a>int main(int argc,char **argv)</font></strong>
+<a name="line37"> 37: </a>{
+<a name="line38"> 38: </a>  <a href="../../../docs/manualpages/sys/EPS.html#EPS">EPS</a>            eps;
+<a name="line39"> 39: </a>  Mat            A,T1,T2,D1,D2,mats[4];
+<a name="line40"> 40: </a>  PetscScalar    alpha,beta,tau1,tau2,delta1,delta2,L,h;
+<a name="line41"> 41: </a>  PetscInt       N=30,i,Istart,Iend;
+
+<a name="line43"> 43: </a>  <a href="../../../docs/manualpages/sys/SlepcInitialize.html#SlepcInitialize">SlepcInitialize</a>(&amp;argc,&amp;argv,(char*)0,help);
+<a name="line44"> 44: </a>  PetscOptionsGetInt(NULL,NULL,<font color="#666666">"-n"</font>,&amp;N,NULL);
+<a name="line45"> 45: </a>  PetscPrintf(PETSC_COMM_WORLD,<font color="#666666">"\nBrusselator wave model, n=%"</font> PetscInt_FMT <font color="#666666">"\n\n"</font>,N);
+
+<a name="line47"> 47: </a>  <font color="#B22222">/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line48"> 48: </a><font color="#B22222">        Generate the matrix</font>
+<a name="line49"> 49: </a><font color="#B22222">     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */</font>
+
+<a name="line51"> 51: </a>  alpha  = 2.0;
+<a name="line52"> 52: </a>  beta   = 5.45;
+<a name="line53"> 53: </a>  delta1 = 0.008;
+<a name="line54"> 54: </a>  delta2 = 0.004;
+<a name="line55"> 55: </a>  L      = 0.51302;
+
+<a name="line57"> 57: </a>  PetscOptionsGetScalar(NULL,NULL,<font color="#666666">"-L"</font>,&amp;L,NULL);
+<a name="line58"> 58: </a>  PetscOptionsGetScalar(NULL,NULL,<font color="#666666">"-alpha"</font>,&amp;alpha,NULL);
+<a name="line59"> 59: </a>  PetscOptionsGetScalar(NULL,NULL,<font color="#666666">"-beta"</font>,&amp;beta,NULL);
+<a name="line60"> 60: </a>  PetscOptionsGetScalar(NULL,NULL,<font color="#666666">"-delta1"</font>,&amp;delta1,NULL);
+<a name="line61"> 61: </a>  PetscOptionsGetScalar(NULL,NULL,<font color="#666666">"-delta2"</font>,&amp;delta2,NULL);
+
+<a name="line63"> 63: </a>  h    = 1.0 / (PetscReal)(N+1);
+<a name="line64"> 64: </a>  tau1 = delta1 / ((h*L)*(h*L));
+<a name="line65"> 65: </a>  tau2 = delta2 / ((h*L)*(h*L));
+
+<a name="line67"> 67: </a>  <font color="#B22222">/* Create matrices T1, T2 */</font>
+<a name="line68"> 68: </a>  MatCreate(PETSC_COMM_WORLD,&amp;T1);
+<a name="line69"> 69: </a>  MatSetSizes(T1,PETSC_DECIDE,PETSC_DECIDE,N,N);
+<a name="line70"> 70: </a>  MatSetFromOptions(T1);
+<a name="line71"> 71: </a>  MatSetUp(T1);
+<a name="line72"> 72: </a>  MatGetOwnershipRange(T1,&amp;Istart,&amp;Iend);
+<a name="line73"> 73: </a>  <font color="#4169E1">for</font> (i=Istart;i&lt;Iend;i++) {
+<a name="line74"> 74: </a>    <font color="#4169E1">if</font> (i&gt;0) MatSetValue(T1,i,i-1,1.0,INSERT_VALUES);
+<a name="line75"> 75: </a>    <font color="#4169E1">if</font> (i&lt;N-1) MatSetValue(T1,i,i+1,1.0,INSERT_VALUES);
+<a name="line76"> 76: </a>    MatSetValue(T1,i,i,-2.0,INSERT_VALUES);
+<a name="line77"> 77: </a>  }
+<a name="line78"> 78: </a>  MatAssemblyBegin(T1,MAT_FINAL_ASSEMBLY);
+<a name="line79"> 79: </a>  MatAssemblyEnd(T1,MAT_FINAL_ASSEMBLY);
+
+<a name="line81"> 81: </a>  MatDuplicate(T1,MAT_COPY_VALUES,&amp;T2);
+<a name="line82"> 82: </a>  MatScale(T1,tau1);
+<a name="line83"> 83: </a>  MatShift(T1,beta-1.0);
+<a name="line84"> 84: </a>  MatScale(T2,tau2);
+<a name="line85"> 85: </a>  MatShift(T2,-alpha*alpha);
+
+<a name="line87"> 87: </a>  <font color="#B22222">/* Create matrices D1, D2 */</font>
+<a name="line88"> 88: </a>  MatCreateConstantDiagonal(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,alpha*alpha,&amp;D1);
+<a name="line89"> 89: </a>  MatCreateConstantDiagonal(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,N,N,-beta,&amp;D2);
+
+<a name="line91"> 91: </a>  <font color="#B22222">/* Create the nest matrix */</font>
+<a name="line92"> 92: </a>  mats[0] = T1;
+<a name="line93"> 93: </a>  mats[1] = D1;
+<a name="line94"> 94: </a>  mats[2] = D2;
+<a name="line95"> 95: </a>  mats[3] = T2;
+<a name="line96"> 96: </a>  MatCreateNest(PETSC_COMM_WORLD,2,NULL,2,NULL,mats,&amp;A);
+
+<a name="line98"> 98: </a>  <font color="#B22222">/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line99"> 99: </a><font color="#B22222">                Create the eigensolver and solve the problem</font>
+<a name="line100">100: </a><font color="#B22222">     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */</font>
+
+<a name="line102">102: </a>  <a href="../../../docs/manualpages/EPS/EPSCreate.html#EPSCreate">EPSCreate</a>(PETSC_COMM_WORLD,&amp;eps);
+<a name="line103">103: </a>  <a href="../../../docs/manualpages/EPS/EPSSetOperators.html#EPSSetOperators">EPSSetOperators</a>(eps,A,NULL);
+<a name="line104">104: </a>  <a href="../../../docs/manualpages/EPS/EPSSetProblemType.html#EPSSetProblemType">EPSSetProblemType</a>(eps,<a href="../../../docs/manualpages/sys/EPSProblemType.html#EPSProblemType">EPS_NHEP</a>);
+<a name="line105">105: </a>  <a href="../../../docs/manualpages/EPS/EPSSetWhichEigenpairs.html#EPSSetWhichEigenpairs">EPSSetWhichEigenpairs</a>(eps,<a href="../../../docs/manualpages/sys/EPSWhich.html#EPSWhich">EPS_LARGEST_REAL</a>);
+<a name="line106">106: </a>  <a href="../../../docs/manualpages/EPS/EPSSetTrueResidual.html#EPSSetTrueResidual">EPSSetTrueResidual</a>(eps,PETSC_FALSE);
+<a name="line107">107: </a>  <a href="../../../docs/manualpages/EPS/EPSSetFromOptions.html#EPSSetFromOptions">EPSSetFromOptions</a>(eps);
+<a name="line108">108: </a>  <a href="../../../docs/manualpages/EPS/EPSSolve.html#EPSSolve">EPSSolve</a>(eps);
+
+<a name="line110">110: </a>  <font color="#B22222">/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line111">111: </a><font color="#B22222">                    Display solution and clean up</font>
+<a name="line112">112: </a><font color="#B22222">     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */</font>
+
+<a name="line114">114: </a>  <a href="../../../docs/manualpages/EPS/EPSErrorView.html#EPSErrorView">EPSErrorView</a>(eps,<a href="../../../docs/manualpages/sys/EPSErrorType.html#EPSErrorType">EPS_ERROR_RELATIVE</a>,NULL);
+<a name="line115">115: </a>  <a href="../../../docs/manualpages/EPS/EPSDestroy.html#EPSDestroy">EPSDestroy</a>(&amp;eps);
+<a name="line116">116: </a>  MatDestroy(&amp;A);
+<a name="line117">117: </a>  MatDestroy(&amp;T1);
+<a name="line118">118: </a>  MatDestroy(&amp;T2);
+<a name="line119">119: </a>  MatDestroy(&amp;D1);
+<a name="line120">120: </a>  MatDestroy(&amp;D2);
+<a name="line121">121: </a>  <a href="../../../docs/manualpages/sys/SlepcFinalize.html#SlepcFinalize">SlepcFinalize</a>();
+<a name="line122">122: </a>  <font color="#4169E1">return</font> 0;
+<a name="line123">123: </a>}
+
+<a name="line125">125: </a><font color="#B22222">/*TEST</font>
+
+<a name="line127">127: </a><font color="#B22222">   test:</font>
+<a name="line128">128: </a><font color="#B22222">      suffix: 1</font>
+<a name="line129">129: </a><font color="#B22222">      args: -eps_nev 4</font>
+<a name="line130">130: </a><font color="#B22222">      requires: !single</font>
+<a name="line131">131: </a><font color="#B22222">      filter: sed -e "s/0.00019-2.13938i, 0.00019+2.13938i/0.00019+2.13938i, 0.00019-2.13938i/" | sed -e "s/-0.67192-2.52712i, -0.67192+2.52712i/-0.67192+2.52712i, -0.67192-2.52712i/"</font>
+
+<a name="line133">133: </a><font color="#B22222">TEST*/</font>
+</pre>
+</body>
+
+</html>

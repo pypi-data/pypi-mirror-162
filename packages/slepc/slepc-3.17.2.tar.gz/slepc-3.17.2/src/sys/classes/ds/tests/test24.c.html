@@ -1,0 +1,188 @@
+<center><a href="test24.c">Actual source code: test24.c</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="https://slepc.upv.es/documentation/current/src/sys/classes/ds/tests/test24.c.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2022-08-09T09:05:23+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>slepc-3.17.2 2022-08-09</b></div>
+   <div id="bugreport" align=right><a href="mailto:slepc-maint@upv.es?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: slepc-3.17.2 v3.17.2 src/sys/classes/ds/tests/test24.c.html "><small>Report Typos and Errors</small></a></div>
+<pre width="80">
+<a name="line1">  1: </a><font color="#B22222">/*</font>
+<a name="line2">  2: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line3">  3: </a><font color="#B22222">   SLEPc - Scalable Library for Eigenvalue Problem Computations</font>
+<a name="line4">  4: </a><font color="#B22222">   Copyright (c) 2002-, Universitat Politecnica de Valencia, Spain</font>
+
+<a name="line6">  6: </a><font color="#B22222">   This file is part of SLEPc.</font>
+<a name="line7">  7: </a><font color="#B22222">   SLEPc is distributed under a 2-clause BSD license (see LICENSE).</font>
+<a name="line8">  8: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line9">  9: </a><font color="#B22222">*/</font>
+
+<a name="line11"> 11: </a>static char help[] = <font color="#666666">"Test <a href="../../../../../docs/manualpages/DS/DSGSVD.html#DSGSVD">DSGSVD</a> with compact storage and rectangular matrix A.\n\n"</font>;
+
+<a name="line13"> 13: </a>#include <A href="../../../../../include/slepcds.h.html">&lt;slepcds.h&gt;</A>
+
+<a name="line15"> 15: </a><strong><font color="#4169E1"><a name="main"></a>int main(int argc,char **argv)</font></strong>
+<a name="line16"> 16: </a>{
+<a name="line17"> 17: </a>  <a href="../../../../../docs/manualpages/sys/DS.html#DS">DS</a>             ds;
+<a name="line18"> 18: </a>  Mat            X;
+<a name="line19"> 19: </a>  Vec            x0;
+<a name="line20"> 20: </a>  <a href="../../../../../docs/manualpages/sys/SlepcSC.html#SlepcSC">SlepcSC</a>        sc;
+<a name="line21"> 21: </a>  PetscReal      *T,*D,sigma,rnorm,aux;
+<a name="line22"> 22: </a>  PetscScalar    *U,*V,*w,d;
+<a name="line23"> 23: </a>  PetscInt       i,n=10,m,l=0,k=0,ld;
+<a name="line24"> 24: </a>  PetscViewer    viewer;
+<a name="line25"> 25: </a>  PetscBool      verbose,extrarow;
+
+<a name="line27"> 27: </a>  <a href="../../../../../docs/manualpages/sys/SlepcInitialize.html#SlepcInitialize">SlepcInitialize</a>(&amp;argc,&amp;argv,(char*)0,help);
+<a name="line28"> 28: </a>  PetscOptionsGetInt(NULL,NULL,<font color="#666666">"-n"</font>,&amp;n,NULL);
+<a name="line29"> 29: </a>  PetscPrintf(PETSC_COMM_WORLD,<font color="#666666">"Solve a Dense System of type GSVD with compact storage - dimension %"</font> PetscInt_FMT <font color="#666666">"x%"</font> PetscInt_FMT <font color="#666666">".\n"</font>,n+1,n);
+<a name="line30"> 30: </a>  PetscOptionsGetInt(NULL,NULL,<font color="#666666">"-l"</font>,&amp;l,NULL);
+<a name="line31"> 31: </a>  PetscOptionsGetInt(NULL,NULL,<font color="#666666">"-k"</font>,&amp;k,NULL);
+<a name="line33"> 33: </a>  PetscOptionsHasName(NULL,NULL,<font color="#666666">"-verbose"</font>,&amp;verbose);
+<a name="line34"> 34: </a>  PetscOptionsHasName(NULL,NULL,<font color="#666666">"-extrarow"</font>,&amp;extrarow);
+<a name="line35"> 35: </a>  m = n+1;
+
+<a name="line37"> 37: </a>  <font color="#B22222">/* Create <a href="../../../../../docs/manualpages/sys/DS.html#DS">DS</a> object */</font>
+<a name="line38"> 38: </a>  <a href="../../../../../docs/manualpages/DS/DSCreate.html#DSCreate">DSCreate</a>(PETSC_COMM_WORLD,&amp;ds);
+<a name="line39"> 39: </a>  <a href="../../../../../docs/manualpages/DS/DSSetType.html#DSSetType">DSSetType</a>(ds,<a href="../../../../../docs/manualpages/DS/DSGSVD.html#DSGSVD">DSGSVD</a>);
+<a name="line40"> 40: </a>  <a href="../../../../../docs/manualpages/DS/DSSetFromOptions.html#DSSetFromOptions">DSSetFromOptions</a>(ds);
+<a name="line41"> 41: </a>  ld = n+2;  <font color="#B22222">/* test leading dimension larger than n */</font>
+<a name="line42"> 42: </a>  <a href="../../../../../docs/manualpages/DS/DSAllocate.html#DSAllocate">DSAllocate</a>(ds,ld);
+<a name="line43"> 43: </a>  <a href="../../../../../docs/manualpages/DS/DSSetDimensions.html#DSSetDimensions">DSSetDimensions</a>(ds,m,l,k);
+<a name="line44"> 44: </a>  <a href="../../../../../docs/manualpages/DS/DSGSVDSetDimensions.html#DSGSVDSetDimensions">DSGSVDSetDimensions</a>(ds,n,n);
+<a name="line45"> 45: </a>  <a href="../../../../../docs/manualpages/DS/DSSetCompact.html#DSSetCompact">DSSetCompact</a>(ds,PETSC_TRUE);
+<a name="line46"> 46: </a>  <a href="../../../../../docs/manualpages/DS/DSSetExtraRow.html#DSSetExtraRow">DSSetExtraRow</a>(ds,extrarow);
+
+<a name="line48"> 48: </a>  <font color="#B22222">/* Set up viewer */</font>
+<a name="line49"> 49: </a>  PetscViewerASCIIGetStdout(PETSC_COMM_WORLD,&amp;viewer);
+<a name="line50"> 50: </a>  PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_INFO_DETAIL);
+<a name="line51"> 51: </a>  <a href="../../../../../docs/manualpages/DS/DSView.html#DSView">DSView</a>(ds,viewer);
+<a name="line52"> 52: </a>  PetscViewerPopFormat(viewer);
+
+<a name="line54"> 54: </a>  <font color="#B22222">/* Fill A and B with lower/upper arrow-bidiagonal matrices</font>
+<a name="line55"> 55: </a><font color="#B22222">     verifying that [A;B] has orthonormal columns */</font>
+<a name="line56"> 56: </a>  <a href="../../../../../docs/manualpages/DS/DSGetArrayReal.html#DSGetArrayReal">DSGetArrayReal</a>(ds,<a href="../../../../../docs/manualpages/sys/DSMatType.html#DSMatType">DS_MAT_T</a>,&amp;T);
+<a name="line57"> 57: </a>  <a href="../../../../../docs/manualpages/DS/DSGetArrayReal.html#DSGetArrayReal">DSGetArrayReal</a>(ds,<a href="../../../../../docs/manualpages/sys/DSMatType.html#DSMatType">DS_MAT_D</a>,&amp;D);
+<a name="line58"> 58: </a>  <font color="#4169E1">for</font> (i=0;i&lt;n;i++) T[i] = (PetscReal)(i+1)/(n+1); <font color="#B22222">/* diagonal of matrix A */</font>
+<a name="line59"> 59: </a>  <font color="#4169E1">for</font> (i=0;i&lt;k;i++) D[i] = PetscSqrtReal(1.0-T[i]*T[i]);
+<a name="line60"> 60: </a>  <font color="#4169E1">for</font> (i=l;i&lt;k;i++) {
+<a name="line61"> 61: </a>    T[i+ld] = PetscSqrtReal((1.0-T[k]*T[k])/(1.0+T[i]*T[i]/(D[i]*D[i])))*0.5*(1.0/k); <font color="#B22222">/* upper diagonal of matrix A */</font>
+<a name="line62"> 62: </a>    T[i+2*ld] = -T[i+ld]*T[i]/D[i]; <font color="#B22222">/* upper diagonal of matrix B */</font>
+<a name="line63"> 63: </a>  }
+<a name="line64"> 64: </a>  aux = 1.0-T[k]*T[k];
+<a name="line65"> 65: </a>  <font color="#4169E1">for</font> (i=l;i&lt;k;i++) aux -= T[i+ld]*T[i+ld]+T[i+2*ld]*T[i+2*ld];
+<a name="line66"> 66: </a>  T[k+ld] = PetscSqrtReal((1.0-aux)*.1);
+<a name="line67"> 67: </a>  aux -= T[k+ld]*T[k+ld];
+<a name="line68"> 68: </a>  D[k] = PetscSqrtReal(aux);
+<a name="line69"> 69: </a>  <font color="#4169E1">for</font> (i=k+1;i&lt;n;i++) {
+<a name="line70"> 70: </a>    T[i-1+2*ld] = -T[i-1+ld]*T[i]/D[i-1]; <font color="#B22222">/* upper diagonal of matrix B */</font>
+<a name="line71"> 71: </a>    aux = 1.0-T[i]*T[i]-T[2*ld+i-1]*T[2*ld+i-1];
+<a name="line72"> 72: </a>    T[i+ld] = PetscSqrtReal(aux)*.1; <font color="#B22222">/* upper diagonal of matrix A */</font>
+<a name="line73"> 73: </a>    D[i] = PetscSqrtReal(aux-T[i+ld]*T[i+ld]);
+<a name="line74"> 74: </a>  }
+<a name="line75"> 75: </a>  <font color="#4169E1">if</font> (extrarow) { T[n]=-1.0; T[n-1+2*ld]=1.0; }
+<a name="line76"> 76: </a>  <font color="#B22222">/* Fill locked eigenvalues */</font>
+<a name="line77"> 77: </a>  PetscMalloc1(n,&amp;w);
+<a name="line78"> 78: </a>  <font color="#4169E1">for</font> (i=0;i&lt;l;i++) w[i] = T[i]/D[i];
+<a name="line79"> 79: </a>  <a href="../../../../../docs/manualpages/DS/DSRestoreArrayReal.html#DSRestoreArrayReal">DSRestoreArrayReal</a>(ds,<a href="../../../../../docs/manualpages/sys/DSMatType.html#DSMatType">DS_MAT_T</a>,&amp;T);
+<a name="line80"> 80: </a>  <a href="../../../../../docs/manualpages/DS/DSRestoreArrayReal.html#DSRestoreArrayReal">DSRestoreArrayReal</a>(ds,<a href="../../../../../docs/manualpages/sys/DSMatType.html#DSMatType">DS_MAT_D</a>,&amp;D);
+<a name="line81"> 81: </a>  <font color="#4169E1">if</font> (l==0 &amp;&amp; k==0) <a href="../../../../../docs/manualpages/DS/DSSetState.html#DSSetState">DSSetState</a>(ds,<a href="../../../../../docs/manualpages/sys/DSStateType.html#DSStateType">DS_STATE_INTERMEDIATE</a>);
+<a name="line82"> 82: </a>  <font color="#4169E1">else</font> <a href="../../../../../docs/manualpages/DS/DSSetState.html#DSSetState">DSSetState</a>(ds,<a href="../../../../../docs/manualpages/sys/DSStateType.html#DSStateType">DS_STATE_RAW</a>);
+<a name="line83"> 83: </a>  <font color="#4169E1">if</font> (verbose) {
+<a name="line84"> 84: </a>    PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_MATLAB);
+<a name="line85"> 85: </a>    PetscPrintf(PETSC_COMM_WORLD,<font color="#666666">"Initial - - - - - - - - -\n"</font>);
+<a name="line86"> 86: </a>    <a href="../../../../../docs/manualpages/DS/DSView.html#DSView">DSView</a>(ds,viewer);
+<a name="line87"> 87: </a>  }
+
+<a name="line89"> 89: </a>  <font color="#B22222">/* Solve */</font>
+<a name="line90"> 90: </a>  <a href="../../../../../docs/manualpages/DS/DSGetSlepcSC.html#DSGetSlepcSC">DSGetSlepcSC</a>(ds,&amp;sc);
+<a name="line91"> 91: </a>  sc-&gt;comparison    = SlepcCompareLargestReal;
+<a name="line92"> 92: </a>  sc-&gt;comparisonctx = NULL;
+<a name="line93"> 93: </a>  sc-&gt;map           = NULL;
+<a name="line94"> 94: </a>  sc-&gt;mapobj        = NULL;
+<a name="line95"> 95: </a>  <a href="../../../../../docs/manualpages/DS/DSSolve.html#DSSolve">DSSolve</a>(ds,w,NULL);
+<a name="line96"> 96: </a>  <a href="../../../../../docs/manualpages/DS/DSSort.html#DSSort">DSSort</a>(ds,w,NULL,NULL,NULL,NULL);
+<a name="line97"> 97: </a>  <font color="#4169E1">if</font> (extrarow) <a href="../../../../../docs/manualpages/DS/DSUpdateExtraRow.html#DSUpdateExtraRow">DSUpdateExtraRow</a>(ds);
+<a name="line98"> 98: </a>  <a href="../../../../../docs/manualpages/DS/DSSynchronize.html#DSSynchronize">DSSynchronize</a>(ds,w,NULL);
+<a name="line99"> 99: </a>  <font color="#4169E1">if</font> (verbose) {
+<a name="line100">100: </a>    PetscPrintf(PETSC_COMM_WORLD,<font color="#666666">"After solve - - - - - - - - -\n"</font>);
+<a name="line101">101: </a>    <a href="../../../../../docs/manualpages/DS/DSView.html#DSView">DSView</a>(ds,viewer);
+<a name="line102">102: </a>  }
+
+<a name="line104">104: </a>  <font color="#B22222">/* Print singular values */</font>
+<a name="line105">105: </a>  PetscPrintf(PETSC_COMM_WORLD,<font color="#666666">"Computed singular values =\n"</font>);
+<a name="line106">106: </a>  <font color="#4169E1">for</font> (i=0;i&lt;n;i++) {
+<a name="line107">107: </a>    sigma = PetscRealPart(w[i]);
+<a name="line108">108: </a>    PetscViewerASCIIPrintf(viewer,<font color="#666666">"  %.5f\n"</font>,(double)sigma);
+<a name="line109">109: </a>  }
+
+<a name="line111">111: </a>  <font color="#4169E1">if</font> (extrarow) {
+<a name="line112">112: </a>    <font color="#B22222">/* Check that extra row is correct */</font>
+<a name="line113">113: </a>    <a href="../../../../../docs/manualpages/DS/DSGetArrayReal.html#DSGetArrayReal">DSGetArrayReal</a>(ds,<a href="../../../../../docs/manualpages/sys/DSMatType.html#DSMatType">DS_MAT_T</a>,&amp;T);
+<a name="line114">114: </a>    <a href="../../../../../docs/manualpages/DS/DSGetArray.html#DSGetArray">DSGetArray</a>(ds,<a href="../../../../../docs/manualpages/sys/DSMatType.html#DSMatType">DS_MAT_U</a>,&amp;U);
+<a name="line115">115: </a>    <a href="../../../../../docs/manualpages/DS/DSGetArray.html#DSGetArray">DSGetArray</a>(ds,<a href="../../../../../docs/manualpages/sys/DSMatType.html#DSMatType">DS_MAT_V</a>,&amp;V);
+<a name="line116">116: </a>    d = 0.0;
+<a name="line117">117: </a>    <font color="#4169E1">for</font> (i=0;i&lt;n;i++) d += T[i+ld]+U[n+i*ld];
+<a name="line118">118: </a>    <font color="#4169E1">if</font> (PetscAbsScalar(d)&gt;10*PETSC_MACHINE_EPSILON) PetscPrintf(PETSC_COMM_WORLD,<font color="#666666">"Warning: there is a mismatch in A's extra row of %g\n"</font>,(double)PetscAbsScalar(d));
+<a name="line119">119: </a>    d = 0.0;
+<a name="line120">120: </a>    <font color="#4169E1">for</font> (i=0;i&lt;n;i++) d += T[i+2*ld]-V[n-1+i*ld];
+<a name="line121">121: </a>    <font color="#4169E1">if</font> (PetscAbsScalar(d)&gt;10*PETSC_MACHINE_EPSILON) PetscPrintf(PETSC_COMM_WORLD,<font color="#666666">"Warning: there is a mismatch in B's extra row of %g\n"</font>,(double)PetscAbsScalar(d));
+<a name="line122">122: </a>    <a href="../../../../../docs/manualpages/DS/DSRestoreArrayReal.html#DSRestoreArrayReal">DSRestoreArrayReal</a>(ds,<a href="../../../../../docs/manualpages/sys/DSMatType.html#DSMatType">DS_MAT_T</a>,&amp;T);
+<a name="line123">123: </a>    <a href="../../../../../docs/manualpages/DS/DSRestoreArray.html#DSRestoreArray">DSRestoreArray</a>(ds,<a href="../../../../../docs/manualpages/sys/DSMatType.html#DSMatType">DS_MAT_U</a>,&amp;U);
+<a name="line124">124: </a>    <a href="../../../../../docs/manualpages/DS/DSRestoreArray.html#DSRestoreArray">DSRestoreArray</a>(ds,<a href="../../../../../docs/manualpages/sys/DSMatType.html#DSMatType">DS_MAT_V</a>,&amp;V);
+<a name="line125">125: </a>  }
+
+<a name="line127">127: </a>  <font color="#B22222">/* Singular vectors */</font>
+<a name="line128">128: </a>  <a href="../../../../../docs/manualpages/DS/DSVectors.html#DSVectors">DSVectors</a>(ds,<a href="../../../../../docs/manualpages/sys/DSMatType.html#DSMatType">DS_MAT_X</a>,NULL,NULL);  <font color="#B22222">/* all singular vectors */</font>
+<a name="line129">129: </a>  <a href="../../../../../docs/manualpages/DS/DSGetMat.html#DSGetMat">DSGetMat</a>(ds,<a href="../../../../../docs/manualpages/sys/DSMatType.html#DSMatType">DS_MAT_X</a>,&amp;X);
+<a name="line130">130: </a>  MatCreateVecs(X,NULL,&amp;x0);
+<a name="line131">131: </a>  MatGetColumnVector(X,x0,0);
+<a name="line132">132: </a>  VecNorm(x0,NORM_2,&amp;rnorm);
+<a name="line133">133: </a>  MatDestroy(&amp;X);
+<a name="line134">134: </a>  VecDestroy(&amp;x0);
+<a name="line135">135: </a>  PetscPrintf(PETSC_COMM_WORLD,<font color="#666666">"Norm of 1st X vector = %.3f\n"</font>,(double)rnorm);
+
+<a name="line137">137: </a>  <a href="../../../../../docs/manualpages/DS/DSGetMat.html#DSGetMat">DSGetMat</a>(ds,<a href="../../../../../docs/manualpages/sys/DSMatType.html#DSMatType">DS_MAT_U</a>,&amp;X);
+<a name="line138">138: </a>  MatCreateVecs(X,NULL,&amp;x0);
+<a name="line139">139: </a>  MatGetColumnVector(X,x0,0);
+<a name="line140">140: </a>  VecNorm(x0,NORM_2,&amp;rnorm);
+<a name="line141">141: </a>  MatDestroy(&amp;X);
+<a name="line142">142: </a>  VecDestroy(&amp;x0);
+<a name="line143">143: </a>  <font color="#4169E1">if</font> (PetscAbs(rnorm-1.0)&gt;10*PETSC_MACHINE_EPSILON) PetscPrintf(PETSC_COMM_WORLD,<font color="#666666">"Warning: the 1st U vector has norm %g\n"</font>,(double)rnorm);
+
+<a name="line145">145: </a>  <a href="../../../../../docs/manualpages/DS/DSGetMat.html#DSGetMat">DSGetMat</a>(ds,<a href="../../../../../docs/manualpages/sys/DSMatType.html#DSMatType">DS_MAT_V</a>,&amp;X);
+<a name="line146">146: </a>  MatCreateVecs(X,NULL,&amp;x0);
+<a name="line147">147: </a>  MatGetColumnVector(X,x0,0);
+<a name="line148">148: </a>  VecNorm(x0,NORM_2,&amp;rnorm);
+<a name="line149">149: </a>  MatDestroy(&amp;X);
+<a name="line150">150: </a>  VecDestroy(&amp;x0);
+<a name="line151">151: </a>  <font color="#4169E1">if</font> (PetscAbs(rnorm-1.0)&gt;10*PETSC_MACHINE_EPSILON) PetscPrintf(PETSC_COMM_WORLD,<font color="#666666">"Warning: the 1st V vector has norm %g\n"</font>,(double)rnorm);
+
+<a name="line153">153: </a>  PetscFree(w);
+<a name="line154">154: </a>  <a href="../../../../../docs/manualpages/DS/DSDestroy.html#DSDestroy">DSDestroy</a>(&amp;ds);
+<a name="line155">155: </a>  <a href="../../../../../docs/manualpages/sys/SlepcFinalize.html#SlepcFinalize">SlepcFinalize</a>();
+<a name="line156">156: </a>  <font color="#4169E1">return</font> 0;
+<a name="line157">157: </a>}
+
+<a name="line159">159: </a><font color="#B22222">/*TEST</font>
+
+<a name="line161">161: </a><font color="#B22222">   testset:</font>
+<a name="line162">162: </a><font color="#B22222">      requires: double</font>
+<a name="line163">163: </a><font color="#B22222">      output_file: output/test24_1.out</font>
+<a name="line164">164: </a><font color="#B22222">      test:</font>
+<a name="line165">165: </a><font color="#B22222">         suffix: 1</font>
+<a name="line166">166: </a><font color="#B22222">         args: -l 1 -k 4</font>
+<a name="line167">167: </a><font color="#B22222">      test:</font>
+<a name="line168">168: </a><font color="#B22222">         suffix: 1_extrarow</font>
+<a name="line169">169: </a><font color="#B22222">         filter: sed -e "s/extrarow//"</font>
+<a name="line170">170: </a><font color="#B22222">         args: -l 1 -k 4 -extrarow</font>
+
+<a name="line172">172: </a><font color="#B22222">TEST*/</font>
+</pre>
+</body>
+
+</html>

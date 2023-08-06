@@ -1,0 +1,63 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD> <link rel="canonical" href="https://slepc.upv.es/documentation/current/docs/manualpages/DS/DSGSVD.html" />
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<link rel="stylesheet" href="/slepc.css" type="text/css">
+<TITLE>DSGSVD</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+   <div id="version" align=right><b>slepc-3.17.2 2022-08-09</b></div>
+   <div id="bugreport" align=right><a href="mailto:slepc-maint@upv.es?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: slepc-3.17.2 v3.17.2 docs/manualpages/DS/DSGSVD.html "><small>Report Typos and Errors</small></a></div>
+<H1>DSGSVD</H1>
+Dense Generalized Singular Value Decomposition. 
+<P>
+<H3><FONT COLOR="#883300">Notes</FONT></H3>
+The problem is expressed as A*X = U*C, B*X = V*S, where A and B are
+matrices with the same number of columns, m, U and V are orthogonal
+(unitary), and X is an mxm invertible matrix. The <A HREF="../sys/DS.html#DS">DS</A> object does not
+expose matrices C and S, instead the singular values sigma, which are
+the ratios c_i/s_i, are returned in the arguments of <A HREF="../DS/DSSolve.html#DSSolve">DSSolve</A>().
+Note that the number of columns of the returned X, U, V may be smaller
+in the case that some c_i or s_i are zero.
+<P>
+The number of rows of A (and U) is the value n passed with <A HREF="../DS/DSSetDimensions.html#DSSetDimensions">DSSetDimensions</A>().
+The number of columns m and the number of rows of B (and V) must be
+set via <A HREF="../DS/DSGSVDSetDimensions.html#DSGSVDSetDimensions">DSGSVDSetDimensions</A>().
+<P>
+Internally, LAPACK's representation is used, U'*A*Q = C*[0 R], V'*B*Q = S*[0 R],
+where X = Q*inv(R) is computed at the end of <A HREF="../DS/DSSolve.html#DSSolve">DSSolve</A>().
+<P>
+If the compact storage format is selected, then a simplified problem is
+solved, where A and B are bidiagonal (possibly with an arrow), and [A;B]
+is assumed to have orthonormal columns. We consider two cases: (1) A and B
+are square mxm upper bidiagonal, and (2) A is lower bidiagonal with m+1
+rows and B is square upper bidiagonal. In these cases, R=I so it
+corresponds to the CS decomposition. The first matrix is stored in two
+diagonals of <A HREF="../sys/DSMatType.html#DSMatType">DS_MAT_T</A>, while the second matrix is stored in <A HREF="../sys/DSMatType.html#DSMatType">DS_MAT_D</A>
+and the remaining diagonal of <A HREF="../sys/DSMatType.html#DSMatType">DS_MAT_T</A>.
+<P>
+Allowed arguments of <A HREF="../DS/DSVectors.html#DSVectors">DSVectors</A>() are <A HREF="../sys/DSMatType.html#DSMatType">DS_MAT_U</A>, <A HREF="../sys/DSMatType.html#DSMatType">DS_MAT_V</A> and <A HREF="../sys/DSMatType.html#DSMatType">DS_MAT_X</A>.
+<P>
+<H3><FONT COLOR="#883300">Used DS matrices</FONT></H3>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B><A HREF="../sys/DSMatType.html#DSMatType">DS_MAT_A</A> </B></TD><TD>&nbsp;- first problem matrix
+</TD></TR>
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B><A HREF="../sys/DSMatType.html#DSMatType">DS_MAT_B</A> </B></TD><TD>&nbsp;- second problem matrix
+</TD></TR>
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B><A HREF="../sys/DSMatType.html#DSMatType">DS_MAT_T</A> </B></TD><TD>&nbsp;- first upper bidiagonal matrix (if compact storage is selected)
+</TD></TR>
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B><A HREF="../sys/DSMatType.html#DSMatType">DS_MAT_D</A> </B></TD><TD>&nbsp;- second upper bidiagonal matrix (if compact storage is selected)
+</TD></TR></TABLE>
+<P>
+<H3><FONT COLOR="#883300">Implemented methods</FONT></H3>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>0 </B></TD><TD>&nbsp;- Lapack (_ggsvd3 if available, or _ggsvd)
+</TD></TR></TABLE>
+<P>
+<H3><FONT COLOR="#883300">See Also</FONT></H3>
+ <A HREF="../DS/DSCreate.html#DSCreate">DSCreate</A>(), <A HREF="../DS/DSSetType.html#DSSetType">DSSetType</A>(), <A HREF="../sys/DSType.html#DSType">DSType</A>, <A HREF="../DS/DSGSVDSetDimensions.html#DSGSVDSetDimensions">DSGSVDSetDimensions</A>()
+<BR><P><B><FONT COLOR="#883300">Location: </FONT></B><A HREF="../../../src/sys/classes/ds/impls/gsvd/dsgsvd.c.html#DSGSVD">src/sys/classes/ds/impls/gsvd/dsgsvd.c</A>
+<BR><A HREF="./index.html">Index of all DS routines</A>
+<BR><A HREF="../../../docs/manualpages/index.html">Table of Contents for all manual pages</A>
+<BR><A HREF="../singleindex.html">Index of all manual pages</A>
+</BODY></HTML>

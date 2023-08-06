@@ -1,0 +1,593 @@
+<center><a href="bvcontour.c">Actual source code: bvcontour.c</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="https://slepc.upv.es/documentation/current/src/sys/classes/bv/interface/bvcontour.c.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2022-08-09T09:05:25+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>slepc-3.17.2 2022-08-09</b></div>
+   <div id="bugreport" align=right><a href="mailto:slepc-maint@upv.es?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: slepc-3.17.2 v3.17.2 src/sys/classes/bv/interface/bvcontour.c.html "><small>Report Typos and Errors</small></a></div>
+<pre width="80">
+<a name="line1">  1: </a><font color="#B22222">/*</font>
+<a name="line2">  2: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line3">  3: </a><font color="#B22222">   SLEPc - Scalable Library for Eigenvalue Problem Computations</font>
+<a name="line4">  4: </a><font color="#B22222">   Copyright (c) 2002-, Universitat Politecnica de Valencia, Spain</font>
+
+<a name="line6">  6: </a><font color="#B22222">   This file is part of SLEPc.</font>
+<a name="line7">  7: </a><font color="#B22222">   SLEPc is distributed under a 2-clause BSD license (see LICENSE).</font>
+<a name="line8">  8: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line9">  9: </a><font color="#B22222">*/</font>
+<a name="line10"> 10: </a><font color="#B22222">/*</font>
+<a name="line11"> 11: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> developer functions needed in contour integral methods</font>
+<a name="line12"> 12: </a><font color="#B22222">*/</font>
+
+<a name="line14"> 14: </a>#include <A href="../../../../../include/slepc/private/bvimpl.h.html">&lt;slepc/private/bvimpl.h&gt;</A>
+<a name="line15"> 15: </a>#include <A href="../../../../../include/slepcblaslapack.h.html">&lt;slepcblaslapack.h&gt;</A>
+
+<a name="line17"> 17: </a><strong><font color="#228B22">#define p_id(i) (i*subcomm-&gt;n + subcomm-&gt;color)</font></strong>
+
+<a name="line19"> 19: </a><font color="#B22222">/*@</font>
+<a name="line20"> 20: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVScatter.html#BVScatter">BVScatter</a> - Scatters the columns of a <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> to another <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> created in a</font>
+<a name="line21"> 21: </a><font color="#B22222">   subcommunicator.</font>
+
+<a name="line23"> 23: </a><font color="#B22222">   Collective on Vin</font>
+
+<a name="line25"> 25: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line26"> 26: </a><font color="#B22222">+  Vin  - input basis vectors (defined on the whole communicator)</font>
+<a name="line27"> 27: </a><font color="#B22222">.  scat - VecScatter object that contains the info for the communication</font>
+<a name="line28"> 28: </a><font color="#B22222">-  xdup - an auxiliary vector</font>
+
+<a name="line30"> 30: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line31"> 31: </a><font color="#B22222">.  Vout - output basis vectors (defined on the subcommunicator)</font>
+
+<a name="line33"> 33: </a><font color="#B22222">   Notes:</font>
+<a name="line34"> 34: </a><font color="#B22222">   Currently implemented as a loop for each the active column, where each</font>
+<a name="line35"> 35: </a><font color="#B22222">   column is scattered independently. The vector xdup is defined on the</font>
+<a name="line36"> 36: </a><font color="#B22222">   contiguous parent communicator and have enough space to store one</font>
+<a name="line37"> 37: </a><font color="#B22222">   duplicate of the original vector per each subcommunicator.</font>
+
+<a name="line39"> 39: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line41"> 41: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVGetColumn.html#BVGetColumn">BVGetColumn</a>()</font>
+<a name="line42"> 42: </a><font color="#B22222">@*/</font>
+<a name="line43"> 43: </a><strong><font color="#4169E1"><a name="BVScatter"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVScatter.html#BVScatter">BVScatter</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> Vin,<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> Vout,VecScatter scat,Vec xdup)</font></strong>
+<a name="line44"> 44: </a>{
+<a name="line45"> 45: </a>  PetscInt          i;
+<a name="line46"> 46: </a>  Vec               v;
+<a name="line47"> 47: </a>  const PetscScalar *array;
+
+<a name="line53"> 53: </a>  <font color="#4169E1">for</font> (i=Vin-&gt;l;i&lt;Vin-&gt;k;i++) {
+<a name="line54"> 54: </a>    <a href="../../../../../docs/manualpages/BV/BVGetColumn.html#BVGetColumn">BVGetColumn</a>(Vin,i,&amp;v);
+<a name="line55"> 55: </a>    VecScatterBegin(scat,v,xdup,INSERT_VALUES,SCATTER_FORWARD);
+<a name="line56"> 56: </a>    VecScatterEnd(scat,v,xdup,INSERT_VALUES,SCATTER_FORWARD);
+<a name="line57"> 57: </a>    <a href="../../../../../docs/manualpages/BV/BVRestoreColumn.html#BVRestoreColumn">BVRestoreColumn</a>(Vin,i,&amp;v);
+<a name="line58"> 58: </a>    VecGetArrayRead(xdup,&amp;array);
+<a name="line59"> 59: </a>    VecPlaceArray(Vout-&gt;t,array);
+<a name="line60"> 60: </a>    <a href="../../../../../docs/manualpages/BV/BVInsertVec.html#BVInsertVec">BVInsertVec</a>(Vout,i,Vout-&gt;t);
+<a name="line61"> 61: </a>    VecResetArray(Vout-&gt;t);
+<a name="line62"> 62: </a>    VecRestoreArrayRead(xdup,&amp;array);
+<a name="line63"> 63: </a>  }
+<a name="line64"> 64: </a>  PetscFunctionReturn(0);
+<a name="line65"> 65: </a>}
+
+<a name="line67"> 67: </a><font color="#B22222">/*@</font>
+<a name="line68"> 68: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVSumQuadrature.html#BVSumQuadrature">BVSumQuadrature</a> - Computes the sum of terms required in the quadrature</font>
+<a name="line69"> 69: </a><font color="#B22222">   rule to approximate the contour integral.</font>
+
+<a name="line71"> 71: </a><font color="#B22222">   Collective on S</font>
+
+<a name="line73"> 73: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line74"> 74: </a><font color="#B22222">+  Y       - input basis vectors</font>
+<a name="line75"> 75: </a><font color="#B22222">.  M       - number of moments</font>
+<a name="line76"> 76: </a><font color="#B22222">.  L       - block size</font>
+<a name="line77"> 77: </a><font color="#B22222">.  L_max   - maximum block size</font>
+<a name="line78"> 78: </a><font color="#B22222">.  w       - quadrature weights</font>
+<a name="line79"> 79: </a><font color="#B22222">.  zn      - normalized quadrature points</font>
+<a name="line80"> 80: </a><font color="#B22222">.  scat    - (optional) VecScatter object to communicate between subcommunicators</font>
+<a name="line81"> 81: </a><font color="#B22222">.  subcomm - subcommunicator layout</font>
+<a name="line82"> 82: </a><font color="#B22222">.  npoints - number of points to process by the subcommunicator</font>
+<a name="line83"> 83: </a><font color="#B22222">-  useconj - whether conjugate points can be used or not</font>
+
+<a name="line85"> 85: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line86"> 86: </a><font color="#B22222">.  S       - output basis vectors</font>
+
+<a name="line88"> 88: </a><font color="#B22222">   Notes:</font>
+<a name="line89"> 89: </a><font color="#B22222">   This is a generalization of <a href="../../../../../docs/manualpages/BV/BVMult.html#BVMult">BVMult</a>(). The resulting matrix S consists of M</font>
+<a name="line90"> 90: </a><font color="#B22222">   panels of L columns, and the following formula is computed for each panel</font>
+<a name="line91"> 91: </a><font color="#B22222">   S_k = sum_j w_j*zn_j^k*Y_j, where Y_j is the j-th panel of Y containing</font>
+<a name="line92"> 92: </a><font color="#B22222">   the result of solving T(z_j)^{-1}*X for each integration point j. L_max is</font>
+<a name="line93"> 93: </a><font color="#B22222">   the width of the panels in Y.</font>
+
+<a name="line95"> 95: </a><font color="#B22222">   When using subcommunicators, Y is stored in the subcommunicators for a subset</font>
+<a name="line96"> 96: </a><font color="#B22222">   of integration points. In that case, the computation is done in the subcomm</font>
+<a name="line97"> 97: </a><font color="#B22222">   and then scattered to the whole communicator in S using the VecScatter scat.</font>
+<a name="line98"> 98: </a><font color="#B22222">   The value npoints is the number of points to be processed in this subcomm</font>
+<a name="line99"> 99: </a><font color="#B22222">   and the flag useconj indicates whether symmetric points can be reused.</font>
+
+<a name="line101">101: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line103">103: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVMult.html#BVMult">BVMult</a>(), <a href="../../../../../docs/manualpages/BV/BVScatter.html#BVScatter">BVScatter</a>(), <a href="../../../../../docs/manualpages/BV/BVDotQuadrature.html#BVDotQuadrature">BVDotQuadrature</a>(), <a href="../../../../../docs/manualpages/RG/RGComputeQuadrature.html#RGComputeQuadrature">RGComputeQuadrature</a>(), <a href="../../../../../docs/manualpages/RG/RGCanUseConjugates.html#RGCanUseConjugates">RGCanUseConjugates</a>()</font>
+<a name="line104">104: </a><font color="#B22222">@*/</font>
+<a name="line105">105: </a><strong><font color="#4169E1"><a name="BVSumQuadrature"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVSumQuadrature.html#BVSumQuadrature">BVSumQuadrature</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> S,<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> Y,PetscInt M,PetscInt L,PetscInt L_max,PetscScalar *w,PetscScalar *zn,VecScatter scat,PetscSubcomm subcomm,PetscInt npoints,PetscBool useconj)</font></strong>
+<a name="line106">106: </a>{
+<a name="line107">107: </a>  PetscInt       i,j,k,nloc;
+<a name="line108">108: </a>  Vec            v,sj;
+<a name="line109">109: </a>  PetscScalar    *ppk,*pv,one=1.0;
+
+
+<a name="line115">115: </a>  <a href="../../../../../docs/manualpages/BV/BVGetSizes.html#BVGetSizes">BVGetSizes</a>(Y,&amp;nloc,NULL,NULL);
+<a name="line116">116: </a>  PetscMalloc1(npoints,&amp;ppk);
+<a name="line117">117: </a>  <font color="#4169E1">for</font> (i=0;i&lt;npoints;i++) ppk[i] = 1.0;
+<a name="line118">118: </a>  <a href="../../../../../docs/manualpages/BV/BVCreateVec.html#BVCreateVec">BVCreateVec</a>(Y,&amp;v);
+<a name="line119">119: </a>  <font color="#4169E1">for</font> (k=0;k&lt;M;k++) {
+<a name="line120">120: </a>    <font color="#4169E1">for</font> (j=0;j&lt;L;j++) {
+<a name="line121">121: </a>      VecSet(v,0.0);
+<a name="line122">122: </a>      <font color="#4169E1">for</font> (i=0;i&lt;npoints;i++) {
+<a name="line123">123: </a>        <a href="../../../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(Y,i*L_max+j,i*L_max+j+1);
+<a name="line124">124: </a>        <a href="../../../../../docs/manualpages/BV/BVMultVec.html#BVMultVec">BVMultVec</a>(Y,ppk[i]*w[p_id(i)],1.0,v,&amp;one);
+<a name="line125">125: </a>      }
+<a name="line126">126: </a>      <font color="#4169E1">if</font> (PetscUnlikely(useconj)) {
+<a name="line127">127: </a>        VecGetArray(v,&amp;pv);
+<a name="line128">128: </a>        <font color="#4169E1">for</font> (i=0;i&lt;nloc;i++) pv[i] = 2.0*PetscRealPart(pv[i]);
+<a name="line129">129: </a>        VecRestoreArray(v,&amp;pv);
+<a name="line130">130: </a>      }
+<a name="line131">131: </a>      <a href="../../../../../docs/manualpages/BV/BVGetColumn.html#BVGetColumn">BVGetColumn</a>(S,k*L+j,&amp;sj);
+<a name="line132">132: </a>      <font color="#4169E1">if</font> (PetscUnlikely(scat)) {
+<a name="line133">133: </a>        VecScatterBegin(scat,v,sj,ADD_VALUES,SCATTER_REVERSE);
+<a name="line134">134: </a>        VecScatterEnd(scat,v,sj,ADD_VALUES,SCATTER_REVERSE);
+<a name="line135">135: </a>      } <font color="#4169E1">else</font> VecCopy(v,sj);
+<a name="line136">136: </a>      <a href="../../../../../docs/manualpages/BV/BVRestoreColumn.html#BVRestoreColumn">BVRestoreColumn</a>(S,k*L+j,&amp;sj);
+<a name="line137">137: </a>    }
+<a name="line138">138: </a>    <font color="#4169E1">for</font> (i=0;i&lt;npoints;i++) ppk[i] *= zn[p_id(i)];
+<a name="line139">139: </a>  }
+<a name="line140">140: </a>  PetscFree(ppk);
+<a name="line141">141: </a>  VecDestroy(&amp;v);
+<a name="line142">142: </a>  PetscFunctionReturn(0);
+<a name="line143">143: </a>}
+
+<a name="line145">145: </a><font color="#B22222">/*@</font>
+<a name="line146">146: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVDotQuadrature.html#BVDotQuadrature">BVDotQuadrature</a> - Computes the projection terms required in the quadrature</font>
+<a name="line147">147: </a><font color="#B22222">   rule to approximate the contour integral.</font>
+
+<a name="line149">149: </a><font color="#B22222">   Collective on Y</font>
+
+<a name="line151">151: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line152">152: </a><font color="#B22222">+  Y       - first basis vectors</font>
+<a name="line153">153: </a><font color="#B22222">.  V       - second basis vectors</font>
+<a name="line154">154: </a><font color="#B22222">.  M       - number of moments</font>
+<a name="line155">155: </a><font color="#B22222">.  L       - block size</font>
+<a name="line156">156: </a><font color="#B22222">.  L_max   - maximum block size</font>
+<a name="line157">157: </a><font color="#B22222">.  w       - quadrature weights</font>
+<a name="line158">158: </a><font color="#B22222">.  zn      - normalized quadrature points</font>
+<a name="line159">159: </a><font color="#B22222">.  subcomm - subcommunicator layout</font>
+<a name="line160">160: </a><font color="#B22222">.  npoints - number of points to process by the subcommunicator</font>
+<a name="line161">161: </a><font color="#B22222">-  useconj - whether conjugate points can be used or not</font>
+
+<a name="line163">163: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line164">164: </a><font color="#B22222">.  Mu      - computed result</font>
+
+<a name="line166">166: </a><font color="#B22222">   Notes:</font>
+<a name="line167">167: </a><font color="#B22222">   This is a generalization of <a href="../../../../../docs/manualpages/BV/BVDot.html#BVDot">BVDot</a>(). The resulting matrix Mu consists of M</font>
+<a name="line168">168: </a><font color="#B22222">   blocks of size LxL (placed horizontally), each of them computed as</font>
+<a name="line169">169: </a><font color="#B22222">   Mu_k = sum_j w_j*zn_j^k*V'*Y_j, where Y_j is the j-th panel of Y containing</font>
+<a name="line170">170: </a><font color="#B22222">   the result of solving T(z_j)^{-1}*X for each integration point j. L_max is</font>
+<a name="line171">171: </a><font color="#B22222">   the width of the panels in Y.</font>
+
+<a name="line173">173: </a><font color="#B22222">   When using subcommunicators, Y is stored in the subcommunicators for a subset</font>
+<a name="line174">174: </a><font color="#B22222">   of integration points. In that case, the computation is done in the subcomm</font>
+<a name="line175">175: </a><font color="#B22222">   and then the final result is combined via reduction.</font>
+<a name="line176">176: </a><font color="#B22222">   The value npoints is the number of points to be processed in this subcomm</font>
+<a name="line177">177: </a><font color="#B22222">   and the flag useconj indicates whether symmetric points can be reused.</font>
+
+<a name="line179">179: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line181">181: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVDot.html#BVDot">BVDot</a>(), <a href="../../../../../docs/manualpages/BV/BVScatter.html#BVScatter">BVScatter</a>(), <a href="../../../../../docs/manualpages/BV/BVSumQuadrature.html#BVSumQuadrature">BVSumQuadrature</a>(), <a href="../../../../../docs/manualpages/RG/RGComputeQuadrature.html#RGComputeQuadrature">RGComputeQuadrature</a>(), <a href="../../../../../docs/manualpages/RG/RGCanUseConjugates.html#RGCanUseConjugates">RGCanUseConjugates</a>()</font>
+<a name="line182">182: </a><font color="#B22222">@*/</font>
+<a name="line183">183: </a><strong><font color="#4169E1"><a name="BVDotQuadrature"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVDotQuadrature.html#BVDotQuadrature">BVDotQuadrature</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> Y,<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> V,PetscScalar *Mu,PetscInt M,PetscInt L,PetscInt L_max,PetscScalar *w,PetscScalar *zn,PetscSubcomm subcomm,PetscInt npoints,PetscBool useconj)</font></strong>
+<a name="line184">184: </a>{
+<a name="line185">185: </a>  PetscMPIInt       sub_size,count;
+<a name="line186">186: </a>  PetscInt          i,j,k,s;
+<a name="line187">187: </a>  PetscScalar       *temp,*temp2,*ppk,alp;
+<a name="line188">188: </a>  Mat               H;
+<a name="line189">189: </a>  const PetscScalar *pH;
+<a name="line190">190: </a>  MPI_Comm          child,parent;
+
+
+<a name="line195">195: </a>  PetscSubcommGetChild(subcomm,&amp;child);
+<a name="line196">196: </a>  <a href="http://www.mpich.org/static/docs/latest/www3/MPI_Comm_size.html#MPI_Comm_size">MPI_Comm_size</a>(child,&amp;sub_size);
+<a name="line197">197: </a>  PetscMalloc3(npoints*L*(L+1),&amp;temp,2*M*L*L,&amp;temp2,npoints,&amp;ppk);
+<a name="line198">198: </a>  MatCreateSeqDense(PETSC_COMM_SELF,L,L_max*npoints,NULL,&amp;H);
+<a name="line199">199: </a>  PetscArrayzero(temp2,2*M*L*L);
+<a name="line200">200: </a>  <a href="../../../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(Y,0,L_max*npoints);
+<a name="line201">201: </a>  <a href="../../../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(V,0,L);
+<a name="line202">202: </a>  <a href="../../../../../docs/manualpages/BV/BVDot.html#BVDot">BVDot</a>(Y,V,H);
+<a name="line203">203: </a>  MatDenseGetArrayRead(H,&amp;pH);
+<a name="line204">204: </a>  <font color="#4169E1">for</font> (i=0;i&lt;npoints;i++) {
+<a name="line205">205: </a>    <font color="#4169E1">for</font> (j=0;j&lt;L;j++) {
+<a name="line206">206: </a>      <font color="#4169E1">for</font> (k=0;k&lt;L;k++) {
+<a name="line207">207: </a>        temp[k+j*L+i*L*L] = pH[k+j*L+i*L*L_max];
+<a name="line208">208: </a>      }
+<a name="line209">209: </a>    }
+<a name="line210">210: </a>  }
+<a name="line211">211: </a>  MatDenseRestoreArrayRead(H,&amp;pH);
+<a name="line212">212: </a>  <font color="#4169E1">for</font> (i=0;i&lt;npoints;i++) ppk[i] = 1;
+<a name="line213">213: </a>  <font color="#4169E1">for</font> (k=0;k&lt;2*M;k++) {
+<a name="line214">214: </a>    <font color="#4169E1">for</font> (j=0;j&lt;L;j++) {
+<a name="line215">215: </a>      <font color="#4169E1">for</font> (i=0;i&lt;npoints;i++) {
+<a name="line216">216: </a>        alp = ppk[i]*w[p_id(i)];
+<a name="line217">217: </a>        <font color="#4169E1">for</font> (s=0;s&lt;L;s++) {
+<a name="line218">218: </a>          <font color="#4169E1">if</font> (!useconj) temp2[s+(j+k*L)*L] += alp*temp[s+(j+i*L)*L];
+<a name="line219">219: </a>          <font color="#4169E1">else</font> temp2[s+(j+k*L)*L] += 2.0*PetscRealPart(alp*temp[s+(j+i*L)*L]);
+<a name="line220">220: </a>        }
+<a name="line221">221: </a>      }
+<a name="line222">222: </a>    }
+<a name="line223">223: </a>    <font color="#4169E1">for</font> (i=0;i&lt;npoints;i++) ppk[i] *= zn[p_id(i)];
+<a name="line224">224: </a>  }
+<a name="line225">225: </a>  <font color="#4169E1">for</font> (i=0;i&lt;2*M*L*L;i++) temp2[i] /= sub_size;
+<a name="line226">226: </a>  PetscMPIIntCast(2*M*L*L,&amp;count);
+<a name="line227">227: </a>  PetscSubcommGetParent(subcomm,&amp;parent);
+<a name="line228">228: </a>  MPIU_Allreduce(temp2,Mu,count,MPIU_SCALAR,MPIU_SUM,parent);
+<a name="line229">229: </a>  PetscFree3(temp,temp2,ppk);
+<a name="line230">230: </a>  MatDestroy(&amp;H);
+<a name="line231">231: </a>  PetscFunctionReturn(0);
+<a name="line232">232: </a>}
+
+<a name="line234">234: </a><font color="#B22222">/*@</font>
+<a name="line235">235: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVTraceQuadrature.html#BVTraceQuadrature">BVTraceQuadrature</a> - Computes an estimate of the number of eigenvalues</font>
+<a name="line236">236: </a><font color="#B22222">   inside a region via quantities computed in the quadrature rule of</font>
+<a name="line237">237: </a><font color="#B22222">   contour integral methods.</font>
+
+<a name="line239">239: </a><font color="#B22222">   Collective on Y</font>
+
+<a name="line241">241: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line242">242: </a><font color="#B22222">+  Y       - first basis vectors</font>
+<a name="line243">243: </a><font color="#B22222">.  V       - second basis vectors</font>
+<a name="line244">244: </a><font color="#B22222">.  L       - block size</font>
+<a name="line245">245: </a><font color="#B22222">.  L_max   - maximum block size</font>
+<a name="line246">246: </a><font color="#B22222">.  w       - quadrature weights</font>
+<a name="line247">247: </a><font color="#B22222">.  scat    - (optional) VecScatter object to communicate between subcommunicators</font>
+<a name="line248">248: </a><font color="#B22222">.  subcomm - subcommunicator layout</font>
+<a name="line249">249: </a><font color="#B22222">.  npoints - number of points to process by the subcommunicator</font>
+<a name="line250">250: </a><font color="#B22222">-  useconj - whether conjugate points can be used or not</font>
+
+<a name="line252">252: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line253">253: </a><font color="#B22222">.  est_eig - estimated eigenvalue count</font>
+
+<a name="line255">255: </a><font color="#B22222">   Notes:</font>
+<a name="line256">256: </a><font color="#B22222">   This function returns an estimation of the number of eigenvalues in the</font>
+<a name="line257">257: </a><font color="#B22222">   region, computed as trace(V'*S_0), where S_0 is the first panel of S</font>
+<a name="line258">258: </a><font color="#B22222">   computed by <a href="../../../../../docs/manualpages/BV/BVSumQuadrature.html#BVSumQuadrature">BVSumQuadrature</a>().</font>
+
+<a name="line260">260: </a><font color="#B22222">   When using subcommunicators, Y is stored in the subcommunicators for a subset</font>
+<a name="line261">261: </a><font color="#B22222">   of integration points. In that case, the computation is done in the subcomm</font>
+<a name="line262">262: </a><font color="#B22222">   and then scattered to the whole communicator in S using the VecScatter scat.</font>
+<a name="line263">263: </a><font color="#B22222">   The value npoints is the number of points to be processed in this subcomm</font>
+<a name="line264">264: </a><font color="#B22222">   and the flag useconj indicates whether symmetric points can be reused.</font>
+
+<a name="line266">266: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line268">268: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVScatter.html#BVScatter">BVScatter</a>(), <a href="../../../../../docs/manualpages/BV/BVDotQuadrature.html#BVDotQuadrature">BVDotQuadrature</a>(), <a href="../../../../../docs/manualpages/BV/BVSumQuadrature.html#BVSumQuadrature">BVSumQuadrature</a>(), <a href="../../../../../docs/manualpages/RG/RGComputeQuadrature.html#RGComputeQuadrature">RGComputeQuadrature</a>(), <a href="../../../../../docs/manualpages/RG/RGCanUseConjugates.html#RGCanUseConjugates">RGCanUseConjugates</a>()</font>
+<a name="line269">269: </a><font color="#B22222">@*/</font>
+<a name="line270">270: </a><strong><font color="#4169E1"><a name="BVTraceQuadrature"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVTraceQuadrature.html#BVTraceQuadrature">BVTraceQuadrature</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> Y,<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> V,PetscInt L,PetscInt L_max,PetscScalar *w,VecScatter scat,PetscSubcomm subcomm,PetscInt npoints,PetscBool useconj,PetscReal *est_eig)</font></strong>
+<a name="line271">271: </a>{
+<a name="line272">272: </a>  PetscInt       i,j;
+<a name="line273">273: </a>  Vec            y,yall,vj;
+<a name="line274">274: </a>  PetscScalar    dot,sum=0.0,one=1.0;
+
+
+<a name="line280">280: </a>  <a href="../../../../../docs/manualpages/BV/BVCreateVec.html#BVCreateVec">BVCreateVec</a>(Y,&amp;y);
+<a name="line281">281: </a>  <a href="../../../../../docs/manualpages/BV/BVCreateVec.html#BVCreateVec">BVCreateVec</a>(V,&amp;yall);
+<a name="line282">282: </a>  <font color="#4169E1">for</font> (j=0;j&lt;L;j++) {
+<a name="line283">283: </a>    VecSet(y,0.0);
+<a name="line284">284: </a>    <font color="#4169E1">for</font> (i=0;i&lt;npoints;i++) {
+<a name="line285">285: </a>      <a href="../../../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(Y,i*L_max+j,i*L_max+j+1);
+<a name="line286">286: </a>      <a href="../../../../../docs/manualpages/BV/BVMultVec.html#BVMultVec">BVMultVec</a>(Y,w[p_id(i)],1.0,y,&amp;one);
+<a name="line287">287: </a>    }
+<a name="line288">288: </a>    <a href="../../../../../docs/manualpages/BV/BVGetColumn.html#BVGetColumn">BVGetColumn</a>(V,j,&amp;vj);
+<a name="line289">289: </a>    <font color="#4169E1">if</font> (scat) {
+<a name="line290">290: </a>      VecScatterBegin(scat,y,yall,ADD_VALUES,SCATTER_REVERSE);
+<a name="line291">291: </a>      VecScatterEnd(scat,y,yall,ADD_VALUES,SCATTER_REVERSE);
+<a name="line292">292: </a>      VecDot(vj,yall,&amp;dot);
+<a name="line293">293: </a>    } <font color="#4169E1">else</font> VecDot(vj,y,&amp;dot);
+<a name="line294">294: </a>    <a href="../../../../../docs/manualpages/BV/BVRestoreColumn.html#BVRestoreColumn">BVRestoreColumn</a>(V,j,&amp;vj);
+<a name="line295">295: </a>    <font color="#4169E1">if</font> (useconj) sum += 2.0*PetscRealPart(dot);
+<a name="line296">296: </a>    <font color="#4169E1">else</font> sum += dot;
+<a name="line297">297: </a>  }
+<a name="line298">298: </a>  *est_eig = PetscAbsScalar(sum)/(PetscReal)L;
+<a name="line299">299: </a>  VecDestroy(&amp;y);
+<a name="line300">300: </a>  VecDestroy(&amp;yall);
+<a name="line301">301: </a>  PetscFunctionReturn(0);
+<a name="line302">302: </a>}
+
+<a name="line304">304: </a><strong><font color="#4169E1"><a name="BVSVDAndRank_Refine"></a>PetscErrorCode BVSVDAndRank_Refine(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> S,PetscReal delta,PetscScalar *pA,PetscReal *sigma,PetscInt *rank)</font></strong>
+<a name="line305">305: </a>{
+<a name="line306">306: </a>  PetscInt       i,j,k,ml=S-&gt;k;
+<a name="line307">307: </a>  PetscMPIInt    len;
+<a name="line308">308: </a>  PetscScalar    *work,*B,*tempB,*sarray,*Q1,*Q2,*temp2,alpha=1.0,beta=0.0;
+<a name="line309">309: </a>  PetscBLASInt   l,m,n,lda,ldu,ldvt,lwork,info,ldb,ldc;
+<a name="line310">310: </a><font color="#A020F0">#if defined(PETSC_USE_COMPLEX)</font>
+<a name="line311">311: </a>  PetscReal      *rwork;
+<a name="line312">312: </a><font color="#A020F0">#endif</font>
+
+<a name="line314">314: </a>  <a href="../../../../../docs/manualpages/BV/BVGetArray.html#BVGetArray">BVGetArray</a>(S,&amp;sarray);
+<a name="line315">315: </a>  PetscMalloc6(ml*ml,&amp;temp2,S-&gt;n*ml,&amp;Q1,S-&gt;n*ml,&amp;Q2,ml*ml,&amp;B,ml*ml,&amp;tempB,5*ml,&amp;work);
+<a name="line316">316: </a><font color="#A020F0">#if defined(PETSC_USE_COMPLEX)</font>
+<a name="line317">317: </a>  PetscMalloc1(5*ml,&amp;rwork);
+<a name="line318">318: </a><font color="#A020F0">#endif</font>
+<a name="line319">319: </a>  PetscFPTrapPush(PETSC_FP_TRAP_OFF);
+
+<a name="line321">321: </a>  PetscArrayzero(B,ml*ml);
+<a name="line322">322: </a>  <font color="#4169E1">for</font> (i=0;i&lt;ml;i++) B[i*ml+i]=1;
+
+<a name="line324">324: </a>  <font color="#4169E1">for</font> (k=0;k&lt;2;k++) {
+<a name="line325">325: </a>    PetscBLASIntCast(S-&gt;n,&amp;m);
+<a name="line326">326: </a>    PetscBLASIntCast(ml,&amp;l);
+<a name="line327">327: </a>    n = l; lda = m; ldb = m; ldc = l;
+<a name="line328">328: </a>    <font color="#4169E1">if</font> (!k) {
+<a name="line329">329: </a>      PetscStackCallBLAS(<font color="#666666">"BLASgemm"</font>,BLASgemm_(<font color="#666666">"C"</font>,<font color="#666666">"N"</font>,&amp;l,&amp;n,&amp;m,&amp;alpha,sarray,&amp;lda,sarray,&amp;ldb,&amp;beta,pA,&amp;ldc));
+<a name="line330">330: </a>    } <font color="#4169E1">else</font> {
+<a name="line331">331: </a>      PetscStackCallBLAS(<font color="#666666">"BLASgemm"</font>,BLASgemm_(<font color="#666666">"C"</font>,<font color="#666666">"N"</font>,&amp;l,&amp;n,&amp;m,&amp;alpha,Q1,&amp;lda,Q1,&amp;ldb,&amp;beta,pA,&amp;ldc));
+<a name="line332">332: </a>    }
+<a name="line333">333: </a>    PetscArrayzero(temp2,ml*ml);
+<a name="line334">334: </a>    PetscMPIIntCast(ml*ml,&amp;len);
+<a name="line335">335: </a>    MPIU_Allreduce(pA,temp2,len,MPIU_SCALAR,MPIU_SUM,PetscObjectComm((PetscObject)S));
+
+<a name="line337">337: </a>    PetscBLASIntCast(ml,&amp;m);
+<a name="line338">338: </a>    n = m; lda = m; lwork = 5*m, ldu = 1; ldvt = 1;
+<a name="line339">339: </a><font color="#A020F0">#if defined(PETSC_USE_COMPLEX)</font>
+<a name="line340">340: </a>    PetscStackCallBLAS(<font color="#666666">"LAPACKgesvd"</font>,LAPACKgesvd_(<font color="#666666">"O"</font>,<font color="#666666">"N"</font>,&amp;m,&amp;n,temp2,&amp;lda,sigma,NULL,&amp;ldu,NULL,&amp;ldvt,work,&amp;lwork,rwork,&amp;info));
+<a name="line341">341: </a><font color="#A020F0">#else</font>
+<a name="line342">342: </a>    PetscStackCallBLAS(<font color="#666666">"LAPACKgesvd"</font>,LAPACKgesvd_(<font color="#666666">"O"</font>,<font color="#666666">"N"</font>,&amp;m,&amp;n,temp2,&amp;lda,sigma,NULL,&amp;ldu,NULL,&amp;ldvt,work,&amp;lwork,&amp;info));
+<a name="line343">343: </a><font color="#A020F0">#endif</font>
+<a name="line344">344: </a>    SlepcCheckLapackInfo(<font color="#666666">"gesvd"</font>,info);
+
+<a name="line346">346: </a>    PetscBLASIntCast(S-&gt;n,&amp;l);
+<a name="line347">347: </a>    PetscBLASIntCast(ml,&amp;n);
+<a name="line348">348: </a>    m = n; lda = l; ldb = m; ldc = l;
+<a name="line349">349: </a>    <font color="#4169E1">if</font> (!k) {
+<a name="line350">350: </a>      PetscStackCallBLAS(<font color="#666666">"BLASgemm"</font>,BLASgemm_(<font color="#666666">"N"</font>,<font color="#666666">"N"</font>,&amp;l,&amp;n,&amp;m,&amp;alpha,sarray,&amp;lda,temp2,&amp;ldb,&amp;beta,Q1,&amp;ldc));
+<a name="line351">351: </a>    } <font color="#4169E1">else</font> {
+<a name="line352">352: </a>      PetscStackCallBLAS(<font color="#666666">"BLASgemm"</font>,BLASgemm_(<font color="#666666">"N"</font>,<font color="#666666">"N"</font>,&amp;l,&amp;n,&amp;m,&amp;alpha,Q1,&amp;lda,temp2,&amp;ldb,&amp;beta,Q2,&amp;ldc));
+<a name="line353">353: </a>    }
+
+<a name="line355">355: </a>    PetscBLASIntCast(ml,&amp;l);
+<a name="line356">356: </a>    m = l; n = l; lda = l; ldb = m; ldc = l;
+<a name="line357">357: </a>    PetscStackCallBLAS(<font color="#666666">"BLASgemm"</font>,BLASgemm_(<font color="#666666">"N"</font>,<font color="#666666">"N"</font>,&amp;l,&amp;n,&amp;m,&amp;alpha,B,&amp;lda,temp2,&amp;ldb,&amp;beta,tempB,&amp;ldc));
+<a name="line358">358: </a>    <font color="#4169E1">for</font> (i=0;i&lt;ml;i++) {
+<a name="line359">359: </a>      sigma[i] = PetscSqrtReal(sigma[i]);
+<a name="line360">360: </a>      <font color="#4169E1">for</font> (j=0;j&lt;S-&gt;n;j++) {
+<a name="line361">361: </a>        <font color="#4169E1">if</font> (k%2) Q2[j+i*S-&gt;n] /= sigma[i];
+<a name="line362">362: </a>        <font color="#4169E1">else</font> Q1[j+i*S-&gt;n] /= sigma[i];
+<a name="line363">363: </a>      }
+<a name="line364">364: </a>      <font color="#4169E1">for</font> (j=0;j&lt;ml;j++) B[j+i*ml] = tempB[j+i*ml]*sigma[i];
+<a name="line365">365: </a>    }
+<a name="line366">366: </a>  }
+
+<a name="line368">368: </a>  PetscBLASIntCast(ml,&amp;m);
+<a name="line369">369: </a>  n = m; lda = m; ldu=1; ldvt=1;
+<a name="line370">370: </a><font color="#A020F0">#if defined(PETSC_USE_COMPLEX)</font>
+<a name="line371">371: </a>  PetscStackCallBLAS(<font color="#666666">"LAPACKgesvd"</font>,LAPACKgesvd_(<font color="#666666">"N"</font>,<font color="#666666">"O"</font>,&amp;m,&amp;n,B,&amp;lda,sigma,NULL,&amp;ldu,NULL,&amp;ldvt,work,&amp;lwork,rwork,&amp;info));
+<a name="line372">372: </a><font color="#A020F0">#else</font>
+<a name="line373">373: </a>  PetscStackCallBLAS(<font color="#666666">"LAPACKgesvd"</font>,LAPACKgesvd_(<font color="#666666">"N"</font>,<font color="#666666">"O"</font>,&amp;m,&amp;n,B,&amp;lda,sigma,NULL,&amp;ldu,NULL,&amp;ldvt,work,&amp;lwork,&amp;info));
+<a name="line374">374: </a><font color="#A020F0">#endif</font>
+<a name="line375">375: </a>  SlepcCheckLapackInfo(<font color="#666666">"gesvd"</font>,info);
+
+<a name="line377">377: </a>  PetscBLASIntCast(S-&gt;n,&amp;l);
+<a name="line378">378: </a>  PetscBLASIntCast(ml,&amp;n);
+<a name="line379">379: </a>  m = n; lda = l; ldb = m; ldc = l;
+<a name="line380">380: </a>  <font color="#4169E1">if</font> (k%2) {
+<a name="line381">381: </a>    PetscStackCallBLAS(<font color="#666666">"BLASgemm"</font>,BLASgemm_(<font color="#666666">"N"</font>,<font color="#666666">"T"</font>,&amp;l,&amp;n,&amp;m,&amp;alpha,Q1,&amp;lda,B,&amp;ldb,&amp;beta,sarray,&amp;ldc));
+<a name="line382">382: </a>  } <font color="#4169E1">else</font> {
+<a name="line383">383: </a>    PetscStackCallBLAS(<font color="#666666">"BLASgemm"</font>,BLASgemm_(<font color="#666666">"N"</font>,<font color="#666666">"T"</font>,&amp;l,&amp;n,&amp;m,&amp;alpha,Q2,&amp;lda,B,&amp;ldb,&amp;beta,sarray,&amp;ldc));
+<a name="line384">384: </a>  }
+
+<a name="line386">386: </a>  PetscFPTrapPop();
+<a name="line387">387: </a>  <a href="../../../../../docs/manualpages/BV/BVRestoreArray.html#BVRestoreArray">BVRestoreArray</a>(S,&amp;sarray);
+
+<a name="line389">389: </a>  <font color="#4169E1">if</font> (rank) {
+<a name="line390">390: </a>    (*rank) = 0;
+<a name="line391">391: </a>    <font color="#4169E1">for</font> (i=0;i&lt;ml;i++) {
+<a name="line392">392: </a>      <font color="#4169E1">if</font> (sigma[i]/PetscMax(sigma[0],1.0)&gt;delta) (*rank)++;
+<a name="line393">393: </a>    }
+<a name="line394">394: </a>  }
+<a name="line395">395: </a>  PetscFree6(temp2,Q1,Q2,B,tempB,work);
+<a name="line396">396: </a><font color="#A020F0">#if defined(PETSC_USE_COMPLEX)</font>
+<a name="line397">397: </a>  PetscFree(rwork);
+<a name="line398">398: </a><font color="#A020F0">#endif</font>
+<a name="line399">399: </a>  PetscFunctionReturn(0);
+<a name="line400">400: </a>}
+
+<a name="line402">402: </a><strong><font color="#4169E1"><a name="BVSVDAndRank_QR"></a>PetscErrorCode BVSVDAndRank_QR(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> S,PetscReal delta,PetscScalar *pA,PetscReal *sigma,PetscInt *rank)</font></strong>
+<a name="line403">403: </a>{
+<a name="line404">404: </a>  PetscInt       i,n,ml=S-&gt;k;
+<a name="line405">405: </a>  PetscBLASInt   m,lda,lwork,info;
+<a name="line406">406: </a>  PetscScalar    *work;
+<a name="line407">407: </a>  PetscReal      *rwork;
+<a name="line408">408: </a>  Mat            A;
+<a name="line409">409: </a>  Vec            v;
+
+<a name="line411">411: </a>  <font color="#B22222">/* Compute QR factorizaton of S */</font>
+<a name="line412">412: </a>  <a href="../../../../../docs/manualpages/BV/BVGetSizes.html#BVGetSizes">BVGetSizes</a>(S,NULL,&amp;n,NULL);
+<a name="line413">413: </a>  n    = PetscMin(n,ml);
+<a name="line414">414: </a>  <a href="../../../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(S,0,n);
+<a name="line415">415: </a>  PetscArrayzero(pA,ml*n);
+<a name="line416">416: </a>  MatCreateDense(PETSC_COMM_SELF,n,n,PETSC_DECIDE,PETSC_DECIDE,pA,&amp;A);
+<a name="line417">417: </a>  <a href="../../../../../docs/manualpages/BV/BVOrthogonalize.html#BVOrthogonalize">BVOrthogonalize</a>(S,A);
+<a name="line418">418: </a>  <font color="#4169E1">if</font> (n&lt;ml) {
+<a name="line419">419: </a>    <font color="#B22222">/* the rest of the factorization */</font>
+<a name="line420">420: </a>    <font color="#4169E1">for</font> (i=n;i&lt;ml;i++) {
+<a name="line421">421: </a>      <a href="../../../../../docs/manualpages/BV/BVGetColumn.html#BVGetColumn">BVGetColumn</a>(S,i,&amp;v);
+<a name="line422">422: </a>      <a href="../../../../../docs/manualpages/BV/BVOrthogonalizeVec.html#BVOrthogonalizeVec">BVOrthogonalizeVec</a>(S,v,pA+i*n,NULL,NULL);
+<a name="line423">423: </a>      <a href="../../../../../docs/manualpages/BV/BVRestoreColumn.html#BVRestoreColumn">BVRestoreColumn</a>(S,i,&amp;v);
+<a name="line424">424: </a>    }
+<a name="line425">425: </a>  }
+<a name="line426">426: </a>  PetscBLASIntCast(n,&amp;lda);
+<a name="line427">427: </a>  PetscBLASIntCast(ml,&amp;m);
+<a name="line428">428: </a>  PetscMalloc2(5*ml,&amp;work,5*ml,&amp;rwork);
+<a name="line429">429: </a>  lwork = 5*m;
+<a name="line430">430: </a>  PetscFPTrapPush(PETSC_FP_TRAP_OFF);
+<a name="line431">431: </a><font color="#A020F0">#if !defined (PETSC_USE_COMPLEX)</font>
+<a name="line432">432: </a>  PetscStackCallBLAS(<font color="#666666">"LAPACKgesvd"</font>,LAPACKgesvd_(<font color="#666666">"O"</font>,<font color="#666666">"N"</font>,&amp;lda,&amp;m,pA,&amp;lda,sigma,NULL,&amp;lda,NULL,&amp;lda,work,&amp;lwork,&amp;info));
+<a name="line433">433: </a><font color="#A020F0">#else</font>
+<a name="line434">434: </a>  PetscStackCallBLAS(<font color="#666666">"LAPACKgesvd"</font>,LAPACKgesvd_(<font color="#666666">"O"</font>,<font color="#666666">"N"</font>,&amp;lda,&amp;m,pA,&amp;lda,sigma,NULL,&amp;lda,NULL,&amp;lda,work,&amp;lwork,rwork,&amp;info));
+<a name="line435">435: </a><font color="#A020F0">#endif</font>
+<a name="line436">436: </a>  SlepcCheckLapackInfo(<font color="#666666">"gesvd"</font>,info);
+<a name="line437">437: </a>  PetscFPTrapPop();
+<a name="line438">438: </a>  *rank = 0;
+<a name="line439">439: </a>  <font color="#4169E1">for</font> (i=0;i&lt;n;i++) {
+<a name="line440">440: </a>    <font color="#4169E1">if</font> (sigma[i]/PetscMax(sigma[0],1)&gt;delta) (*rank)++;
+<a name="line441">441: </a>  }
+<a name="line442">442: </a>  <font color="#B22222">/* n first columns of A have the left singular vectors */</font>
+<a name="line443">443: </a>  <a href="../../../../../docs/manualpages/BV/BVMultInPlace.html#BVMultInPlace">BVMultInPlace</a>(S,A,0,*rank);
+<a name="line444">444: </a>  PetscFree2(work,rwork);
+<a name="line445">445: </a>  MatDestroy(&amp;A);
+<a name="line446">446: </a>  PetscFunctionReturn(0);
+<a name="line447">447: </a>}
+
+<a name="line449">449: </a><strong><font color="#4169E1"><a name="BVSVDAndRank_QR_CAA"></a>PetscErrorCode BVSVDAndRank_QR_CAA(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> S,PetscInt M,PetscInt L,PetscReal delta,PetscScalar *pA,PetscReal *sigma,PetscInt *rank)</font></strong>
+<a name="line450">450: </a>{
+<a name="line451">451: </a>  PetscInt       i,j,n,ml=S-&gt;k;
+<a name="line452">452: </a>  PetscBLASInt   m,k_,lda,lwork,info;
+<a name="line453">453: </a>  PetscScalar    *work,*T,*U,*R,sone=1.0,zero=0.0;
+<a name="line454">454: </a>  PetscReal      *rwork;
+<a name="line455">455: </a>  Mat            A;
+
+<a name="line457">457: </a>  <font color="#B22222">/* Compute QR factorizaton of S */</font>
+<a name="line458">458: </a>  <a href="../../../../../docs/manualpages/BV/BVGetSizes.html#BVGetSizes">BVGetSizes</a>(S,NULL,&amp;n,NULL);
+<a name="line460">460: </a>  <a href="../../../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(S,0,ml);
+<a name="line461">461: </a>  PetscArrayzero(pA,ml*ml);
+<a name="line462">462: </a>  MatCreateDense(PETSC_COMM_SELF,ml,ml,PETSC_DECIDE,PETSC_DECIDE,pA,&amp;A);
+<a name="line463">463: </a>  <a href="../../../../../docs/manualpages/BV/BVOrthogonalize.html#BVOrthogonalize">BVOrthogonalize</a>(S,A);
+<a name="line464">464: </a>  MatDestroy(&amp;A);
+
+<a name="line466">466: </a>  <font color="#B22222">/* <a href="../../../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> of first (M-1)*L diagonal block */</font>
+<a name="line467">467: </a>  PetscBLASIntCast((M-1)*L,&amp;m);
+<a name="line468">468: </a>  PetscMalloc5(m*m,&amp;T,m*m,&amp;R,m*m,&amp;U,5*ml,&amp;work,5*ml,&amp;rwork);
+<a name="line469">469: </a>  <font color="#4169E1">for</font> (j=0;j&lt;m;j++) PetscArraycpy(R+j*m,pA+j*ml,m);
+<a name="line470">470: </a>  lwork = 5*m;
+<a name="line471">471: </a>  PetscFPTrapPush(PETSC_FP_TRAP_OFF);
+<a name="line472">472: </a><font color="#A020F0">#if !defined (PETSC_USE_COMPLEX)</font>
+<a name="line473">473: </a>  PetscStackCallBLAS(<font color="#666666">"LAPACKgesvd"</font>,LAPACKgesvd_(<font color="#666666">"S"</font>,<font color="#666666">"O"</font>,&amp;m,&amp;m,R,&amp;m,sigma,U,&amp;m,NULL,&amp;m,work,&amp;lwork,&amp;info));
+<a name="line474">474: </a><font color="#A020F0">#else</font>
+<a name="line475">475: </a>  PetscStackCallBLAS(<font color="#666666">"LAPACKgesvd"</font>,LAPACKgesvd_(<font color="#666666">"S"</font>,<font color="#666666">"O"</font>,&amp;m,&amp;m,R,&amp;m,sigma,U,&amp;m,NULL,&amp;m,work,&amp;lwork,rwork,&amp;info));
+<a name="line476">476: </a><font color="#A020F0">#endif</font>
+<a name="line477">477: </a>  SlepcCheckLapackInfo(<font color="#666666">"gesvd"</font>,info);
+<a name="line478">478: </a>  PetscFPTrapPop();
+<a name="line479">479: </a>  *rank = 0;
+<a name="line480">480: </a>  <font color="#4169E1">for</font> (i=0;i&lt;m;i++) {
+<a name="line481">481: </a>    <font color="#4169E1">if</font> (sigma[i]/PetscMax(sigma[0],1)&gt;delta) (*rank)++;
+<a name="line482">482: </a>  }
+<a name="line483">483: </a>  MatCreateDense(PETSC_COMM_SELF,m,m,PETSC_DECIDE,PETSC_DECIDE,U,&amp;A);
+<a name="line484">484: </a>  <a href="../../../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(S,0,m);
+<a name="line485">485: </a>  <a href="../../../../../docs/manualpages/BV/BVMultInPlace.html#BVMultInPlace">BVMultInPlace</a>(S,A,0,*rank);
+<a name="line486">486: </a>  MatDestroy(&amp;A);
+<a name="line487">487: </a>  <font color="#B22222">/* Projected linear system */</font>
+<a name="line488">488: </a>  <font color="#B22222">/* m first columns of A have the right singular vectors */</font>
+<a name="line489">489: </a>  PetscBLASIntCast(*rank,&amp;k_);
+<a name="line490">490: </a>  PetscBLASIntCast(ml,&amp;lda);
+<a name="line491">491: </a>  PetscStackCallBLAS(<font color="#666666">"BLASgemm"</font>,BLASgemm_(<font color="#666666">"N"</font>,<font color="#666666">"C"</font>,&amp;m,&amp;k_,&amp;m,&amp;sone,pA+L*lda,&amp;lda,R,&amp;m,&amp;zero,T,&amp;m));
+<a name="line492">492: </a>  PetscArrayzero(pA,ml*ml);
+<a name="line493">493: </a>  PetscStackCallBLAS(<font color="#666666">"BLASgemm"</font>,BLASgemm_(<font color="#666666">"C"</font>,<font color="#666666">"N"</font>,&amp;k_,&amp;k_,&amp;m,&amp;sone,U,&amp;m,T,&amp;m,&amp;zero,pA,&amp;k_));
+<a name="line494">494: </a>  <font color="#4169E1">for</font> (j=0;j&lt;k_;j++) <font color="#4169E1">for</font> (i=0;i&lt;k_;i++) pA[j*k_+i] /= sigma[j];
+<a name="line495">495: </a>  PetscFree5(T,R,U,work,rwork);
+<a name="line496">496: </a>  PetscFunctionReturn(0);
+<a name="line497">497: </a>}
+
+<a name="line499">499: </a><font color="#B22222">/*@</font>
+<a name="line500">500: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVSVDAndRank.html#BVSVDAndRank">BVSVDAndRank</a> - Compute the <a href="../../../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> (left singular vectors only, and singular</font>
+<a name="line501">501: </a><font color="#B22222">   values) and determine the numerical rank according to a tolerance.</font>
+
+<a name="line503">503: </a><font color="#B22222">   Collective on S</font>
+
+<a name="line505">505: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line506">506: </a><font color="#B22222">+  S     - the basis vectors</font>
+<a name="line507">507: </a><font color="#B22222">.  m     - the moment degree</font>
+<a name="line508">508: </a><font color="#B22222">.  l     - the block size</font>
+<a name="line509">509: </a><font color="#B22222">.  delta - the tolerance used to determine the rank</font>
+<a name="line510">510: </a><font color="#B22222">-  meth  - the method to be used</font>
+
+<a name="line512">512: </a><font color="#B22222">   Output Parameters:</font>
+<a name="line513">513: </a><font color="#B22222">+  A     - workspace, on output contains relevant values in the CAA method</font>
+<a name="line514">514: </a><font color="#B22222">.  sigma - computed singular values</font>
+<a name="line515">515: </a><font color="#B22222">-  rank  - estimated rank (optional)</font>
+
+<a name="line517">517: </a><font color="#B22222">   Notes:</font>
+<a name="line518">518: </a><font color="#B22222">   This function computes [U,Sigma,V] = svd(S) and replaces S with U.</font>
+<a name="line519">519: </a><font color="#B22222">   The current implementation computes this via S'*S, and it may include</font>
+<a name="line520">520: </a><font color="#B22222">   some kind of iterative refinement to improve accuracy in some cases.</font>
+
+<a name="line522">522: </a><font color="#B22222">   The parameters m and l refer to the moment and block size of contour</font>
+<a name="line523">523: </a><font color="#B22222">   integral methods. All columns up to m*l are modified, and the active</font>
+<a name="line524">524: </a><font color="#B22222">   columns are set to 0..m*l.</font>
+
+<a name="line526">526: </a><font color="#B22222">   The method is one of <a href="../../../../../docs/manualpages/sys/BVSVDMethod.html#BVSVDMethod">BV_SVD_METHOD_REFINE</a>, <a href="../../../../../docs/manualpages/sys/BVSVDMethod.html#BVSVDMethod">BV_SVD_METHOD_QR</a>, <a href="../../../../../docs/manualpages/sys/BVSVDMethod.html#BVSVDMethod">BV_SVD_METHOD_QR_CAA</a>.</font>
+
+<a name="line528">528: </a><font color="#B22222">   The A workspace should be m*l*m*l in size.</font>
+
+<a name="line530">530: </a><font color="#B22222">   Once the decomposition is computed, the numerical rank is estimated</font>
+<a name="line531">531: </a><font color="#B22222">   by counting the number of singular values that are larger than the</font>
+<a name="line532">532: </a><font color="#B22222">   tolerance delta, relative to the first singular value.</font>
+
+<a name="line534">534: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line536">536: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>()</font>
+<a name="line537">537: </a><font color="#B22222">@*/</font>
+<a name="line538">538: </a><strong><font color="#4169E1"><a name="BVSVDAndRank"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVSVDAndRank.html#BVSVDAndRank">BVSVDAndRank</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> S,PetscInt m,PetscInt l,PetscReal delta,<a href="../../../../../docs/manualpages/sys/BVSVDMethod.html#BVSVDMethod">BVSVDMethod</a> meth,PetscScalar *A,PetscReal *sigma,PetscInt *rank)</font></strong>
+<a name="line539">539: </a>{
+
+<a name="line549">549: </a>  PetscLogEventBegin(BV_SVDAndRank,S,0,0,0);
+<a name="line550">550: </a>  <a href="../../../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(S,0,m*l);
+<a name="line551">551: </a>  <font color="#4169E1">switch</font> (meth) {
+<a name="line552">552: </a>    <font color="#4169E1">case</font> <a href="../../../../../docs/manualpages/sys/BVSVDMethod.html#BVSVDMethod">BV_SVD_METHOD_REFINE</a>:
+<a name="line553">553: </a>      BVSVDAndRank_Refine(S,delta,A,sigma,rank);
+<a name="line554">554: </a>      <font color="#4169E1">break</font>;
+<a name="line555">555: </a>    <font color="#4169E1">case</font> <a href="../../../../../docs/manualpages/sys/BVSVDMethod.html#BVSVDMethod">BV_SVD_METHOD_QR</a>:
+<a name="line556">556: </a>      BVSVDAndRank_QR(S,delta,A,sigma,rank);
+<a name="line557">557: </a>      <font color="#4169E1">break</font>;
+<a name="line558">558: </a>    <font color="#4169E1">case</font> <a href="../../../../../docs/manualpages/sys/BVSVDMethod.html#BVSVDMethod">BV_SVD_METHOD_QR_CAA</a>:
+<a name="line559">559: </a>      BVSVDAndRank_QR_CAA(S,m,l,delta,A,sigma,rank);
+<a name="line560">560: </a>      <font color="#4169E1">break</font>;
+<a name="line561">561: </a>  }
+<a name="line562">562: </a>  PetscLogEventEnd(BV_SVDAndRank,S,0,0,0);
+<a name="line563">563: </a>  PetscFunctionReturn(0);
+<a name="line564">564: </a>}
+
+<a name="line566">566: </a><font color="#B22222">/*@</font>
+<a name="line567">567: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVCISSResizeBases.html#BVCISSResizeBases">BVCISSResizeBases</a> - Resize the bases involved in CISS solvers when the L grows.</font>
+
+<a name="line569">569: </a><font color="#B22222">   Collective on S</font>
+
+<a name="line571">571: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line572">572: </a><font color="#B22222">+  S      - basis of L*M columns</font>
+<a name="line573">573: </a><font color="#B22222">.  V      - basis of L columns (may be associated to subcommunicators)</font>
+<a name="line574">574: </a><font color="#B22222">.  Y      - basis of npoints*L columns</font>
+<a name="line575">575: </a><font color="#B22222">.  Lold   - old value of L</font>
+<a name="line576">576: </a><font color="#B22222">.  Lnew   - new value of L</font>
+<a name="line577">577: </a><font color="#B22222">.  M      - the moment size</font>
+<a name="line578">578: </a><font color="#B22222">-  npoints - number of integration points</font>
+
+<a name="line580">580: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line582">582: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVResize.html#BVResize">BVResize</a>()</font>
+<a name="line583">583: </a><font color="#B22222">@*/</font>
+<a name="line584">584: </a><strong><font color="#4169E1"><a name="BVCISSResizeBases"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVCISSResizeBases.html#BVCISSResizeBases">BVCISSResizeBases</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> S,<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> V,<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> Y,PetscInt Lold,PetscInt Lnew,PetscInt M,PetscInt npoints)</font></strong>
+<a name="line585">585: </a>{
+<a name="line586">586: </a>  PetscInt       i,j;
+
+
+<a name="line596">596: </a>  <a href="../../../../../docs/manualpages/BV/BVResize.html#BVResize">BVResize</a>(S,Lnew*M,PETSC_FALSE);
+<a name="line597">597: </a>  <a href="../../../../../docs/manualpages/BV/BVResize.html#BVResize">BVResize</a>(V,Lnew,PETSC_TRUE);
+<a name="line598">598: </a>  <a href="../../../../../docs/manualpages/BV/BVResize.html#BVResize">BVResize</a>(Y,Lnew*npoints,PETSC_TRUE);
+<a name="line599">599: </a>  <font color="#B22222">/* columns of Y are interleaved */</font>
+<a name="line600">600: </a>  <font color="#4169E1">for</font> (i=npoints-1;i&gt;=0;i--) {
+<a name="line601">601: </a>    <font color="#4169E1">for</font> (j=Lold-1;j&gt;=0;j--) <a href="../../../../../docs/manualpages/BV/BVCopyColumn.html#BVCopyColumn">BVCopyColumn</a>(Y,i*Lold+j,i*Lnew+j);
+<a name="line602">602: </a>  }
+<a name="line603">603: </a>  PetscFunctionReturn(0);
+<a name="line604">604: </a>}
+</pre>
+</body>
+
+</html>

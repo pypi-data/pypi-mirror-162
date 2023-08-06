@@ -1,0 +1,1730 @@
+<center><a href="bvbasic.c">Actual source code: bvbasic.c</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="https://slepc.upv.es/documentation/current/src/sys/classes/bv/interface/bvbasic.c.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2022-08-09T09:05:24+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>slepc-3.17.2 2022-08-09</b></div>
+   <div id="bugreport" align=right><a href="mailto:slepc-maint@upv.es?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: slepc-3.17.2 v3.17.2 src/sys/classes/bv/interface/bvbasic.c.html "><small>Report Typos and Errors</small></a></div>
+<pre width="80">
+<a name="line1">  1: </a><font color="#B22222">/*</font>
+<a name="line2">  2: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line3">  3: </a><font color="#B22222">   SLEPc - Scalable Library for Eigenvalue Problem Computations</font>
+<a name="line4">  4: </a><font color="#B22222">   Copyright (c) 2002-, Universitat Politecnica de Valencia, Spain</font>
+
+<a name="line6">  6: </a><font color="#B22222">   This file is part of SLEPc.</font>
+<a name="line7">  7: </a><font color="#B22222">   SLEPc is distributed under a 2-clause BSD license (see LICENSE).</font>
+<a name="line8">  8: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line9">  9: </a><font color="#B22222">*/</font>
+<a name="line10"> 10: </a><font color="#B22222">/*</font>
+<a name="line11"> 11: </a><font color="#B22222">   Basic <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> routines</font>
+<a name="line12"> 12: </a><font color="#B22222">*/</font>
+
+<a name="line14"> 14: </a>#include <A href="../../../../../include/slepc/private/bvimpl.h.html">&lt;slepc/private/bvimpl.h&gt;</A>
+
+<a name="line16"> 16: </a>PetscBool         BVRegisterAllCalled = PETSC_FALSE;
+<a name="line17"> 17: </a>PetscFunctionList BVList = 0;
+
+<a name="line19"> 19: </a><font color="#B22222">/*@C</font>
+<a name="line20"> 20: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVSetType.html#BVSetType">BVSetType</a> - Selects the type for the <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> object.</font>
+
+<a name="line22"> 22: </a><font color="#B22222">   Logically Collective on bv</font>
+
+<a name="line24"> 24: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line25"> 25: </a><font color="#B22222">+  bv   - the basis vectors context</font>
+<a name="line26"> 26: </a><font color="#B22222">-  type - a known type</font>
+
+<a name="line28"> 28: </a><font color="#B22222">   Options Database Key:</font>
+<a name="line29"> 29: </a><font color="#B22222">.  -bv_type &lt;type&gt; - Sets <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> type</font>
+
+<a name="line31"> 31: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line33"> 33: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVGetType.html#BVGetType">BVGetType</a>()</font>
+<a name="line34"> 34: </a><font color="#B22222">@*/</font>
+<a name="line35"> 35: </a><strong><font color="#4169E1"><a name="BVSetType"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVSetType.html#BVSetType">BVSetType</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> bv,<a href="../../../../../docs/manualpages/sys/BVType.html#BVType">BVType</a> type)</font></strong>
+<a name="line36"> 36: </a>{
+<a name="line37"> 37: </a>  PetscErrorCode (*r)(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a>);
+<a name="line38"> 38: </a>  PetscBool      match;
+
+
+<a name="line43"> 43: </a>  PetscObjectTypeCompare((PetscObject)bv,type,&amp;match);
+<a name="line44"> 44: </a>  <font color="#4169E1">if</font> (match) PetscFunctionReturn(0);
+<a name="line45"> 45: </a>  PetscStrcmp(type,BVTENSOR,&amp;match);
+
+<a name="line48"> 48: </a>  PetscFunctionListFind(BVList,type,&amp;r);
+
+<a name="line51"> 51: </a>  <font color="#4169E1">if</font> (bv-&gt;ops-&gt;destroy) (*bv-&gt;ops-&gt;destroy)(bv);
+<a name="line52"> 52: </a>  PetscMemzero(bv-&gt;ops,<font color="#4169E1">sizeof</font>(<font color="#4169E1">struct _BVOps</font>));
+
+<a name="line54"> 54: </a>  PetscObjectChangeTypeName((PetscObject)bv,type);
+<a name="line55"> 55: </a>  <font color="#4169E1">if</font> (bv-&gt;n &lt; 0 &amp;&amp; bv-&gt;N &lt; 0) {
+<a name="line56"> 56: </a>    bv-&gt;ops-&gt;create = r;
+<a name="line57"> 57: </a>  } <font color="#4169E1">else</font> {
+<a name="line58"> 58: </a>    PetscLogEventBegin(BV_Create,bv,0,0,0);
+<a name="line59"> 59: </a>    (*r)(bv);
+<a name="line60"> 60: </a>    PetscLogEventEnd(BV_Create,bv,0,0,0);
+<a name="line61"> 61: </a>  }
+<a name="line62"> 62: </a>  PetscFunctionReturn(0);
+<a name="line63"> 63: </a>}
+
+<a name="line65"> 65: </a><font color="#B22222">/*@C</font>
+<a name="line66"> 66: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVGetType.html#BVGetType">BVGetType</a> - Gets the <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> type name (as a string) from the <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> context.</font>
+
+<a name="line68"> 68: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line70"> 70: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line71"> 71: </a><font color="#B22222">.  bv - the basis vectors context</font>
+
+<a name="line73"> 73: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line74"> 74: </a><font color="#B22222">.  type - name of the type of basis vectors</font>
+
+<a name="line76"> 76: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line78"> 78: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVSetType.html#BVSetType">BVSetType</a>()</font>
+<a name="line79"> 79: </a><font color="#B22222">@*/</font>
+<a name="line80"> 80: </a><strong><font color="#4169E1"><a name="BVGetType"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVGetType.html#BVGetType">BVGetType</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> bv,<a href="../../../../../docs/manualpages/sys/BVType.html#BVType">BVType</a> *type)</font></strong>
+<a name="line81"> 81: </a>{
+<a name="line84"> 84: </a>  *type = ((PetscObject)bv)-&gt;type_name;
+<a name="line85"> 85: </a>  PetscFunctionReturn(0);
+<a name="line86"> 86: </a>}
+
+<a name="line88"> 88: </a><font color="#B22222">/*@</font>
+<a name="line89"> 89: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVSetSizes.html#BVSetSizes">BVSetSizes</a> - Sets the local and global sizes, and the number of columns.</font>
+
+<a name="line91"> 91: </a><font color="#B22222">   Collective on bv</font>
+
+<a name="line93"> 93: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line94"> 94: </a><font color="#B22222">+  bv - the basis vectors</font>
+<a name="line95"> 95: </a><font color="#B22222">.  n  - the local size (or PETSC_DECIDE to have it set)</font>
+<a name="line96"> 96: </a><font color="#B22222">.  N  - the global size (or PETSC_DECIDE)</font>
+<a name="line97"> 97: </a><font color="#B22222">-  m  - the number of columns</font>
+
+<a name="line99"> 99: </a><font color="#B22222">   Notes:</font>
+<a name="line100">100: </a><font color="#B22222">   n and N cannot be both PETSC_DECIDE.</font>
+<a name="line101">101: </a><font color="#B22222">   If one processor calls this with N of PETSC_DECIDE then all processors must,</font>
+<a name="line102">102: </a><font color="#B22222">   otherwise the program will hang.</font>
+
+<a name="line104">104: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line106">106: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVSetSizesFromVec.html#BVSetSizesFromVec">BVSetSizesFromVec</a>(), <a href="../../../../../docs/manualpages/BV/BVGetSizes.html#BVGetSizes">BVGetSizes</a>(), <a href="../../../../../docs/manualpages/BV/BVResize.html#BVResize">BVResize</a>()</font>
+<a name="line107">107: </a><font color="#B22222">@*/</font>
+<a name="line108">108: </a><strong><font color="#4169E1"><a name="BVSetSizes"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVSetSizes.html#BVSetSizes">BVSetSizes</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> bv,PetscInt n,PetscInt N,PetscInt m)</font></strong>
+<a name="line109">109: </a>{
+<a name="line110">110: </a>  PetscInt       ma;
+
+<a name="line119">119: </a>  bv-&gt;n = n;
+<a name="line120">120: </a>  bv-&gt;N = N;
+<a name="line121">121: </a>  bv-&gt;m = m;
+<a name="line122">122: </a>  bv-&gt;k = m;
+<a name="line123">123: </a>  <font color="#4169E1">if</font> (!bv-&gt;t) {  <font color="#B22222">/* create template vector and get actual dimensions */</font>
+<a name="line124">124: </a>    VecCreate(PetscObjectComm((PetscObject)bv),&amp;bv-&gt;t);
+<a name="line125">125: </a>    VecSetSizes(bv-&gt;t,bv-&gt;n,bv-&gt;N);
+<a name="line126">126: </a>    VecSetFromOptions(bv-&gt;t);
+<a name="line127">127: </a>    VecGetSize(bv-&gt;t,&amp;bv-&gt;N);
+<a name="line128">128: </a>    VecGetLocalSize(bv-&gt;t,&amp;bv-&gt;n);
+<a name="line129">129: </a>    <font color="#4169E1">if</font> (bv-&gt;matrix) {  <font color="#B22222">/* check compatible dimensions of user-provided matrix */</font>
+<a name="line130">130: </a>      MatGetLocalSize(bv-&gt;matrix,&amp;ma,NULL);
+<a name="line132">132: </a>    }
+<a name="line133">133: </a>  }
+<a name="line134">134: </a>  <font color="#4169E1">if</font> (bv-&gt;ops-&gt;create) {
+<a name="line135">135: </a>    PetscLogEventBegin(BV_Create,bv,0,0,0);
+<a name="line136">136: </a>    (*bv-&gt;ops-&gt;create)(bv);
+<a name="line137">137: </a>    PetscLogEventEnd(BV_Create,bv,0,0,0);
+<a name="line138">138: </a>    bv-&gt;ops-&gt;create = 0;
+<a name="line139">139: </a>    bv-&gt;defersfo = PETSC_FALSE;
+<a name="line140">140: </a>  }
+<a name="line141">141: </a>  PetscFunctionReturn(0);
+<a name="line142">142: </a>}
+
+<a name="line144">144: </a><font color="#B22222">/*@</font>
+<a name="line145">145: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVSetSizesFromVec.html#BVSetSizesFromVec">BVSetSizesFromVec</a> - Sets the local and global sizes, and the number of columns.</font>
+<a name="line146">146: </a><font color="#B22222">   Local and global sizes are specified indirectly by passing a template vector.</font>
+
+<a name="line148">148: </a><font color="#B22222">   Collective on bv</font>
+
+<a name="line150">150: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line151">151: </a><font color="#B22222">+  bv - the basis vectors</font>
+<a name="line152">152: </a><font color="#B22222">.  t  - the template vector</font>
+<a name="line153">153: </a><font color="#B22222">-  m  - the number of columns</font>
+
+<a name="line155">155: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line157">157: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVSetSizes.html#BVSetSizes">BVSetSizes</a>(), <a href="../../../../../docs/manualpages/BV/BVGetSizes.html#BVGetSizes">BVGetSizes</a>(), <a href="../../../../../docs/manualpages/BV/BVResize.html#BVResize">BVResize</a>()</font>
+<a name="line158">158: </a><font color="#B22222">@*/</font>
+<a name="line159">159: </a><strong><font color="#4169E1"><a name="BVSetSizesFromVec"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVSetSizesFromVec.html#BVSetSizesFromVec">BVSetSizesFromVec</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> bv,Vec t,PetscInt m)</font></strong>
+<a name="line160">160: </a>{
+<a name="line161">161: </a>  PetscInt       ma;
+
+<a name="line169">169: </a>  VecGetSize(t,&amp;bv-&gt;N);
+<a name="line170">170: </a>  VecGetLocalSize(t,&amp;bv-&gt;n);
+<a name="line171">171: </a>  <font color="#4169E1">if</font> (bv-&gt;matrix) {  <font color="#B22222">/* check compatible dimensions of user-provided matrix */</font>
+<a name="line172">172: </a>    MatGetLocalSize(bv-&gt;matrix,&amp;ma,NULL);
+<a name="line174">174: </a>  }
+<a name="line175">175: </a>  bv-&gt;m = m;
+<a name="line176">176: </a>  bv-&gt;k = m;
+<a name="line177">177: </a>  bv-&gt;t = t;
+<a name="line178">178: </a>  PetscObjectReference((PetscObject)t);
+<a name="line179">179: </a>  <font color="#4169E1">if</font> (bv-&gt;ops-&gt;create) {
+<a name="line180">180: </a>    (*bv-&gt;ops-&gt;create)(bv);
+<a name="line181">181: </a>    bv-&gt;ops-&gt;create = 0;
+<a name="line182">182: </a>    bv-&gt;defersfo = PETSC_FALSE;
+<a name="line183">183: </a>  }
+<a name="line184">184: </a>  PetscFunctionReturn(0);
+<a name="line185">185: </a>}
+
+<a name="line187">187: </a><font color="#B22222">/*@</font>
+<a name="line188">188: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVGetSizes.html#BVGetSizes">BVGetSizes</a> - Returns the local and global sizes, and the number of columns.</font>
+
+<a name="line190">190: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line192">192: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line193">193: </a><font color="#B22222">.  bv - the basis vectors</font>
+
+<a name="line195">195: </a><font color="#B22222">   Output Parameters:</font>
+<a name="line196">196: </a><font color="#B22222">+  n  - the local size</font>
+<a name="line197">197: </a><font color="#B22222">.  N  - the global size</font>
+<a name="line198">198: </a><font color="#B22222">-  m  - the number of columns</font>
+
+<a name="line200">200: </a><font color="#B22222">   Note:</font>
+<a name="line201">201: </a><font color="#B22222">   Normal usage requires that bv has already been given its sizes, otherwise</font>
+<a name="line202">202: </a><font color="#B22222">   the call fails. However, this function can also be used to determine if</font>
+<a name="line203">203: </a><font color="#B22222">   a <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> object has been initialized completely (sizes and type). For this,</font>
+<a name="line204">204: </a><font color="#B22222">   call with n=NULL and N=NULL, then a return value of m=0 indicates that</font>
+<a name="line205">205: </a><font color="#B22222">   the <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> object is not ready for use yet.</font>
+
+<a name="line207">207: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line209">209: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVSetSizes.html#BVSetSizes">BVSetSizes</a>(), <a href="../../../../../docs/manualpages/BV/BVSetSizesFromVec.html#BVSetSizesFromVec">BVSetSizesFromVec</a>()</font>
+<a name="line210">210: </a><font color="#B22222">@*/</font>
+<a name="line211">211: </a><strong><font color="#4169E1"><a name="BVGetSizes"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVGetSizes.html#BVGetSizes">BVGetSizes</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> bv,PetscInt *n,PetscInt *N,PetscInt *m)</font></strong>
+<a name="line212">212: </a>{
+<a name="line213">213: </a>  <font color="#4169E1">if</font> (!bv) {
+<a name="line214">214: </a>    <font color="#4169E1">if</font> (m &amp;&amp; !n &amp;&amp; !N) *m = 0;
+<a name="line215">215: </a>    PetscFunctionReturn(0);
+<a name="line216">216: </a>  }
+<a name="line218">218: </a>  <font color="#4169E1">if</font> (n || N) BVCheckSizes(bv,1);
+<a name="line219">219: </a>  <font color="#4169E1">if</font> (n) *n = bv-&gt;n;
+<a name="line220">220: </a>  <font color="#4169E1">if</font> (N) *N = bv-&gt;N;
+<a name="line221">221: </a>  <font color="#4169E1">if</font> (m) *m = bv-&gt;m;
+<a name="line222">222: </a>  <font color="#4169E1">if</font> (m &amp;&amp; !n &amp;&amp; !N &amp;&amp; !((PetscObject)bv)-&gt;type_name) *m = 0;
+<a name="line223">223: </a>  PetscFunctionReturn(0);
+<a name="line224">224: </a>}
+
+<a name="line226">226: </a><font color="#B22222">/*@</font>
+<a name="line227">227: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVSetNumConstraints.html#BVSetNumConstraints">BVSetNumConstraints</a> - Set the number of constraints.</font>
+
+<a name="line229">229: </a><font color="#B22222">   Logically Collective on V</font>
+
+<a name="line231">231: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line232">232: </a><font color="#B22222">+  V  - basis vectors</font>
+<a name="line233">233: </a><font color="#B22222">-  nc - number of constraints</font>
+
+<a name="line235">235: </a><font color="#B22222">   Notes:</font>
+<a name="line236">236: </a><font color="#B22222">   This function sets the number of constraints to nc and marks all remaining</font>
+<a name="line237">237: </a><font color="#B22222">   columns as regular. Normal user would call <a href="../../../../../docs/manualpages/BV/BVInsertConstraints.html#BVInsertConstraints">BVInsertConstraints</a>() instead.</font>
+
+<a name="line239">239: </a><font color="#B22222">   If nc is smaller than the previously set value, then some of the constraints</font>
+<a name="line240">240: </a><font color="#B22222">   are discarded. In particular, using nc=0 removes all constraints preserving</font>
+<a name="line241">241: </a><font color="#B22222">   the content of regular columns.</font>
+
+<a name="line243">243: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line245">245: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVInsertConstraints.html#BVInsertConstraints">BVInsertConstraints</a>()</font>
+<a name="line246">246: </a><font color="#B22222">@*/</font>
+<a name="line247">247: </a><strong><font color="#4169E1"><a name="BVSetNumConstraints"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVSetNumConstraints.html#BVSetNumConstraints">BVSetNumConstraints</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> V,PetscInt nc)</font></strong>
+<a name="line248">248: </a>{
+<a name="line249">249: </a>  PetscInt       total,diff,i;
+<a name="line250">250: </a>  Vec            x,y;
+
+<a name="line256">256: </a>  BVCheckSizes(V,1);
+
+<a name="line259">259: </a>  diff = nc-V-&gt;nc;
+<a name="line260">260: </a>  <font color="#4169E1">if</font> (!diff) PetscFunctionReturn(0);
+<a name="line261">261: </a>  total = V-&gt;nc+V-&gt;m;
+<a name="line263">263: </a>  <font color="#4169E1">if</font> (diff&lt;0) {  <font color="#B22222">/* lessen constraints, shift contents of <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> */</font>
+<a name="line264">264: </a>    <font color="#4169E1">for</font> (i=0;i&lt;V-&gt;m;i++) {
+<a name="line265">265: </a>      <a href="../../../../../docs/manualpages/BV/BVGetColumn.html#BVGetColumn">BVGetColumn</a>(V,i,&amp;x);
+<a name="line266">266: </a>      <a href="../../../../../docs/manualpages/BV/BVGetColumn.html#BVGetColumn">BVGetColumn</a>(V,i+diff,&amp;y);
+<a name="line267">267: </a>      VecCopy(x,y);
+<a name="line268">268: </a>      <a href="../../../../../docs/manualpages/BV/BVRestoreColumn.html#BVRestoreColumn">BVRestoreColumn</a>(V,i,&amp;x);
+<a name="line269">269: </a>      <a href="../../../../../docs/manualpages/BV/BVRestoreColumn.html#BVRestoreColumn">BVRestoreColumn</a>(V,i+diff,&amp;y);
+<a name="line270">270: </a>    }
+<a name="line271">271: </a>  }
+<a name="line272">272: </a>  V-&gt;nc = nc;
+<a name="line273">273: </a>  V-&gt;ci[0] = -V-&gt;nc-1;
+<a name="line274">274: </a>  V-&gt;ci[1] = -V-&gt;nc-1;
+<a name="line275">275: </a>  V-&gt;m = total-nc;
+<a name="line276">276: </a>  V-&gt;l = PetscMin(V-&gt;l,V-&gt;m);
+<a name="line277">277: </a>  V-&gt;k = PetscMin(V-&gt;k,V-&gt;m);
+<a name="line278">278: </a>  PetscObjectStateIncrease((PetscObject)V);
+<a name="line279">279: </a>  PetscFunctionReturn(0);
+<a name="line280">280: </a>}
+
+<a name="line282">282: </a><font color="#B22222">/*@</font>
+<a name="line283">283: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVGetNumConstraints.html#BVGetNumConstraints">BVGetNumConstraints</a> - Returns the number of constraints.</font>
+
+<a name="line285">285: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line287">287: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line288">288: </a><font color="#B22222">.  bv - the basis vectors</font>
+
+<a name="line290">290: </a><font color="#B22222">   Output Parameters:</font>
+<a name="line291">291: </a><font color="#B22222">.  nc - the number of constraints</font>
+
+<a name="line293">293: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line295">295: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVGetSizes.html#BVGetSizes">BVGetSizes</a>(), <a href="../../../../../docs/manualpages/BV/BVInsertConstraints.html#BVInsertConstraints">BVInsertConstraints</a>()</font>
+<a name="line296">296: </a><font color="#B22222">@*/</font>
+<a name="line297">297: </a><strong><font color="#4169E1"><a name="BVGetNumConstraints"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVGetNumConstraints.html#BVGetNumConstraints">BVGetNumConstraints</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> bv,PetscInt *nc)</font></strong>
+<a name="line298">298: </a>{
+<a name="line301">301: </a>  *nc = bv-&gt;nc;
+<a name="line302">302: </a>  PetscFunctionReturn(0);
+<a name="line303">303: </a>}
+
+<a name="line305">305: </a><font color="#B22222">/*@</font>
+<a name="line306">306: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVResize.html#BVResize">BVResize</a> - Change the number of columns.</font>
+
+<a name="line308">308: </a><font color="#B22222">   Collective on bv</font>
+
+<a name="line310">310: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line311">311: </a><font color="#B22222">+  bv   - the basis vectors</font>
+<a name="line312">312: </a><font color="#B22222">.  m    - the new number of columns</font>
+<a name="line313">313: </a><font color="#B22222">-  copy - a flag indicating whether current values should be kept</font>
+
+<a name="line315">315: </a><font color="#B22222">   Note:</font>
+<a name="line316">316: </a><font color="#B22222">   Internal storage is reallocated. If the copy flag is set to true, then</font>
+<a name="line317">317: </a><font color="#B22222">   the contents are copied to the leading part of the new space.</font>
+
+<a name="line319">319: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line321">321: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVSetSizes.html#BVSetSizes">BVSetSizes</a>(), <a href="../../../../../docs/manualpages/BV/BVSetSizesFromVec.html#BVSetSizesFromVec">BVSetSizesFromVec</a>()</font>
+<a name="line322">322: </a><font color="#B22222">@*/</font>
+<a name="line323">323: </a><strong><font color="#4169E1"><a name="BVResize"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVResize.html#BVResize">BVResize</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> bv,PetscInt m,PetscBool copy)</font></strong>
+<a name="line324">324: </a>{
+<a name="line325">325: </a>  PetscScalar       *array;
+<a name="line326">326: </a>  const PetscScalar *omega;
+<a name="line327">327: </a>  Vec               v;
+
+<a name="line335">335: </a>  <font color="#4169E1">if</font> (bv-&gt;m == m) PetscFunctionReturn(0);
+<a name="line336">336: </a>  BVCheckOp(bv,1,resize);
+
+<a name="line338">338: </a>  PetscLogEventBegin(BV_Create,bv,0,0,0);
+<a name="line339">339: </a>  (*bv-&gt;ops-&gt;resize)(bv,m,copy);
+<a name="line340">340: </a>  VecDestroy(&amp;bv-&gt;buffer);
+<a name="line341">341: </a>  <a href="../../../../../docs/manualpages/BV/BVDestroy.html#BVDestroy">BVDestroy</a>(&amp;bv-&gt;cached);
+<a name="line342">342: </a>  PetscFree2(bv-&gt;h,bv-&gt;c);
+<a name="line343">343: </a>  <font color="#4169E1">if</font> (bv-&gt;omega) {
+<a name="line344">344: </a>    <font color="#4169E1">if</font> (bv-&gt;cuda) {
+<a name="line345">345: </a><font color="#A020F0">#if defined(PETSC_HAVE_CUDA)</font>
+<a name="line346">346: </a>      VecCreateSeqCUDA(PETSC_COMM_SELF,m,&amp;v);
+<a name="line347">347: </a><font color="#A020F0">#else</font>
+<a name="line348">348: </a>      SETERRQ(PetscObjectComm((PetscObject)bv),PETSC_ERR_PLIB,<font color="#666666">"Something wrong happened"</font>);
+<a name="line349">349: </a><font color="#A020F0">#endif</font>
+<a name="line350">350: </a>    } <font color="#4169E1">else</font> VecCreateSeq(PETSC_COMM_SELF,m,&amp;v);
+<a name="line351">351: </a>    PetscLogObjectParent((PetscObject)bv,(PetscObject)v);
+<a name="line352">352: </a>    <font color="#4169E1">if</font> (copy) {
+<a name="line353">353: </a>      VecGetArray(v,&amp;array);
+<a name="line354">354: </a>      VecGetArrayRead(bv-&gt;omega,&amp;omega);
+<a name="line355">355: </a>      PetscArraycpy(array,omega,PetscMin(m,bv-&gt;m));
+<a name="line356">356: </a>      VecRestoreArrayRead(bv-&gt;omega,&amp;omega);
+<a name="line357">357: </a>      VecRestoreArray(v,&amp;array);
+<a name="line358">358: </a>    } <font color="#4169E1">else</font> VecSet(v,1.0);
+<a name="line359">359: </a>    VecDestroy(&amp;bv-&gt;omega);
+<a name="line360">360: </a>    bv-&gt;omega = v;
+<a name="line361">361: </a>  }
+<a name="line362">362: </a>  bv-&gt;m = m;
+<a name="line363">363: </a>  bv-&gt;k = PetscMin(bv-&gt;k,m);
+<a name="line364">364: </a>  bv-&gt;l = PetscMin(bv-&gt;l,m);
+<a name="line365">365: </a>  PetscLogEventEnd(BV_Create,bv,0,0,0);
+<a name="line366">366: </a>  PetscObjectStateIncrease((PetscObject)bv);
+<a name="line367">367: </a>  PetscFunctionReturn(0);
+<a name="line368">368: </a>}
+
+<a name="line370">370: </a><font color="#B22222">/*@</font>
+<a name="line371">371: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a> - Specify the columns that will be involved in operations.</font>
+
+<a name="line373">373: </a><font color="#B22222">   Logically Collective on bv</font>
+
+<a name="line375">375: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line376">376: </a><font color="#B22222">+  bv - the basis vectors context</font>
+<a name="line377">377: </a><font color="#B22222">.  l  - number of leading columns</font>
+<a name="line378">378: </a><font color="#B22222">-  k  - number of active columns</font>
+
+<a name="line380">380: </a><font color="#B22222">   Notes:</font>
+<a name="line381">381: </a><font color="#B22222">   In operations such as <a href="../../../../../docs/manualpages/BV/BVMult.html#BVMult">BVMult</a>() or <a href="../../../../../docs/manualpages/BV/BVDot.html#BVDot">BVDot</a>(), only the first k columns are</font>
+<a name="line382">382: </a><font color="#B22222">   considered. This is useful when the <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> is filled from left to right, so</font>
+<a name="line383">383: </a><font color="#B22222">   the last m-k columns do not have relevant information.</font>
+
+<a name="line385">385: </a><font color="#B22222">   Also in operations such as <a href="../../../../../docs/manualpages/BV/BVMult.html#BVMult">BVMult</a>() or <a href="../../../../../docs/manualpages/BV/BVDot.html#BVDot">BVDot</a>(), the first l columns are</font>
+<a name="line386">386: </a><font color="#B22222">   normally not included in the computation. See the manpage of each</font>
+<a name="line387">387: </a><font color="#B22222">   operation.</font>
+
+<a name="line389">389: </a><font color="#B22222">   In orthogonalization operations, the first l columns are treated</font>
+<a name="line390">390: </a><font color="#B22222">   differently, they participate in the orthogonalization but the computed</font>
+<a name="line391">391: </a><font color="#B22222">   coefficients are not stored.</font>
+
+<a name="line393">393: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line395">395: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVGetActiveColumns.html#BVGetActiveColumns">BVGetActiveColumns</a>(), <a href="../../../../../docs/manualpages/BV/BVSetSizes.html#BVSetSizes">BVSetSizes</a>()</font>
+<a name="line396">396: </a><font color="#B22222">@*/</font>
+<a name="line397">397: </a><strong><font color="#4169E1"><a name="BVSetActiveColumns"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> bv,PetscInt l,PetscInt k)</font></strong>
+<a name="line398">398: </a>{
+<a name="line402">402: </a>  BVCheckSizes(bv,1);
+<a name="line403">403: </a>  <font color="#4169E1">if</font> (PetscUnlikely(k==PETSC_DECIDE || k==PETSC_DEFAULT)) {
+<a name="line404">404: </a>    bv-&gt;k = bv-&gt;m;
+<a name="line405">405: </a>  } <font color="#4169E1">else</font> {
+<a name="line407">407: </a>    bv-&gt;k = k;
+<a name="line408">408: </a>  }
+<a name="line409">409: </a>  <font color="#4169E1">if</font> (PetscUnlikely(l==PETSC_DECIDE || l==PETSC_DEFAULT)) {
+<a name="line410">410: </a>    bv-&gt;l = 0;
+<a name="line411">411: </a>  } <font color="#4169E1">else</font> {
+<a name="line413">413: </a>    bv-&gt;l = l;
+<a name="line414">414: </a>  }
+<a name="line415">415: </a>  PetscFunctionReturn(0);
+<a name="line416">416: </a>}
+
+<a name="line418">418: </a><font color="#B22222">/*@</font>
+<a name="line419">419: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVGetActiveColumns.html#BVGetActiveColumns">BVGetActiveColumns</a> - Returns the current active dimensions.</font>
+
+<a name="line421">421: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line423">423: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line424">424: </a><font color="#B22222">.  bv - the basis vectors context</font>
+
+<a name="line426">426: </a><font color="#B22222">   Output Parameters:</font>
+<a name="line427">427: </a><font color="#B22222">+  l  - number of leading columns</font>
+<a name="line428">428: </a><font color="#B22222">-  k  - number of active columns</font>
+
+<a name="line430">430: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line432">432: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>()</font>
+<a name="line433">433: </a><font color="#B22222">@*/</font>
+<a name="line434">434: </a><strong><font color="#4169E1"><a name="BVGetActiveColumns"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVGetActiveColumns.html#BVGetActiveColumns">BVGetActiveColumns</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> bv,PetscInt *l,PetscInt *k)</font></strong>
+<a name="line435">435: </a>{
+<a name="line437">437: </a>  <font color="#4169E1">if</font> (l) *l = bv-&gt;l;
+<a name="line438">438: </a>  <font color="#4169E1">if</font> (k) *k = bv-&gt;k;
+<a name="line439">439: </a>  PetscFunctionReturn(0);
+<a name="line440">440: </a>}
+
+<a name="line442">442: </a><font color="#B22222">/*@</font>
+<a name="line443">443: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVSetMatrix.html#BVSetMatrix">BVSetMatrix</a> - Specifies the inner product to be used in orthogonalization.</font>
+
+<a name="line445">445: </a><font color="#B22222">   Collective on bv</font>
+
+<a name="line447">447: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line448">448: </a><font color="#B22222">+  bv    - the basis vectors context</font>
+<a name="line449">449: </a><font color="#B22222">.  B     - a symmetric matrix (may be NULL)</font>
+<a name="line450">450: </a><font color="#B22222">-  indef - a flag indicating if the matrix is indefinite</font>
+
+<a name="line452">452: </a><font color="#B22222">   Notes:</font>
+<a name="line453">453: </a><font color="#B22222">   This is used to specify a non-standard inner product, whose matrix</font>
+<a name="line454">454: </a><font color="#B22222">   representation is given by B. Then, all inner products required during</font>
+<a name="line455">455: </a><font color="#B22222">   orthogonalization are computed as (x,y)_B=y^H*B*x rather than the</font>
+<a name="line456">456: </a><font color="#B22222">   standard form (x,y)=y^H*x.</font>
+
+<a name="line458">458: </a><font color="#B22222">   Matrix B must be real symmetric (or complex Hermitian). A genuine inner</font>
+<a name="line459">459: </a><font color="#B22222">   product requires that B is also positive (semi-)definite. However, we</font>
+<a name="line460">460: </a><font color="#B22222">   also allow for an indefinite B (setting indef=PETSC_TRUE), in which</font>
+<a name="line461">461: </a><font color="#B22222">   case the orthogonalization uses an indefinite inner product.</font>
+
+<a name="line463">463: </a><font color="#B22222">   This affects operations <a href="../../../../../docs/manualpages/BV/BVDot.html#BVDot">BVDot</a>(), <a href="../../../../../docs/manualpages/BV/BVNorm.html#BVNorm">BVNorm</a>(), <a href="../../../../../docs/manualpages/BV/BVOrthogonalize.html#BVOrthogonalize">BVOrthogonalize</a>(), and variants.</font>
+
+<a name="line465">465: </a><font color="#B22222">   Setting B=NULL has the same effect as if the identity matrix was passed.</font>
+
+<a name="line467">467: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line469">469: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVGetMatrix.html#BVGetMatrix">BVGetMatrix</a>(), <a href="../../../../../docs/manualpages/BV/BVDot.html#BVDot">BVDot</a>(), <a href="../../../../../docs/manualpages/BV/BVNorm.html#BVNorm">BVNorm</a>(), <a href="../../../../../docs/manualpages/BV/BVOrthogonalize.html#BVOrthogonalize">BVOrthogonalize</a>(), <a href="../../../../../docs/manualpages/BV/BVSetDefiniteTolerance.html#BVSetDefiniteTolerance">BVSetDefiniteTolerance</a>()</font>
+<a name="line470">470: </a><font color="#B22222">@*/</font>
+<a name="line471">471: </a><strong><font color="#4169E1"><a name="BVSetMatrix"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVSetMatrix.html#BVSetMatrix">BVSetMatrix</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> bv,Mat B,PetscBool indef)</font></strong>
+<a name="line472">472: </a>{
+<a name="line473">473: </a>  PetscInt       m,n;
+
+<a name="line477">477: </a>  <font color="#4169E1">if</font> (B!=bv-&gt;matrix || (B &amp;&amp; ((PetscObject)B)-&gt;id!=((PetscObject)bv-&gt;matrix)-&gt;id) || indef!=bv-&gt;indef) {
+<a name="line478">478: </a>    <font color="#4169E1">if</font> (B) {
+<a name="line480">480: </a>      MatGetLocalSize(B,&amp;m,&amp;n);
+<a name="line483">483: </a>    }
+<a name="line484">484: </a>    <font color="#4169E1">if</font> (B) PetscObjectReference((PetscObject)B);
+<a name="line485">485: </a>    MatDestroy(&amp;bv-&gt;matrix);
+<a name="line486">486: </a>    bv-&gt;matrix = B;
+<a name="line487">487: </a>    bv-&gt;indef  = indef;
+<a name="line488">488: </a>    PetscObjectStateIncrease((PetscObject)bv);
+<a name="line489">489: </a>    <font color="#4169E1">if</font> (bv-&gt;Bx) PetscObjectStateIncrease((PetscObject)bv-&gt;Bx);
+<a name="line490">490: </a>    <font color="#4169E1">if</font> (bv-&gt;cached) PetscObjectStateIncrease((PetscObject)bv-&gt;cached);
+<a name="line491">491: </a>  }
+<a name="line492">492: </a>  PetscFunctionReturn(0);
+<a name="line493">493: </a>}
+
+<a name="line495">495: </a><font color="#B22222">/*@</font>
+<a name="line496">496: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVGetMatrix.html#BVGetMatrix">BVGetMatrix</a> - Retrieves the matrix representation of the inner product.</font>
+
+<a name="line498">498: </a><font color="#B22222">   Not collective, though a parallel Mat may be returned</font>
+
+<a name="line500">500: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line501">501: </a><font color="#B22222">.  bv    - the basis vectors context</font>
+
+<a name="line503">503: </a><font color="#B22222">   Output Parameters:</font>
+<a name="line504">504: </a><font color="#B22222">+  B     - the matrix of the inner product (may be NULL)</font>
+<a name="line505">505: </a><font color="#B22222">-  indef - the flag indicating if the matrix is indefinite</font>
+
+<a name="line507">507: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line509">509: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVSetMatrix.html#BVSetMatrix">BVSetMatrix</a>()</font>
+<a name="line510">510: </a><font color="#B22222">@*/</font>
+<a name="line511">511: </a><strong><font color="#4169E1"><a name="BVGetMatrix"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVGetMatrix.html#BVGetMatrix">BVGetMatrix</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> bv,Mat *B,PetscBool *indef)</font></strong>
+<a name="line512">512: </a>{
+<a name="line514">514: </a>  <font color="#4169E1">if</font> (B)     *B     = bv-&gt;matrix;
+<a name="line515">515: </a>  <font color="#4169E1">if</font> (indef) *indef = bv-&gt;indef;
+<a name="line516">516: </a>  PetscFunctionReturn(0);
+<a name="line517">517: </a>}
+
+<a name="line519">519: </a><font color="#B22222">/*@</font>
+<a name="line520">520: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVApplyMatrix.html#BVApplyMatrix">BVApplyMatrix</a> - Multiplies a vector by the matrix representation of the</font>
+<a name="line521">521: </a><font color="#B22222">   inner product.</font>
+
+<a name="line523">523: </a><font color="#B22222">   Neighbor-wise Collective on bv</font>
+
+<a name="line525">525: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line526">526: </a><font color="#B22222">+  bv - the basis vectors context</font>
+<a name="line527">527: </a><font color="#B22222">-  x  - the vector</font>
+
+<a name="line529">529: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line530">530: </a><font color="#B22222">.  y  - the result</font>
+
+<a name="line532">532: </a><font color="#B22222">   Note:</font>
+<a name="line533">533: </a><font color="#B22222">   If no matrix was specified this function copies the vector.</font>
+
+<a name="line535">535: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line537">537: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVSetMatrix.html#BVSetMatrix">BVSetMatrix</a>(), <a href="../../../../../docs/manualpages/BV/BVApplyMatrixBV.html#BVApplyMatrixBV">BVApplyMatrixBV</a>()</font>
+<a name="line538">538: </a><font color="#B22222">@*/</font>
+<a name="line539">539: </a><strong><font color="#4169E1"><a name="BVApplyMatrix"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVApplyMatrix.html#BVApplyMatrix">BVApplyMatrix</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> bv,Vec x,Vec y)</font></strong>
+<a name="line540">540: </a>{
+<a name="line544">544: </a>  <font color="#4169E1">if</font> (bv-&gt;matrix) {
+<a name="line545">545: </a>    BV_IPMatMult(bv,x);
+<a name="line546">546: </a>    VecCopy(bv-&gt;Bx,y);
+<a name="line547">547: </a>  } <font color="#4169E1">else</font> VecCopy(x,y);
+<a name="line548">548: </a>  PetscFunctionReturn(0);
+<a name="line549">549: </a>}
+
+<a name="line551">551: </a><font color="#B22222">/*@</font>
+<a name="line552">552: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVApplyMatrixBV.html#BVApplyMatrixBV">BVApplyMatrixBV</a> - Multiplies the <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> vectors by the matrix representation</font>
+<a name="line553">553: </a><font color="#B22222">   of the inner product.</font>
+
+<a name="line555">555: </a><font color="#B22222">   Neighbor-wise Collective on X</font>
+
+<a name="line557">557: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line558">558: </a><font color="#B22222">.  X - the basis vectors context</font>
+
+<a name="line560">560: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line561">561: </a><font color="#B22222">.  Y - the basis vectors to store the result (optional)</font>
+
+<a name="line563">563: </a><font color="#B22222">   Note:</font>
+<a name="line564">564: </a><font color="#B22222">   This function computes Y = B*X, where B is the matrix given with</font>
+<a name="line565">565: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVSetMatrix.html#BVSetMatrix">BVSetMatrix</a>(). This operation is computed as in <a href="../../../../../docs/manualpages/BV/BVMatMult.html#BVMatMult">BVMatMult</a>().</font>
+<a name="line566">566: </a><font color="#B22222">   If no matrix was specified, then it just copies Y = X.</font>
+
+<a name="line568">568: </a><font color="#B22222">   If no Y is given, the result is stored internally in the cached <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a>.</font>
+
+<a name="line570">570: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line572">572: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVSetMatrix.html#BVSetMatrix">BVSetMatrix</a>(), <a href="../../../../../docs/manualpages/BV/BVApplyMatrix.html#BVApplyMatrix">BVApplyMatrix</a>(), <a href="../../../../../docs/manualpages/BV/BVMatMult.html#BVMatMult">BVMatMult</a>(), <a href="../../../../../docs/manualpages/BV/BVGetCachedBV.html#BVGetCachedBV">BVGetCachedBV</a>()</font>
+<a name="line573">573: </a><font color="#B22222">@*/</font>
+<a name="line574">574: </a><strong><font color="#4169E1"><a name="BVApplyMatrixBV"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVApplyMatrixBV.html#BVApplyMatrixBV">BVApplyMatrixBV</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> X,<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> Y)</font></strong>
+<a name="line575">575: </a>{
+<a name="line577">577: </a>  <font color="#4169E1">if</font> (Y) {
+<a name="line579">579: </a>    <font color="#4169E1">if</font> (X-&gt;matrix) <a href="../../../../../docs/manualpages/BV/BVMatMult.html#BVMatMult">BVMatMult</a>(X,X-&gt;matrix,Y);
+<a name="line580">580: </a>    <font color="#4169E1">else</font> <a href="../../../../../docs/manualpages/BV/BVCopy.html#BVCopy">BVCopy</a>(X,Y);
+<a name="line581">581: </a>  } <font color="#4169E1">else</font> BV_IPMatMultBV(X);
+<a name="line582">582: </a>  PetscFunctionReturn(0);
+<a name="line583">583: </a>}
+
+<a name="line585">585: </a><font color="#B22222">/*@</font>
+<a name="line586">586: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVSetSignature.html#BVSetSignature">BVSetSignature</a> - Sets the signature matrix to be used in orthogonalization.</font>
+
+<a name="line588">588: </a><font color="#B22222">   Logically Collective on bv</font>
+
+<a name="line590">590: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line591">591: </a><font color="#B22222">+  bv    - the basis vectors context</font>
+<a name="line592">592: </a><font color="#B22222">-  omega - a vector representing the diagonal of the signature matrix</font>
+
+<a name="line594">594: </a><font color="#B22222">   Note:</font>
+<a name="line595">595: </a><font color="#B22222">   The signature matrix Omega = V'*B*V is relevant only for an indefinite B.</font>
+
+<a name="line597">597: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line599">599: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVSetMatrix.html#BVSetMatrix">BVSetMatrix</a>(), <a href="../../../../../docs/manualpages/BV/BVGetSignature.html#BVGetSignature">BVGetSignature</a>()</font>
+<a name="line600">600: </a><font color="#B22222">@*/</font>
+<a name="line601">601: </a><strong><font color="#4169E1"><a name="BVSetSignature"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVSetSignature.html#BVSetSignature">BVSetSignature</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> bv,Vec omega)</font></strong>
+<a name="line602">602: </a>{
+<a name="line603">603: </a>  PetscInt          i,n;
+<a name="line604">604: </a>  const PetscScalar *pomega;
+<a name="line605">605: </a>  PetscScalar       *intern;
+
+<a name="line608">608: </a>  BVCheckSizes(bv,1);
+
+<a name="line612">612: </a>  VecGetSize(omega,&amp;n);
+<a name="line614">614: </a>  BV_AllocateSignature(bv);
+<a name="line615">615: </a>  <font color="#4169E1">if</font> (bv-&gt;indef) {
+<a name="line616">616: </a>    VecGetArrayRead(omega,&amp;pomega);
+<a name="line617">617: </a>    VecGetArray(bv-&gt;omega,&amp;intern);
+<a name="line618">618: </a>    <font color="#4169E1">for</font> (i=0;i&lt;n;i++) intern[bv-&gt;nc+i] = pomega[i];
+<a name="line619">619: </a>    VecRestoreArray(bv-&gt;omega,&amp;intern);
+<a name="line620">620: </a>    VecRestoreArrayRead(omega,&amp;pomega);
+<a name="line621">621: </a>  } <font color="#4169E1">else</font> PetscInfo(bv,<font color="#666666">"Ignoring signature because <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> is not indefinite\n"</font>);
+<a name="line622">622: </a>  PetscObjectStateIncrease((PetscObject)bv);
+<a name="line623">623: </a>  PetscFunctionReturn(0);
+<a name="line624">624: </a>}
+
+<a name="line626">626: </a><font color="#B22222">/*@</font>
+<a name="line627">627: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVGetSignature.html#BVGetSignature">BVGetSignature</a> - Retrieves the signature matrix from last orthogonalization.</font>
+
+<a name="line629">629: </a><font color="#B22222">   Not collective</font>
+
+<a name="line631">631: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line632">632: </a><font color="#B22222">.  bv    - the basis vectors context</font>
+
+<a name="line634">634: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line635">635: </a><font color="#B22222">.  omega - a vector representing the diagonal of the signature matrix</font>
+
+<a name="line637">637: </a><font color="#B22222">   Note:</font>
+<a name="line638">638: </a><font color="#B22222">   The signature matrix Omega = V'*B*V is relevant only for an indefinite B.</font>
+
+<a name="line640">640: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line642">642: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVSetMatrix.html#BVSetMatrix">BVSetMatrix</a>(), <a href="../../../../../docs/manualpages/BV/BVSetSignature.html#BVSetSignature">BVSetSignature</a>()</font>
+<a name="line643">643: </a><font color="#B22222">@*/</font>
+<a name="line644">644: </a><strong><font color="#4169E1"><a name="BVGetSignature"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVGetSignature.html#BVGetSignature">BVGetSignature</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> bv,Vec omega)</font></strong>
+<a name="line645">645: </a>{
+<a name="line646">646: </a>  PetscInt          i,n;
+<a name="line647">647: </a>  PetscScalar       *pomega;
+<a name="line648">648: </a>  const PetscScalar *intern;
+
+<a name="line651">651: </a>  BVCheckSizes(bv,1);
+
+<a name="line655">655: </a>  VecGetSize(omega,&amp;n);
+<a name="line657">657: </a>  <font color="#4169E1">if</font> (bv-&gt;indef &amp;&amp; bv-&gt;omega) {
+<a name="line658">658: </a>    VecGetArray(omega,&amp;pomega);
+<a name="line659">659: </a>    VecGetArrayRead(bv-&gt;omega,&amp;intern);
+<a name="line660">660: </a>    <font color="#4169E1">for</font> (i=0;i&lt;n;i++) pomega[i] = intern[bv-&gt;nc+i];
+<a name="line661">661: </a>    VecRestoreArrayRead(bv-&gt;omega,&amp;intern);
+<a name="line662">662: </a>    VecRestoreArray(omega,&amp;pomega);
+<a name="line663">663: </a>  } <font color="#4169E1">else</font> VecSet(omega,1.0);
+<a name="line664">664: </a>  PetscFunctionReturn(0);
+<a name="line665">665: </a>}
+
+<a name="line667">667: </a><font color="#B22222">/*@</font>
+<a name="line668">668: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVSetBufferVec.html#BVSetBufferVec">BVSetBufferVec</a> - Attach a vector object to be used as buffer space for</font>
+<a name="line669">669: </a><font color="#B22222">   several operations.</font>
+
+<a name="line671">671: </a><font color="#B22222">   Collective on bv</font>
+
+<a name="line673">673: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line674">674: </a><font color="#B22222">+  bv     - the basis vectors context)</font>
+<a name="line675">675: </a><font color="#B22222">-  buffer - the vector</font>
+
+<a name="line677">677: </a><font color="#B22222">   Notes:</font>
+<a name="line678">678: </a><font color="#B22222">   Use <a href="../../../../../docs/manualpages/BV/BVGetBufferVec.html#BVGetBufferVec">BVGetBufferVec</a>() to retrieve the vector (for example, to free it</font>
+<a name="line679">679: </a><font color="#B22222">   at the end of the computations).</font>
+
+<a name="line681">681: </a><font color="#B22222">   The vector must be sequential of length (nc+m)*m, where m is the number</font>
+<a name="line682">682: </a><font color="#B22222">   of columns of bv and nc is the number of constraints.</font>
+
+<a name="line684">684: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line686">686: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVGetBufferVec.html#BVGetBufferVec">BVGetBufferVec</a>(), <a href="../../../../../docs/manualpages/BV/BVSetSizes.html#BVSetSizes">BVSetSizes</a>(), <a href="../../../../../docs/manualpages/BV/BVGetNumConstraints.html#BVGetNumConstraints">BVGetNumConstraints</a>()</font>
+<a name="line687">687: </a><font color="#B22222">@*/</font>
+<a name="line688">688: </a><strong><font color="#4169E1"><a name="BVSetBufferVec"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVSetBufferVec.html#BVSetBufferVec">BVSetBufferVec</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> bv,Vec buffer)</font></strong>
+<a name="line689">689: </a>{
+<a name="line690">690: </a>  PetscInt       ld,n;
+<a name="line691">691: </a>  PetscMPIInt    size;
+
+<a name="line695">695: </a>  BVCheckSizes(bv,1);
+<a name="line696">696: </a>  VecGetSize(buffer,&amp;n);
+<a name="line697">697: </a>  ld = bv-&gt;m+bv-&gt;nc;
+<a name="line699">699: </a>  <a href="http://www.mpich.org/static/docs/latest/www3/MPI_Comm_size.html#MPI_Comm_size">MPI_Comm_size</a>(PetscObjectComm((PetscObject)buffer),&amp;size);
+
+<a name="line702">702: </a>  PetscObjectReference((PetscObject)buffer);
+<a name="line703">703: </a>  VecDestroy(&amp;bv-&gt;buffer);
+<a name="line704">704: </a>  bv-&gt;buffer = buffer;
+<a name="line705">705: </a>  PetscLogObjectParent((PetscObject)bv,(PetscObject)bv-&gt;buffer);
+<a name="line706">706: </a>  PetscFunctionReturn(0);
+<a name="line707">707: </a>}
+
+<a name="line709">709: </a><font color="#B22222">/*@</font>
+<a name="line710">710: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVGetBufferVec.html#BVGetBufferVec">BVGetBufferVec</a> - Obtain the buffer vector associated with the <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> object.</font>
+
+<a name="line712">712: </a><font color="#B22222">   Not Collective, but Vec returned is parallel if <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> is parallel</font>
+
+<a name="line714">714: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line715">715: </a><font color="#B22222">.  bv - the basis vectors context</font>
+
+<a name="line717">717: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line718">718: </a><font color="#B22222">.  buffer - vector</font>
+
+<a name="line720">720: </a><font color="#B22222">   Notes:</font>
+<a name="line721">721: </a><font color="#B22222">   The vector is created if not available previously. It is a sequential vector</font>
+<a name="line722">722: </a><font color="#B22222">   of length (nc+m)*m, where m is the number of columns of bv and nc is the number</font>
+<a name="line723">723: </a><font color="#B22222">   of constraints.</font>
+
+<a name="line725">725: </a><font color="#B22222">   Developer Notes:</font>
+<a name="line726">726: </a><font color="#B22222">   The buffer vector is viewed as a column-major matrix with leading dimension</font>
+<a name="line727">727: </a><font color="#B22222">   ld=nc+m, and m columns at most. In the most common usage, it has the structure</font>
+<a name="line728">728: </a><font color="#B22222">.vb</font>
+<a name="line729">729: </a><font color="#B22222">      | | C |</font>
+<a name="line730">730: </a><font color="#B22222">      |s|---|</font>
+<a name="line731">731: </a><font color="#B22222">      | | H |</font>
+<a name="line732">732: </a><font color="#B22222">.ve</font>
+<a name="line733">733: </a><font color="#B22222">   where H is an upper Hessenberg matrix of order m x (m-1), C contains coefficients</font>
+<a name="line734">734: </a><font color="#B22222">   related to orthogonalization against constraints (first nc rows), and s is the</font>
+<a name="line735">735: </a><font color="#B22222">   first column that contains scratch values computed during Gram-Schmidt</font>
+<a name="line736">736: </a><font color="#B22222">   orthogonalization. In particular, <a href="../../../../../docs/manualpages/BV/BVDotColumn.html#BVDotColumn">BVDotColumn</a>() and <a href="../../../../../docs/manualpages/BV/BVMultColumn.html#BVMultColumn">BVMultColumn</a>() use s to</font>
+<a name="line737">737: </a><font color="#B22222">   store the coefficients.</font>
+
+<a name="line739">739: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line741">741: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVSetBufferVec.html#BVSetBufferVec">BVSetBufferVec</a>(), <a href="../../../../../docs/manualpages/BV/BVSetSizes.html#BVSetSizes">BVSetSizes</a>(), <a href="../../../../../docs/manualpages/BV/BVGetNumConstraints.html#BVGetNumConstraints">BVGetNumConstraints</a>(), <a href="../../../../../docs/manualpages/BV/BVDotColumn.html#BVDotColumn">BVDotColumn</a>(), <a href="../../../../../docs/manualpages/BV/BVMultColumn.html#BVMultColumn">BVMultColumn</a>()</font>
+<a name="line742">742: </a><font color="#B22222">@*/</font>
+<a name="line743">743: </a><strong><font color="#4169E1"><a name="BVGetBufferVec"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVGetBufferVec.html#BVGetBufferVec">BVGetBufferVec</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> bv,Vec *buffer)</font></strong>
+<a name="line744">744: </a>{
+<a name="line745">745: </a>  PetscInt       ld;
+
+<a name="line749">749: </a>  BVCheckSizes(bv,1);
+<a name="line750">750: </a>  <font color="#4169E1">if</font> (!bv-&gt;buffer) {
+<a name="line751">751: </a>    ld = bv-&gt;m+bv-&gt;nc;
+<a name="line752">752: </a>    VecCreate(PETSC_COMM_SELF,&amp;bv-&gt;buffer);
+<a name="line753">753: </a>    VecSetSizes(bv-&gt;buffer,PETSC_DECIDE,ld*bv-&gt;m);
+<a name="line754">754: </a>    VecSetType(bv-&gt;buffer,((PetscObject)bv-&gt;t)-&gt;type_name);
+<a name="line755">755: </a>    PetscLogObjectParent((PetscObject)bv,(PetscObject)bv-&gt;buffer);
+<a name="line756">756: </a>  }
+<a name="line757">757: </a>  *buffer = bv-&gt;buffer;
+<a name="line758">758: </a>  PetscFunctionReturn(0);
+<a name="line759">759: </a>}
+
+<a name="line761">761: </a><font color="#B22222">/*@</font>
+<a name="line762">762: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVSetRandomContext.html#BVSetRandomContext">BVSetRandomContext</a> - Sets the PetscRandom object associated with the <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a>,</font>
+<a name="line763">763: </a><font color="#B22222">   to be used in operations that need random numbers.</font>
+
+<a name="line765">765: </a><font color="#B22222">   Collective on bv</font>
+
+<a name="line767">767: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line768">768: </a><font color="#B22222">+  bv   - the basis vectors context</font>
+<a name="line769">769: </a><font color="#B22222">-  rand - the random number generator context</font>
+
+<a name="line771">771: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line773">773: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVGetRandomContext.html#BVGetRandomContext">BVGetRandomContext</a>(), <a href="../../../../../docs/manualpages/BV/BVSetRandom.html#BVSetRandom">BVSetRandom</a>(), <a href="../../../../../docs/manualpages/BV/BVSetRandomNormal.html#BVSetRandomNormal">BVSetRandomNormal</a>(), <a href="../../../../../docs/manualpages/BV/BVSetRandomColumn.html#BVSetRandomColumn">BVSetRandomColumn</a>(), <a href="../../../../../docs/manualpages/BV/BVSetRandomCond.html#BVSetRandomCond">BVSetRandomCond</a>()</font>
+<a name="line774">774: </a><font color="#B22222">@*/</font>
+<a name="line775">775: </a><strong><font color="#4169E1"><a name="BVSetRandomContext"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVSetRandomContext.html#BVSetRandomContext">BVSetRandomContext</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> bv,PetscRandom rand)</font></strong>
+<a name="line776">776: </a>{
+<a name="line780">780: </a>  PetscObjectReference((PetscObject)rand);
+<a name="line781">781: </a>  PetscRandomDestroy(&amp;bv-&gt;rand);
+<a name="line782">782: </a>  bv-&gt;rand = rand;
+<a name="line783">783: </a>  PetscLogObjectParent((PetscObject)bv,(PetscObject)bv-&gt;rand);
+<a name="line784">784: </a>  PetscFunctionReturn(0);
+<a name="line785">785: </a>}
+
+<a name="line787">787: </a><font color="#B22222">/*@</font>
+<a name="line788">788: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVGetRandomContext.html#BVGetRandomContext">BVGetRandomContext</a> - Gets the PetscRandom object associated with the <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a>.</font>
+
+<a name="line790">790: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line792">792: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line793">793: </a><font color="#B22222">.  bv - the basis vectors context</font>
+
+<a name="line795">795: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line796">796: </a><font color="#B22222">.  rand - the random number generator context</font>
+
+<a name="line798">798: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line800">800: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVSetRandomContext.html#BVSetRandomContext">BVSetRandomContext</a>(), <a href="../../../../../docs/manualpages/BV/BVSetRandom.html#BVSetRandom">BVSetRandom</a>(), <a href="../../../../../docs/manualpages/BV/BVSetRandomNormal.html#BVSetRandomNormal">BVSetRandomNormal</a>(), <a href="../../../../../docs/manualpages/BV/BVSetRandomColumn.html#BVSetRandomColumn">BVSetRandomColumn</a>(), <a href="../../../../../docs/manualpages/BV/BVSetRandomCond.html#BVSetRandomCond">BVSetRandomCond</a>()</font>
+<a name="line801">801: </a><font color="#B22222">@*/</font>
+<a name="line802">802: </a><strong><font color="#4169E1"><a name="BVGetRandomContext"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVGetRandomContext.html#BVGetRandomContext">BVGetRandomContext</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> bv,PetscRandom* rand)</font></strong>
+<a name="line803">803: </a>{
+<a name="line806">806: </a>  <font color="#4169E1">if</font> (!bv-&gt;rand) {
+<a name="line807">807: </a>    PetscRandomCreate(PetscObjectComm((PetscObject)bv),&amp;bv-&gt;rand);
+<a name="line808">808: </a>    PetscLogObjectParent((PetscObject)bv,(PetscObject)bv-&gt;rand);
+<a name="line809">809: </a>    <font color="#4169E1">if</font> (bv-&gt;cuda) PetscRandomSetType(bv-&gt;rand,PETSCCURAND);
+<a name="line810">810: </a>    <font color="#4169E1">if</font> (bv-&gt;sfocalled) PetscRandomSetFromOptions(bv-&gt;rand);
+<a name="line811">811: </a>    <font color="#4169E1">if</font> (bv-&gt;rrandom) {
+<a name="line812">812: </a>      PetscRandomSetSeed(bv-&gt;rand,0x12345678);
+<a name="line813">813: </a>      PetscRandomSeed(bv-&gt;rand);
+<a name="line814">814: </a>    }
+<a name="line815">815: </a>  }
+<a name="line816">816: </a>  *rand = bv-&gt;rand;
+<a name="line817">817: </a>  PetscFunctionReturn(0);
+<a name="line818">818: </a>}
+
+<a name="line820">820: </a><font color="#B22222">/*@</font>
+<a name="line821">821: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVSetFromOptions.html#BVSetFromOptions">BVSetFromOptions</a> - Sets <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> options from the options database.</font>
+
+<a name="line823">823: </a><font color="#B22222">   Collective on bv</font>
+
+<a name="line825">825: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line826">826: </a><font color="#B22222">.  bv - the basis vectors context</font>
+
+<a name="line828">828: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line830">830: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVSetOptionsPrefix.html#BVSetOptionsPrefix">BVSetOptionsPrefix</a>()</font>
+<a name="line831">831: </a><font color="#B22222">@*/</font>
+<a name="line832">832: </a><strong><font color="#4169E1"><a name="BVSetFromOptions"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVSetFromOptions.html#BVSetFromOptions">BVSetFromOptions</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> bv)</font></strong>
+<a name="line833">833: </a>{
+<a name="line834">834: </a>  PetscErrorCode     ierr;
+<a name="line835">835: </a>  char               type[256];
+<a name="line836">836: </a>  PetscBool          flg1,flg2,flg3,flg4;
+<a name="line837">837: </a>  PetscReal          r;
+<a name="line838">838: </a>  <a href="../../../../../docs/manualpages/sys/BVOrthogType.html#BVOrthogType">BVOrthogType</a>       otype;
+<a name="line839">839: </a>  <a href="../../../../../docs/manualpages/sys/BVOrthogRefineType.html#BVOrthogRefineType">BVOrthogRefineType</a> orefine;
+<a name="line840">840: </a>  <a href="../../../../../docs/manualpages/sys/BVOrthogBlockType.html#BVOrthogBlockType">BVOrthogBlockType</a>  oblock;
+
+<a name="line843">843: </a>  <a href="../../../../../docs/manualpages/BV/BVRegisterAll.html#BVRegisterAll">BVRegisterAll</a>();
+<a name="line844">844: </a>  ierr = PetscObjectOptionsBegin((PetscObject)bv);
+<a name="line845">845: </a>    PetscOptionsFList(<font color="#666666">"-bv_type"</font>,<font color="#666666">"Basis Vectors type"</font>,<font color="#666666">"<a href="../../../../../docs/manualpages/BV/BVSetType.html#BVSetType">BVSetType</a>"</font>,BVList,(char*)(((PetscObject)bv)-&gt;type_name?((PetscObject)bv)-&gt;type_name:BVSVEC),type,<font color="#4169E1">sizeof</font>(type),&amp;flg1);
+<a name="line846">846: </a>    <font color="#4169E1">if</font> (flg1) <a href="../../../../../docs/manualpages/BV/BVSetType.html#BVSetType">BVSetType</a>(bv,type);
+<a name="line847">847: </a>    <font color="#4169E1">else</font> <font color="#4169E1">if</font> (!((PetscObject)bv)-&gt;type_name) <a href="../../../../../docs/manualpages/BV/BVSetType.html#BVSetType">BVSetType</a>(bv,BVSVEC);
+
+<a name="line849">849: </a>    otype = bv-&gt;orthog_type;
+<a name="line850">850: </a>    PetscOptionsEnum(<font color="#666666">"-bv_orthog_type"</font>,<font color="#666666">"Orthogonalization method"</font>,<font color="#666666">"<a href="../../../../../docs/manualpages/BV/BVSetOrthogonalization.html#BVSetOrthogonalization">BVSetOrthogonalization</a>"</font>,BVOrthogTypes,(PetscEnum)otype,(PetscEnum*)&amp;otype,&amp;flg1);
+<a name="line851">851: </a>    orefine = bv-&gt;orthog_ref;
+<a name="line852">852: </a>    PetscOptionsEnum(<font color="#666666">"-bv_orthog_refine"</font>,<font color="#666666">"Iterative refinement mode during orthogonalization"</font>,<font color="#666666">"<a href="../../../../../docs/manualpages/BV/BVSetOrthogonalization.html#BVSetOrthogonalization">BVSetOrthogonalization</a>"</font>,BVOrthogRefineTypes,(PetscEnum)orefine,(PetscEnum*)&amp;orefine,&amp;flg2);
+<a name="line853">853: </a>    r = bv-&gt;orthog_eta;
+<a name="line854">854: </a>    PetscOptionsReal(<font color="#666666">"-bv_orthog_eta"</font>,<font color="#666666">"Parameter of iterative refinement during orthogonalization"</font>,<font color="#666666">"<a href="../../../../../docs/manualpages/BV/BVSetOrthogonalization.html#BVSetOrthogonalization">BVSetOrthogonalization</a>"</font>,r,&amp;r,&amp;flg3);
+<a name="line855">855: </a>    oblock = bv-&gt;orthog_block;
+<a name="line856">856: </a>    PetscOptionsEnum(<font color="#666666">"-bv_orthog_block"</font>,<font color="#666666">"Block orthogonalization method"</font>,<font color="#666666">"<a href="../../../../../docs/manualpages/BV/BVSetOrthogonalization.html#BVSetOrthogonalization">BVSetOrthogonalization</a>"</font>,BVOrthogBlockTypes,(PetscEnum)oblock,(PetscEnum*)&amp;oblock,&amp;flg4);
+<a name="line857">857: </a>    <font color="#4169E1">if</font> (flg1 || flg2 || flg3 || flg4) <a href="../../../../../docs/manualpages/BV/BVSetOrthogonalization.html#BVSetOrthogonalization">BVSetOrthogonalization</a>(bv,otype,orefine,r,oblock);
+
+<a name="line859">859: </a>    PetscOptionsEnum(<font color="#666666">"-bv_matmult"</font>,<font color="#666666">"Method for <a href="../../../../../docs/manualpages/BV/BVMatMult.html#BVMatMult">BVMatMult</a>"</font>,<font color="#666666">"<a href="../../../../../docs/manualpages/BV/BVSetMatMultMethod.html#BVSetMatMultMethod">BVSetMatMultMethod</a>"</font>,BVMatMultTypes,(PetscEnum)bv-&gt;vmm,(PetscEnum*)&amp;bv-&gt;vmm,NULL);
+
+<a name="line861">861: </a>    PetscOptionsReal(<font color="#666666">"-bv_definite_tol"</font>,<font color="#666666">"Tolerance for checking a definite inner product"</font>,<font color="#666666">"<a href="../../../../../docs/manualpages/BV/BVSetDefiniteTolerance.html#BVSetDefiniteTolerance">BVSetDefiniteTolerance</a>"</font>,r,&amp;r,&amp;flg1);
+<a name="line862">862: </a>    <font color="#4169E1">if</font> (flg1) <a href="../../../../../docs/manualpages/BV/BVSetDefiniteTolerance.html#BVSetDefiniteTolerance">BVSetDefiniteTolerance</a>(bv,r);
+
+<a name="line864">864: </a>    <font color="#B22222">/* undocumented option to generate random vectors that are independent of the number of processes */</font>
+<a name="line865">865: </a>    PetscOptionsGetBool(NULL,NULL,<font color="#666666">"-bv_reproducible_random"</font>,&amp;bv-&gt;rrandom,NULL);
+
+<a name="line867">867: </a>    <font color="#4169E1">if</font> (bv-&gt;ops-&gt;create) bv-&gt;defersfo = PETSC_TRUE;   <font color="#B22222">/* defer call to setfromoptions */</font>
+<a name="line868">868: </a>    <font color="#4169E1">else</font> <font color="#4169E1">if</font> (bv-&gt;ops-&gt;setfromoptions) (*bv-&gt;ops-&gt;setfromoptions)(PetscOptionsObject,bv);
+<a name="line869">869: </a>    PetscObjectProcessOptionsHandlers(PetscOptionsObject,(PetscObject)bv);
+<a name="line870">870: </a>  ierr = PetscOptionsEnd();
+<a name="line871">871: </a>  bv-&gt;sfocalled = PETSC_TRUE;
+<a name="line872">872: </a>  PetscFunctionReturn(0);
+<a name="line873">873: </a>}
+
+<a name="line875">875: </a><font color="#B22222">/*@</font>
+<a name="line876">876: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVSetOrthogonalization.html#BVSetOrthogonalization">BVSetOrthogonalization</a> - Specifies the method used for the orthogonalization of</font>
+<a name="line877">877: </a><font color="#B22222">   vectors (classical or modified Gram-Schmidt with or without refinement), and</font>
+<a name="line878">878: </a><font color="#B22222">   for the block-orthogonalization (simultaneous orthogonalization of a set of</font>
+<a name="line879">879: </a><font color="#B22222">   vectors).</font>
+
+<a name="line881">881: </a><font color="#B22222">   Logically Collective on bv</font>
+
+<a name="line883">883: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line884">884: </a><font color="#B22222">+  bv     - the basis vectors context</font>
+<a name="line885">885: </a><font color="#B22222">.  type   - the method of vector orthogonalization</font>
+<a name="line886">886: </a><font color="#B22222">.  refine - type of refinement</font>
+<a name="line887">887: </a><font color="#B22222">.  eta    - parameter for selective refinement</font>
+<a name="line888">888: </a><font color="#B22222">-  block  - the method of block orthogonalization</font>
+
+<a name="line890">890: </a><font color="#B22222">   Options Database Keys:</font>
+<a name="line891">891: </a><font color="#B22222">+  -bv_orthog_type &lt;type&gt; - Where &lt;type&gt; is cgs for Classical Gram-Schmidt orthogonalization</font>
+<a name="line892">892: </a><font color="#B22222">                         (default) or mgs for Modified Gram-Schmidt orthogonalization</font>
+<a name="line893">893: </a><font color="#B22222">.  -bv_orthog_refine &lt;ref&gt; - Where &lt;ref&gt; is one of never, ifneeded (default) or always</font>
+<a name="line894">894: </a><font color="#B22222">.  -bv_orthog_eta &lt;eta&gt; -  For setting the value of eta</font>
+<a name="line895">895: </a><font color="#B22222">-  -bv_orthog_block &lt;block&gt; - Where &lt;block&gt; is the block-orthogonalization method</font>
+
+<a name="line897">897: </a><font color="#B22222">   Notes:</font>
+<a name="line898">898: </a><font color="#B22222">   The default settings work well for most problems.</font>
+
+<a name="line900">900: </a><font color="#B22222">   The parameter eta should be a real value between 0 and 1 (or PETSC_DEFAULT).</font>
+<a name="line901">901: </a><font color="#B22222">   The value of eta is used only when the refinement type is "ifneeded".</font>
+
+<a name="line903">903: </a><font color="#B22222">   When using several processors, MGS is likely to result in bad scalability.</font>
+
+<a name="line905">905: </a><font color="#B22222">   If the method set for block orthogonalization is GS, then the computation</font>
+<a name="line906">906: </a><font color="#B22222">   is done column by column with the vector orthogonalization.</font>
+
+<a name="line908">908: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line910">910: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVOrthogonalizeColumn.html#BVOrthogonalizeColumn">BVOrthogonalizeColumn</a>(), <a href="../../../../../docs/manualpages/BV/BVGetOrthogonalization.html#BVGetOrthogonalization">BVGetOrthogonalization</a>(), <a href="../../../../../docs/manualpages/sys/BVOrthogType.html#BVOrthogType">BVOrthogType</a>, <a href="../../../../../docs/manualpages/sys/BVOrthogRefineType.html#BVOrthogRefineType">BVOrthogRefineType</a>, <a href="../../../../../docs/manualpages/sys/BVOrthogBlockType.html#BVOrthogBlockType">BVOrthogBlockType</a></font>
+<a name="line911">911: </a><font color="#B22222">@*/</font>
+<a name="line912">912: </a><strong><font color="#4169E1"><a name="BVSetOrthogonalization"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVSetOrthogonalization.html#BVSetOrthogonalization">BVSetOrthogonalization</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> bv,<a href="../../../../../docs/manualpages/sys/BVOrthogType.html#BVOrthogType">BVOrthogType</a> type,<a href="../../../../../docs/manualpages/sys/BVOrthogRefineType.html#BVOrthogRefineType">BVOrthogRefineType</a> refine,PetscReal eta,<a href="../../../../../docs/manualpages/sys/BVOrthogBlockType.html#BVOrthogBlockType">BVOrthogBlockType</a> block)</font></strong>
+<a name="line913">913: </a>{
+<a name="line919">919: </a>  <font color="#4169E1">switch</font> (type) {
+<a name="line920">920: </a>    <font color="#4169E1">case</font> <a href="../../../../../docs/manualpages/sys/BVOrthogType.html#BVOrthogType">BV_ORTHOG_CGS</a>:
+<a name="line921">921: </a>    <font color="#4169E1">case</font> <a href="../../../../../docs/manualpages/sys/BVOrthogType.html#BVOrthogType">BV_ORTHOG_MGS</a>:
+<a name="line922">922: </a>      bv-&gt;orthog_type = type;
+<a name="line923">923: </a>      <font color="#4169E1">break</font>;
+<a name="line924">924: </a><strong><font color="#FF0000">    default:</font></strong>
+<a name="line925">925: </a>      SETERRQ(PetscObjectComm((PetscObject)bv),PETSC_ERR_ARG_WRONG,<font color="#666666">"Unknown orthogonalization type"</font>);
+<a name="line926">926: </a>  }
+<a name="line927">927: </a>  <font color="#4169E1">switch</font> (refine) {
+<a name="line928">928: </a>    <font color="#4169E1">case</font> <a href="../../../../../docs/manualpages/sys/BVOrthogRefineType.html#BVOrthogRefineType">BV_ORTHOG_REFINE_NEVER</a>:
+<a name="line929">929: </a>    <font color="#4169E1">case</font> <a href="../../../../../docs/manualpages/sys/BVOrthogRefineType.html#BVOrthogRefineType">BV_ORTHOG_REFINE_IFNEEDED</a>:
+<a name="line930">930: </a>    <font color="#4169E1">case</font> <a href="../../../../../docs/manualpages/sys/BVOrthogRefineType.html#BVOrthogRefineType">BV_ORTHOG_REFINE_ALWAYS</a>:
+<a name="line931">931: </a>      bv-&gt;orthog_ref = refine;
+<a name="line932">932: </a>      <font color="#4169E1">break</font>;
+<a name="line933">933: </a><strong><font color="#FF0000">    default:</font></strong>
+<a name="line934">934: </a>      SETERRQ(PetscObjectComm((PetscObject)bv),PETSC_ERR_ARG_WRONG,<font color="#666666">"Unknown refinement type"</font>);
+<a name="line935">935: </a>  }
+<a name="line936">936: </a>  <font color="#4169E1">if</font> (eta == PETSC_DEFAULT) {
+<a name="line937">937: </a>    bv-&gt;orthog_eta = 0.7071;
+<a name="line938">938: </a>  } <font color="#4169E1">else</font> {
+<a name="line940">940: </a>    bv-&gt;orthog_eta = eta;
+<a name="line941">941: </a>  }
+<a name="line942">942: </a>  <font color="#4169E1">switch</font> (block) {
+<a name="line943">943: </a>    <font color="#4169E1">case</font> <a href="../../../../../docs/manualpages/sys/BVOrthogBlockType.html#BVOrthogBlockType">BV_ORTHOG_BLOCK_GS</a>:
+<a name="line944">944: </a>    <font color="#4169E1">case</font> <a href="../../../../../docs/manualpages/sys/BVOrthogBlockType.html#BVOrthogBlockType">BV_ORTHOG_BLOCK_CHOL</a>:
+<a name="line945">945: </a>    <font color="#4169E1">case</font> <a href="../../../../../docs/manualpages/sys/BVOrthogBlockType.html#BVOrthogBlockType">BV_ORTHOG_BLOCK_TSQR</a>:
+<a name="line946">946: </a>    <font color="#4169E1">case</font> <a href="../../../../../docs/manualpages/sys/BVOrthogBlockType.html#BVOrthogBlockType">BV_ORTHOG_BLOCK_TSQRCHOL</a>:
+<a name="line947">947: </a>    <font color="#4169E1">case</font> <a href="../../../../../docs/manualpages/sys/BVOrthogBlockType.html#BVOrthogBlockType">BV_ORTHOG_BLOCK_SVQB</a>:
+<a name="line948">948: </a>      bv-&gt;orthog_block = block;
+<a name="line949">949: </a>      <font color="#4169E1">break</font>;
+<a name="line950">950: </a><strong><font color="#FF0000">    default:</font></strong>
+<a name="line951">951: </a>      SETERRQ(PetscObjectComm((PetscObject)bv),PETSC_ERR_ARG_WRONG,<font color="#666666">"Unknown block orthogonalization type"</font>);
+<a name="line952">952: </a>  }
+<a name="line953">953: </a>  PetscFunctionReturn(0);
+<a name="line954">954: </a>}
+
+<a name="line956">956: </a><font color="#B22222">/*@</font>
+<a name="line957">957: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVGetOrthogonalization.html#BVGetOrthogonalization">BVGetOrthogonalization</a> - Gets the orthogonalization settings from the <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> object.</font>
+
+<a name="line959">959: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line961">961: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line962">962: </a><font color="#B22222">.  bv - basis vectors context</font>
+
+<a name="line964">964: </a><font color="#B22222">   Output Parameters:</font>
+<a name="line965">965: </a><font color="#B22222">+  type   - the method of vector orthogonalization</font>
+<a name="line966">966: </a><font color="#B22222">.  refine - type of refinement</font>
+<a name="line967">967: </a><font color="#B22222">.  eta    - parameter for selective refinement</font>
+<a name="line968">968: </a><font color="#B22222">-  block  - the method of block orthogonalization</font>
+
+<a name="line970">970: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line972">972: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVOrthogonalizeColumn.html#BVOrthogonalizeColumn">BVOrthogonalizeColumn</a>(), <a href="../../../../../docs/manualpages/BV/BVSetOrthogonalization.html#BVSetOrthogonalization">BVSetOrthogonalization</a>(), <a href="../../../../../docs/manualpages/sys/BVOrthogType.html#BVOrthogType">BVOrthogType</a>, <a href="../../../../../docs/manualpages/sys/BVOrthogRefineType.html#BVOrthogRefineType">BVOrthogRefineType</a>, <a href="../../../../../docs/manualpages/sys/BVOrthogBlockType.html#BVOrthogBlockType">BVOrthogBlockType</a></font>
+<a name="line973">973: </a><font color="#B22222">@*/</font>
+<a name="line974">974: </a><strong><font color="#4169E1"><a name="BVGetOrthogonalization"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVGetOrthogonalization.html#BVGetOrthogonalization">BVGetOrthogonalization</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> bv,<a href="../../../../../docs/manualpages/sys/BVOrthogType.html#BVOrthogType">BVOrthogType</a> *type,<a href="../../../../../docs/manualpages/sys/BVOrthogRefineType.html#BVOrthogRefineType">BVOrthogRefineType</a> *refine,PetscReal *eta,<a href="../../../../../docs/manualpages/sys/BVOrthogBlockType.html#BVOrthogBlockType">BVOrthogBlockType</a> *block)</font></strong>
+<a name="line975">975: </a>{
+<a name="line977">977: </a>  <font color="#4169E1">if</font> (type)   *type   = bv-&gt;orthog_type;
+<a name="line978">978: </a>  <font color="#4169E1">if</font> (refine) *refine = bv-&gt;orthog_ref;
+<a name="line979">979: </a>  <font color="#4169E1">if</font> (eta)    *eta    = bv-&gt;orthog_eta;
+<a name="line980">980: </a>  <font color="#4169E1">if</font> (block)  *block  = bv-&gt;orthog_block;
+<a name="line981">981: </a>  PetscFunctionReturn(0);
+<a name="line982">982: </a>}
+
+<a name="line984">984: </a><font color="#B22222">/*@</font>
+<a name="line985">985: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVSetMatMultMethod.html#BVSetMatMultMethod">BVSetMatMultMethod</a> - Specifies the method used for the <a href="../../../../../docs/manualpages/BV/BVMatMult.html#BVMatMult">BVMatMult</a>() operation.</font>
+
+<a name="line987">987: </a><font color="#B22222">   Logically Collective on bv</font>
+
+<a name="line989">989: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line990">990: </a><font color="#B22222">+  bv     - the basis vectors context</font>
+<a name="line991">991: </a><font color="#B22222">-  method - the method for the <a href="../../../../../docs/manualpages/BV/BVMatMult.html#BVMatMult">BVMatMult</a>() operation</font>
+
+<a name="line993">993: </a><font color="#B22222">   Options Database Keys:</font>
+<a name="line994">994: </a><font color="#B22222">.  -bv_matmult &lt;meth&gt; - choose one of the methods: vecs, mat</font>
+
+<a name="line996">996: </a><font color="#B22222">   Notes:</font>
+<a name="line997">997: </a><font color="#B22222">   Allowed values are</font>
+<a name="line998">998: </a><font color="#B22222">+  <a href="../../../../../docs/manualpages/sys/BVMatMultType.html#BVMatMultType">BV_MATMULT_VECS</a> - perform a matrix-vector multiply per each column</font>
+<a name="line999">999: </a><font color="#B22222">.  <a href="../../../../../docs/manualpages/sys/BVMatMultType.html#BVMatMultType">BV_MATMULT_MAT</a> - carry out a Mat-Mat product with a dense matrix</font>
+<a name="line1000">1000: </a><font color="#B22222">-  <a href="../../../../../docs/manualpages/sys/BVMatMultType.html#BVMatMultType">BV_MATMULT_MAT_SAVE</a> - this case is deprecated</font>
+
+<a name="line1002">1002: </a><font color="#B22222">   The default is <a href="../../../../../docs/manualpages/sys/BVMatMultType.html#BVMatMultType">BV_MATMULT_MAT</a> except in the case of BVVECS.</font>
+
+<a name="line1004">1004: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line1006">1006: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVMatMult.html#BVMatMult">BVMatMult</a>(), <a href="../../../../../docs/manualpages/BV/BVGetMatMultMethod.html#BVGetMatMultMethod">BVGetMatMultMethod</a>(), <a href="../../../../../docs/manualpages/sys/BVMatMultType.html#BVMatMultType">BVMatMultType</a></font>
+<a name="line1007">1007: </a><font color="#B22222">@*/</font>
+<a name="line1008">1008: </a><strong><font color="#4169E1"><a name="BVSetMatMultMethod"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVSetMatMultMethod.html#BVSetMatMultMethod">BVSetMatMultMethod</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> bv,<a href="../../../../../docs/manualpages/sys/BVMatMultType.html#BVMatMultType">BVMatMultType</a> method)</font></strong>
+<a name="line1009">1009: </a>{
+<a name="line1012">1012: </a>  <font color="#4169E1">switch</font> (method) {
+<a name="line1013">1013: </a>    <font color="#4169E1">case</font> <a href="../../../../../docs/manualpages/sys/BVMatMultType.html#BVMatMultType">BV_MATMULT_VECS</a>:
+<a name="line1014">1014: </a>    <font color="#4169E1">case</font> <a href="../../../../../docs/manualpages/sys/BVMatMultType.html#BVMatMultType">BV_MATMULT_MAT</a>:
+<a name="line1015">1015: </a>      bv-&gt;vmm = method;
+<a name="line1016">1016: </a>      <font color="#4169E1">break</font>;
+<a name="line1017">1017: </a>    <font color="#4169E1">case</font> <a href="../../../../../docs/manualpages/sys/BVMatMultType.html#BVMatMultType">BV_MATMULT_MAT_SAVE</a>:
+<a name="line1018">1018: </a>      PetscInfo(bv,<font color="#666666">"<a href="../../../../../docs/manualpages/sys/BVMatMultType.html#BVMatMultType">BV_MATMULT_MAT_SAVE</a> is deprecated, using <a href="../../../../../docs/manualpages/sys/BVMatMultType.html#BVMatMultType">BV_MATMULT_MAT</a>\n"</font>);
+<a name="line1019">1019: </a>      bv-&gt;vmm = <a href="../../../../../docs/manualpages/sys/BVMatMultType.html#BVMatMultType">BV_MATMULT_MAT</a>;
+<a name="line1020">1020: </a>      <font color="#4169E1">break</font>;
+<a name="line1021">1021: </a><strong><font color="#FF0000">    default:</font></strong>
+<a name="line1022">1022: </a>      SETERRQ(PetscObjectComm((PetscObject)bv),PETSC_ERR_ARG_WRONG,<font color="#666666">"Unknown matmult method"</font>);
+<a name="line1023">1023: </a>  }
+<a name="line1024">1024: </a>  PetscFunctionReturn(0);
+<a name="line1025">1025: </a>}
+
+<a name="line1027">1027: </a><font color="#B22222">/*@</font>
+<a name="line1028">1028: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVGetMatMultMethod.html#BVGetMatMultMethod">BVGetMatMultMethod</a> - Gets the method used for the <a href="../../../../../docs/manualpages/BV/BVMatMult.html#BVMatMult">BVMatMult</a>() operation.</font>
+
+<a name="line1030">1030: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line1032">1032: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line1033">1033: </a><font color="#B22222">.  bv - basis vectors context</font>
+
+<a name="line1035">1035: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line1036">1036: </a><font color="#B22222">.  method - the method for the <a href="../../../../../docs/manualpages/BV/BVMatMult.html#BVMatMult">BVMatMult</a>() operation</font>
+
+<a name="line1038">1038: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line1040">1040: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVMatMult.html#BVMatMult">BVMatMult</a>(), <a href="../../../../../docs/manualpages/BV/BVSetMatMultMethod.html#BVSetMatMultMethod">BVSetMatMultMethod</a>(), <a href="../../../../../docs/manualpages/sys/BVMatMultType.html#BVMatMultType">BVMatMultType</a></font>
+<a name="line1041">1041: </a><font color="#B22222">@*/</font>
+<a name="line1042">1042: </a><strong><font color="#4169E1"><a name="BVGetMatMultMethod"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVGetMatMultMethod.html#BVGetMatMultMethod">BVGetMatMultMethod</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> bv,<a href="../../../../../docs/manualpages/sys/BVMatMultType.html#BVMatMultType">BVMatMultType</a> *method)</font></strong>
+<a name="line1043">1043: </a>{
+<a name="line1046">1046: </a>  *method = bv-&gt;vmm;
+<a name="line1047">1047: </a>  PetscFunctionReturn(0);
+<a name="line1048">1048: </a>}
+
+<a name="line1050">1050: </a><font color="#B22222">/*@</font>
+<a name="line1051">1051: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVGetColumn.html#BVGetColumn">BVGetColumn</a> - Returns a Vec object that contains the entries of the</font>
+<a name="line1052">1052: </a><font color="#B22222">   requested column of the basis vectors object.</font>
+
+<a name="line1054">1054: </a><font color="#B22222">   Logically Collective on bv</font>
+
+<a name="line1056">1056: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line1057">1057: </a><font color="#B22222">+  bv - the basis vectors context</font>
+<a name="line1058">1058: </a><font color="#B22222">-  j  - the index of the requested column</font>
+
+<a name="line1060">1060: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line1061">1061: </a><font color="#B22222">.  v  - vector containing the jth column</font>
+
+<a name="line1063">1063: </a><font color="#B22222">   Notes:</font>
+<a name="line1064">1064: </a><font color="#B22222">   The returned Vec must be seen as a reference (not a copy) of the <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a></font>
+<a name="line1065">1065: </a><font color="#B22222">   column, that is, modifying the Vec will change the <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> entries as well.</font>
+
+<a name="line1067">1067: </a><font color="#B22222">   The returned Vec must not be destroyed. <a href="../../../../../docs/manualpages/BV/BVRestoreColumn.html#BVRestoreColumn">BVRestoreColumn</a>() must be</font>
+<a name="line1068">1068: </a><font color="#B22222">   called when it is no longer needed. At most, two columns can be fetched,</font>
+<a name="line1069">1069: </a><font color="#B22222">   that is, this function can only be called twice before the corresponding</font>
+<a name="line1070">1070: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVRestoreColumn.html#BVRestoreColumn">BVRestoreColumn</a>() is invoked.</font>
+
+<a name="line1072">1072: </a><font color="#B22222">   A negative index j selects the i-th constraint, where i=-j. Constraints</font>
+<a name="line1073">1073: </a><font color="#B22222">   should not be modified.</font>
+
+<a name="line1075">1075: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line1077">1077: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVRestoreColumn.html#BVRestoreColumn">BVRestoreColumn</a>(), <a href="../../../../../docs/manualpages/BV/BVInsertConstraints.html#BVInsertConstraints">BVInsertConstraints</a>()</font>
+<a name="line1078">1078: </a><font color="#B22222">@*/</font>
+<a name="line1079">1079: </a><strong><font color="#4169E1"><a name="BVGetColumn"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVGetColumn.html#BVGetColumn">BVGetColumn</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> bv,PetscInt j,Vec *v)</font></strong>
+<a name="line1080">1080: </a>{
+<a name="line1081">1081: </a>  PetscInt       l;
+
+<a name="line1085">1085: </a>  BVCheckSizes(bv,1);
+<a name="line1086">1086: </a>  BVCheckOp(bv,1,getcolumn);
+<a name="line1091">1091: </a>  l = BVAvailableVec;
+<a name="line1093">1093: </a>  (*bv-&gt;ops-&gt;getcolumn)(bv,j,v);
+<a name="line1094">1094: </a>  bv-&gt;ci[l] = j;
+<a name="line1095">1095: </a>  PetscObjectStateGet((PetscObject)bv-&gt;cv[l],&amp;bv-&gt;st[l]);
+<a name="line1096">1096: </a>  PetscObjectGetId((PetscObject)bv-&gt;cv[l],&amp;bv-&gt;id[l]);
+<a name="line1097">1097: </a>  *v = bv-&gt;cv[l];
+<a name="line1098">1098: </a>  PetscFunctionReturn(0);
+<a name="line1099">1099: </a>}
+
+<a name="line1101">1101: </a><font color="#B22222">/*@</font>
+<a name="line1102">1102: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVRestoreColumn.html#BVRestoreColumn">BVRestoreColumn</a> - Restore a column obtained with <a href="../../../../../docs/manualpages/BV/BVGetColumn.html#BVGetColumn">BVGetColumn</a>().</font>
+
+<a name="line1104">1104: </a><font color="#B22222">   Logically Collective on bv</font>
+
+<a name="line1106">1106: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line1107">1107: </a><font color="#B22222">+  bv - the basis vectors context</font>
+<a name="line1108">1108: </a><font color="#B22222">.  j  - the index of the column</font>
+<a name="line1109">1109: </a><font color="#B22222">-  v  - vector obtained with <a href="../../../../../docs/manualpages/BV/BVGetColumn.html#BVGetColumn">BVGetColumn</a>()</font>
+
+<a name="line1111">1111: </a><font color="#B22222">   Note:</font>
+<a name="line1112">1112: </a><font color="#B22222">   The arguments must match the corresponding call to <a href="../../../../../docs/manualpages/BV/BVGetColumn.html#BVGetColumn">BVGetColumn</a>().</font>
+
+<a name="line1114">1114: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line1116">1116: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVGetColumn.html#BVGetColumn">BVGetColumn</a>()</font>
+<a name="line1117">1117: </a><font color="#B22222">@*/</font>
+<a name="line1118">1118: </a><strong><font color="#4169E1"><a name="BVRestoreColumn"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVRestoreColumn.html#BVRestoreColumn">BVRestoreColumn</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> bv,PetscInt j,Vec *v)</font></strong>
+<a name="line1119">1119: </a>{
+<a name="line1120">1120: </a>  PetscObjectId    id;
+<a name="line1121">1121: </a>  PetscObjectState st;
+<a name="line1122">1122: </a>  PetscInt         l;
+
+<a name="line1126">1126: </a>  BVCheckSizes(bv,1);
+<a name="line1133">1133: </a>  l = (j==bv-&gt;ci[0])? 0: 1;
+<a name="line1134">1134: </a>  PetscObjectGetId((PetscObject)*v,&amp;id);
+<a name="line1136">1136: </a>  PetscObjectStateGet((PetscObject)*v,&amp;st);
+<a name="line1137">1137: </a>  <font color="#4169E1">if</font> (st!=bv-&gt;st[l]) PetscObjectStateIncrease((PetscObject)bv);
+<a name="line1138">1138: </a>  <font color="#4169E1">if</font> (bv-&gt;ops-&gt;restorecolumn) (*bv-&gt;ops-&gt;restorecolumn)(bv,j,v);
+<a name="line1139">1139: </a>  <font color="#4169E1">else</font> bv-&gt;cv[l] = NULL;
+<a name="line1140">1140: </a>  bv-&gt;ci[l] = -bv-&gt;nc-1;
+<a name="line1141">1141: </a>  bv-&gt;st[l] = -1;
+<a name="line1142">1142: </a>  bv-&gt;id[l] = 0;
+<a name="line1143">1143: </a>  *v = NULL;
+<a name="line1144">1144: </a>  PetscFunctionReturn(0);
+<a name="line1145">1145: </a>}
+
+<a name="line1147">1147: </a><font color="#B22222">/*@C</font>
+<a name="line1148">1148: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVGetArray.html#BVGetArray">BVGetArray</a> - Returns a pointer to a contiguous array that contains this</font>
+<a name="line1149">1149: </a><font color="#B22222">   processor's portion of the <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> data.</font>
+
+<a name="line1151">1151: </a><font color="#B22222">   Logically Collective on bv</font>
+
+<a name="line1153">1153: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line1154">1154: </a><font color="#B22222">.  bv - the basis vectors context</font>
+
+<a name="line1156">1156: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line1157">1157: </a><font color="#B22222">.  a  - location to put pointer to the array</font>
+
+<a name="line1159">1159: </a><font color="#B22222">   Notes:</font>
+<a name="line1160">1160: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVRestoreArray.html#BVRestoreArray">BVRestoreArray</a>() must be called when access to the array is no longer needed.</font>
+<a name="line1161">1161: </a><font color="#B22222">   This operation may imply a data copy, for <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> types that do not store</font>
+<a name="line1162">1162: </a><font color="#B22222">   data contiguously in memory.</font>
+
+<a name="line1164">1164: </a><font color="#B22222">   The pointer will normally point to the first entry of the first column,</font>
+<a name="line1165">1165: </a><font color="#B22222">   but if the <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> has constraints then these go before the regular columns.</font>
+
+<a name="line1167">1167: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line1169">1169: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVRestoreArray.html#BVRestoreArray">BVRestoreArray</a>(), <a href="../../../../../docs/manualpages/BV/BVInsertConstraints.html#BVInsertConstraints">BVInsertConstraints</a>()</font>
+<a name="line1170">1170: </a><font color="#B22222">@*/</font>
+<a name="line1171">1171: </a><strong><font color="#4169E1"><a name="BVGetArray"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVGetArray.html#BVGetArray">BVGetArray</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> bv,PetscScalar **a)</font></strong>
+<a name="line1172">1172: </a>{
+<a name="line1175">1175: </a>  BVCheckSizes(bv,1);
+<a name="line1176">1176: </a>  BVCheckOp(bv,1,getarray);
+<a name="line1177">1177: </a>  (*bv-&gt;ops-&gt;getarray)(bv,a);
+<a name="line1178">1178: </a>  PetscFunctionReturn(0);
+<a name="line1179">1179: </a>}
+
+<a name="line1181">1181: </a><font color="#B22222">/*@C</font>
+<a name="line1182">1182: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVRestoreArray.html#BVRestoreArray">BVRestoreArray</a> - Restore the <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> object after <a href="../../../../../docs/manualpages/BV/BVGetArray.html#BVGetArray">BVGetArray</a>() has been called.</font>
+
+<a name="line1184">1184: </a><font color="#B22222">   Logically Collective on bv</font>
+
+<a name="line1186">1186: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line1187">1187: </a><font color="#B22222">+  bv - the basis vectors context</font>
+<a name="line1188">1188: </a><font color="#B22222">-  a  - location of pointer to array obtained from <a href="../../../../../docs/manualpages/BV/BVGetArray.html#BVGetArray">BVGetArray</a>()</font>
+
+<a name="line1190">1190: </a><font color="#B22222">   Note:</font>
+<a name="line1191">1191: </a><font color="#B22222">   This operation may imply a data copy, for <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> types that do not store</font>
+<a name="line1192">1192: </a><font color="#B22222">   data contiguously in memory.</font>
+
+<a name="line1194">1194: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line1196">1196: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVGetColumn.html#BVGetColumn">BVGetColumn</a>()</font>
+<a name="line1197">1197: </a><font color="#B22222">@*/</font>
+<a name="line1198">1198: </a><strong><font color="#4169E1"><a name="BVRestoreArray"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVRestoreArray.html#BVRestoreArray">BVRestoreArray</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> bv,PetscScalar **a)</font></strong>
+<a name="line1199">1199: </a>{
+<a name="line1202">1202: </a>  BVCheckSizes(bv,1);
+<a name="line1203">1203: </a>  <font color="#4169E1">if</font> (bv-&gt;ops-&gt;restorearray) (*bv-&gt;ops-&gt;restorearray)(bv,a);
+<a name="line1204">1204: </a>  <font color="#4169E1">if</font> (a) *a = NULL;
+<a name="line1205">1205: </a>  PetscObjectStateIncrease((PetscObject)bv);
+<a name="line1206">1206: </a>  PetscFunctionReturn(0);
+<a name="line1207">1207: </a>}
+
+<a name="line1209">1209: </a><font color="#B22222">/*@C</font>
+<a name="line1210">1210: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVGetArrayRead.html#BVGetArrayRead">BVGetArrayRead</a> - Returns a read-only pointer to a contiguous array that</font>
+<a name="line1211">1211: </a><font color="#B22222">   contains this processor's portion of the <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> data.</font>
+
+<a name="line1213">1213: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line1215">1215: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line1216">1216: </a><font color="#B22222">.  bv - the basis vectors context</font>
+
+<a name="line1218">1218: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line1219">1219: </a><font color="#B22222">.  a  - location to put pointer to the array</font>
+
+<a name="line1221">1221: </a><font color="#B22222">   Notes:</font>
+<a name="line1222">1222: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVRestoreArrayRead.html#BVRestoreArrayRead">BVRestoreArrayRead</a>() must be called when access to the array is no</font>
+<a name="line1223">1223: </a><font color="#B22222">   longer needed. This operation may imply a data copy, for <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> types that</font>
+<a name="line1224">1224: </a><font color="#B22222">   do not store data contiguously in memory.</font>
+
+<a name="line1226">1226: </a><font color="#B22222">   The pointer will normally point to the first entry of the first column,</font>
+<a name="line1227">1227: </a><font color="#B22222">   but if the <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> has constraints then these go before the regular columns.</font>
+
+<a name="line1229">1229: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line1231">1231: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVRestoreArray.html#BVRestoreArray">BVRestoreArray</a>(), <a href="../../../../../docs/manualpages/BV/BVInsertConstraints.html#BVInsertConstraints">BVInsertConstraints</a>()</font>
+<a name="line1232">1232: </a><font color="#B22222">@*/</font>
+<a name="line1233">1233: </a><strong><font color="#4169E1"><a name="BVGetArrayRead"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVGetArrayRead.html#BVGetArrayRead">BVGetArrayRead</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> bv,const PetscScalar **a)</font></strong>
+<a name="line1234">1234: </a>{
+<a name="line1237">1237: </a>  BVCheckSizes(bv,1);
+<a name="line1238">1238: </a>  BVCheckOp(bv,1,getarrayread);
+<a name="line1239">1239: </a>  (*bv-&gt;ops-&gt;getarrayread)(bv,a);
+<a name="line1240">1240: </a>  PetscFunctionReturn(0);
+<a name="line1241">1241: </a>}
+
+<a name="line1243">1243: </a><font color="#B22222">/*@C</font>
+<a name="line1244">1244: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVRestoreArrayRead.html#BVRestoreArrayRead">BVRestoreArrayRead</a> - Restore the <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> object after <a href="../../../../../docs/manualpages/BV/BVGetArrayRead.html#BVGetArrayRead">BVGetArrayRead</a>() has</font>
+<a name="line1245">1245: </a><font color="#B22222">   been called.</font>
+
+<a name="line1247">1247: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line1249">1249: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line1250">1250: </a><font color="#B22222">+  bv - the basis vectors context</font>
+<a name="line1251">1251: </a><font color="#B22222">-  a  - location of pointer to array obtained from <a href="../../../../../docs/manualpages/BV/BVGetArrayRead.html#BVGetArrayRead">BVGetArrayRead</a>()</font>
+
+<a name="line1253">1253: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line1255">1255: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVGetColumn.html#BVGetColumn">BVGetColumn</a>()</font>
+<a name="line1256">1256: </a><font color="#B22222">@*/</font>
+<a name="line1257">1257: </a><strong><font color="#4169E1"><a name="BVRestoreArrayRead"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVRestoreArrayRead.html#BVRestoreArrayRead">BVRestoreArrayRead</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> bv,const PetscScalar **a)</font></strong>
+<a name="line1258">1258: </a>{
+<a name="line1261">1261: </a>  BVCheckSizes(bv,1);
+<a name="line1262">1262: </a>  <font color="#4169E1">if</font> (bv-&gt;ops-&gt;restorearrayread) (*bv-&gt;ops-&gt;restorearrayread)(bv,a);
+<a name="line1263">1263: </a>  <font color="#4169E1">if</font> (a) *a = NULL;
+<a name="line1264">1264: </a>  PetscFunctionReturn(0);
+<a name="line1265">1265: </a>}
+
+<a name="line1267">1267: </a><font color="#B22222">/*@</font>
+<a name="line1268">1268: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVCreateVec.html#BVCreateVec">BVCreateVec</a> - Creates a new Vec object with the same type and dimensions</font>
+<a name="line1269">1269: </a><font color="#B22222">   as the columns of the basis vectors object.</font>
+
+<a name="line1271">1271: </a><font color="#B22222">   Collective on bv</font>
+
+<a name="line1273">1273: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line1274">1274: </a><font color="#B22222">.  bv - the basis vectors context</font>
+
+<a name="line1276">1276: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line1277">1277: </a><font color="#B22222">.  v  - the new vector</font>
+
+<a name="line1279">1279: </a><font color="#B22222">   Note:</font>
+<a name="line1280">1280: </a><font color="#B22222">   The user is responsible of destroying the returned vector.</font>
+
+<a name="line1282">1282: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line1284">1284: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVCreateMat.html#BVCreateMat">BVCreateMat</a>()</font>
+<a name="line1285">1285: </a><font color="#B22222">@*/</font>
+<a name="line1286">1286: </a><strong><font color="#4169E1"><a name="BVCreateVec"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVCreateVec.html#BVCreateVec">BVCreateVec</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> bv,Vec *v)</font></strong>
+<a name="line1287">1287: </a>{
+<a name="line1289">1289: </a>  BVCheckSizes(bv,1);
+<a name="line1291">1291: </a>  VecDuplicate(bv-&gt;t,v);
+<a name="line1292">1292: </a>  PetscFunctionReturn(0);
+<a name="line1293">1293: </a>}
+
+<a name="line1295">1295: </a><font color="#B22222">/*@</font>
+<a name="line1296">1296: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVCreateMat.html#BVCreateMat">BVCreateMat</a> - Creates a new Mat object of dense type and copies the contents</font>
+<a name="line1297">1297: </a><font color="#B22222">   of the <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> object.</font>
+
+<a name="line1299">1299: </a><font color="#B22222">   Collective on bv</font>
+
+<a name="line1301">1301: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line1302">1302: </a><font color="#B22222">.  bv - the basis vectors context</font>
+
+<a name="line1304">1304: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line1305">1305: </a><font color="#B22222">.  A  - the new matrix</font>
+
+<a name="line1307">1307: </a><font color="#B22222">   Notes:</font>
+<a name="line1308">1308: </a><font color="#B22222">   The user is responsible of destroying the returned matrix.</font>
+
+<a name="line1310">1310: </a><font color="#B22222">   The matrix contains all columns of the <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a>, not just the active columns.</font>
+
+<a name="line1312">1312: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line1314">1314: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVCreateFromMat.html#BVCreateFromMat">BVCreateFromMat</a>(), <a href="../../../../../docs/manualpages/BV/BVCreateVec.html#BVCreateVec">BVCreateVec</a>(), <a href="../../../../../docs/manualpages/BV/BVGetMat.html#BVGetMat">BVGetMat</a>()</font>
+<a name="line1315">1315: </a><font color="#B22222">@*/</font>
+<a name="line1316">1316: </a><strong><font color="#4169E1"><a name="BVCreateMat"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVCreateMat.html#BVCreateMat">BVCreateMat</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> bv,Mat *A)</font></strong>
+<a name="line1317">1317: </a>{
+<a name="line1318">1318: </a>  PetscScalar       *aa;
+<a name="line1319">1319: </a>  const PetscScalar *vv;
+
+<a name="line1322">1322: </a>  BVCheckSizes(bv,1);
+
+<a name="line1325">1325: </a>  MatCreateDense(PetscObjectComm((PetscObject)bv-&gt;t),bv-&gt;n,PETSC_DECIDE,bv-&gt;N,bv-&gt;m,NULL,A);
+<a name="line1326">1326: </a>  MatDenseGetArrayWrite(*A,&amp;aa);
+<a name="line1327">1327: </a>  <a href="../../../../../docs/manualpages/BV/BVGetArrayRead.html#BVGetArrayRead">BVGetArrayRead</a>(bv,&amp;vv);
+<a name="line1328">1328: </a>  PetscArraycpy(aa,vv,bv-&gt;m*bv-&gt;n);
+<a name="line1329">1329: </a>  <a href="../../../../../docs/manualpages/BV/BVRestoreArrayRead.html#BVRestoreArrayRead">BVRestoreArrayRead</a>(bv,&amp;vv);
+<a name="line1330">1330: </a>  MatDenseRestoreArrayWrite(*A,&amp;aa);
+<a name="line1331">1331: </a>  MatAssemblyBegin(*A,MAT_FINAL_ASSEMBLY);
+<a name="line1332">1332: </a>  MatAssemblyEnd(*A,MAT_FINAL_ASSEMBLY);
+<a name="line1333">1333: </a>  PetscFunctionReturn(0);
+<a name="line1334">1334: </a>}
+
+<a name="line1336">1336: </a><font color="#B22222">/*@</font>
+<a name="line1337">1337: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVGetMat.html#BVGetMat">BVGetMat</a> - Returns a Mat object of dense type that shares the memory of</font>
+<a name="line1338">1338: </a><font color="#B22222">   the <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> object.</font>
+
+<a name="line1340">1340: </a><font color="#B22222">   Collective on bv</font>
+
+<a name="line1342">1342: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line1343">1343: </a><font color="#B22222">.  bv - the basis vectors context</font>
+
+<a name="line1345">1345: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line1346">1346: </a><font color="#B22222">.  A  - the matrix</font>
+
+<a name="line1348">1348: </a><font color="#B22222">   Notes:</font>
+<a name="line1349">1349: </a><font color="#B22222">   The returned matrix contains only the active columns. If the content of</font>
+<a name="line1350">1350: </a><font color="#B22222">   the Mat is modified, these changes are also done in the <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> object. The</font>
+<a name="line1351">1351: </a><font color="#B22222">   user must call <a href="../../../../../docs/manualpages/BV/BVRestoreMat.html#BVRestoreMat">BVRestoreMat</a>() when no longer needed.</font>
+
+<a name="line1353">1353: </a><font color="#B22222">   This operation implies a call to <a href="../../../../../docs/manualpages/BV/BVGetArray.html#BVGetArray">BVGetArray</a>(), which may result in data</font>
+<a name="line1354">1354: </a><font color="#B22222">   copies.</font>
+
+<a name="line1356">1356: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line1358">1358: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVRestoreMat.html#BVRestoreMat">BVRestoreMat</a>(), <a href="../../../../../docs/manualpages/BV/BVCreateMat.html#BVCreateMat">BVCreateMat</a>(), <a href="../../../../../docs/manualpages/BV/BVGetArray.html#BVGetArray">BVGetArray</a>()</font>
+<a name="line1359">1359: </a><font color="#B22222">@*/</font>
+<a name="line1360">1360: </a><strong><font color="#4169E1"><a name="BVGetMat"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVGetMat.html#BVGetMat">BVGetMat</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> bv,Mat *A)</font></strong>
+<a name="line1361">1361: </a>{
+<a name="line1362">1362: </a>  PetscScalar    *vv,*aa;
+<a name="line1363">1363: </a>  PetscBool      create=PETSC_FALSE;
+<a name="line1364">1364: </a>  PetscInt       m,cols;
+
+<a name="line1367">1367: </a>  BVCheckSizes(bv,1);
+<a name="line1369">1369: </a>  <font color="#4169E1">if</font> (bv-&gt;ops-&gt;getmat) (*bv-&gt;ops-&gt;getmat)(bv,A);
+<a name="line1370">1370: </a>  <font color="#4169E1">else</font> {
+<a name="line1371">1371: </a>    m = bv-&gt;k-bv-&gt;l;
+<a name="line1372">1372: </a>    <font color="#4169E1">if</font> (!bv-&gt;Aget) create=PETSC_TRUE;
+<a name="line1373">1373: </a>    <font color="#4169E1">else</font> {
+<a name="line1374">1374: </a>      MatDenseGetArray(bv-&gt;Aget,&amp;aa);
+<a name="line1376">1376: </a>      MatGetSize(bv-&gt;Aget,NULL,&amp;cols);
+<a name="line1377">1377: </a>      <font color="#4169E1">if</font> (cols!=m) {
+<a name="line1378">1378: </a>        MatDestroy(&amp;bv-&gt;Aget);
+<a name="line1379">1379: </a>        create=PETSC_TRUE;
+<a name="line1380">1380: </a>      }
+<a name="line1381">1381: </a>    }
+<a name="line1382">1382: </a>    <a href="../../../../../docs/manualpages/BV/BVGetArray.html#BVGetArray">BVGetArray</a>(bv,&amp;vv);
+<a name="line1383">1383: </a>    <font color="#4169E1">if</font> (create) {
+<a name="line1384">1384: </a>      MatCreateDense(PetscObjectComm((PetscObject)bv),bv-&gt;n,PETSC_DECIDE,bv-&gt;N,m,vv,&amp;bv-&gt;Aget); <font color="#B22222">/* pass a pointer to avoid allocation of storage */</font>
+<a name="line1385">1385: </a>      MatDenseReplaceArray(bv-&gt;Aget,NULL);  <font color="#B22222">/* replace with a null pointer, the value after <a href="../../../../../docs/manualpages/BV/BVRestoreMat.html#BVRestoreMat">BVRestoreMat</a> */</font>
+<a name="line1386">1386: </a>      PetscLogObjectParent((PetscObject)bv,(PetscObject)bv-&gt;Aget);
+<a name="line1387">1387: </a>    }
+<a name="line1388">1388: </a>    MatDensePlaceArray(bv-&gt;Aget,vv+(bv-&gt;nc+bv-&gt;l)*bv-&gt;n);  <font color="#B22222">/* set the actual pointer */</font>
+<a name="line1389">1389: </a>    *A = bv-&gt;Aget;
+<a name="line1390">1390: </a>  }
+<a name="line1391">1391: </a>  PetscFunctionReturn(0);
+<a name="line1392">1392: </a>}
+
+<a name="line1394">1394: </a><font color="#B22222">/*@</font>
+<a name="line1395">1395: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVRestoreMat.html#BVRestoreMat">BVRestoreMat</a> - Restores the Mat obtained with <a href="../../../../../docs/manualpages/BV/BVGetMat.html#BVGetMat">BVGetMat</a>().</font>
+
+<a name="line1397">1397: </a><font color="#B22222">   Logically Collective on bv</font>
+
+<a name="line1399">1399: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line1400">1400: </a><font color="#B22222">+  bv - the basis vectors context</font>
+<a name="line1401">1401: </a><font color="#B22222">-  A  - the fetched matrix</font>
+
+<a name="line1403">1403: </a><font color="#B22222">   Note:</font>
+<a name="line1404">1404: </a><font color="#B22222">   A call to this function must match a previous call of <a href="../../../../../docs/manualpages/BV/BVGetMat.html#BVGetMat">BVGetMat</a>().</font>
+<a name="line1405">1405: </a><font color="#B22222">   The effect is that the contents of the Mat are copied back to the</font>
+<a name="line1406">1406: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> internal data structures.</font>
+
+<a name="line1408">1408: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line1410">1410: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVGetMat.html#BVGetMat">BVGetMat</a>(), <a href="../../../../../docs/manualpages/BV/BVRestoreArray.html#BVRestoreArray">BVRestoreArray</a>()</font>
+<a name="line1411">1411: </a><font color="#B22222">@*/</font>
+<a name="line1412">1412: </a><strong><font color="#4169E1"><a name="BVRestoreMat"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVRestoreMat.html#BVRestoreMat">BVRestoreMat</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> bv,Mat *A)</font></strong>
+<a name="line1413">1413: </a>{
+<a name="line1414">1414: </a>  PetscScalar    *vv,*aa;
+
+<a name="line1417">1417: </a>  BVCheckSizes(bv,1);
+<a name="line1421">1421: </a>  <font color="#4169E1">if</font> (bv-&gt;ops-&gt;restoremat) (*bv-&gt;ops-&gt;restoremat)(bv,A);
+<a name="line1422">1422: </a>  <font color="#4169E1">else</font> {
+<a name="line1423">1423: </a>    MatDenseGetArray(bv-&gt;Aget,&amp;aa);
+<a name="line1424">1424: </a>    vv = aa-(bv-&gt;nc+bv-&gt;l)*bv-&gt;n;
+<a name="line1425">1425: </a>    MatDenseResetArray(bv-&gt;Aget);
+<a name="line1426">1426: </a>    <a href="../../../../../docs/manualpages/BV/BVRestoreArray.html#BVRestoreArray">BVRestoreArray</a>(bv,&amp;vv);
+<a name="line1427">1427: </a>    *A = NULL;
+<a name="line1428">1428: </a>  }
+<a name="line1429">1429: </a>  PetscFunctionReturn(0);
+<a name="line1430">1430: </a>}
+
+<a name="line1432">1432: </a><font color="#B22222">/*</font>
+<a name="line1433">1433: </a><font color="#B22222">   Copy all user-provided attributes of V to another <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> object W</font>
+<a name="line1434">1434: </a><font color="#B22222"> */</font>
+<a name="line1435">1435: </a><strong><font color="#4169E1"><a name="BVDuplicate_Private"></a>static inline PetscErrorCode BVDuplicate_Private(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> V,<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> W)</font></strong>
+<a name="line1436">1436: </a>{
+<a name="line1437">1437: </a>  <a href="../../../../../docs/manualpages/BV/BVSetType.html#BVSetType">BVSetType</a>(W,((PetscObject)V)-&gt;type_name);
+<a name="line1438">1438: </a>  W-&gt;orthog_type  = V-&gt;orthog_type;
+<a name="line1439">1439: </a>  W-&gt;orthog_ref   = V-&gt;orthog_ref;
+<a name="line1440">1440: </a>  W-&gt;orthog_eta   = V-&gt;orthog_eta;
+<a name="line1441">1441: </a>  W-&gt;orthog_block = V-&gt;orthog_block;
+<a name="line1442">1442: </a>  <font color="#4169E1">if</font> (V-&gt;matrix) PetscObjectReference((PetscObject)V-&gt;matrix);
+<a name="line1443">1443: </a>  W-&gt;matrix       = V-&gt;matrix;
+<a name="line1444">1444: </a>  W-&gt;indef        = V-&gt;indef;
+<a name="line1445">1445: </a>  W-&gt;vmm          = V-&gt;vmm;
+<a name="line1446">1446: </a>  W-&gt;rrandom      = V-&gt;rrandom;
+<a name="line1447">1447: </a>  W-&gt;deftol       = V-&gt;deftol;
+<a name="line1448">1448: </a>  <font color="#4169E1">if</font> (V-&gt;rand) PetscObjectReference((PetscObject)V-&gt;rand);
+<a name="line1449">1449: </a>  W-&gt;rand         = V-&gt;rand;
+<a name="line1450">1450: </a>  W-&gt;sfocalled    = V-&gt;sfocalled;
+<a name="line1451">1451: </a>  <font color="#4169E1">if</font> (V-&gt;ops-&gt;duplicate) (*V-&gt;ops-&gt;duplicate)(V,W);
+<a name="line1452">1452: </a>  PetscObjectStateIncrease((PetscObject)W);
+<a name="line1453">1453: </a>  PetscFunctionReturn(0);
+<a name="line1454">1454: </a>}
+
+<a name="line1456">1456: </a><font color="#B22222">/*@</font>
+<a name="line1457">1457: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVDuplicate.html#BVDuplicate">BVDuplicate</a> - Creates a new basis vector object of the same type and</font>
+<a name="line1458">1458: </a><font color="#B22222">   dimensions as an existing one.</font>
+
+<a name="line1460">1460: </a><font color="#B22222">   Collective on V</font>
+
+<a name="line1462">1462: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line1463">1463: </a><font color="#B22222">.  V - basis vectors context</font>
+
+<a name="line1465">1465: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line1466">1466: </a><font color="#B22222">.  W - location to put the new <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a></font>
+
+<a name="line1468">1468: </a><font color="#B22222">   Notes:</font>
+<a name="line1469">1469: </a><font color="#B22222">   The new <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> has the same type and dimensions as V, and it shares the same</font>
+<a name="line1470">1470: </a><font color="#B22222">   template vector. Also, the inner product matrix and orthogonalization</font>
+<a name="line1471">1471: </a><font color="#B22222">   options are copied.</font>
+
+<a name="line1473">1473: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVDuplicate.html#BVDuplicate">BVDuplicate</a>() DOES NOT COPY the entries, but rather allocates storage</font>
+<a name="line1474">1474: </a><font color="#B22222">   for the new basis vectors. Use <a href="../../../../../docs/manualpages/BV/BVCopy.html#BVCopy">BVCopy</a>() to copy the contents.</font>
+
+<a name="line1476">1476: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line1478">1478: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVDuplicateResize.html#BVDuplicateResize">BVDuplicateResize</a>(), <a href="../../../../../docs/manualpages/BV/BVCreate.html#BVCreate">BVCreate</a>(), <a href="../../../../../docs/manualpages/BV/BVSetSizesFromVec.html#BVSetSizesFromVec">BVSetSizesFromVec</a>(), <a href="../../../../../docs/manualpages/BV/BVCopy.html#BVCopy">BVCopy</a>()</font>
+<a name="line1479">1479: </a><font color="#B22222">@*/</font>
+<a name="line1480">1480: </a><strong><font color="#4169E1"><a name="BVDuplicate"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVDuplicate.html#BVDuplicate">BVDuplicate</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> V,<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> *W)</font></strong>
+<a name="line1481">1481: </a>{
+<a name="line1484">1484: </a>  BVCheckSizes(V,1);
+<a name="line1486">1486: </a>  <a href="../../../../../docs/manualpages/BV/BVCreate.html#BVCreate">BVCreate</a>(PetscObjectComm((PetscObject)V),W);
+<a name="line1487">1487: </a>  <a href="../../../../../docs/manualpages/BV/BVSetSizesFromVec.html#BVSetSizesFromVec">BVSetSizesFromVec</a>(*W,V-&gt;t,V-&gt;m);
+<a name="line1488">1488: </a>  BVDuplicate_Private(V,*W);
+<a name="line1489">1489: </a>  PetscFunctionReturn(0);
+<a name="line1490">1490: </a>}
+
+<a name="line1492">1492: </a><font color="#B22222">/*@</font>
+<a name="line1493">1493: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVDuplicateResize.html#BVDuplicateResize">BVDuplicateResize</a> - Creates a new basis vector object of the same type and</font>
+<a name="line1494">1494: </a><font color="#B22222">   dimensions as an existing one, but with possibly different number of columns.</font>
+
+<a name="line1496">1496: </a><font color="#B22222">   Collective on V</font>
+
+<a name="line1498">1498: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line1499">1499: </a><font color="#B22222">+  V - basis vectors context</font>
+<a name="line1500">1500: </a><font color="#B22222">-  m - the new number of columns</font>
+
+<a name="line1502">1502: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line1503">1503: </a><font color="#B22222">.  W - location to put the new <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a></font>
+
+<a name="line1505">1505: </a><font color="#B22222">   Note:</font>
+<a name="line1506">1506: </a><font color="#B22222">   This is equivalent of a call to <a href="../../../../../docs/manualpages/BV/BVDuplicate.html#BVDuplicate">BVDuplicate</a>() followed by <a href="../../../../../docs/manualpages/BV/BVResize.html#BVResize">BVResize</a>(). The</font>
+<a name="line1507">1507: </a><font color="#B22222">   contents of V are not copied to W.</font>
+
+<a name="line1509">1509: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line1511">1511: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVDuplicate.html#BVDuplicate">BVDuplicate</a>(), <a href="../../../../../docs/manualpages/BV/BVResize.html#BVResize">BVResize</a>()</font>
+<a name="line1512">1512: </a><font color="#B22222">@*/</font>
+<a name="line1513">1513: </a><strong><font color="#4169E1"><a name="BVDuplicateResize"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVDuplicateResize.html#BVDuplicateResize">BVDuplicateResize</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> V,PetscInt m,<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> *W)</font></strong>
+<a name="line1514">1514: </a>{
+<a name="line1517">1517: </a>  BVCheckSizes(V,1);
+<a name="line1520">1520: </a>  <a href="../../../../../docs/manualpages/BV/BVCreate.html#BVCreate">BVCreate</a>(PetscObjectComm((PetscObject)V),W);
+<a name="line1521">1521: </a>  <a href="../../../../../docs/manualpages/BV/BVSetSizesFromVec.html#BVSetSizesFromVec">BVSetSizesFromVec</a>(*W,V-&gt;t,m);
+<a name="line1522">1522: </a>  BVDuplicate_Private(V,*W);
+<a name="line1523">1523: </a>  PetscFunctionReturn(0);
+<a name="line1524">1524: </a>}
+
+<a name="line1526">1526: </a><font color="#B22222">/*@</font>
+<a name="line1527">1527: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVGetCachedBV.html#BVGetCachedBV">BVGetCachedBV</a> - Returns a <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> object stored internally that holds the</font>
+<a name="line1528">1528: </a><font color="#B22222">   result of B*X after a call to <a href="../../../../../docs/manualpages/BV/BVApplyMatrixBV.html#BVApplyMatrixBV">BVApplyMatrixBV</a>().</font>
+
+<a name="line1530">1530: </a><font color="#B22222">   Not collective</font>
+
+<a name="line1532">1532: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line1533">1533: </a><font color="#B22222">.  bv    - the basis vectors context</font>
+
+<a name="line1535">1535: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line1536">1536: </a><font color="#B22222">.  cached - the cached <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a></font>
+
+<a name="line1538">1538: </a><font color="#B22222">   Note:</font>
+<a name="line1539">1539: </a><font color="#B22222">   The cached <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> is created if not available previously.</font>
+
+<a name="line1541">1541: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line1543">1543: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVApplyMatrixBV.html#BVApplyMatrixBV">BVApplyMatrixBV</a>()</font>
+<a name="line1544">1544: </a><font color="#B22222">@*/</font>
+<a name="line1545">1545: </a><strong><font color="#4169E1"><a name="BVGetCachedBV"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVGetCachedBV.html#BVGetCachedBV">BVGetCachedBV</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> bv,<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> *cached)</font></strong>
+<a name="line1546">1546: </a>{
+<a name="line1549">1549: </a>  BVCheckSizes(bv,1);
+<a name="line1550">1550: </a>  <font color="#4169E1">if</font> (!bv-&gt;cached) {
+<a name="line1551">1551: </a>    <a href="../../../../../docs/manualpages/BV/BVCreate.html#BVCreate">BVCreate</a>(PetscObjectComm((PetscObject)bv),&amp;bv-&gt;cached);
+<a name="line1552">1552: </a>    <a href="../../../../../docs/manualpages/BV/BVSetSizesFromVec.html#BVSetSizesFromVec">BVSetSizesFromVec</a>(bv-&gt;cached,bv-&gt;t,bv-&gt;m);
+<a name="line1553">1553: </a>    BVDuplicate_Private(bv,bv-&gt;cached);
+<a name="line1554">1554: </a>    PetscLogObjectParent((PetscObject)bv,(PetscObject)bv-&gt;cached);
+<a name="line1555">1555: </a>  }
+<a name="line1556">1556: </a>  *cached = bv-&gt;cached;
+<a name="line1557">1557: </a>  PetscFunctionReturn(0);
+<a name="line1558">1558: </a>}
+
+<a name="line1560">1560: </a><font color="#B22222">/*@</font>
+<a name="line1561">1561: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVCopy.html#BVCopy">BVCopy</a> - Copies a basis vector object into another one, W &lt;- V.</font>
+
+<a name="line1563">1563: </a><font color="#B22222">   Logically Collective on V</font>
+
+<a name="line1565">1565: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line1566">1566: </a><font color="#B22222">.  V - basis vectors context</font>
+
+<a name="line1568">1568: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line1569">1569: </a><font color="#B22222">.  W - the copy</font>
+
+<a name="line1571">1571: </a><font color="#B22222">   Note:</font>
+<a name="line1572">1572: </a><font color="#B22222">   Both V and W must be distributed in the same manner; local copies are</font>
+<a name="line1573">1573: </a><font color="#B22222">   done. Only active columns (excluding the leading ones) are copied.</font>
+<a name="line1574">1574: </a><font color="#B22222">   In the destination W, columns are overwritten starting from the leading ones.</font>
+<a name="line1575">1575: </a><font color="#B22222">   Constraints are not copied.</font>
+
+<a name="line1577">1577: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line1579">1579: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVCopyVec.html#BVCopyVec">BVCopyVec</a>(), <a href="../../../../../docs/manualpages/BV/BVCopyColumn.html#BVCopyColumn">BVCopyColumn</a>(), <a href="../../../../../docs/manualpages/BV/BVDuplicate.html#BVDuplicate">BVDuplicate</a>(), <a href="../../../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>()</font>
+<a name="line1580">1580: </a><font color="#B22222">@*/</font>
+<a name="line1581">1581: </a><strong><font color="#4169E1"><a name="BVCopy"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVCopy.html#BVCopy">BVCopy</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> V,<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> W)</font></strong>
+<a name="line1582">1582: </a>{
+<a name="line1583">1583: </a>  PetscScalar       *womega;
+<a name="line1584">1584: </a>  const PetscScalar *vomega;
+
+<a name="line1588">1588: </a>  BVCheckSizes(V,1);
+<a name="line1589">1589: </a>  BVCheckOp(V,1,copy);
+<a name="line1592">1592: </a>  BVCheckSizes(W,2);
+<a name="line1596">1596: </a>  <font color="#4169E1">if</font> (V==W || !V-&gt;n) PetscFunctionReturn(0);
+
+<a name="line1598">1598: </a>  PetscLogEventBegin(BV_Copy,V,W,0,0);
+<a name="line1599">1599: </a>  <font color="#4169E1">if</font> (V-&gt;indef &amp;&amp; V-&gt;matrix &amp;&amp; V-&gt;indef==W-&gt;indef &amp;&amp; V-&gt;matrix==W-&gt;matrix) {
+<a name="line1600">1600: </a>    <font color="#B22222">/* copy signature */</font>
+<a name="line1601">1601: </a>    BV_AllocateSignature(W);
+<a name="line1602">1602: </a>    VecGetArrayRead(V-&gt;omega,&amp;vomega);
+<a name="line1603">1603: </a>    VecGetArray(W-&gt;omega,&amp;womega);
+<a name="line1604">1604: </a>    PetscArraycpy(womega+W-&gt;nc+W-&gt;l,vomega+V-&gt;nc+V-&gt;l,V-&gt;k-V-&gt;l);
+<a name="line1605">1605: </a>    VecRestoreArray(W-&gt;omega,&amp;womega);
+<a name="line1606">1606: </a>    VecRestoreArrayRead(V-&gt;omega,&amp;vomega);
+<a name="line1607">1607: </a>  }
+<a name="line1608">1608: </a>  (*V-&gt;ops-&gt;copy)(V,W);
+<a name="line1609">1609: </a>  PetscLogEventEnd(BV_Copy,V,W,0,0);
+<a name="line1610">1610: </a>  PetscObjectStateIncrease((PetscObject)W);
+<a name="line1611">1611: </a>  PetscFunctionReturn(0);
+<a name="line1612">1612: </a>}
+
+<a name="line1614">1614: </a><font color="#B22222">/*@</font>
+<a name="line1615">1615: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVCopyVec.html#BVCopyVec">BVCopyVec</a> - Copies one of the columns of a basis vectors object into a Vec.</font>
+
+<a name="line1617">1617: </a><font color="#B22222">   Logically Collective on V</font>
+
+<a name="line1619">1619: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line1620">1620: </a><font color="#B22222">+  V - basis vectors context</font>
+<a name="line1621">1621: </a><font color="#B22222">-  j - the column number to be copied</font>
+
+<a name="line1623">1623: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line1624">1624: </a><font color="#B22222">.  w - the copied column</font>
+
+<a name="line1626">1626: </a><font color="#B22222">   Note:</font>
+<a name="line1627">1627: </a><font color="#B22222">   Both V and w must be distributed in the same manner; local copies are done.</font>
+
+<a name="line1629">1629: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line1631">1631: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVCopy.html#BVCopy">BVCopy</a>(), <a href="../../../../../docs/manualpages/BV/BVCopyColumn.html#BVCopyColumn">BVCopyColumn</a>(), <a href="../../../../../docs/manualpages/BV/BVInsertVec.html#BVInsertVec">BVInsertVec</a>()</font>
+<a name="line1632">1632: </a><font color="#B22222">@*/</font>
+<a name="line1633">1633: </a><strong><font color="#4169E1"><a name="BVCopyVec"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVCopyVec.html#BVCopyVec">BVCopyVec</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> V,PetscInt j,Vec w)</font></strong>
+<a name="line1634">1634: </a>{
+<a name="line1635">1635: </a>  PetscInt       n,N;
+<a name="line1636">1636: </a>  Vec            z;
+
+<a name="line1640">1640: </a>  BVCheckSizes(V,1);
+
+<a name="line1645">1645: </a>  VecGetSize(w,&amp;N);
+<a name="line1646">1646: </a>  VecGetLocalSize(w,&amp;n);
+
+<a name="line1649">1649: </a>  PetscLogEventBegin(BV_Copy,V,w,0,0);
+<a name="line1650">1650: </a>  <a href="../../../../../docs/manualpages/BV/BVGetColumn.html#BVGetColumn">BVGetColumn</a>(V,j,&amp;z);
+<a name="line1651">1651: </a>  VecCopy(z,w);
+<a name="line1652">1652: </a>  <a href="../../../../../docs/manualpages/BV/BVRestoreColumn.html#BVRestoreColumn">BVRestoreColumn</a>(V,j,&amp;z);
+<a name="line1653">1653: </a>  PetscLogEventEnd(BV_Copy,V,w,0,0);
+<a name="line1654">1654: </a>  PetscFunctionReturn(0);
+<a name="line1655">1655: </a>}
+
+<a name="line1657">1657: </a><font color="#B22222">/*@</font>
+<a name="line1658">1658: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVCopyColumn.html#BVCopyColumn">BVCopyColumn</a> - Copies the values from one of the columns to another one.</font>
+
+<a name="line1660">1660: </a><font color="#B22222">   Logically Collective on V</font>
+
+<a name="line1662">1662: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line1663">1663: </a><font color="#B22222">+  V - basis vectors context</font>
+<a name="line1664">1664: </a><font color="#B22222">.  j - the number of the source column</font>
+<a name="line1665">1665: </a><font color="#B22222">-  i - the number of the destination column</font>
+
+<a name="line1667">1667: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line1669">1669: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVCopy.html#BVCopy">BVCopy</a>(), <a href="../../../../../docs/manualpages/BV/BVCopyVec.html#BVCopyVec">BVCopyVec</a>()</font>
+<a name="line1670">1670: </a><font color="#B22222">@*/</font>
+<a name="line1671">1671: </a><strong><font color="#4169E1"><a name="BVCopyColumn"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVCopyColumn.html#BVCopyColumn">BVCopyColumn</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> V,PetscInt j,PetscInt i)</font></strong>
+<a name="line1672">1672: </a>{
+<a name="line1673">1673: </a>  Vec            z,w;
+<a name="line1674">1674: </a>  PetscScalar    *omega;
+
+<a name="line1678">1678: </a>  BVCheckSizes(V,1);
+<a name="line1681">1681: </a>  <font color="#4169E1">if</font> (j==i) PetscFunctionReturn(0);
+
+<a name="line1683">1683: </a>  PetscLogEventBegin(BV_Copy,V,0,0,0);
+<a name="line1684">1684: </a>  <font color="#4169E1">if</font> (V-&gt;omega) {
+<a name="line1685">1685: </a>    VecGetArray(V-&gt;omega,&amp;omega);
+<a name="line1686">1686: </a>    omega[i] = omega[j];
+<a name="line1687">1687: </a>    VecRestoreArray(V-&gt;omega,&amp;omega);
+<a name="line1688">1688: </a>  }
+<a name="line1689">1689: </a>  <font color="#4169E1">if</font> (V-&gt;ops-&gt;copycolumn) (*V-&gt;ops-&gt;copycolumn)(V,j,i);
+<a name="line1690">1690: </a>  <font color="#4169E1">else</font> {
+<a name="line1691">1691: </a>    <a href="../../../../../docs/manualpages/BV/BVGetColumn.html#BVGetColumn">BVGetColumn</a>(V,j,&amp;z);
+<a name="line1692">1692: </a>    <a href="../../../../../docs/manualpages/BV/BVGetColumn.html#BVGetColumn">BVGetColumn</a>(V,i,&amp;w);
+<a name="line1693">1693: </a>    VecCopy(z,w);
+<a name="line1694">1694: </a>    <a href="../../../../../docs/manualpages/BV/BVRestoreColumn.html#BVRestoreColumn">BVRestoreColumn</a>(V,j,&amp;z);
+<a name="line1695">1695: </a>    <a href="../../../../../docs/manualpages/BV/BVRestoreColumn.html#BVRestoreColumn">BVRestoreColumn</a>(V,i,&amp;w);
+<a name="line1696">1696: </a>  }
+<a name="line1697">1697: </a>  PetscLogEventEnd(BV_Copy,V,0,0,0);
+<a name="line1698">1698: </a>  PetscObjectStateIncrease((PetscObject)V);
+<a name="line1699">1699: </a>  PetscFunctionReturn(0);
+<a name="line1700">1700: </a>}
+
+<a name="line1702">1702: </a><strong><font color="#4169E1"><a name="BVGetSplit_Private"></a>static PetscErrorCode BVGetSplit_Private(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> bv,PetscBool left,<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> *split)</font></strong>
+<a name="line1703">1703: </a>{
+<a name="line1704">1704: </a>  PetscInt       ncols;
+
+<a name="line1706">1706: </a>  ncols = left? bv-&gt;nc+bv-&gt;l: bv-&gt;m-bv-&gt;l;
+<a name="line1707">1707: </a>  <font color="#4169E1">if</font> (*split &amp;&amp; ncols!=(*split)-&gt;m) <a href="../../../../../docs/manualpages/BV/BVDestroy.html#BVDestroy">BVDestroy</a>(split);
+<a name="line1708">1708: </a>  <font color="#4169E1">if</font> (!*split) {
+<a name="line1709">1709: </a>    <a href="../../../../../docs/manualpages/BV/BVCreate.html#BVCreate">BVCreate</a>(PetscObjectComm((PetscObject)bv),split);
+<a name="line1710">1710: </a>    PetscLogObjectParent((PetscObject)bv,(PetscObject)*split);
+<a name="line1711">1711: </a>    (*split)-&gt;issplit = left? 1: 2;
+<a name="line1712">1712: </a>    (*split)-&gt;splitparent = bv;
+<a name="line1713">1713: </a>    <a href="../../../../../docs/manualpages/BV/BVSetSizesFromVec.html#BVSetSizesFromVec">BVSetSizesFromVec</a>(*split,bv-&gt;t,ncols);
+<a name="line1714">1714: </a>    BVDuplicate_Private(bv,*split);
+<a name="line1715">1715: </a>  }
+<a name="line1716">1716: </a>  (*split)-&gt;l  = 0;
+<a name="line1717">1717: </a>  (*split)-&gt;k  = left? bv-&gt;l: bv-&gt;k-bv-&gt;l;
+<a name="line1718">1718: </a>  (*split)-&gt;nc = left? bv-&gt;nc: 0;
+<a name="line1719">1719: </a>  (*split)-&gt;m  = ncols-(*split)-&gt;nc;
+<a name="line1720">1720: </a>  <font color="#4169E1">if</font> ((*split)-&gt;nc) {
+<a name="line1721">1721: </a>    (*split)-&gt;ci[0] = -(*split)-&gt;nc-1;
+<a name="line1722">1722: </a>    (*split)-&gt;ci[1] = -(*split)-&gt;nc-1;
+<a name="line1723">1723: </a>  }
+<a name="line1724">1724: </a>  <font color="#4169E1">if</font> (left) PetscObjectStateGet((PetscObject)*split,&amp;bv-&gt;lstate);
+<a name="line1725">1725: </a>  <font color="#4169E1">else</font> PetscObjectStateGet((PetscObject)*split,&amp;bv-&gt;rstate);
+<a name="line1726">1726: </a>  PetscFunctionReturn(0);
+<a name="line1727">1727: </a>}
+
+<a name="line1729">1729: </a><font color="#B22222">/*@</font>
+<a name="line1730">1730: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVGetSplit.html#BVGetSplit">BVGetSplit</a> - Splits the <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> object into two <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> objects that share the</font>
+<a name="line1731">1731: </a><font color="#B22222">   internal data, one of them containing the leading columns and the other</font>
+<a name="line1732">1732: </a><font color="#B22222">   one containing the remaining columns.</font>
+
+<a name="line1734">1734: </a><font color="#B22222">   Logically Collective on bv</font>
+
+<a name="line1736">1736: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line1737">1737: </a><font color="#B22222">.  bv - the basis vectors context</font>
+
+<a name="line1739">1739: </a><font color="#B22222">   Output Parameters:</font>
+<a name="line1740">1740: </a><font color="#B22222">+  L - left <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> containing leading columns (can be NULL)</font>
+<a name="line1741">1741: </a><font color="#B22222">-  R - right <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> containing remaining columns (can be NULL)</font>
+
+<a name="line1743">1743: </a><font color="#B22222">   Notes:</font>
+<a name="line1744">1744: </a><font color="#B22222">   The columns are split in two sets. The leading columns (including the</font>
+<a name="line1745">1745: </a><font color="#B22222">   constraints) are assigned to the left <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> and the remaining columns</font>
+<a name="line1746">1746: </a><font color="#B22222">   are assigned to the right <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a>. The number of leading columns, as</font>
+<a name="line1747">1747: </a><font color="#B22222">   specified with <a href="../../../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(), must be between 1 and m-1 (to</font>
+<a name="line1748">1748: </a><font color="#B22222">   guarantee that both L and R have at least one column).</font>
+
+<a name="line1750">1750: </a><font color="#B22222">   The returned <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a>'s must be seen as references (not copies) of the input</font>
+<a name="line1751">1751: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a>, that is, modifying them will change the entries of bv as well.</font>
+<a name="line1752">1752: </a><font color="#B22222">   The returned <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a>'s must not be destroyed. <a href="../../../../../docs/manualpages/BV/BVRestoreSplit.html#BVRestoreSplit">BVRestoreSplit</a>() must be called</font>
+<a name="line1753">1753: </a><font color="#B22222">   when they are no longer needed.</font>
+
+<a name="line1755">1755: </a><font color="#B22222">   Pass NULL for any of the output <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a>'s that is not needed.</font>
+
+<a name="line1757">1757: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line1759">1759: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVRestoreSplit.html#BVRestoreSplit">BVRestoreSplit</a>(), <a href="../../../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(), <a href="../../../../../docs/manualpages/BV/BVSetNumConstraints.html#BVSetNumConstraints">BVSetNumConstraints</a>()</font>
+<a name="line1760">1760: </a><font color="#B22222">@*/</font>
+<a name="line1761">1761: </a><strong><font color="#4169E1"><a name="BVGetSplit"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVGetSplit.html#BVGetSplit">BVGetSplit</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> bv,<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> *L,<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> *R)</font></strong>
+<a name="line1762">1762: </a>{
+<a name="line1765">1765: </a>  BVCheckSizes(bv,1);
+<a name="line1768">1768: </a>  bv-&gt;lsplit = bv-&gt;nc+bv-&gt;l;
+<a name="line1769">1769: </a>  BVGetSplit_Private(bv,PETSC_TRUE,&amp;bv-&gt;L);
+<a name="line1770">1770: </a>  BVGetSplit_Private(bv,PETSC_FALSE,&amp;bv-&gt;R);
+<a name="line1771">1771: </a>  <font color="#4169E1">if</font> (L) *L = bv-&gt;L;
+<a name="line1772">1772: </a>  <font color="#4169E1">if</font> (R) *R = bv-&gt;R;
+<a name="line1773">1773: </a>  PetscFunctionReturn(0);
+<a name="line1774">1774: </a>}
+
+<a name="line1776">1776: </a><font color="#B22222">/*@</font>
+<a name="line1777">1777: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVRestoreSplit.html#BVRestoreSplit">BVRestoreSplit</a> - Restore the <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> objects obtained with <a href="../../../../../docs/manualpages/BV/BVGetSplit.html#BVGetSplit">BVGetSplit</a>().</font>
+
+<a name="line1779">1779: </a><font color="#B22222">   Logically Collective on bv</font>
+
+<a name="line1781">1781: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line1782">1782: </a><font color="#B22222">+  bv - the basis vectors context</font>
+<a name="line1783">1783: </a><font color="#B22222">.  L  - left <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> obtained with <a href="../../../../../docs/manualpages/BV/BVGetSplit.html#BVGetSplit">BVGetSplit</a>()</font>
+<a name="line1784">1784: </a><font color="#B22222">-  R  - right <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> obtained with <a href="../../../../../docs/manualpages/BV/BVGetSplit.html#BVGetSplit">BVGetSplit</a>()</font>
+
+<a name="line1786">1786: </a><font color="#B22222">   Note:</font>
+<a name="line1787">1787: </a><font color="#B22222">   The arguments must match the corresponding call to <a href="../../../../../docs/manualpages/BV/BVGetSplit.html#BVGetSplit">BVGetSplit</a>().</font>
+
+<a name="line1789">1789: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line1791">1791: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVGetSplit.html#BVGetSplit">BVGetSplit</a>()</font>
+<a name="line1792">1792: </a><font color="#B22222">@*/</font>
+<a name="line1793">1793: </a><strong><font color="#4169E1"><a name="BVRestoreSplit"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVRestoreSplit.html#BVRestoreSplit">BVRestoreSplit</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> bv,<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> *L,<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> *R)</font></strong>
+<a name="line1794">1794: </a>{
+<a name="line1797">1797: </a>  BVCheckSizes(bv,1);
+
+<a name="line1804">1804: </a>  <font color="#4169E1">if</font> (bv-&gt;ops-&gt;restoresplit) (*bv-&gt;ops-&gt;restoresplit)(bv,L,R);
+<a name="line1805">1805: </a>  bv-&gt;lsplit = 0;
+<a name="line1806">1806: </a>  <font color="#4169E1">if</font> (L) *L = NULL;
+<a name="line1807">1807: </a>  <font color="#4169E1">if</font> (R) *R = NULL;
+<a name="line1808">1808: </a>  PetscFunctionReturn(0);
+<a name="line1809">1809: </a>}
+
+<a name="line1811">1811: </a><font color="#B22222">/*@</font>
+<a name="line1812">1812: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVSetDefiniteTolerance.html#BVSetDefiniteTolerance">BVSetDefiniteTolerance</a> - Set the tolerance to be used when checking a</font>
+<a name="line1813">1813: </a><font color="#B22222">   definite inner product.</font>
+
+<a name="line1815">1815: </a><font color="#B22222">   Logically Collective on bv</font>
+
+<a name="line1817">1817: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line1818">1818: </a><font color="#B22222">+  bv     - basis vectors</font>
+<a name="line1819">1819: </a><font color="#B22222">-  deftol - the tolerance</font>
+
+<a name="line1821">1821: </a><font color="#B22222">   Options Database Key:</font>
+<a name="line1822">1822: </a><font color="#B22222">.  -bv_definite_tol &lt;deftol&gt; - the tolerance</font>
+
+<a name="line1824">1824: </a><font color="#B22222">   Notes:</font>
+<a name="line1825">1825: </a><font color="#B22222">   When using a non-standard inner product, see <a href="../../../../../docs/manualpages/BV/BVSetMatrix.html#BVSetMatrix">BVSetMatrix</a>(), the solver needs</font>
+<a name="line1826">1826: </a><font color="#B22222">   to compute sqrt(z'*B*z) for various vectors z. If the inner product has not</font>
+<a name="line1827">1827: </a><font color="#B22222">   been declared indefinite, the value z'*B*z must be positive, but due to</font>
+<a name="line1828">1828: </a><font color="#B22222">   rounding error a tiny value may become negative. A tolerance is used to</font>
+<a name="line1829">1829: </a><font color="#B22222">   detect this situation. Likewise, in complex arithmetic z'*B*z should be</font>
+<a name="line1830">1830: </a><font color="#B22222">   real, and we use the same tolerance to check whether a nonzero imaginary part</font>
+<a name="line1831">1831: </a><font color="#B22222">   can be considered negligible.</font>
+
+<a name="line1833">1833: </a><font color="#B22222">   This function sets this tolerance, which defaults to 10*eps, where eps is</font>
+<a name="line1834">1834: </a><font color="#B22222">   the machine epsilon. The default value should be good for most applications.</font>
+
+<a name="line1836">1836: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line1838">1838: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVSetMatrix.html#BVSetMatrix">BVSetMatrix</a>()</font>
+<a name="line1839">1839: </a><font color="#B22222">@*/</font>
+<a name="line1840">1840: </a><strong><font color="#4169E1"><a name="BVSetDefiniteTolerance"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVSetDefiniteTolerance.html#BVSetDefiniteTolerance">BVSetDefiniteTolerance</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> bv,PetscReal deftol)</font></strong>
+<a name="line1841">1841: </a>{
+<a name="line1844">1844: </a>  <font color="#4169E1">if</font> (deftol == PETSC_DEFAULT) bv-&gt;deftol = 10*PETSC_MACHINE_EPSILON;
+<a name="line1845">1845: </a>  <font color="#4169E1">else</font> {
+<a name="line1847">1847: </a>    bv-&gt;deftol = deftol;
+<a name="line1848">1848: </a>  }
+<a name="line1849">1849: </a>  PetscFunctionReturn(0);
+<a name="line1850">1850: </a>}
+
+<a name="line1852">1852: </a><font color="#B22222">/*@</font>
+<a name="line1853">1853: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/BV/BVGetDefiniteTolerance.html#BVGetDefiniteTolerance">BVGetDefiniteTolerance</a> - Returns the tolerance for checking a definite</font>
+<a name="line1854">1854: </a><font color="#B22222">   inner product.</font>
+
+<a name="line1856">1856: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line1858">1858: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line1859">1859: </a><font color="#B22222">.  bv - the basis vectors</font>
+
+<a name="line1861">1861: </a><font color="#B22222">   Output Parameters:</font>
+<a name="line1862">1862: </a><font color="#B22222">.  deftol - the tolerance</font>
+
+<a name="line1864">1864: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line1866">1866: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/BV/BVSetDefiniteTolerance.html#BVSetDefiniteTolerance">BVSetDefiniteTolerance</a>()</font>
+<a name="line1867">1867: </a><font color="#B22222">@*/</font>
+<a name="line1868">1868: </a><strong><font color="#4169E1"><a name="BVGetDefiniteTolerance"></a>PetscErrorCode <a href="../../../../../docs/manualpages/BV/BVGetDefiniteTolerance.html#BVGetDefiniteTolerance">BVGetDefiniteTolerance</a>(<a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> bv,PetscReal *deftol)</font></strong>
+<a name="line1869">1869: </a>{
+<a name="line1872">1872: </a>  *deftol = bv-&gt;deftol;
+<a name="line1873">1873: </a>  PetscFunctionReturn(0);
+<a name="line1874">1874: </a>}
+</pre>
+</body>
+
+</html>

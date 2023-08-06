@@ -1,0 +1,159 @@
+<center><a href="stimpl.h">Actual source code: stimpl.h</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="https://slepc.upv.es/documentation/current/include/slepc/private/stimpl.h.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2022-08-09T09:06:02+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>slepc-3.17.2 2022-08-09</b></div>
+   <div id="bugreport" align=right><a href="mailto:slepc-maint@upv.es?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: slepc-3.17.2 v3.17.2 include/slepc/private/stimpl.h.html "><small>Report Typos and Errors</small></a></div>
+<pre width="80">
+<a name="line1">  1: </a><font color="#B22222">/*</font>
+<a name="line2">  2: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line3">  3: </a><font color="#B22222">   SLEPc - Scalable Library for Eigenvalue Problem Computations</font>
+<a name="line4">  4: </a><font color="#B22222">   Copyright (c) 2002-, Universitat Politecnica de Valencia, Spain</font>
+
+<a name="line6">  6: </a><font color="#B22222">   This file is part of SLEPc.</font>
+<a name="line7">  7: </a><font color="#B22222">   SLEPc is distributed under a 2-clause BSD license (see LICENSE).</font>
+<a name="line8">  8: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line9">  9: </a><font color="#B22222">*/</font>
+
+<a name="line11"> 11: </a><font color="#A020F0">#if !defined(SLEPCSTIMPL_H)</font>
+<a name="line12"> 12: </a><strong><font color="#228B22">#define SLEPCSTIMPL_H</font></strong>
+
+<a name="line14"> 14: </a>#include <A href="../../slepcst.h.html">&lt;slepcst.h&gt;</A>
+<a name="line15"> 15: </a>#include <A href="slepcimpl.h.html">&lt;slepc/private/slepcimpl.h&gt;</A>
+
+<a name="line17"> 17: </a>SLEPC_EXTERN PetscBool STRegisterAllCalled;
+<a name="line18"> 18: </a><strong><font color="#4169E1">SLEPC_EXTERN PetscErrorCode <a href="../../../docs/manualpages/ST/STRegisterAll.html#STRegisterAll">STRegisterAll</a>(void)</font></strong>;
+<a name="line19"> 19: </a>SLEPC_EXTERN PetscLogEvent ST_SetUp,ST_ComputeOperator,ST_Apply,ST_ApplyTranspose,ST_MatSetUp,ST_MatMult,ST_MatMultTranspose,ST_MatSolve,ST_MatSolveTranspose;
+
+<a name="line21"> 21: </a><font color="#4169E1">typedef struct _STOps *STOps;</font>
+
+<a name="line23"> 23: </a><font color="#4169E1"><a name="_STOps"></a>struct _STOps </font>{
+<a name="line24"> 24: </a>  PetscErrorCode (*apply)(<a href="../../../docs/manualpages/sys/ST.html#ST">ST</a>,Vec,Vec);
+<a name="line25"> 25: </a>  PetscErrorCode (*applymat)(<a href="../../../docs/manualpages/sys/ST.html#ST">ST</a>,Mat,Mat);
+<a name="line26"> 26: </a>  PetscErrorCode (*applytrans)(<a href="../../../docs/manualpages/sys/ST.html#ST">ST</a>,Vec,Vec);
+<a name="line27"> 27: </a>  PetscErrorCode (*backtransform)(<a href="../../../docs/manualpages/sys/ST.html#ST">ST</a>,PetscInt,PetscScalar*,PetscScalar*);
+<a name="line28"> 28: </a>  PetscErrorCode (*setshift)(<a href="../../../docs/manualpages/sys/ST.html#ST">ST</a>,PetscScalar);
+<a name="line29"> 29: </a>  PetscErrorCode (*getbilinearform)(<a href="../../../docs/manualpages/sys/ST.html#ST">ST</a>,Mat*);
+<a name="line30"> 30: </a>  PetscErrorCode (*setup)(<a href="../../../docs/manualpages/sys/ST.html#ST">ST</a>);
+<a name="line31"> 31: </a>  PetscErrorCode (*computeoperator)(<a href="../../../docs/manualpages/sys/ST.html#ST">ST</a>);
+<a name="line32"> 32: </a>  PetscErrorCode (*setfromoptions)(PetscOptionItems*,<a href="../../../docs/manualpages/sys/ST.html#ST">ST</a>);
+<a name="line33"> 33: </a>  PetscErrorCode (*postsolve)(<a href="../../../docs/manualpages/sys/ST.html#ST">ST</a>);
+<a name="line34"> 34: </a>  PetscErrorCode (*destroy)(<a href="../../../docs/manualpages/sys/ST.html#ST">ST</a>);
+<a name="line35"> 35: </a>  PetscErrorCode (*reset)(<a href="../../../docs/manualpages/sys/ST.html#ST">ST</a>);
+<a name="line36"> 36: </a>  PetscErrorCode (*view)(<a href="../../../docs/manualpages/sys/ST.html#ST">ST</a>,PetscViewer);
+<a name="line37"> 37: </a>  PetscErrorCode (*checknullspace)(<a href="../../../docs/manualpages/sys/ST.html#ST">ST</a>,<a href="../../../docs/manualpages/sys/BV.html#BV">BV</a>);
+<a name="line38"> 38: </a>  PetscErrorCode (*setdefaultksp)(<a href="../../../docs/manualpages/sys/ST.html#ST">ST</a>);
+<a name="line39"> 39: </a>};
+
+<a name="line41"> 41: </a><font color="#B22222">/*</font>
+<a name="line42"> 42: </a><font color="#B22222">     'Updated' state means <a href="../../../docs/manualpages/ST/STSetUp.html#STSetUp">STSetUp</a> must be called because matrices have been</font>
+<a name="line43"> 43: </a><font color="#B22222">     modified, but the pattern is the same (hence reuse symbolic factorization)</font>
+<a name="line44"> 44: </a><font color="#B22222">*/</font>
+<a name="line45"> 45: </a><font color="#4169E1">typedef</font> <font color="#4169E1">enum</font> { ST_STATE_INITIAL,
+<a name="line46"> 46: </a>               ST_STATE_SETUP,
+<a name="line47"> 47: </a>               ST_STATE_UPDATED } STStateType;
+
+<a name="line49"> 49: </a><font color="#4169E1"><a name="_p_ST"></a>struct _p_ST </font>{
+<a name="line50"> 50: </a>  PETSCHEADER(<font color="#4169E1">struct _STOps</font>);
+<a name="line51"> 51: </a>  <font color="#B22222">/*------------------------- User parameters --------------------------*/</font>
+<a name="line52"> 52: </a>  Mat              *A;               <font color="#B22222">/* matrices that define the eigensystem */</font>
+<a name="line53"> 53: </a>  PetscInt         nmat;             <font color="#B22222">/* number of user-provided matrices */</font>
+<a name="line54"> 54: </a>  PetscScalar      sigma;            <font color="#B22222">/* value of the shift */</font>
+<a name="line55"> 55: </a>  PetscScalar      defsigma;         <font color="#B22222">/* default value of the shift */</font>
+<a name="line56"> 56: </a>  <a href="../../../docs/manualpages/sys/STMatMode.html#STMatMode">STMatMode</a>        matmode;          <font color="#B22222">/* how the transformation matrix is handled */</font>
+<a name="line57"> 57: </a>  MatStructure     str;              <font color="#B22222">/* whether matrices have the same pattern or not */</font>
+<a name="line58"> 58: </a>  PetscBool        transform;        <font color="#B22222">/* whether transformed matrices are computed */</font>
+<a name="line59"> 59: </a>  Vec              D;                <font color="#B22222">/* diagonal matrix for balancing */</font>
+<a name="line60"> 60: </a>  Mat              Pmat;             <font color="#B22222">/* user-provided preconditioner matrix */</font>
+<a name="line61"> 61: </a>  PetscBool        Pmat_set;         <font color="#B22222">/* whether the user provided a preconditioner matrix or not  */</font>
+<a name="line62"> 62: </a>  Mat              *Psplit;          <font color="#B22222">/* matrices for the split preconditioner */</font>
+<a name="line63"> 63: </a>  PetscInt         nsplit;           <font color="#B22222">/* number of split preconditioner matrices */</font>
+<a name="line64"> 64: </a>  MatStructure     strp;             <font color="#B22222">/* pattern of split preconditioner matrices */</font>
+
+<a name="line66"> 66: </a>  <font color="#B22222">/*------------------------- Misc data --------------------------*/</font>
+<a name="line67"> 67: </a>  KSP              ksp;              <font color="#B22222">/* linear solver used in some <a href="../../../docs/manualpages/sys/ST.html#ST">ST</a>'s */</font>
+<a name="line68"> 68: </a>  PetscBool        usesksp;          <font color="#B22222">/* whether the KSP object is used or not */</font>
+<a name="line69"> 69: </a>  PetscInt         nwork;            <font color="#B22222">/* number of work vectors */</font>
+<a name="line70"> 70: </a>  Vec              *work;            <font color="#B22222">/* work vectors */</font>
+<a name="line71"> 71: </a>  Vec              wb;               <font color="#B22222">/* balancing requires an extra work vector */</font>
+<a name="line72"> 72: </a>  Vec              wht;              <font color="#B22222">/* extra work vector for hermitian transpose apply */</font>
+<a name="line73"> 73: </a>  STStateType      state;            <font color="#B22222">/* initial -&gt; setup -&gt; with updated matrices */</font>
+<a name="line74"> 74: </a>  PetscObjectState *Astate;          <font color="#B22222">/* matrix state (to identify the original matrices) */</font>
+<a name="line75"> 75: </a>  Mat              *T;               <font color="#B22222">/* matrices resulting from transformation */</font>
+<a name="line76"> 76: </a>  Mat              Op;               <font color="#B22222">/* shell matrix for operator = alpha*D*inv(P)*M*inv(D) */</font>
+<a name="line77"> 77: </a>  PetscBool        opseized;         <font color="#B22222">/* whether Op has been seized by user */</font>
+<a name="line78"> 78: </a>  PetscBool        opready;          <font color="#B22222">/* whether Op is up-to-date or need be computed  */</font>
+<a name="line79"> 79: </a>  Mat              P;                <font color="#B22222">/* matrix from which preconditioner is built */</font>
+<a name="line80"> 80: </a>  Mat              M;                <font color="#B22222">/* matrix corresponding to the non-inverted part of the operator */</font>
+<a name="line81"> 81: </a>  PetscBool        sigma_set;        <font color="#B22222">/* whether the user provided the shift or not */</font>
+<a name="line82"> 82: </a>  PetscBool        asymm;            <font color="#B22222">/* the user matrices are all symmetric */</font>
+<a name="line83"> 83: </a>  PetscBool        aherm;            <font color="#B22222">/* the user matrices are all hermitian */</font>
+<a name="line84"> 84: </a>  void             *data;
+<a name="line85"> 85: </a>};
+
+<a name="line87"> 87: </a><font color="#B22222">/*</font>
+<a name="line88"> 88: </a><font color="#B22222">    Macros to test valid <a href="../../../docs/manualpages/sys/ST.html#ST">ST</a> arguments</font>
+<a name="line89"> 89: </a><font color="#B22222">*/</font>
+<a name="line90"> 90: </a><font color="#A020F0">#if !defined(PETSC_USE_DEBUG)</font>
+
+<a name="line92"> 92: </a><strong><font color="#228B22">#define STCheckMatrices(h,arg) do {(void)(h);} while (0)</font></strong>
+<a name="line93"> 93: </a><strong><font color="#228B22">#define STCheckNotSeized(h,arg) do {(void)(h);} while (0)</font></strong>
+
+<a name="line95"> 95: </a><font color="#A020F0">#else</font>
+
+<a name="line97"> 97: </a><strong><font color="#228B22">#define STCheckMatrices(h,arg) \</font></strong>
+<a name="line98"> 98: </a><strong><font color="#228B22">  do { \</font></strong>
+<a name="line100">100: </a><strong><font color="#228B22">  } while (0)</font></strong>
+<a name="line101">101: </a><strong><font color="#228B22">#define STCheckNotSeized(h,arg) \</font></strong>
+<a name="line102">102: </a><strong><font color="#228B22">  do { \</font></strong>
+<a name="line104">104: </a><strong><font color="#228B22">  } while (0)</font></strong>
+
+<a name="line106">106: </a><font color="#A020F0">#endif</font>
+
+<a name="line108">108: </a><strong><font color="#4169E1">SLEPC_INTERN PetscErrorCode STGetBilinearForm_Default(<a href="../../../docs/manualpages/sys/ST.html#ST">ST</a>,Mat*)</font></strong>;
+<a name="line109">109: </a><strong><font color="#4169E1">SLEPC_INTERN PetscErrorCode STCheckNullSpace_Default(<a href="../../../docs/manualpages/sys/ST.html#ST">ST</a>,<a href="../../../docs/manualpages/sys/BV.html#BV">BV</a>)</font></strong>;
+<a name="line110">110: </a><strong><font color="#4169E1">SLEPC_INTERN PetscErrorCode STMatShellCreate(<a href="../../../docs/manualpages/sys/ST.html#ST">ST</a>,PetscScalar,PetscInt,PetscInt*,PetscScalar*,Mat*)</font></strong>;
+<a name="line111">111: </a><strong><font color="#4169E1">SLEPC_INTERN PetscErrorCode STMatShellShift(Mat,PetscScalar)</font></strong>;
+<a name="line112">112: </a><strong><font color="#4169E1">SLEPC_INTERN PetscErrorCode STCheckFactorPackage(<a href="../../../docs/manualpages/sys/ST.html#ST">ST</a>)</font></strong>;
+<a name="line113">113: </a><strong><font color="#4169E1">SLEPC_INTERN PetscErrorCode STMatMAXPY_Private(<a href="../../../docs/manualpages/sys/ST.html#ST">ST</a>,PetscScalar,PetscScalar,PetscInt,PetscScalar*,PetscBool,PetscBool,Mat*)</font></strong>;
+<a name="line114">114: </a><strong><font color="#4169E1">SLEPC_INTERN PetscErrorCode STCoeffs_Monomial(<a href="../../../docs/manualpages/sys/ST.html#ST">ST</a>,PetscScalar*)</font></strong>;
+<a name="line115">115: </a><strong><font color="#4169E1">SLEPC_INTERN PetscErrorCode STSetDefaultKSP(<a href="../../../docs/manualpages/sys/ST.html#ST">ST</a>)</font></strong>;
+<a name="line116">116: </a><strong><font color="#4169E1">SLEPC_INTERN PetscErrorCode STSetDefaultKSP_Default(<a href="../../../docs/manualpages/sys/ST.html#ST">ST</a>)</font></strong>;
+<a name="line117">117: </a><strong><font color="#4169E1">SLEPC_INTERN PetscErrorCode STIsInjective_Shell(<a href="../../../docs/manualpages/sys/ST.html#ST">ST</a>,PetscBool*)</font></strong>;
+<a name="line118">118: </a><strong><font color="#4169E1">SLEPC_INTERN PetscErrorCode STComputeOperator(<a href="../../../docs/manualpages/sys/ST.html#ST">ST</a>)</font></strong>;
+<a name="line119">119: </a><strong><font color="#4169E1">SLEPC_INTERN PetscErrorCode STGetOperator_Private(<a href="../../../docs/manualpages/sys/ST.html#ST">ST</a>,Mat*)</font></strong>;
+<a name="line120">120: </a><strong><font color="#4169E1">SLEPC_INTERN PetscErrorCode STApply_Generic(<a href="../../../docs/manualpages/sys/ST.html#ST">ST</a>,Vec,Vec)</font></strong>;
+<a name="line121">121: </a><strong><font color="#4169E1">SLEPC_INTERN PetscErrorCode STApplyMat_Generic(<a href="../../../docs/manualpages/sys/ST.html#ST">ST</a>,Mat,Mat)</font></strong>;
+<a name="line122">122: </a><strong><font color="#4169E1">SLEPC_INTERN PetscErrorCode STApplyTranspose_Generic(<a href="../../../docs/manualpages/sys/ST.html#ST">ST</a>,Vec,Vec)</font></strong>;
+
+<a name="line124">124: </a><font color="#B22222">/*</font>
+<a name="line125">125: </a><font color="#B22222">  ST_KSPSetOperators - Sets the KSP matrices</font>
+<a name="line126">126: </a><font color="#B22222">*/</font>
+<a name="line127">127: </a><strong><font color="#4169E1"><a name="ST_KSPSetOperators"></a>static inline PetscErrorCode ST_KSPSetOperators(<a href="../../../docs/manualpages/sys/ST.html#ST">ST</a> st,Mat A,Mat B)</font></strong>
+<a name="line128">128: </a>{
+<a name="line129">129: </a>  const char     *prefix;
+
+<a name="line131">131: </a>  <font color="#4169E1">if</font> (!st-&gt;ksp) <a href="../../../docs/manualpages/ST/STGetKSP.html#STGetKSP">STGetKSP</a>(st,&amp;st-&gt;ksp);
+<a name="line132">132: </a>  STCheckFactorPackage(st);
+<a name="line133">133: </a>  KSPSetOperators(st-&gt;ksp,A,B);
+<a name="line134">134: </a>  MatGetOptionsPrefix(B,&amp;prefix);
+<a name="line135">135: </a>  <font color="#4169E1">if</font> (!prefix) {
+<a name="line136">136: </a>    <font color="#B22222">/* set Mat prefix to be the same as KSP to enable setting command-line options (e.g. MUMPS)</font>
+<a name="line137">137: </a><font color="#B22222">       only applies if the Mat has no user-defined prefix */</font>
+<a name="line138">138: </a>    KSPGetOptionsPrefix(st-&gt;ksp,&amp;prefix);
+<a name="line139">139: </a>    MatSetOptionsPrefix(B,prefix);
+<a name="line140">140: </a>  }
+<a name="line141">141: </a>  PetscFunctionReturn(0);
+<a name="line142">142: </a>}
+
+<a name="line144">144: </a><font color="#A020F0">#endif</font>
+</pre>
+</body>
+
+</html>

@@ -1,0 +1,155 @@
+<center><a href="rsvd.c">Actual source code: rsvd.c</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="https://slepc.upv.es/documentation/current/src/svd/impls/randomized/rsvd.c.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2022-08-09T09:05:45+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>slepc-3.17.2 2022-08-09</b></div>
+   <div id="bugreport" align=right><a href="mailto:slepc-maint@upv.es?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: slepc-3.17.2 v3.17.2 src/svd/impls/randomized/rsvd.c.html "><small>Report Typos and Errors</small></a></div>
+<pre width="80">
+<a name="line1">  1: </a><font color="#B22222">/*</font>
+<a name="line2">  2: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line3">  3: </a><font color="#B22222">   SLEPc - Scalable Library for Eigenvalue Problem Computations</font>
+<a name="line4">  4: </a><font color="#B22222">   Copyright (c) 2002-, Universitat Politecnica de Valencia, Spain</font>
+
+<a name="line6">  6: </a><font color="#B22222">   This file is part of SLEPc.</font>
+<a name="line7">  7: </a><font color="#B22222">   SLEPc is distributed under a 2-clause BSD license (see LICENSE).</font>
+<a name="line8">  8: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line9">  9: </a><font color="#B22222">*/</font>
+<a name="line10"> 10: </a><font color="#B22222">/*</font>
+<a name="line11"> 11: </a><font color="#B22222">   SLEPc singular value solver: "randomized"</font>
+
+<a name="line13"> 13: </a><font color="#B22222">   Method: RSVD</font>
+
+<a name="line15"> 15: </a><font color="#B22222">   Algorithm:</font>
+
+<a name="line17"> 17: </a><font color="#B22222">       Randomized singular value decomposition.</font>
+
+<a name="line19"> 19: </a><font color="#B22222">   References:</font>
+
+<a name="line21"> 21: </a><font color="#B22222">       [1] N. Halko, P.-G. Martinsson, and J. A. Tropp, "Finding</font>
+<a name="line22"> 22: </a><font color="#B22222">           structure with randomness: Probabilistic algorithms for</font>
+<a name="line23"> 23: </a><font color="#B22222">           constructing approximate matrix decompositions", SIAM Rev.,</font>
+<a name="line24"> 24: </a><font color="#B22222">           53(2):217-288, 2011.</font>
+<a name="line25"> 25: </a><font color="#B22222">*/</font>
+
+<a name="line27"> 27: </a>#include <A href="../../../../include/slepc/private/svdimpl.h.html">&lt;slepc/private/svdimpl.h&gt;</A>
+
+<a name="line29"> 29: </a><strong><font color="#4169E1"><a name="SVDSetUp_Randomized"></a>PetscErrorCode SVDSetUp_Randomized(<a href="../../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> svd)</font></strong>
+<a name="line30"> 30: </a>{
+<a name="line31"> 31: </a>  PetscInt       N;
+
+<a name="line34"> 34: </a>  MatGetSize(svd-&gt;A,NULL,&amp;N);
+<a name="line35"> 35: </a>  SVDSetDimensions_Default(svd);
+<a name="line37"> 37: </a>  <font color="#4169E1">if</font> (svd-&gt;max_it==PETSC_DEFAULT) svd-&gt;max_it = PetscMax(N/svd-&gt;ncv,100);
+<a name="line38"> 38: </a>  svd-&gt;leftbasis = PETSC_TRUE;
+<a name="line39"> 39: </a>  svd-&gt;mpd = svd-&gt;ncv;
+<a name="line40"> 40: </a>  <a href="../../../../docs/manualpages/SVD/SVDAllocateSolution.html#SVDAllocateSolution">SVDAllocateSolution</a>(svd,0);
+<a name="line41"> 41: </a>  <a href="../../../../docs/manualpages/DS/DSSetType.html#DSSetType">DSSetType</a>(svd-&gt;ds,<a href="../../../../docs/manualpages/DS/DSSVD.html#DSSVD">DSSVD</a>);
+<a name="line42"> 42: </a>  <a href="../../../../docs/manualpages/DS/DSAllocate.html#DSAllocate">DSAllocate</a>(svd-&gt;ds,svd-&gt;ncv);
+<a name="line43"> 43: </a>  <a href="../../../../docs/manualpages/SVD/SVDSetWorkVecs.html#SVDSetWorkVecs">SVDSetWorkVecs</a>(svd,1,1);
+<a name="line44"> 44: </a>  PetscFunctionReturn(0);
+<a name="line45"> 45: </a>}
+
+<a name="line47"> 47: </a><strong><font color="#4169E1"><a name="SVDRandomizedResidualNorm"></a>static PetscErrorCode SVDRandomizedResidualNorm(<a href="../../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> svd,PetscInt i,PetscScalar sigma,PetscReal *res)</font></strong>
+<a name="line48"> 48: </a>{
+<a name="line49"> 49: </a>  PetscReal      norm1,norm2;
+<a name="line50"> 50: </a>  Vec            u,v,wu,wv;
+
+<a name="line52"> 52: </a>  wu = svd-&gt;swapped? svd-&gt;workr[0]: svd-&gt;workl[0];
+<a name="line53"> 53: </a>  wv = svd-&gt;swapped? svd-&gt;workl[0]: svd-&gt;workr[0];
+<a name="line54"> 54: </a>  <font color="#4169E1">if</font> (svd-&gt;conv!=<a href="../../../../docs/manualpages/sys/SVDConv.html#SVDConv">SVD_CONV_MAXIT</a>) {
+<a name="line55"> 55: </a>    <a href="../../../../docs/manualpages/BV/BVGetColumn.html#BVGetColumn">BVGetColumn</a>(svd-&gt;V,i,&amp;v);
+<a name="line56"> 56: </a>    <a href="../../../../docs/manualpages/BV/BVGetColumn.html#BVGetColumn">BVGetColumn</a>(svd-&gt;U,i,&amp;u);
+<a name="line57"> 57: </a>    <font color="#B22222">/* norm1 = ||A*v-sigma*u||_2 */</font>
+<a name="line58"> 58: </a>    MatMult(svd-&gt;A,v,wu);
+<a name="line59"> 59: </a>    VecAXPY(wu,-sigma,u);
+<a name="line60"> 60: </a>    VecNorm(wu,NORM_2,&amp;norm1);
+<a name="line61"> 61: </a>    <font color="#B22222">/* norm2 = ||A^T*u-sigma*v||_2 */</font>
+<a name="line62"> 62: </a>    MatMult(svd-&gt;AT,u,wv);
+<a name="line63"> 63: </a>    VecAXPY(wv,-sigma,v);
+<a name="line64"> 64: </a>    VecNorm(wv,NORM_2,&amp;norm2);
+<a name="line65"> 65: </a>    <a href="../../../../docs/manualpages/BV/BVRestoreColumn.html#BVRestoreColumn">BVRestoreColumn</a>(svd-&gt;V,i,&amp;v);
+<a name="line66"> 66: </a>    <a href="../../../../docs/manualpages/BV/BVRestoreColumn.html#BVRestoreColumn">BVRestoreColumn</a>(svd-&gt;U,i,&amp;u);
+<a name="line67"> 67: </a>    *res = PetscSqrtReal(norm1*norm1+norm2*norm2);
+<a name="line68"> 68: </a>  } <font color="#4169E1">else</font> {
+<a name="line69"> 69: </a>    *res = 1.0;
+<a name="line70"> 70: </a>  }
+<a name="line71"> 71: </a>  PetscFunctionReturn(0);
+<a name="line72"> 72: </a>}
+
+<a name="line74"> 74: </a><strong><font color="#4169E1"><a name="SVDSolve_Randomized"></a>PetscErrorCode SVDSolve_Randomized(<a href="../../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> svd)</font></strong>
+<a name="line75"> 75: </a>{
+<a name="line76"> 76: </a>  PetscScalar    *w;
+<a name="line77"> 77: </a>  PetscReal      res=1.0;
+<a name="line78"> 78: </a>  PetscInt       i,k=0;
+<a name="line79"> 79: </a>  Mat            A,U,V;
+
+<a name="line81"> 81: </a>  <font color="#B22222">/* Form random matrix, G. Complete the initial basis with random vectors */</font>
+<a name="line82"> 82: </a>  <a href="../../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(svd-&gt;V,svd-&gt;nini,svd-&gt;ncv);
+<a name="line83"> 83: </a>  <a href="../../../../docs/manualpages/BV/BVSetRandomNormal.html#BVSetRandomNormal">BVSetRandomNormal</a>(svd-&gt;V);
+<a name="line84"> 84: </a>  PetscCalloc1(svd-&gt;ncv,&amp;w);
+
+<a name="line86"> 86: </a>  <font color="#B22222">/* Subspace Iteration */</font>
+<a name="line87"> 87: </a>  <font color="#4169E1">do</font> {
+<a name="line88"> 88: </a>    svd-&gt;its++;
+<a name="line89"> 89: </a>    <a href="../../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(svd-&gt;V,svd-&gt;nconv,svd-&gt;ncv);
+<a name="line90"> 90: </a>    <a href="../../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(svd-&gt;U,svd-&gt;nconv,svd-&gt;ncv);
+<a name="line91"> 91: </a>    <font color="#B22222">/* Form AG */</font>
+<a name="line92"> 92: </a>    <a href="../../../../docs/manualpages/BV/BVMatMult.html#BVMatMult">BVMatMult</a>(svd-&gt;V,svd-&gt;A,svd-&gt;U);
+<a name="line93"> 93: </a>    <font color="#B22222">/* Orthogonalization Q=qr(AG)*/</font>
+<a name="line94"> 94: </a>    <a href="../../../../docs/manualpages/BV/BVOrthogonalize.html#BVOrthogonalize">BVOrthogonalize</a>(svd-&gt;U,NULL);
+<a name="line95"> 95: </a>    <font color="#B22222">/* Form B^*= AQ */</font>
+<a name="line96"> 96: </a>    <a href="../../../../docs/manualpages/BV/BVMatMult.html#BVMatMult">BVMatMult</a>(svd-&gt;U,svd-&gt;AT,svd-&gt;V);
+
+<a name="line98"> 98: </a>    <a href="../../../../docs/manualpages/DS/DSSetDimensions.html#DSSetDimensions">DSSetDimensions</a>(svd-&gt;ds,svd-&gt;ncv,svd-&gt;nconv,svd-&gt;ncv);
+<a name="line99"> 99: </a>    <a href="../../../../docs/manualpages/DS/DSSVDSetDimensions.html#DSSVDSetDimensions">DSSVDSetDimensions</a>(svd-&gt;ds,svd-&gt;ncv);
+<a name="line100">100: </a>    <a href="../../../../docs/manualpages/DS/DSGetMat.html#DSGetMat">DSGetMat</a>(svd-&gt;ds,<a href="../../../../docs/manualpages/sys/DSMatType.html#DSMatType">DS_MAT_A</a>,&amp;A);
+<a name="line101">101: </a>    MatZeroEntries(A);
+<a name="line102">102: </a>    <a href="../../../../docs/manualpages/BV/BVOrthogonalize.html#BVOrthogonalize">BVOrthogonalize</a>(svd-&gt;V,A);
+<a name="line103">103: </a>    <a href="../../../../docs/manualpages/DS/DSRestoreMat.html#DSRestoreMat">DSRestoreMat</a>(svd-&gt;ds,<a href="../../../../docs/manualpages/sys/DSMatType.html#DSMatType">DS_MAT_A</a>,&amp;A);
+<a name="line104">104: </a>    <a href="../../../../docs/manualpages/DS/DSSetState.html#DSSetState">DSSetState</a>(svd-&gt;ds,<a href="../../../../docs/manualpages/sys/DSStateType.html#DSStateType">DS_STATE_RAW</a>);
+<a name="line105">105: </a>    <a href="../../../../docs/manualpages/DS/DSSolve.html#DSSolve">DSSolve</a>(svd-&gt;ds,w,NULL);
+<a name="line106">106: </a>    <a href="../../../../docs/manualpages/DS/DSSort.html#DSSort">DSSort</a>(svd-&gt;ds,w,NULL,NULL,NULL,NULL);
+<a name="line107">107: </a>    <a href="../../../../docs/manualpages/DS/DSSynchronize.html#DSSynchronize">DSSynchronize</a>(svd-&gt;ds,w,NULL);
+<a name="line108">108: </a>    <a href="../../../../docs/manualpages/DS/DSGetMat.html#DSGetMat">DSGetMat</a>(svd-&gt;ds,<a href="../../../../docs/manualpages/sys/DSMatType.html#DSMatType">DS_MAT_U</a>,&amp;U);
+<a name="line109">109: </a>    <a href="../../../../docs/manualpages/DS/DSGetMat.html#DSGetMat">DSGetMat</a>(svd-&gt;ds,<a href="../../../../docs/manualpages/sys/DSMatType.html#DSMatType">DS_MAT_V</a>,&amp;V);
+<a name="line110">110: </a>    <a href="../../../../docs/manualpages/BV/BVMultInPlace.html#BVMultInPlace">BVMultInPlace</a>(svd-&gt;U,V,svd-&gt;nconv,svd-&gt;ncv);
+<a name="line111">111: </a>    <a href="../../../../docs/manualpages/BV/BVMultInPlace.html#BVMultInPlace">BVMultInPlace</a>(svd-&gt;V,U,svd-&gt;nconv,svd-&gt;ncv);
+<a name="line112">112: </a>    MatDestroy(&amp;U);
+<a name="line113">113: </a>    MatDestroy(&amp;V);
+<a name="line114">114: </a>    <font color="#B22222">/* Check convergence */</font>
+<a name="line115">115: </a>    k = 0;
+<a name="line116">116: </a>    <font color="#4169E1">for</font> (i=svd-&gt;nconv;i&lt;svd-&gt;ncv;i++) {
+<a name="line117">117: </a>      SVDRandomizedResidualNorm(svd,i,w[i],&amp;res);
+<a name="line118">118: </a>      svd-&gt;sigma[i] = PetscRealPart(w[i]);
+<a name="line119">119: </a>      (*svd-&gt;converged)(svd,svd-&gt;sigma[i],res,&amp;svd-&gt;errest[i],svd-&gt;convergedctx);
+<a name="line120">120: </a>      <font color="#4169E1">if</font> (svd-&gt;errest[i] &lt; svd-&gt;tol) k++;
+<a name="line121">121: </a>      <font color="#4169E1">else</font> <font color="#4169E1">break</font>;
+<a name="line122">122: </a>    }
+<a name="line123">123: </a>    <font color="#4169E1">if</font> (svd-&gt;conv == <a href="../../../../docs/manualpages/sys/SVDConv.html#SVDConv">SVD_CONV_MAXIT</a> &amp;&amp; svd-&gt;its &gt;= svd-&gt;max_it) {
+<a name="line124">124: </a>      k = svd-&gt;nsv;
+<a name="line125">125: </a>      <font color="#4169E1">for</font> (i=0;i&lt;svd-&gt;ncv;i++) svd-&gt;sigma[i] = PetscRealPart(w[i]);
+<a name="line126">126: </a>    }
+<a name="line127">127: </a>    (*svd-&gt;stopping)(svd,svd-&gt;its,svd-&gt;max_it,svd-&gt;nconv+k,svd-&gt;nsv,&amp;svd-&gt;reason,svd-&gt;stoppingctx);
+<a name="line128">128: </a>    svd-&gt;nconv += k;
+<a name="line129">129: </a>    SVDMonitor(svd,svd-&gt;its,svd-&gt;nconv,svd-&gt;sigma,svd-&gt;errest,svd-&gt;ncv);
+<a name="line130">130: </a>  } <font color="#4169E1">while</font> (svd-&gt;reason == <a href="../../../../docs/manualpages/sys/SVDConvergedReason.html#SVDConvergedReason">SVD_CONVERGED_ITERATING</a>);
+<a name="line131">131: </a>  PetscFree(w);
+<a name="line132">132: </a>  PetscFunctionReturn(0);
+<a name="line133">133: </a>}
+
+<a name="line135">135: </a><strong><font color="#4169E1"><a name="SVDCreate_Randomized"></a>SLEPC_EXTERN PetscErrorCode SVDCreate_Randomized(<a href="../../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> svd)</font></strong>
+<a name="line136">136: </a>{
+<a name="line137">137: </a>  svd-&gt;ops-&gt;setup          = SVDSetUp_Randomized;
+<a name="line138">138: </a>  svd-&gt;ops-&gt;solve          = SVDSolve_Randomized;
+<a name="line139">139: </a>  PetscFunctionReturn(0);
+<a name="line140">140: </a>}
+</pre>
+</body>
+
+</html>

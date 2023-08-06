@@ -1,0 +1,56 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD> <link rel="canonical" href="https://slepc.upv.es/documentation/current/docs/manualpages/ST/STSetMatStructure.html" />
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<link rel="stylesheet" href="/slepc.css" type="text/css">
+<TITLE>STSetMatStructure</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+   <div id="version" align=right><b>slepc-3.17.2 2022-08-09</b></div>
+   <div id="bugreport" align=right><a href="mailto:slepc-maint@upv.es?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: slepc-3.17.2 v3.17.2 docs/manualpages/ST/STSetMatStructure.html "><small>Report Typos and Errors</small></a></div>
+<H1>STSetMatStructure</H1>
+Sets an internal MatStructure attribute to indicate which is the relation of the sparsity pattern of all <A HREF="../sys/ST.html#ST">ST</A> matrices. 
+<H3><FONT COLOR="#883300">Synopsis</FONT></H3>
+<PRE>
+#include "slepcst.h" 
+PetscErrorCode <A HREF="../ST/STSetMatStructure.html#STSetMatStructure">STSetMatStructure</A>(<A HREF="../sys/ST.html#ST">ST</A> st,MatStructure str)
+</PRE>
+Logically Collective on st
+<P>
+<H3><FONT COLOR="#883300">Input Parameters</FONT></H3>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>st  </B></TD><TD>&nbsp;- the spectral transformation context
+</TD></TR>
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>str </B></TD><TD>&nbsp;- either SAME_NONZERO_PATTERN, DIFFERENT_NONZERO_PATTERN,
+SUBSET_NONZERO_PATTERN, or UNKNOWN_NONZERO_PATTERN
+</TD></TR></TABLE>
+<P>
+<H3><FONT COLOR="#883300">Options Database Key</FONT></H3>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>-st_matstructure &lt;str&gt; </B></TD><TD>&nbsp;- Indicates the structure flag, where &lt;str&gt; is one
+of 'same' (matrices have the same nonzero pattern), 'different'
+(different nonzero pattern), 'subset' (pattern is a subset of the
+first one), or 'unknown'.
+</TD></TR></TABLE>
+<P>
+<H3><FONT COLOR="#883300">Notes</FONT></H3>
+If the sparsity pattern of the second matrix is equal or a subset of the
+pattern of the first matrix then it is recommended to set this attribute
+for efficiency reasons (in particular, for internal MatAXPY() operations).
+If not set, the default is UNKNOWN_NONZERO_PATTERN, in which case the patterns
+will be compared to determine if they are equal.
+<P>
+This function has no effect in the case of standard eigenproblems.
+<P>
+In case of polynomial eigenproblems, the flag applies to all matrices
+relative to the first one.
+<P>
+
+<P>
+<H3><FONT COLOR="#883300">See Also</FONT></H3>
+ <A HREF="../ST/STSetMatrices.html#STSetMatrices">STSetMatrices</A>(), MatAXPY()
+<BR><P><B><FONT COLOR="#883300">Location: </FONT></B><A HREF="../../../src/sys/classes/st/interface/stset.c.html#STSetMatStructure">src/sys/classes/st/interface/stset.c</A>
+<BR><A HREF="./index.html">Index of all ST routines</A>
+<BR><A HREF="../../../docs/manualpages/index.html">Table of Contents for all manual pages</A>
+<BR><A HREF="../singleindex.html">Index of all manual pages</A>
+</BODY></HTML>

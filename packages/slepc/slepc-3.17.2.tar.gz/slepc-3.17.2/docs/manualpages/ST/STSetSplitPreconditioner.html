@@ -1,0 +1,61 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD> <link rel="canonical" href="https://slepc.upv.es/documentation/current/docs/manualpages/ST/STSetSplitPreconditioner.html" />
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<link rel="stylesheet" href="/slepc.css" type="text/css">
+<TITLE>STSetSplitPreconditioner</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+   <div id="version" align=right><b>slepc-3.17.2 2022-08-09</b></div>
+   <div id="bugreport" align=right><a href="mailto:slepc-maint@upv.es?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: slepc-3.17.2 v3.17.2 docs/manualpages/ST/STSetSplitPreconditioner.html "><small>Report Typos and Errors</small></a></div>
+<H1>STSetSplitPreconditioner</H1>
+Sets the matrices from which to build the preconditioner in split form. 
+<H3><FONT COLOR="#883300">Synopsis</FONT></H3>
+<PRE>
+#include "slepcst.h" 
+PetscErrorCode <A HREF="../ST/STSetSplitPreconditioner.html#STSetSplitPreconditioner">STSetSplitPreconditioner</A>(<A HREF="../sys/ST.html#ST">ST</A> st,PetscInt n,Mat Psplit[],MatStructure strp)
+</PRE>
+Collective on st
+<P>
+<H3><FONT COLOR="#883300">Input Parameters</FONT></H3>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>st     </B></TD><TD>&nbsp;- the spectral transformation context
+</TD></TR>
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>n      </B></TD><TD>&nbsp;- number of matrices
+</TD></TR>
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>Psplit </B></TD><TD>&nbsp;- array of matrices
+</TD></TR>
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>strp   </B></TD><TD>&nbsp;- structure flag for Psplit matrices
+</TD></TR></TABLE>
+<P>
+<H3><FONT COLOR="#883300">Notes</FONT></H3>
+The number of matrices passed here must be the same as in <A HREF="../ST/STSetMatrices.html#STSetMatrices">STSetMatrices</A>().
+<P>
+For linear eigenproblems, the preconditioner matrix is computed as
+Pmat(sigma) = A0-sigma*B0, where A0 and B0 are approximations of A and B
+(the eigenproblem matrices) provided via the Psplit array in this function.
+Compared to <A HREF="../ST/STSetPreconditionerMat.html#STSetPreconditionerMat">STSetPreconditionerMat</A>(), this function allows setting a preconditioner
+in a way that is independent of the shift sigma. Whenever the value of sigma
+changes the preconditioner is recomputed.
+<P>
+Similarly, for polynomial eigenproblems the matrix for the preconditioner
+is expressed as Pmat(sigma) = sum_i Psplit_i*phi_i(sigma), for i=1,...,n, where
+the phi_i's are the polynomial basis functions.
+<P>
+The structure flag provides information about the relative nonzero pattern of the
+Psplit_i matrices, in the same way as in <A HREF="../ST/STSetMatStructure.html#STSetMatStructure">STSetMatStructure</A>().
+<P>
+Use n=0 to reset a previously set split preconditioner.
+<P>
+
+<P>
+<H3><FONT COLOR="#883300">See Also</FONT></H3>
+ <A HREF="../ST/STGetSplitPreconditionerTerm.html#STGetSplitPreconditionerTerm">STGetSplitPreconditionerTerm</A>(), <A HREF="../ST/STGetSplitPreconditionerInfo.html#STGetSplitPreconditionerInfo">STGetSplitPreconditionerInfo</A>(), <A HREF="../ST/STSetPreconditionerMat.html#STSetPreconditionerMat">STSetPreconditionerMat</A>(), <A HREF="../ST/STSetMatrices.html#STSetMatrices">STSetMatrices</A>(), <A HREF="../ST/STSetMatStructure.html#STSetMatStructure">STSetMatStructure</A>()
+<BR><P><B><FONT COLOR="#883300">Location: </FONT></B><A HREF="../../../src/sys/classes/st/interface/stfunc.c.html#STSetSplitPreconditioner">src/sys/classes/st/interface/stfunc.c</A>
+<P><H3><FONT COLOR="#883300">Examples</FONT></H3>
+<A HREF="../../../src/eps/tutorials/ex49.c.html">src/eps/tutorials/ex49.c.html</A><BR>
+<A HREF="../../../src/pep/tutorials/ex50.c.html">src/pep/tutorials/ex50.c.html</A><BR>
+<BR><A HREF="./index.html">Index of all ST routines</A>
+<BR><A HREF="../../../docs/manualpages/index.html">Table of Contents for all manual pages</A>
+<BR><A HREF="../singleindex.html">Index of all manual pages</A>
+</BODY></HTML>

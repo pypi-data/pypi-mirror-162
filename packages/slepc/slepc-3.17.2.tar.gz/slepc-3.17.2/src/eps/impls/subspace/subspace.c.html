@@ -1,0 +1,367 @@
+<center><a href="subspace.c">Actual source code: subspace.c</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="https://slepc.upv.es/documentation/current/src/eps/impls/subspace/subspace.c.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2022-08-09T09:05:33+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>slepc-3.17.2 2022-08-09</b></div>
+   <div id="bugreport" align=right><a href="mailto:slepc-maint@upv.es?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: slepc-3.17.2 v3.17.2 src/eps/impls/subspace/subspace.c.html "><small>Report Typos and Errors</small></a></div>
+<pre width="80">
+<a name="line1">  1: </a><font color="#B22222">/*</font>
+<a name="line2">  2: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line3">  3: </a><font color="#B22222">   SLEPc - Scalable Library for Eigenvalue Problem Computations</font>
+<a name="line4">  4: </a><font color="#B22222">   Copyright (c) 2002-, Universitat Politecnica de Valencia, Spain</font>
+
+<a name="line6">  6: </a><font color="#B22222">   This file is part of SLEPc.</font>
+<a name="line7">  7: </a><font color="#B22222">   SLEPc is distributed under a 2-clause BSD license (see LICENSE).</font>
+<a name="line8">  8: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line9">  9: </a><font color="#B22222">*/</font>
+<a name="line10"> 10: </a><font color="#B22222">/*</font>
+<a name="line11"> 11: </a><font color="#B22222">   SLEPc eigensolver: "subspace"</font>
+
+<a name="line13"> 13: </a><font color="#B22222">   Method: Subspace Iteration</font>
+
+<a name="line15"> 15: </a><font color="#B22222">   Algorithm:</font>
+
+<a name="line17"> 17: </a><font color="#B22222">       Subspace iteration with Rayleigh-Ritz projection and locking,</font>
+<a name="line18"> 18: </a><font color="#B22222">       based on the SRRIT implementation.</font>
+
+<a name="line20"> 20: </a><font color="#B22222">   References:</font>
+
+<a name="line22"> 22: </a><font color="#B22222">       [1] "Subspace Iteration in SLEPc", SLEPc Technical Report STR-3,</font>
+<a name="line23"> 23: </a><font color="#B22222">           available at https://slepc.upv.es.</font>
+<a name="line24"> 24: </a><font color="#B22222">*/</font>
+
+<a name="line26"> 26: </a>#include <A href="../../../../include/slepc/private/epsimpl.h.html">&lt;slepc/private/epsimpl.h&gt;</A>
+
+<a name="line28"> 28: </a><font color="#4169E1">typedef</font> <font color="#4169E1">struct</font> {
+<a name="line29"> 29: </a>  PetscBool estimatedrange;     <font color="#B22222">/* the filter range was not set by the user */</font>
+<a name="line30"> 30: </a>} EPS_SUBSPACE;
+
+<a name="line32"> 32: </a><strong><font color="#4169E1"><a name="EPSSetUp_Subspace_Filter"></a>static PetscErrorCode EPSSetUp_Subspace_Filter(<a href="../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps)</font></strong>
+<a name="line33"> 33: </a>{
+<a name="line34"> 34: </a>  EPS_SUBSPACE   *ctx = (EPS_SUBSPACE*)eps-&gt;data;
+<a name="line35"> 35: </a>  PetscBool      estimaterange=PETSC_TRUE;
+<a name="line36"> 36: </a>  PetscReal      rleft,rright;
+<a name="line37"> 37: </a>  Mat            A;
+
+<a name="line39"> 39: </a>  EPSCheckHermitianCondition(eps,PETSC_TRUE,<font color="#666666">" with polynomial filter"</font>);
+<a name="line40"> 40: </a>  EPSCheckStandardCondition(eps,PETSC_TRUE,<font color="#666666">" with polynomial filter"</font>);
+<a name="line42"> 42: </a>  EPSCheckUnsupportedCondition(eps,EPS_FEATURE_ARBITRARY | EPS_FEATURE_REGION | EPS_FEATURE_EXTRACTION,PETSC_TRUE,<font color="#666666">" with polynomial filter"</font>);
+<a name="line43"> 43: </a>  <a href="../../../../docs/manualpages/ST/STFilterSetInterval.html#STFilterSetInterval">STFilterSetInterval</a>(eps-&gt;st,eps-&gt;inta,eps-&gt;intb);
+<a name="line44"> 44: </a>  <font color="#4169E1">if</font> (!ctx-&gt;estimatedrange) {
+<a name="line45"> 45: </a>    <a href="../../../../docs/manualpages/ST/STFilterGetRange.html#STFilterGetRange">STFilterGetRange</a>(eps-&gt;st,&amp;rleft,&amp;rright);
+<a name="line46"> 46: </a>    estimaterange = (!rleft &amp;&amp; !rright)? PETSC_TRUE: PETSC_FALSE;
+<a name="line47"> 47: </a>  }
+<a name="line48"> 48: </a>  <font color="#4169E1">if</font> (estimaterange) { <font color="#B22222">/* user did not set a range */</font>
+<a name="line49"> 49: </a>    <a href="../../../../docs/manualpages/ST/STGetMatrix.html#STGetMatrix">STGetMatrix</a>(eps-&gt;st,0,&amp;A);
+<a name="line50"> 50: </a>    MatEstimateSpectralRange_EPS(A,&amp;rleft,&amp;rright);
+<a name="line51"> 51: </a>    PetscInfo(eps,<font color="#666666">"Setting eigenvalue range to [%g,%g]\n"</font>,(double)rleft,(double)rright);
+<a name="line52"> 52: </a>    <a href="../../../../docs/manualpages/ST/STFilterSetRange.html#STFilterSetRange">STFilterSetRange</a>(eps-&gt;st,rleft,rright);
+<a name="line53"> 53: </a>    ctx-&gt;estimatedrange = PETSC_TRUE;
+<a name="line54"> 54: </a>  }
+<a name="line55"> 55: </a>  <font color="#4169E1">if</font> (eps-&gt;ncv==PETSC_DEFAULT &amp;&amp; eps-&gt;nev==1) eps-&gt;nev = 40;  <font color="#B22222">/* user did not provide nev estimation */</font>
+<a name="line56"> 56: </a>  EPSSetDimensions_Default(eps,eps-&gt;nev,&amp;eps-&gt;ncv,&amp;eps-&gt;mpd);
+<a name="line58"> 58: </a>  PetscFunctionReturn(0);
+<a name="line59"> 59: </a>}
+
+<a name="line61"> 61: </a><strong><font color="#4169E1"><a name="EPSSetUp_Subspace"></a>PetscErrorCode EPSSetUp_Subspace(<a href="../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps)</font></strong>
+<a name="line62"> 62: </a>{
+<a name="line63"> 63: </a>  PetscBool isfilt;
+
+<a name="line65"> 65: </a>  EPSCheckDefinite(eps);
+<a name="line66"> 66: </a>  <font color="#4169E1">if</font> (eps-&gt;max_it==PETSC_DEFAULT) eps-&gt;max_it = PetscMax(100,2*eps-&gt;n/eps-&gt;ncv);
+<a name="line67"> 67: </a>  <font color="#4169E1">if</font> (!eps-&gt;which) EPSSetWhichEigenpairs_Default(eps);
+<a name="line68"> 68: </a>  <font color="#4169E1">if</font> (eps-&gt;which==<a href="../../../../docs/manualpages/sys/EPSWhich.html#EPSWhich">EPS_ALL</a>) {
+<a name="line69"> 69: </a>    PetscObjectTypeCompare((PetscObject)eps-&gt;st,STFILTER,&amp;isfilt);
+<a name="line71"> 71: </a>    EPSSetUp_Subspace_Filter(eps);
+<a name="line72"> 72: </a>  } <font color="#4169E1">else</font> {
+<a name="line74"> 74: </a>    EPSSetDimensions_Default(eps,eps-&gt;nev,&amp;eps-&gt;ncv,&amp;eps-&gt;mpd);
+<a name="line75"> 75: </a>  }
+<a name="line76"> 76: </a>  EPSCheckUnsupported(eps,EPS_FEATURE_ARBITRARY | EPS_FEATURE_EXTRACTION | EPS_FEATURE_TWOSIDED);
+
+<a name="line79"> 79: </a>  <a href="../../../../docs/manualpages/EPS/EPSAllocateSolution.html#EPSAllocateSolution">EPSAllocateSolution</a>(eps,0);
+<a name="line80"> 80: </a>  EPS_SetInnerProduct(eps);
+<a name="line81"> 81: </a>  <font color="#4169E1">if</font> (eps-&gt;ishermitian) <a href="../../../../docs/manualpages/DS/DSSetType.html#DSSetType">DSSetType</a>(eps-&gt;ds,<a href="../../../../docs/manualpages/DS/DSHEP.html#DSHEP">DSHEP</a>);
+<a name="line82"> 82: </a>  <font color="#4169E1">else</font> <a href="../../../../docs/manualpages/DS/DSSetType.html#DSSetType">DSSetType</a>(eps-&gt;ds,<a href="../../../../docs/manualpages/DS/DSNHEP.html#DSNHEP">DSNHEP</a>);
+<a name="line83"> 83: </a>  <a href="../../../../docs/manualpages/DS/DSAllocate.html#DSAllocate">DSAllocate</a>(eps-&gt;ds,eps-&gt;ncv);
+<a name="line84"> 84: </a>  PetscFunctionReturn(0);
+<a name="line85"> 85: </a>}
+
+<a name="line87"> 87: </a><strong><font color="#4169E1"><a name="EPSSetUpSort_Subspace"></a>PetscErrorCode EPSSetUpSort_Subspace(<a href="../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps)</font></strong>
+<a name="line88"> 88: </a>{
+<a name="line89"> 89: </a>  <a href="../../../../docs/manualpages/sys/SlepcSC.html#SlepcSC">SlepcSC</a> sc;
+
+<a name="line91"> 91: </a>  EPSSetUpSort_Default(eps);
+<a name="line92"> 92: </a>  <font color="#4169E1">if</font> (eps-&gt;which==<a href="../../../../docs/manualpages/sys/EPSWhich.html#EPSWhich">EPS_ALL</a>) {
+<a name="line93"> 93: </a>    <a href="../../../../docs/manualpages/DS/DSGetSlepcSC.html#DSGetSlepcSC">DSGetSlepcSC</a>(eps-&gt;ds,&amp;sc);
+<a name="line94"> 94: </a>    sc-&gt;rg            = NULL;
+<a name="line95"> 95: </a>    sc-&gt;comparison    = SlepcCompareLargestReal;
+<a name="line96"> 96: </a>    sc-&gt;comparisonctx = NULL;
+<a name="line97"> 97: </a>    sc-&gt;map           = NULL;
+<a name="line98"> 98: </a>    sc-&gt;mapobj        = NULL;
+<a name="line99"> 99: </a>  }
+<a name="line100">100: </a>  PetscFunctionReturn(0);
+<a name="line101">101: </a>}
+
+<a name="line103">103: </a><font color="#B22222">/*</font>
+<a name="line104">104: </a><font color="#B22222">   EPSSubspaceFindGroup - Find a group of nearly equimodular eigenvalues, provided</font>
+<a name="line105">105: </a><font color="#B22222">   in arrays wr and wi, according to the tolerance grptol. Also the 2-norms</font>
+<a name="line106">106: </a><font color="#B22222">   of the residuals must be passed in (rsd). Arrays are processed from index</font>
+<a name="line107">107: </a><font color="#B22222">   l to index m only. The output information is:</font>
+
+<a name="line109">109: </a><font color="#B22222">   ngrp - number of entries of the group</font>
+<a name="line110">110: </a><font color="#B22222">   ctr  - (w(l)+w(l+ngrp-1))/2</font>
+<a name="line111">111: </a><font color="#B22222">   ae   - average of wr(l),...,wr(l+ngrp-1)</font>
+<a name="line112">112: </a><font color="#B22222">   arsd - average of rsd(l),...,rsd(l+ngrp-1)</font>
+<a name="line113">113: </a><font color="#B22222">*/</font>
+<a name="line114">114: </a><strong><font color="#4169E1"><a name="EPSSubspaceFindGroup"></a>static PetscErrorCode EPSSubspaceFindGroup(PetscInt l,PetscInt m,PetscScalar *wr,PetscScalar *wi,PetscReal *rsd,PetscReal grptol,PetscInt *ngrp,PetscReal *ctr,PetscReal *ae,PetscReal *arsd)</font></strong>
+<a name="line115">115: </a>{
+<a name="line116">116: </a>  PetscInt  i;
+<a name="line117">117: </a>  PetscReal rmod,rmod1;
+
+<a name="line119">119: </a>  *ngrp = 0;
+<a name="line120">120: </a>  *ctr = 0;
+<a name="line121">121: </a>  rmod = <a href="../../../../docs/manualpages/sys/SlepcAbsEigenvalue.html#SlepcAbsEigenvalue">SlepcAbsEigenvalue</a>(wr[l],wi[l]);
+
+<a name="line123">123: </a>  <font color="#4169E1">for</font> (i=l;i&lt;m;) {
+<a name="line124">124: </a>    rmod1 = <a href="../../../../docs/manualpages/sys/SlepcAbsEigenvalue.html#SlepcAbsEigenvalue">SlepcAbsEigenvalue</a>(wr[i],wi[i]);
+<a name="line125">125: </a>    <font color="#4169E1">if</font> (PetscAbsReal(rmod-rmod1) &gt; grptol*(rmod+rmod1)) <font color="#4169E1">break</font>;
+<a name="line126">126: </a>    *ctr = (rmod+rmod1)/2.0;
+<a name="line127">127: </a>    <font color="#4169E1">if</font> (wi[i] == 0.0) {
+<a name="line128">128: </a>      (*ngrp)++;
+<a name="line129">129: </a>      i++;
+<a name="line130">130: </a>    } <font color="#4169E1">else</font> {
+<a name="line131">131: </a>      (*ngrp)+=2;
+<a name="line132">132: </a>      i+=2;
+<a name="line133">133: </a>    }
+<a name="line134">134: </a>  }
+
+<a name="line136">136: </a>  *ae = 0;
+<a name="line137">137: </a>  *arsd = 0;
+<a name="line138">138: </a>  <font color="#4169E1">if</font> (*ngrp) {
+<a name="line139">139: </a>    <font color="#4169E1">for</font> (i=l;i&lt;l+*ngrp;i++) {
+<a name="line140">140: </a>      (*ae) += PetscRealPart(wr[i]);
+<a name="line141">141: </a>      (*arsd) += rsd[i]*rsd[i];
+<a name="line142">142: </a>    }
+<a name="line143">143: </a>    *ae = *ae / *ngrp;
+<a name="line144">144: </a>    *arsd = PetscSqrtReal(*arsd / *ngrp);
+<a name="line145">145: </a>  }
+<a name="line146">146: </a>  PetscFunctionReturn(0);
+<a name="line147">147: </a>}
+
+<a name="line149">149: </a><font color="#B22222">/*</font>
+<a name="line150">150: </a><font color="#B22222">   EPSSubspaceResidualNorms - Computes the column norms of residual vectors</font>
+<a name="line151">151: </a><font color="#B22222">   OP*V(1:n,l:m) - V*T(1:m,l:m), where, on entry, OP*V has been computed and</font>
+<a name="line152">152: </a><font color="#B22222">   stored in R. On exit, rsd(l) to rsd(m) contain the computed norms.</font>
+<a name="line153">153: </a><font color="#B22222">*/</font>
+<a name="line154">154: </a><strong><font color="#4169E1"><a name="EPSSubspaceResidualNorms"></a>static PetscErrorCode EPSSubspaceResidualNorms(<a href="../../../../docs/manualpages/sys/BV.html#BV">BV</a> R,<a href="../../../../docs/manualpages/sys/BV.html#BV">BV</a> V,Mat T,PetscInt l,PetscInt m,PetscScalar *eigi,PetscReal *rsd)</font></strong>
+<a name="line155">155: </a>{
+<a name="line156">156: </a>  PetscInt       i;
+
+<a name="line158">158: </a>  <a href="../../../../docs/manualpages/BV/BVMult.html#BVMult">BVMult</a>(R,-1.0,1.0,V,T);
+<a name="line159">159: </a>  <font color="#4169E1">for</font> (i=l;i&lt;m;i++) <a href="../../../../docs/manualpages/BV/BVNormColumnBegin.html#BVNormColumnBegin">BVNormColumnBegin</a>(R,i,NORM_2,rsd+i);
+<a name="line160">160: </a>  <font color="#4169E1">for</font> (i=l;i&lt;m;i++) <a href="../../../../docs/manualpages/BV/BVNormColumnEnd.html#BVNormColumnEnd">BVNormColumnEnd</a>(R,i,NORM_2,rsd+i);
+<a name="line161">161: </a><font color="#A020F0">#if !defined(PETSC_USE_COMPLEX)</font>
+<a name="line162">162: </a>  <font color="#4169E1">for</font> (i=l;i&lt;m-1;i++) {
+<a name="line163">163: </a>    <font color="#4169E1">if</font> (eigi[i]!=0.0) {
+<a name="line164">164: </a>      rsd[i]   = <a href="../../../../docs/manualpages/sys/SlepcAbs.html#SlepcAbs">SlepcAbs</a>(rsd[i],rsd[i+1]);
+<a name="line165">165: </a>      rsd[i+1] = rsd[i];
+<a name="line166">166: </a>      i++;
+<a name="line167">167: </a>    }
+<a name="line168">168: </a>  }
+<a name="line169">169: </a><font color="#A020F0">#endif</font>
+<a name="line170">170: </a>  PetscFunctionReturn(0);
+<a name="line171">171: </a>}
+
+<a name="line173">173: </a><strong><font color="#4169E1"><a name="EPSSolve_Subspace"></a>PetscErrorCode EPSSolve_Subspace(<a href="../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps)</font></strong>
+<a name="line174">174: </a>{
+<a name="line175">175: </a>  Mat            H,Q,S,T,B;
+<a name="line176">176: </a>  <a href="../../../../docs/manualpages/sys/BV.html#BV">BV</a>             AV,R;
+<a name="line177">177: </a>  PetscBool      indef;
+<a name="line178">178: </a>  PetscInt       i,k,ld,ngrp,nogrp,*itrsd,*itrsdold;
+<a name="line179">179: </a>  PetscInt       nxtsrr,idsrr,idort,nxtort,nv,ncv = eps-&gt;ncv,its,ninside;
+<a name="line180">180: </a>  PetscReal      arsd,oarsd,ctr,octr,ae,oae,*rsd,*orsd,tcond=1.0,gamma;
+<a name="line181">181: </a>  PetscScalar    *oeigr,*oeigi;
+<a name="line182">182: </a>  <font color="#B22222">/* Parameters */</font>
+<a name="line183">183: </a>  PetscInt       init = 5;        <font color="#B22222">/* Number of initial iterations */</font>
+<a name="line184">184: </a>  PetscReal      stpfac = 1.5;    <font color="#B22222">/* Max num of iter before next SRR step */</font>
+<a name="line185">185: </a>  PetscReal      alpha = 1.0;     <font color="#B22222">/* Used to predict convergence of next residual */</font>
+<a name="line186">186: </a>  PetscReal      beta = 1.1;      <font color="#B22222">/* Used to predict convergence of next residual */</font>
+<a name="line187">187: </a>  PetscReal      grptol = SLEPC_DEFAULT_TOL;   <font color="#B22222">/* Tolerance for EPSSubspaceFindGroup */</font>
+<a name="line188">188: </a>  PetscReal      cnvtol = 1e-6;   <font color="#B22222">/* Convergence criterion for cnv */</font>
+<a name="line189">189: </a>  PetscInt       orttol = 2;      <font color="#B22222">/* Number of decimal digits whose loss</font>
+<a name="line190">190: </a><font color="#B22222">                                     can be tolerated in orthogonalization */</font>
+
+<a name="line192">192: </a>  its = 0;
+<a name="line193">193: </a>  PetscMalloc6(ncv,&amp;rsd,ncv,&amp;orsd,ncv,&amp;oeigr,ncv,&amp;oeigi,ncv,&amp;itrsd,ncv,&amp;itrsdold);
+<a name="line194">194: </a>  <a href="../../../../docs/manualpages/DS/DSGetLeadingDimension.html#DSGetLeadingDimension">DSGetLeadingDimension</a>(eps-&gt;ds,&amp;ld);
+<a name="line195">195: </a>  <a href="../../../../docs/manualpages/BV/BVDuplicate.html#BVDuplicate">BVDuplicate</a>(eps-&gt;V,&amp;AV);
+<a name="line196">196: </a>  <a href="../../../../docs/manualpages/BV/BVDuplicate.html#BVDuplicate">BVDuplicate</a>(eps-&gt;V,&amp;R);
+<a name="line197">197: </a>  <a href="../../../../docs/manualpages/ST/STGetOperator.html#STGetOperator">STGetOperator</a>(eps-&gt;st,&amp;S);
+
+<a name="line199">199: </a>  <font color="#4169E1">for</font> (i=0;i&lt;ncv;i++) {
+<a name="line200">200: </a>    rsd[i] = 0.0;
+<a name="line201">201: </a>    itrsd[i] = -1;
+<a name="line202">202: </a>  }
+
+<a name="line204">204: </a>  <font color="#B22222">/* Complete the initial basis with random vectors and orthonormalize them */</font>
+<a name="line205">205: </a>  <font color="#4169E1">for</font> (k=eps-&gt;nini;k&lt;ncv;k++) {
+<a name="line206">206: </a>    <a href="../../../../docs/manualpages/BV/BVSetRandomColumn.html#BVSetRandomColumn">BVSetRandomColumn</a>(eps-&gt;V,k);
+<a name="line207">207: </a>    <a href="../../../../docs/manualpages/BV/BVOrthonormalizeColumn.html#BVOrthonormalizeColumn">BVOrthonormalizeColumn</a>(eps-&gt;V,k,PETSC_TRUE,NULL,NULL);
+<a name="line208">208: </a>  }
+
+<a name="line210">210: </a>  <font color="#4169E1">while</font> (eps-&gt;reason == <a href="../../../../docs/manualpages/sys/EPSConvergedReason.html#EPSConvergedReason">EPS_CONVERGED_ITERATING</a>) {
+<a name="line211">211: </a>    eps-&gt;its++;
+<a name="line212">212: </a>    nv = PetscMin(eps-&gt;nconv+eps-&gt;mpd,ncv);
+<a name="line213">213: </a>    <a href="../../../../docs/manualpages/DS/DSSetDimensions.html#DSSetDimensions">DSSetDimensions</a>(eps-&gt;ds,nv,eps-&gt;nconv,0);
+
+<a name="line215">215: </a>    <font color="#4169E1">for</font> (i=eps-&gt;nconv;i&lt;nv;i++) {
+<a name="line216">216: </a>      oeigr[i] = eps-&gt;eigr[i];
+<a name="line217">217: </a>      oeigi[i] = eps-&gt;eigi[i];
+<a name="line218">218: </a>      orsd[i]  = rsd[i];
+<a name="line219">219: </a>    }
+
+<a name="line221">221: </a>    <font color="#B22222">/* AV(:,idx) = OP * V(:,idx) */</font>
+<a name="line222">222: </a>    <a href="../../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(eps-&gt;V,eps-&gt;nconv,nv);
+<a name="line223">223: </a>    <a href="../../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(AV,eps-&gt;nconv,nv);
+<a name="line224">224: </a>    <a href="../../../../docs/manualpages/BV/BVMatMult.html#BVMatMult">BVMatMult</a>(eps-&gt;V,S,AV);
+
+<a name="line226">226: </a>    <font color="#B22222">/* T(:,idx) = V' * AV(:,idx) */</font>
+<a name="line227">227: </a>    <a href="../../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(eps-&gt;V,0,nv);
+<a name="line228">228: </a>    <a href="../../../../docs/manualpages/DS/DSGetMat.html#DSGetMat">DSGetMat</a>(eps-&gt;ds,<a href="../../../../docs/manualpages/sys/DSMatType.html#DSMatType">DS_MAT_A</a>,&amp;H);
+<a name="line229">229: </a>    <a href="../../../../docs/manualpages/BV/BVDot.html#BVDot">BVDot</a>(AV,eps-&gt;V,H);
+<a name="line230">230: </a>    <a href="../../../../docs/manualpages/DS/DSRestoreMat.html#DSRestoreMat">DSRestoreMat</a>(eps-&gt;ds,<a href="../../../../docs/manualpages/sys/DSMatType.html#DSMatType">DS_MAT_A</a>,&amp;H);
+<a name="line231">231: </a>    <a href="../../../../docs/manualpages/DS/DSSetState.html#DSSetState">DSSetState</a>(eps-&gt;ds,<a href="../../../../docs/manualpages/sys/DSStateType.html#DSStateType">DS_STATE_RAW</a>);
+
+<a name="line233">233: </a>    <font color="#B22222">/* Solve projected problem */</font>
+<a name="line234">234: </a>    <a href="../../../../docs/manualpages/DS/DSSolve.html#DSSolve">DSSolve</a>(eps-&gt;ds,eps-&gt;eigr,eps-&gt;eigi);
+<a name="line235">235: </a>    <a href="../../../../docs/manualpages/DS/DSSort.html#DSSort">DSSort</a>(eps-&gt;ds,eps-&gt;eigr,eps-&gt;eigi,NULL,NULL,NULL);
+<a name="line236">236: </a>    <a href="../../../../docs/manualpages/DS/DSSynchronize.html#DSSynchronize">DSSynchronize</a>(eps-&gt;ds,eps-&gt;eigr,eps-&gt;eigi);
+
+<a name="line238">238: </a>    <font color="#B22222">/* Update vectors V(:,idx) = V * U(:,idx) */</font>
+<a name="line239">239: </a>    <a href="../../../../docs/manualpages/DS/DSGetMat.html#DSGetMat">DSGetMat</a>(eps-&gt;ds,<a href="../../../../docs/manualpages/sys/DSMatType.html#DSMatType">DS_MAT_Q</a>,&amp;Q);
+<a name="line240">240: </a>    <a href="../../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(AV,0,nv);
+<a name="line241">241: </a>    <a href="../../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(R,0,nv);
+<a name="line242">242: </a>    <a href="../../../../docs/manualpages/BV/BVMultInPlace.html#BVMultInPlace">BVMultInPlace</a>(eps-&gt;V,Q,eps-&gt;nconv,nv);
+<a name="line243">243: </a>    <a href="../../../../docs/manualpages/BV/BVMultInPlace.html#BVMultInPlace">BVMultInPlace</a>(AV,Q,eps-&gt;nconv,nv);
+<a name="line244">244: </a>    <a href="../../../../docs/manualpages/BV/BVCopy.html#BVCopy">BVCopy</a>(AV,R);
+<a name="line245">245: </a>    MatDestroy(&amp;Q);
+
+<a name="line247">247: </a>    <font color="#B22222">/* Convergence check */</font>
+<a name="line248">248: </a>    <a href="../../../../docs/manualpages/DS/DSGetMat.html#DSGetMat">DSGetMat</a>(eps-&gt;ds,<a href="../../../../docs/manualpages/sys/DSMatType.html#DSMatType">DS_MAT_A</a>,&amp;T);
+<a name="line249">249: </a>    EPSSubspaceResidualNorms(R,eps-&gt;V,T,eps-&gt;nconv,nv,eps-&gt;eigi,rsd);
+<a name="line250">250: </a>    <a href="../../../../docs/manualpages/DS/DSRestoreMat.html#DSRestoreMat">DSRestoreMat</a>(eps-&gt;ds,<a href="../../../../docs/manualpages/sys/DSMatType.html#DSMatType">DS_MAT_A</a>,&amp;T);
+
+<a name="line252">252: </a>    <font color="#4169E1">if</font> (eps-&gt;which==<a href="../../../../docs/manualpages/sys/EPSWhich.html#EPSWhich">EPS_ALL</a> &amp;&amp; eps-&gt;its&gt;1) {   <font color="#B22222">/* adjust eigenvalue count */</font>
+<a name="line253">253: </a>      ninside = 0;
+<a name="line254">254: </a>      <a href="../../../../docs/manualpages/ST/STFilterGetThreshold.html#STFilterGetThreshold">STFilterGetThreshold</a>(eps-&gt;st,&amp;gamma);
+<a name="line255">255: </a>      <font color="#4169E1">for</font> (i=eps-&gt;nconv;i&lt;nv;i++) {
+<a name="line256">256: </a>        <font color="#4169E1">if</font> (PetscRealPart(eps-&gt;eigr[i]) &lt; gamma) <font color="#4169E1">break</font>;
+<a name="line257">257: </a>        ninside++;
+<a name="line258">258: </a>      }
+<a name="line259">259: </a>      eps-&gt;nev = eps-&gt;nconv+ninside;
+<a name="line260">260: </a>    }
+<a name="line261">261: </a>    <font color="#4169E1">for</font> (i=eps-&gt;nconv;i&lt;nv;i++) {
+<a name="line262">262: </a>      itrsdold[i] = itrsd[i];
+<a name="line263">263: </a>      itrsd[i] = its;
+<a name="line264">264: </a>      eps-&gt;errest[i] = rsd[i];
+<a name="line265">265: </a>    }
+
+<a name="line267">267: </a>    <font color="#4169E1">for</font> (;;) {
+<a name="line268">268: </a>      <font color="#B22222">/* Find clusters of computed eigenvalues */</font>
+<a name="line269">269: </a>      EPSSubspaceFindGroup(eps-&gt;nconv,nv,eps-&gt;eigr,eps-&gt;eigi,eps-&gt;errest,grptol,&amp;ngrp,&amp;ctr,&amp;ae,&amp;arsd);
+<a name="line270">270: </a>      EPSSubspaceFindGroup(eps-&gt;nconv,nv,oeigr,oeigi,orsd,grptol,&amp;nogrp,&amp;octr,&amp;oae,&amp;oarsd);
+<a name="line271">271: </a>      <font color="#4169E1">if</font> (ngrp!=nogrp) <font color="#4169E1">break</font>;
+<a name="line272">272: </a>      <font color="#4169E1">if</font> (ngrp==0) <font color="#4169E1">break</font>;
+<a name="line273">273: </a>      <font color="#4169E1">if</font> (PetscAbsReal(ae-oae)&gt;ctr*cnvtol*(itrsd[eps-&gt;nconv]-itrsdold[eps-&gt;nconv])) <font color="#4169E1">break</font>;
+<a name="line274">274: </a>      <font color="#4169E1">if</font> (arsd&gt;ctr*eps-&gt;tol) <font color="#4169E1">break</font>;
+<a name="line275">275: </a>      eps-&gt;nconv = eps-&gt;nconv + ngrp;
+<a name="line276">276: </a>      <font color="#4169E1">if</font> (eps-&gt;nconv&gt;=nv) <font color="#4169E1">break</font>;
+<a name="line277">277: </a>    }
+
+<a name="line279">279: </a>    EPSMonitor(eps,eps-&gt;its,eps-&gt;nconv,eps-&gt;eigr,eps-&gt;eigi,eps-&gt;errest,nv);
+<a name="line280">280: </a>    (*eps-&gt;stopping)(eps,eps-&gt;its,eps-&gt;max_it,eps-&gt;nconv,eps-&gt;nev,&amp;eps-&gt;reason,eps-&gt;stoppingctx);
+<a name="line281">281: </a>    <font color="#4169E1">if</font> (eps-&gt;reason != <a href="../../../../docs/manualpages/sys/EPSConvergedReason.html#EPSConvergedReason">EPS_CONVERGED_ITERATING</a>) <font color="#4169E1">break</font>;
+
+<a name="line283">283: </a>    <font color="#B22222">/* Compute nxtsrr (iteration of next projection step) */</font>
+<a name="line284">284: </a>    nxtsrr = PetscMin(eps-&gt;max_it,PetscMax((PetscInt)PetscFloorReal(stpfac*its),init));
+
+<a name="line286">286: </a>    <font color="#4169E1">if</font> (ngrp!=nogrp || ngrp==0 || arsd&gt;=oarsd) {
+<a name="line287">287: </a>      idsrr = nxtsrr - its;
+<a name="line288">288: </a>    } <font color="#4169E1">else</font> {
+<a name="line289">289: </a>      idsrr = (PetscInt)PetscFloorReal(alpha+beta*(itrsdold[eps-&gt;nconv]-itrsd[eps-&gt;nconv])*PetscLogReal(arsd/eps-&gt;tol)/PetscLogReal(arsd/oarsd));
+<a name="line290">290: </a>      idsrr = PetscMax(1,idsrr);
+<a name="line291">291: </a>    }
+<a name="line292">292: </a>    nxtsrr = PetscMin(nxtsrr,its+idsrr);
+
+<a name="line294">294: </a>    <font color="#B22222">/* Compute nxtort (iteration of next orthogonalization step) */</font>
+<a name="line295">295: </a>    <a href="../../../../docs/manualpages/DS/DSCond.html#DSCond">DSCond</a>(eps-&gt;ds,&amp;tcond);
+<a name="line296">296: </a>    idort = PetscMax(1,(PetscInt)PetscFloorReal(orttol/PetscMax(1,PetscLog10Real(tcond))));
+<a name="line297">297: </a>    nxtort = PetscMin(its+idort,nxtsrr);
+<a name="line298">298: </a>    PetscInfo(eps,<font color="#666666">"Updated iteration counts: nxtort=%"</font> PetscInt_FMT <font color="#666666">", nxtsrr=%"</font> PetscInt_FMT <font color="#666666">"\n"</font>,nxtort,nxtsrr);
+
+<a name="line300">300: </a>    <font color="#B22222">/* V(:,idx) = AV(:,idx) */</font>
+<a name="line301">301: </a>    <a href="../../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(eps-&gt;V,eps-&gt;nconv,nv);
+<a name="line302">302: </a>    <a href="../../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(AV,eps-&gt;nconv,nv);
+<a name="line303">303: </a>    <a href="../../../../docs/manualpages/BV/BVCopy.html#BVCopy">BVCopy</a>(AV,eps-&gt;V);
+<a name="line304">304: </a>    its++;
+
+<a name="line306">306: </a>    <font color="#B22222">/* Orthogonalization loop */</font>
+<a name="line307">307: </a>    <font color="#4169E1">do</font> {
+<a name="line308">308: </a>      <a href="../../../../docs/manualpages/BV/BVGetMatrix.html#BVGetMatrix">BVGetMatrix</a>(eps-&gt;V,&amp;B,&amp;indef);
+<a name="line309">309: </a>      <a href="../../../../docs/manualpages/BV/BVSetMatrix.html#BVSetMatrix">BVSetMatrix</a>(eps-&gt;V,NULL,PETSC_FALSE);
+<a name="line310">310: </a>      <font color="#4169E1">while</font> (its&lt;nxtort) {
+<a name="line311">311: </a>        <font color="#B22222">/* A(:,idx) = OP*V(:,idx) with normalization */</font>
+<a name="line312">312: </a>        <a href="../../../../docs/manualpages/BV/BVMatMult.html#BVMatMult">BVMatMult</a>(eps-&gt;V,S,AV);
+<a name="line313">313: </a>        <a href="../../../../docs/manualpages/BV/BVCopy.html#BVCopy">BVCopy</a>(AV,eps-&gt;V);
+<a name="line314">314: </a>        <a href="../../../../docs/manualpages/BV/BVNormalize.html#BVNormalize">BVNormalize</a>(eps-&gt;V,NULL);
+<a name="line315">315: </a>        its++;
+<a name="line316">316: </a>      }
+<a name="line317">317: </a>      <a href="../../../../docs/manualpages/BV/BVSetMatrix.html#BVSetMatrix">BVSetMatrix</a>(eps-&gt;V,B,indef);
+<a name="line318">318: </a>      <font color="#B22222">/* Orthonormalize vectors */</font>
+<a name="line319">319: </a>      <a href="../../../../docs/manualpages/BV/BVOrthogonalize.html#BVOrthogonalize">BVOrthogonalize</a>(eps-&gt;V,NULL);
+<a name="line320">320: </a>      nxtort = PetscMin(its+idort,nxtsrr);
+<a name="line321">321: </a>    } <font color="#4169E1">while</font> (its&lt;nxtsrr);
+<a name="line322">322: </a>  }
+
+<a name="line324">324: </a>  PetscFree6(rsd,orsd,oeigr,oeigi,itrsd,itrsdold);
+<a name="line325">325: </a>  <a href="../../../../docs/manualpages/BV/BVDestroy.html#BVDestroy">BVDestroy</a>(&amp;AV);
+<a name="line326">326: </a>  <a href="../../../../docs/manualpages/BV/BVDestroy.html#BVDestroy">BVDestroy</a>(&amp;R);
+<a name="line327">327: </a>  <a href="../../../../docs/manualpages/ST/STRestoreOperator.html#STRestoreOperator">STRestoreOperator</a>(eps-&gt;st,&amp;S);
+<a name="line328">328: </a>  <a href="../../../../docs/manualpages/DS/DSTruncate.html#DSTruncate">DSTruncate</a>(eps-&gt;ds,eps-&gt;nconv,PETSC_TRUE);
+<a name="line329">329: </a>  PetscFunctionReturn(0);
+<a name="line330">330: </a>}
+
+<a name="line332">332: </a><strong><font color="#4169E1"><a name="EPSDestroy_Subspace"></a>PetscErrorCode EPSDestroy_Subspace(<a href="../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps)</font></strong>
+<a name="line333">333: </a>{
+<a name="line334">334: </a>  PetscFree(eps-&gt;data);
+<a name="line335">335: </a>  PetscFunctionReturn(0);
+<a name="line336">336: </a>}
+
+<a name="line338">338: </a><strong><font color="#4169E1"><a name="EPSCreate_Subspace"></a>SLEPC_EXTERN PetscErrorCode EPSCreate_Subspace(<a href="../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps)</font></strong>
+<a name="line339">339: </a>{
+<a name="line340">340: </a>  EPS_SUBSPACE *ctx;
+
+<a name="line342">342: </a>  PetscNewLog(eps,&amp;ctx);
+<a name="line343">343: </a>  eps-&gt;data  = (void*)ctx;
+
+<a name="line345">345: </a>  eps-&gt;useds = PETSC_TRUE;
+<a name="line346">346: </a>  eps-&gt;categ = EPS_CATEGORY_OTHER;
+
+<a name="line348">348: </a>  eps-&gt;ops-&gt;solve          = EPSSolve_Subspace;
+<a name="line349">349: </a>  eps-&gt;ops-&gt;setup          = EPSSetUp_Subspace;
+<a name="line350">350: </a>  eps-&gt;ops-&gt;setupsort      = EPSSetUpSort_Subspace;
+<a name="line351">351: </a>  eps-&gt;ops-&gt;destroy        = EPSDestroy_Subspace;
+<a name="line352">352: </a>  eps-&gt;ops-&gt;backtransform  = EPSBackTransform_Default;
+<a name="line353">353: </a>  eps-&gt;ops-&gt;computevectors = EPSComputeVectors_Schur;
+<a name="line354">354: </a>  PetscFunctionReturn(0);
+<a name="line355">355: </a>}
+</pre>
+</body>
+
+</html>

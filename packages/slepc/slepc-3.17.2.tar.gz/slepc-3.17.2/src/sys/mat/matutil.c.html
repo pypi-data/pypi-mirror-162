@@ -1,0 +1,480 @@
+<center><a href="matutil.c">Actual source code: matutil.c</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="https://slepc.upv.es/documentation/current/src/sys/mat/matutil.c.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2022-08-09T09:05:17+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>slepc-3.17.2 2022-08-09</b></div>
+   <div id="bugreport" align=right><a href="mailto:slepc-maint@upv.es?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: slepc-3.17.2 v3.17.2 src/sys/mat/matutil.c.html "><small>Report Typos and Errors</small></a></div>
+<pre width="80">
+<a name="line1">  1: </a><font color="#B22222">/*</font>
+<a name="line2">  2: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line3">  3: </a><font color="#B22222">   SLEPc - Scalable Library for Eigenvalue Problem Computations</font>
+<a name="line4">  4: </a><font color="#B22222">   Copyright (c) 2002-, Universitat Politecnica de Valencia, Spain</font>
+
+<a name="line6">  6: </a><font color="#B22222">   This file is part of SLEPc.</font>
+<a name="line7">  7: </a><font color="#B22222">   SLEPc is distributed under a 2-clause BSD license (see LICENSE).</font>
+<a name="line8">  8: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line9">  9: </a><font color="#B22222">*/</font>
+
+<a name="line11"> 11: </a>#include <A href="../../../include/slepc/private/slepcimpl.h.html">&lt;slepc/private/slepcimpl.h&gt;</A>
+
+<a name="line13"> 13: </a><strong><font color="#4169E1"><a name="MatCreateTile_Seq"></a>static PetscErrorCode MatCreateTile_Seq(PetscScalar a,Mat A,PetscScalar b,Mat B,PetscScalar c,Mat C,PetscScalar d,Mat D,Mat G)</font></strong>
+<a name="line14"> 14: </a>{
+<a name="line15"> 15: </a>  PetscInt          i,j,M1,M2,N1,N2,*nnz,ncols,*scols,bs;
+<a name="line16"> 16: </a>  PetscScalar       *svals,*buf;
+<a name="line17"> 17: </a>  const PetscInt    *cols;
+<a name="line18"> 18: </a>  const PetscScalar *vals;
+
+<a name="line20"> 20: </a>  MatGetSize(A,&amp;M1,&amp;N1);
+<a name="line21"> 21: </a>  MatGetSize(D,&amp;M2,&amp;N2);
+<a name="line22"> 22: </a>  MatGetBlockSize(A,&amp;bs);
+
+<a name="line24"> 24: </a>  PetscCalloc1((M1+M2)/bs,&amp;nnz);
+<a name="line25"> 25: </a>  <font color="#B22222">/* Preallocate for A */</font>
+<a name="line26"> 26: </a>  <font color="#4169E1">if</font> (a!=0.0) {
+<a name="line27"> 27: </a>    <font color="#4169E1">for</font> (i=0;i&lt;(M1+bs-1)/bs;i++) {
+<a name="line28"> 28: </a>      MatGetRow(A,i*bs,&amp;ncols,NULL,NULL);
+<a name="line29"> 29: </a>      nnz[i] += ncols/bs;
+<a name="line30"> 30: </a>      MatRestoreRow(A,i*bs,&amp;ncols,NULL,NULL);
+<a name="line31"> 31: </a>    }
+<a name="line32"> 32: </a>  }
+<a name="line33"> 33: </a>  <font color="#B22222">/* Preallocate for B */</font>
+<a name="line34"> 34: </a>  <font color="#4169E1">if</font> (b!=0.0) {
+<a name="line35"> 35: </a>    <font color="#4169E1">for</font> (i=0;i&lt;(M1+bs-1)/bs;i++) {
+<a name="line36"> 36: </a>      MatGetRow(B,i*bs,&amp;ncols,NULL,NULL);
+<a name="line37"> 37: </a>      nnz[i] += ncols/bs;
+<a name="line38"> 38: </a>      MatRestoreRow(B,i*bs,&amp;ncols,NULL,NULL);
+<a name="line39"> 39: </a>    }
+<a name="line40"> 40: </a>  }
+<a name="line41"> 41: </a>  <font color="#B22222">/* Preallocate for C */</font>
+<a name="line42"> 42: </a>  <font color="#4169E1">if</font> (c!=0.0) {
+<a name="line43"> 43: </a>    <font color="#4169E1">for</font> (i=0;i&lt;(M2+bs-1)/bs;i++) {
+<a name="line44"> 44: </a>      MatGetRow(C,i*bs,&amp;ncols,NULL,NULL);
+<a name="line45"> 45: </a>      nnz[i+M1/bs] += ncols/bs;
+<a name="line46"> 46: </a>      MatRestoreRow(C,i*bs,&amp;ncols,NULL,NULL);
+<a name="line47"> 47: </a>    }
+<a name="line48"> 48: </a>  }
+<a name="line49"> 49: </a>  <font color="#B22222">/* Preallocate for D */</font>
+<a name="line50"> 50: </a>  <font color="#4169E1">if</font> (d!=0.0) {
+<a name="line51"> 51: </a>    <font color="#4169E1">for</font> (i=0;i&lt;(M2+bs-1)/bs;i++) {
+<a name="line52"> 52: </a>      MatGetRow(D,i*bs,&amp;ncols,NULL,NULL);
+<a name="line53"> 53: </a>      nnz[i+M1/bs] += ncols/bs;
+<a name="line54"> 54: </a>      MatRestoreRow(D,i*bs,&amp;ncols,NULL,NULL);
+<a name="line55"> 55: </a>    }
+<a name="line56"> 56: </a>  }
+<a name="line57"> 57: </a>  MatXAIJSetPreallocation(G,bs,nnz,NULL,NULL,NULL);
+<a name="line58"> 58: </a>  PetscFree(nnz);
+
+<a name="line60"> 60: </a>  PetscMalloc2(PetscMax(N1,N2),&amp;buf,PetscMax(N1,N2),&amp;scols);
+<a name="line61"> 61: </a>  <font color="#B22222">/* Transfer A */</font>
+<a name="line62"> 62: </a>  <font color="#4169E1">if</font> (a!=0.0) {
+<a name="line63"> 63: </a>    <font color="#4169E1">for</font> (i=0;i&lt;M1;i++) {
+<a name="line64"> 64: </a>      MatGetRow(A,i,&amp;ncols,&amp;cols,&amp;vals);
+<a name="line65"> 65: </a>      <font color="#4169E1">if</font> (a!=1.0) {
+<a name="line66"> 66: </a>        svals=buf;
+<a name="line67"> 67: </a>        <font color="#4169E1">for</font> (j=0;j&lt;ncols;j++) svals[j] = vals[j]*a;
+<a name="line68"> 68: </a>      } <font color="#4169E1">else</font> svals=(PetscScalar*)vals;
+<a name="line69"> 69: </a>      MatSetValues(G,1,&amp;i,ncols,cols,svals,INSERT_VALUES);
+<a name="line70"> 70: </a>      MatRestoreRow(A,i,&amp;ncols,&amp;cols,&amp;vals);
+<a name="line71"> 71: </a>    }
+<a name="line72"> 72: </a>  }
+<a name="line73"> 73: </a>  <font color="#B22222">/* Transfer B */</font>
+<a name="line74"> 74: </a>  <font color="#4169E1">if</font> (b!=0.0) {
+<a name="line75"> 75: </a>    <font color="#4169E1">for</font> (i=0;i&lt;M1;i++) {
+<a name="line76"> 76: </a>      MatGetRow(B,i,&amp;ncols,&amp;cols,&amp;vals);
+<a name="line77"> 77: </a>      <font color="#4169E1">if</font> (b!=1.0) {
+<a name="line78"> 78: </a>        svals=buf;
+<a name="line79"> 79: </a>        <font color="#4169E1">for</font> (j=0;j&lt;ncols;j++) svals[j] = vals[j]*b;
+<a name="line80"> 80: </a>      } <font color="#4169E1">else</font> svals=(PetscScalar*)vals;
+<a name="line81"> 81: </a>      <font color="#4169E1">for</font> (j=0;j&lt;ncols;j++) scols[j] = cols[j]+N1;
+<a name="line82"> 82: </a>      MatSetValues(G,1,&amp;i,ncols,scols,svals,INSERT_VALUES);
+<a name="line83"> 83: </a>      MatRestoreRow(B,i,&amp;ncols,&amp;cols,&amp;vals);
+<a name="line84"> 84: </a>    }
+<a name="line85"> 85: </a>  }
+<a name="line86"> 86: </a>  <font color="#B22222">/* Transfer C */</font>
+<a name="line87"> 87: </a>  <font color="#4169E1">if</font> (c!=0.0) {
+<a name="line88"> 88: </a>    <font color="#4169E1">for</font> (i=0;i&lt;M2;i++) {
+<a name="line89"> 89: </a>      MatGetRow(C,i,&amp;ncols,&amp;cols,&amp;vals);
+<a name="line90"> 90: </a>      <font color="#4169E1">if</font> (c!=1.0) {
+<a name="line91"> 91: </a>        svals=buf;
+<a name="line92"> 92: </a>        <font color="#4169E1">for</font> (j=0;j&lt;ncols;j++) svals[j] = vals[j]*c;
+<a name="line93"> 93: </a>      } <font color="#4169E1">else</font> svals=(PetscScalar*)vals;
+<a name="line94"> 94: </a>      j = i+M1;
+<a name="line95"> 95: </a>      MatSetValues(G,1,&amp;j,ncols,cols,svals,INSERT_VALUES);
+<a name="line96"> 96: </a>      MatRestoreRow(C,i,&amp;ncols,&amp;cols,&amp;vals);
+<a name="line97"> 97: </a>    }
+<a name="line98"> 98: </a>  }
+<a name="line99"> 99: </a>  <font color="#B22222">/* Transfer D */</font>
+<a name="line100">100: </a>  <font color="#4169E1">if</font> (d!=0.0) {
+<a name="line101">101: </a>    <font color="#4169E1">for</font> (i=0;i&lt;M2;i++) {
+<a name="line102">102: </a>      MatGetRow(D,i,&amp;ncols,&amp;cols,&amp;vals);
+<a name="line103">103: </a>      <font color="#4169E1">if</font> (d!=1.0) {
+<a name="line104">104: </a>        svals=buf;
+<a name="line105">105: </a>        <font color="#4169E1">for</font> (j=0;j&lt;ncols;j++) svals[j] = vals[j]*d;
+<a name="line106">106: </a>      } <font color="#4169E1">else</font> svals=(PetscScalar*)vals;
+<a name="line107">107: </a>      <font color="#4169E1">for</font> (j=0;j&lt;ncols;j++) scols[j] = cols[j]+N1;
+<a name="line108">108: </a>      j = i+M1;
+<a name="line109">109: </a>      MatSetValues(G,1,&amp;j,ncols,scols,svals,INSERT_VALUES);
+<a name="line110">110: </a>      MatRestoreRow(D,i,&amp;ncols,&amp;cols,&amp;vals);
+<a name="line111">111: </a>    }
+<a name="line112">112: </a>  }
+<a name="line113">113: </a>  PetscFree2(buf,scols);
+<a name="line114">114: </a>  PetscFunctionReturn(0);
+<a name="line115">115: </a>}
+
+<a name="line117">117: </a><strong><font color="#4169E1"><a name="MatCreateTile_MPI"></a>static PetscErrorCode MatCreateTile_MPI(PetscScalar a,Mat A,PetscScalar b,Mat B,PetscScalar c,Mat C,PetscScalar d,Mat D,Mat G)</font></strong>
+<a name="line118">118: </a>{
+<a name="line119">119: </a>  PetscErrorCode    ierr;
+<a name="line120">120: </a>  PetscMPIInt       np;
+<a name="line121">121: </a>  PetscInt          p,i,j,N1,N2,m1,m2,n1,n2,*map1,*map2;
+<a name="line122">122: </a>  PetscInt          *dnz,*onz,ncols,*scols,start,gstart;
+<a name="line123">123: </a>  PetscScalar       *svals,*buf;
+<a name="line124">124: </a>  const PetscInt    *cols,*mapptr1,*mapptr2;
+<a name="line125">125: </a>  const PetscScalar *vals;
+
+<a name="line127">127: </a>  MatGetSize(A,NULL,&amp;N1);
+<a name="line128">128: </a>  MatGetLocalSize(A,&amp;m1,&amp;n1);
+<a name="line129">129: </a>  MatGetSize(D,NULL,&amp;N2);
+<a name="line130">130: </a>  MatGetLocalSize(D,&amp;m2,&amp;n2);
+
+<a name="line132">132: </a>  <font color="#B22222">/* Create mappings */</font>
+<a name="line133">133: </a>  <a href="http://www.mpich.org/static/docs/latest/www3/MPI_Comm_size.html#MPI_Comm_size">MPI_Comm_size</a>(PetscObjectComm((PetscObject)G),&amp;np);
+<a name="line134">134: </a>  MatGetOwnershipRangesColumn(A,&amp;mapptr1);
+<a name="line135">135: </a>  MatGetOwnershipRangesColumn(B,&amp;mapptr2);
+<a name="line136">136: </a>  PetscMalloc4(PetscMax(N1,N2),&amp;buf,PetscMax(N1,N2),&amp;scols,N1,&amp;map1,N2,&amp;map2);
+<a name="line137">137: </a>  <font color="#4169E1">for</font> (p=0;p&lt;np;p++) {
+<a name="line138">138: </a>    <font color="#4169E1">for</font> (i=mapptr1[p];i&lt;mapptr1[p+1];i++) map1[i] = i+mapptr2[p];
+<a name="line139">139: </a>  }
+<a name="line140">140: </a>  <font color="#4169E1">for</font> (p=0;p&lt;np;p++) {
+<a name="line141">141: </a>    <font color="#4169E1">for</font> (i=mapptr2[p];i&lt;mapptr2[p+1];i++) map2[i] = i+mapptr1[p+1];
+<a name="line142">142: </a>  }
+
+<a name="line144">144: </a>  ierr = MatPreallocateInitialize(PetscObjectComm((PetscObject)G),m1+m2,n1+n2,dnz,onz);
+<a name="line145">145: </a>  MatGetOwnershipRange(G,&amp;gstart,NULL);
+<a name="line146">146: </a>  <font color="#B22222">/* Preallocate for A */</font>
+<a name="line147">147: </a>  <font color="#4169E1">if</font> (a!=0.0) {
+<a name="line148">148: </a>    MatGetOwnershipRange(A,&amp;start,NULL);
+<a name="line149">149: </a>    <font color="#4169E1">for</font> (i=0;i&lt;m1;i++) {
+<a name="line150">150: </a>      MatGetRow(A,i+start,&amp;ncols,&amp;cols,NULL);
+<a name="line151">151: </a>      <font color="#4169E1">for</font> (j=0;j&lt;ncols;j++) scols[j] = map1[cols[j]];
+<a name="line152">152: </a>      MatPreallocateSet(gstart+i,ncols,scols,dnz,onz);
+<a name="line153">153: </a>      MatRestoreRow(A,i+start,&amp;ncols,&amp;cols,NULL);
+<a name="line154">154: </a>    }
+<a name="line155">155: </a>  }
+<a name="line156">156: </a>  <font color="#B22222">/* Preallocate for B */</font>
+<a name="line157">157: </a>  <font color="#4169E1">if</font> (b!=0.0) {
+<a name="line158">158: </a>    MatGetOwnershipRange(B,&amp;start,NULL);
+<a name="line159">159: </a>    <font color="#4169E1">for</font> (i=0;i&lt;m1;i++) {
+<a name="line160">160: </a>      MatGetRow(B,i+start,&amp;ncols,&amp;cols,NULL);
+<a name="line161">161: </a>      <font color="#4169E1">for</font> (j=0;j&lt;ncols;j++) scols[j] = map2[cols[j]];
+<a name="line162">162: </a>      MatPreallocateSet(gstart+i,ncols,scols,dnz,onz);
+<a name="line163">163: </a>      MatRestoreRow(B,i+start,&amp;ncols,&amp;cols,NULL);
+<a name="line164">164: </a>    }
+<a name="line165">165: </a>  }
+<a name="line166">166: </a>  <font color="#B22222">/* Preallocate for C */</font>
+<a name="line167">167: </a>  <font color="#4169E1">if</font> (c!=0.0) {
+<a name="line168">168: </a>    MatGetOwnershipRange(C,&amp;start,NULL);
+<a name="line169">169: </a>    <font color="#4169E1">for</font> (i=0;i&lt;m2;i++) {
+<a name="line170">170: </a>      MatGetRow(C,i+start,&amp;ncols,&amp;cols,NULL);
+<a name="line171">171: </a>      <font color="#4169E1">for</font> (j=0;j&lt;ncols;j++) scols[j] = map1[cols[j]];
+<a name="line172">172: </a>      MatPreallocateSet(gstart+m1+i,ncols,scols,dnz,onz);
+<a name="line173">173: </a>      MatRestoreRow(C,i+start,&amp;ncols,&amp;cols,NULL);
+<a name="line174">174: </a>    }
+<a name="line175">175: </a>  }
+<a name="line176">176: </a>  <font color="#B22222">/* Preallocate for D */</font>
+<a name="line177">177: </a>  <font color="#4169E1">if</font> (d!=0.0) {
+<a name="line178">178: </a>    MatGetOwnershipRange(D,&amp;start,NULL);
+<a name="line179">179: </a>    <font color="#4169E1">for</font> (i=0;i&lt;m2;i++) {
+<a name="line180">180: </a>      MatGetRow(D,i+start,&amp;ncols,&amp;cols,NULL);
+<a name="line181">181: </a>      <font color="#4169E1">for</font> (j=0;j&lt;ncols;j++) scols[j] = map2[cols[j]];
+<a name="line182">182: </a>      MatPreallocateSet(gstart+m1+i,ncols,scols,dnz,onz);
+<a name="line183">183: </a>      MatRestoreRow(D,i+start,&amp;ncols,&amp;cols,NULL);
+<a name="line184">184: </a>    }
+<a name="line185">185: </a>  }
+<a name="line186">186: </a>  MatMPIAIJSetPreallocation(G,0,dnz,0,onz);
+<a name="line187">187: </a>  ierr = MatPreallocateFinalize(dnz,onz);
+
+<a name="line189">189: </a>  <font color="#B22222">/* Transfer A */</font>
+<a name="line190">190: </a>  <font color="#4169E1">if</font> (a!=0.0) {
+<a name="line191">191: </a>    MatGetOwnershipRange(A,&amp;start,NULL);
+<a name="line192">192: </a>    <font color="#4169E1">for</font> (i=0;i&lt;m1;i++) {
+<a name="line193">193: </a>      MatGetRow(A,i+start,&amp;ncols,&amp;cols,&amp;vals);
+<a name="line194">194: </a>      <font color="#4169E1">if</font> (a!=1.0) {
+<a name="line195">195: </a>        svals=buf;
+<a name="line196">196: </a>        <font color="#4169E1">for</font> (j=0;j&lt;ncols;j++) svals[j] = vals[j]*a;
+<a name="line197">197: </a>      } <font color="#4169E1">else</font> svals=(PetscScalar*)vals;
+<a name="line198">198: </a>      <font color="#4169E1">for</font> (j=0;j&lt;ncols;j++) scols[j] = map1[cols[j]];
+<a name="line199">199: </a>      j = gstart+i;
+<a name="line200">200: </a>      MatSetValues(G,1,&amp;j,ncols,scols,svals,INSERT_VALUES);
+<a name="line201">201: </a>      MatRestoreRow(A,i+start,&amp;ncols,&amp;cols,&amp;vals);
+<a name="line202">202: </a>    }
+<a name="line203">203: </a>  }
+<a name="line204">204: </a>  <font color="#B22222">/* Transfer B */</font>
+<a name="line205">205: </a>  <font color="#4169E1">if</font> (b!=0.0) {
+<a name="line206">206: </a>    MatGetOwnershipRange(B,&amp;start,NULL);
+<a name="line207">207: </a>    <font color="#4169E1">for</font> (i=0;i&lt;m1;i++) {
+<a name="line208">208: </a>      MatGetRow(B,i+start,&amp;ncols,&amp;cols,&amp;vals);
+<a name="line209">209: </a>      <font color="#4169E1">if</font> (b!=1.0) {
+<a name="line210">210: </a>        svals=buf;
+<a name="line211">211: </a>        <font color="#4169E1">for</font> (j=0;j&lt;ncols;j++) svals[j] = vals[j]*b;
+<a name="line212">212: </a>      } <font color="#4169E1">else</font> svals=(PetscScalar*)vals;
+<a name="line213">213: </a>      <font color="#4169E1">for</font> (j=0;j&lt;ncols;j++) scols[j] = map2[cols[j]];
+<a name="line214">214: </a>      j = gstart+i;
+<a name="line215">215: </a>      MatSetValues(G,1,&amp;j,ncols,scols,svals,INSERT_VALUES);
+<a name="line216">216: </a>      MatRestoreRow(B,i+start,&amp;ncols,&amp;cols,&amp;vals);
+<a name="line217">217: </a>    }
+<a name="line218">218: </a>  }
+<a name="line219">219: </a>  <font color="#B22222">/* Transfer C */</font>
+<a name="line220">220: </a>  <font color="#4169E1">if</font> (c!=0.0) {
+<a name="line221">221: </a>    MatGetOwnershipRange(C,&amp;start,NULL);
+<a name="line222">222: </a>    <font color="#4169E1">for</font> (i=0;i&lt;m2;i++) {
+<a name="line223">223: </a>      MatGetRow(C,i+start,&amp;ncols,&amp;cols,&amp;vals);
+<a name="line224">224: </a>      <font color="#4169E1">if</font> (c!=1.0) {
+<a name="line225">225: </a>        svals=buf;
+<a name="line226">226: </a>        <font color="#4169E1">for</font> (j=0;j&lt;ncols;j++) svals[j] = vals[j]*c;
+<a name="line227">227: </a>      } <font color="#4169E1">else</font> svals=(PetscScalar*)vals;
+<a name="line228">228: </a>      <font color="#4169E1">for</font> (j=0;j&lt;ncols;j++) scols[j] = map1[cols[j]];
+<a name="line229">229: </a>      j = gstart+m1+i;
+<a name="line230">230: </a>      MatSetValues(G,1,&amp;j,ncols,scols,svals,INSERT_VALUES);
+<a name="line231">231: </a>      MatRestoreRow(C,i+start,&amp;ncols,&amp;cols,&amp;vals);
+<a name="line232">232: </a>    }
+<a name="line233">233: </a>  }
+<a name="line234">234: </a>  <font color="#B22222">/* Transfer D */</font>
+<a name="line235">235: </a>  <font color="#4169E1">if</font> (d!=0.0) {
+<a name="line236">236: </a>    MatGetOwnershipRange(D,&amp;start,NULL);
+<a name="line237">237: </a>    <font color="#4169E1">for</font> (i=0;i&lt;m2;i++) {
+<a name="line238">238: </a>      MatGetRow(D,i+start,&amp;ncols,&amp;cols,&amp;vals);
+<a name="line239">239: </a>      <font color="#4169E1">if</font> (d!=1.0) {
+<a name="line240">240: </a>        svals=buf;
+<a name="line241">241: </a>        <font color="#4169E1">for</font> (j=0;j&lt;ncols;j++) svals[j] = vals[j]*d;
+<a name="line242">242: </a>      } <font color="#4169E1">else</font> svals=(PetscScalar*)vals;
+<a name="line243">243: </a>      <font color="#4169E1">for</font> (j=0;j&lt;ncols;j++) scols[j] = map2[cols[j]];
+<a name="line244">244: </a>      j = gstart+m1+i;
+<a name="line245">245: </a>      MatSetValues(G,1,&amp;j,ncols,scols,svals,INSERT_VALUES);
+<a name="line246">246: </a>      MatRestoreRow(D,i+start,&amp;ncols,&amp;cols,&amp;vals);
+<a name="line247">247: </a>    }
+<a name="line248">248: </a>  }
+<a name="line249">249: </a>  PetscFree4(buf,scols,map1,map2);
+<a name="line250">250: </a>  PetscFunctionReturn(0);
+<a name="line251">251: </a>}
+
+<a name="line253">253: </a><font color="#B22222">/*@</font>
+<a name="line254">254: </a><font color="#B22222">   <a href="../../../docs/manualpages/sys/MatCreateTile.html#MatCreateTile">MatCreateTile</a> - Explicitly build a matrix from four blocks, G = [ a*A b*B; c*C d*D ].</font>
+
+<a name="line256">256: </a><font color="#B22222">   Collective on A</font>
+
+<a name="line258">258: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line259">259: </a><font color="#B22222">+  A - matrix for top-left block</font>
+<a name="line260">260: </a><font color="#B22222">.  a - scaling factor for block A</font>
+<a name="line261">261: </a><font color="#B22222">.  B - matrix for top-right block</font>
+<a name="line262">262: </a><font color="#B22222">.  b - scaling factor for block B</font>
+<a name="line263">263: </a><font color="#B22222">.  C - matrix for bottom-left block</font>
+<a name="line264">264: </a><font color="#B22222">.  c - scaling factor for block C</font>
+<a name="line265">265: </a><font color="#B22222">.  D - matrix for bottom-right block</font>
+<a name="line266">266: </a><font color="#B22222">-  d - scaling factor for block D</font>
+
+<a name="line268">268: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line269">269: </a><font color="#B22222">.  G  - the resulting matrix</font>
+
+<a name="line271">271: </a><font color="#B22222">   Notes:</font>
+<a name="line272">272: </a><font color="#B22222">   In the case of a parallel matrix, a permuted version of G is returned. The permutation</font>
+<a name="line273">273: </a><font color="#B22222">   is a perfect shuffle such that the local parts of A, B, C, D remain in the local part of</font>
+<a name="line274">274: </a><font color="#B22222">   G for the same process.</font>
+
+<a name="line276">276: </a><font color="#B22222">   Matrix G must be destroyed by the user.</font>
+
+<a name="line278">278: </a><font color="#B22222">   The blocks can be of different type. They can be either ConstantDiagonal, or a standard</font>
+<a name="line279">279: </a><font color="#B22222">   type such as AIJ, or any other type provided that it supports the MatGetRow operation.</font>
+<a name="line280">280: </a><font color="#B22222">   The type of the output matrix will be the same as the first block that is not</font>
+<a name="line281">281: </a><font color="#B22222">   ConstantDiagonal (checked in the A,B,C,D order).</font>
+
+<a name="line283">283: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line285">285: </a><font color="#B22222">.seealso: MatCreateNest()</font>
+<a name="line286">286: </a><font color="#B22222">@*/</font>
+<a name="line287">287: </a><strong><font color="#4169E1"><a name="MatCreateTile"></a>PetscErrorCode <a href="../../../docs/manualpages/sys/MatCreateTile.html#MatCreateTile">MatCreateTile</a>(PetscScalar a,Mat A,PetscScalar b,Mat B,PetscScalar c,Mat C,PetscScalar d,Mat D,Mat *G)</font></strong>
+<a name="line288">288: </a>{
+<a name="line289">289: </a>  PetscInt       i,k,M1,M2,N1,N2,M,N,m1,m2,n1,n2,m,n,bs;
+<a name="line290">290: </a>  PetscBool      diag[4];
+<a name="line291">291: </a>  Mat            block[4] = {A,B,C,D};
+<a name="line292">292: </a>  MatType        type[4];
+<a name="line293">293: </a>  PetscMPIInt    size;
+
+
+<a name="line308">308: </a>  <font color="#B22222">/* check row 1 */</font>
+<a name="line309">309: </a>  MatGetSize(A,&amp;M1,NULL);
+<a name="line310">310: </a>  MatGetLocalSize(A,&amp;m1,NULL);
+<a name="line311">311: </a>  MatGetSize(B,&amp;M,NULL);
+<a name="line312">312: </a>  MatGetLocalSize(B,&amp;m,NULL);
+<a name="line314">314: </a>  <font color="#B22222">/* check row 2 */</font>
+<a name="line315">315: </a>  MatGetSize(C,&amp;M2,NULL);
+<a name="line316">316: </a>  MatGetLocalSize(C,&amp;m2,NULL);
+<a name="line317">317: </a>  MatGetSize(D,&amp;M,NULL);
+<a name="line318">318: </a>  MatGetLocalSize(D,&amp;m,NULL);
+<a name="line320">320: </a>  <font color="#B22222">/* check column 1 */</font>
+<a name="line321">321: </a>  MatGetSize(A,NULL,&amp;N1);
+<a name="line322">322: </a>  MatGetLocalSize(A,NULL,&amp;n1);
+<a name="line323">323: </a>  MatGetSize(C,NULL,&amp;N);
+<a name="line324">324: </a>  MatGetLocalSize(C,NULL,&amp;n);
+<a name="line326">326: </a>  <font color="#B22222">/* check column 2 */</font>
+<a name="line327">327: </a>  MatGetSize(B,NULL,&amp;N2);
+<a name="line328">328: </a>  MatGetLocalSize(B,NULL,&amp;n2);
+<a name="line329">329: </a>  MatGetSize(D,NULL,&amp;N);
+<a name="line330">330: </a>  MatGetLocalSize(D,NULL,&amp;n);
+
+<a name="line333">333: </a>  <font color="#B22222">/* check matrix types */</font>
+<a name="line334">334: </a>  <font color="#4169E1">for</font> (i=0;i&lt;4;i++) {
+<a name="line335">335: </a>    MatGetType(block[i],&amp;type[i]);
+<a name="line336">336: </a>    PetscStrcmp(type[i],MATCONSTANTDIAGONAL,&amp;diag[i]);
+<a name="line337">337: </a>  }
+<a name="line338">338: </a>  <font color="#4169E1">for</font> (k=0;k&lt;4;k++) <font color="#4169E1">if</font> (!diag[k]) <font color="#4169E1">break</font>;
+
+<a name="line341">341: </a>  MatGetBlockSize(block[k],&amp;bs);
+<a name="line342">342: </a>  MatCreate(PetscObjectComm((PetscObject)block[k]),G);
+<a name="line343">343: </a>  MatSetSizes(*G,m1+m2,n1+n2,M1+M2,N1+N2);
+<a name="line344">344: </a>  MatSetType(*G,type[k]);
+<a name="line345">345: </a>  MatSetBlockSize(*G,bs);
+<a name="line346">346: </a>  MatSetUp(*G);
+
+<a name="line348">348: </a>  <a href="http://www.mpich.org/static/docs/latest/www3/MPI_Comm_size.html#MPI_Comm_size">MPI_Comm_size</a>(PetscObjectComm((PetscObject)*G),&amp;size);
+<a name="line349">349: </a>  <font color="#4169E1">if</font> (size&gt;1) MatCreateTile_MPI(a,A,b,B,c,C,d,D,*G);
+<a name="line350">350: </a>  <font color="#4169E1">else</font> MatCreateTile_Seq(a,A,b,B,c,C,d,D,*G);
+<a name="line351">351: </a>  MatAssemblyBegin(*G,MAT_FINAL_ASSEMBLY);
+<a name="line352">352: </a>  MatAssemblyEnd(*G,MAT_FINAL_ASSEMBLY);
+<a name="line353">353: </a>  PetscFunctionReturn(0);
+<a name="line354">354: </a>}
+
+<a name="line356">356: </a><font color="#B22222">/*@C</font>
+<a name="line357">357: </a><font color="#B22222">   <a href="../../../docs/manualpages/sys/MatCreateVecsEmpty.html#MatCreateVecsEmpty">MatCreateVecsEmpty</a> - Get vector(s) compatible with the matrix, i.e. with the same</font>
+<a name="line358">358: </a><font color="#B22222">   parallel layout, but without internal array.</font>
+
+<a name="line360">360: </a><font color="#B22222">   Collective on mat</font>
+
+<a name="line362">362: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line363">363: </a><font color="#B22222">.  mat - the matrix</font>
+
+<a name="line365">365: </a><font color="#B22222">   Output Parameters:</font>
+<a name="line366">366: </a><font color="#B22222">+  right - (optional) vector that the matrix can be multiplied against</font>
+<a name="line367">367: </a><font color="#B22222">-  left - (optional) vector that the matrix vector product can be stored in</font>
+
+<a name="line369">369: </a><font color="#B22222">   Note:</font>
+<a name="line370">370: </a><font color="#B22222">   This is similar to MatCreateVecs(), but the new vectors do not have an internal</font>
+<a name="line371">371: </a><font color="#B22222">   array, so the intended usage is with VecPlaceArray().</font>
+
+<a name="line373">373: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line375">375: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/sys/VecDuplicateEmpty.html#VecDuplicateEmpty">VecDuplicateEmpty</a>()</font>
+<a name="line376">376: </a><font color="#B22222">@*/</font>
+<a name="line377">377: </a><strong><font color="#4169E1"><a name="MatCreateVecsEmpty"></a>PetscErrorCode <a href="../../../docs/manualpages/sys/MatCreateVecsEmpty.html#MatCreateVecsEmpty">MatCreateVecsEmpty</a>(Mat mat,Vec *right,Vec *left)</font></strong>
+<a name="line378">378: </a>{
+<a name="line379">379: </a>  PetscBool      standard,cuda=PETSC_FALSE,skip=PETSC_FALSE;
+<a name="line380">380: </a>  PetscInt       M,N,mloc,nloc,rbs,cbs;
+<a name="line381">381: </a>  PetscMPIInt    size;
+<a name="line382">382: </a>  Vec            v;
+
+
+<a name="line387">387: </a>  PetscObjectTypeCompareAny((PetscObject)mat,&amp;standard,MATSEQAIJ,MATMPIAIJ,MATSEQBAIJ,MATMPIBAIJ,MATSEQSBAIJ,MATMPISBAIJ,MATSEQDENSE,MATMPIDENSE,<font color="#666666">""</font>);
+<a name="line388">388: </a>  PetscObjectTypeCompareAny((PetscObject)mat,&amp;cuda,MATSEQAIJCUSPARSE,MATMPIAIJCUSPARSE,<font color="#666666">""</font>);
+<a name="line389">389: </a>  <font color="#4169E1">if</font> (!standard &amp;&amp; !cuda) {
+<a name="line390">390: </a>    MatCreateVecs(mat,right,left);
+<a name="line391">391: </a>    v = right? *right: *left;
+<a name="line392">392: </a>    <font color="#4169E1">if</font> (v) {
+<a name="line393">393: </a>      PetscObjectTypeCompareAny((PetscObject)v,&amp;standard,VECSEQ,VECMPI,<font color="#666666">""</font>);
+<a name="line394">394: </a>      PetscObjectTypeCompareAny((PetscObject)v,&amp;cuda,VECSEQCUDA,VECMPICUDA,<font color="#666666">""</font>);
+<a name="line395">395: </a>    }
+<a name="line396">396: </a>    <font color="#4169E1">if</font> (!standard &amp;&amp; !cuda) skip = PETSC_TRUE;
+<a name="line397">397: </a>    <font color="#4169E1">else</font> {
+<a name="line398">398: </a>      <font color="#4169E1">if</font> (right) VecDestroy(right);
+<a name="line399">399: </a>      <font color="#4169E1">if</font> (left) VecDestroy(left);
+<a name="line400">400: </a>    }
+<a name="line401">401: </a>  }
+<a name="line402">402: </a>  <font color="#4169E1">if</font> (!skip) {
+<a name="line403">403: </a>    <a href="http://www.mpich.org/static/docs/latest/www3/MPI_Comm_size.html#MPI_Comm_size">MPI_Comm_size</a>(PetscObjectComm((PetscObject)mat),&amp;size);
+<a name="line404">404: </a>    MatGetLocalSize(mat,&amp;mloc,&amp;nloc);
+<a name="line405">405: </a>    MatGetSize(mat,&amp;M,&amp;N);
+<a name="line406">406: </a>    MatGetBlockSizes(mat,&amp;rbs,&amp;cbs);
+<a name="line407">407: </a>    <font color="#4169E1">if</font> (right) {
+<a name="line408">408: </a>      <font color="#4169E1">if</font> (cuda) {
+<a name="line409">409: </a><font color="#A020F0">#if defined(PETSC_HAVE_CUDA)</font>
+<a name="line410">410: </a>        <font color="#4169E1">if</font> (size&gt;1) VecCreateMPICUDAWithArray(PetscObjectComm((PetscObject)mat),cbs,nloc,N,NULL,right);
+<a name="line411">411: </a>        <font color="#4169E1">else</font> VecCreateSeqCUDAWithArray(PetscObjectComm((PetscObject)mat),cbs,N,NULL,right);
+<a name="line412">412: </a><font color="#A020F0">#endif</font>
+<a name="line413">413: </a>      } <font color="#4169E1">else</font> {
+<a name="line414">414: </a>        <font color="#4169E1">if</font> (size&gt;1) VecCreateMPIWithArray(PetscObjectComm((PetscObject)mat),cbs,nloc,N,NULL,right);
+<a name="line415">415: </a>        <font color="#4169E1">else</font> VecCreateSeqWithArray(PetscObjectComm((PetscObject)mat),cbs,N,NULL,right);
+<a name="line416">416: </a>      }
+<a name="line417">417: </a>    }
+<a name="line418">418: </a>    <font color="#4169E1">if</font> (left) {
+<a name="line419">419: </a>      <font color="#4169E1">if</font> (cuda) {
+<a name="line420">420: </a><font color="#A020F0">#if defined(PETSC_HAVE_CUDA)</font>
+<a name="line421">421: </a>        <font color="#4169E1">if</font> (size&gt;1) VecCreateMPICUDAWithArray(PetscObjectComm((PetscObject)mat),rbs,mloc,M,NULL,left);
+<a name="line422">422: </a>        <font color="#4169E1">else</font> VecCreateSeqCUDAWithArray(PetscObjectComm((PetscObject)mat),rbs,M,NULL,left);
+<a name="line423">423: </a><font color="#A020F0">#endif</font>
+<a name="line424">424: </a>      } <font color="#4169E1">else</font> {
+<a name="line425">425: </a>        <font color="#4169E1">if</font> (size&gt;1) VecCreateMPIWithArray(PetscObjectComm((PetscObject)mat),rbs,mloc,M,NULL,left);
+<a name="line426">426: </a>        <font color="#4169E1">else</font> VecCreateSeqWithArray(PetscObjectComm((PetscObject)mat),rbs,M,NULL,left);
+<a name="line427">427: </a>      }
+<a name="line428">428: </a>    }
+<a name="line429">429: </a>  }
+<a name="line430">430: </a>  PetscFunctionReturn(0);
+<a name="line431">431: </a>}
+
+<a name="line433">433: </a><font color="#B22222">/*@C</font>
+<a name="line434">434: </a><font color="#B22222">   <a href="../../../docs/manualpages/sys/MatNormEstimate.html#MatNormEstimate">MatNormEstimate</a> - Estimate the 2-norm of a matrix.</font>
+
+<a name="line436">436: </a><font color="#B22222">   Collective on A</font>
+
+<a name="line438">438: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line439">439: </a><font color="#B22222">+  A   - the matrix</font>
+<a name="line440">440: </a><font color="#B22222">.  vrn - random vector with normally distributed entries (can be NULL)</font>
+<a name="line441">441: </a><font color="#B22222">-  w   - workspace vector (can be NULL)</font>
+
+<a name="line443">443: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line444">444: </a><font color="#B22222">.  nrm - the norm estimate</font>
+
+<a name="line446">446: </a><font color="#B22222">   Notes:</font>
+<a name="line447">447: </a><font color="#B22222">   Does not need access to the matrix entries, just performs a matrix-vector product.</font>
+<a name="line448">448: </a><font color="#B22222">   Based on work by I. Ipsen and coworkers https://ipsen.math.ncsu.edu/ps/slides_ima.pdf</font>
+
+<a name="line450">450: </a><font color="#B22222">   The input vector vrn must have unit 2-norm.</font>
+<a name="line451">451: </a><font color="#B22222">   If vrn is NULL, then it is created internally and filled with <a href="../../../docs/manualpages/sys/VecSetRandomNormal.html#VecSetRandomNormal">VecSetRandomNormal</a>().</font>
+
+<a name="line453">453: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line455">455: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/sys/VecSetRandomNormal.html#VecSetRandomNormal">VecSetRandomNormal</a>()</font>
+<a name="line456">456: </a><font color="#B22222">@*/</font>
+<a name="line457">457: </a><strong><font color="#4169E1"><a name="MatNormEstimate"></a>PetscErrorCode <a href="../../../docs/manualpages/sys/MatNormEstimate.html#MatNormEstimate">MatNormEstimate</a>(Mat A,Vec vrn,Vec w,PetscReal *nrm)</font></strong>
+<a name="line458">458: </a>{
+<a name="line459">459: </a>  PetscInt       n;
+<a name="line460">460: </a>  Vec            vv=NULL,ww=NULL;
+
+
+<a name="line468">468: </a>  <font color="#4169E1">if</font> (!vrn) {
+<a name="line469">469: </a>    MatCreateVecs(A,&amp;vv,NULL);
+<a name="line470">470: </a>    vrn = vv;
+<a name="line471">471: </a>    <a href="../../../docs/manualpages/sys/VecSetRandomNormal.html#VecSetRandomNormal">VecSetRandomNormal</a>(vv,NULL,NULL,NULL);
+<a name="line472">472: </a>    VecNormalize(vv,NULL);
+<a name="line473">473: </a>  }
+<a name="line474">474: </a>  <font color="#4169E1">if</font> (!w) {
+<a name="line475">475: </a>    MatCreateVecs(A,&amp;ww,NULL);
+<a name="line476">476: </a>    w = ww;
+<a name="line477">477: </a>  }
+
+<a name="line479">479: </a>  MatGetSize(A,&amp;n,NULL);
+<a name="line480">480: </a>  MatMult(A,vrn,w);
+<a name="line481">481: </a>  VecNorm(w,NORM_2,nrm);
+<a name="line482">482: </a>  *nrm *= PetscSqrtReal((PetscReal)n);
+
+<a name="line484">484: </a>  VecDestroy(&amp;vv);
+<a name="line485">485: </a>  VecDestroy(&amp;ww);
+<a name="line486">486: </a>  PetscFunctionReturn(0);
+<a name="line487">487: </a>}
+</pre>
+</body>
+
+</html>

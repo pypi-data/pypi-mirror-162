@@ -1,0 +1,322 @@
+<center><a href="test9.c">Actual source code: test9.c</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="https://slepc.upv.es/documentation/current/src/eps/tests/test9.c.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2022-08-09T09:05:38+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>slepc-3.17.2 2022-08-09</b></div>
+   <div id="bugreport" align=right><a href="mailto:slepc-maint@upv.es?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: slepc-3.17.2 v3.17.2 src/eps/tests/test9.c.html "><small>Report Typos and Errors</small></a></div>
+<pre width="80">
+<a name="line1">  1: </a><font color="#B22222">/*</font>
+<a name="line2">  2: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line3">  3: </a><font color="#B22222">   SLEPc - Scalable Library for Eigenvalue Problem Computations</font>
+<a name="line4">  4: </a><font color="#B22222">   Copyright (c) 2002-, Universitat Politecnica de Valencia, Spain</font>
+
+<a name="line6">  6: </a><font color="#B22222">   This file is part of SLEPc.</font>
+<a name="line7">  7: </a><font color="#B22222">   SLEPc is distributed under a 2-clause BSD license (see LICENSE).</font>
+<a name="line8">  8: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line9">  9: </a><font color="#B22222">*/</font>
+
+<a name="line11"> 11: </a>static char help[] = <font color="#666666">"Eigenvalue problem associated with a Markov model of a random walk on a triangular grid. "</font>
+<a name="line12"> 12: </a>  <font color="#666666">"It is a standard nonsymmetric eigenproblem with real eigenvalues and the rightmost eigenvalue is known to be 1.\n"</font>
+<a name="line13"> 13: </a>  <font color="#666666">"This example illustrates how the user can set the initial vector.\n\n"</font>
+<a name="line14"> 14: </a>  <font color="#666666">"The command line options are:\n"</font>
+<a name="line15"> 15: </a>  <font color="#666666">"  -m &lt;m&gt;, where &lt;m&gt; = number of grid subdivisions in each dimension.\n\n"</font>;
+
+<a name="line17"> 17: </a>#include <A href="../../../include/slepceps.h.html">&lt;slepceps.h&gt;</A>
+
+<a name="line19"> 19: </a><font color="#B22222">/*</font>
+<a name="line20"> 20: </a><font color="#B22222">   User-defined routines</font>
+<a name="line21"> 21: </a><font color="#B22222">*/</font>
+<a name="line22"> 22: </a><strong><font color="#4169E1">PetscErrorCode MatMarkovModel(PetscInt m,Mat A)</font></strong>;
+<a name="line23"> 23: </a><strong><font color="#4169E1">PetscErrorCode MyEigenSort(PetscScalar ar,PetscScalar ai,PetscScalar br,PetscScalar bi,PetscInt *r,void *ctx)</font></strong>;
+
+<a name="line25"> 25: </a><font color="#B22222">/*</font>
+<a name="line26"> 26: </a><font color="#B22222">   Check if computed eigenvectors have unit norm</font>
+<a name="line27"> 27: </a><font color="#B22222">*/</font>
+<a name="line28"> 28: </a><strong><font color="#4169E1"><a name="CheckNormalizedVectors"></a>PetscErrorCode CheckNormalizedVectors(<a href="../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps)</font></strong>
+<a name="line29"> 29: </a>{
+<a name="line30"> 30: </a>  PetscInt       i,nconv;
+<a name="line31"> 31: </a>  Mat            A;
+<a name="line32"> 32: </a>  Vec            xr,xi;
+<a name="line33"> 33: </a>  PetscReal      error=0.0,normr;
+<a name="line34"> 34: </a><font color="#A020F0">#if !defined(PETSC_USE_COMPLEX)</font>
+<a name="line35"> 35: </a>  PetscReal      normi;
+<a name="line36"> 36: </a><font color="#A020F0">#endif</font>
+
+<a name="line39"> 39: </a>  <a href="../../../docs/manualpages/EPS/EPSGetConverged.html#EPSGetConverged">EPSGetConverged</a>(eps,&amp;nconv);
+<a name="line40"> 40: </a>  <font color="#4169E1">if</font> (nconv&gt;0) {
+<a name="line41"> 41: </a>    <a href="../../../docs/manualpages/EPS/EPSGetOperators.html#EPSGetOperators">EPSGetOperators</a>(eps,&amp;A,NULL);
+<a name="line42"> 42: </a>    MatCreateVecs(A,&amp;xr,&amp;xi);
+<a name="line43"> 43: </a>    <font color="#4169E1">for</font> (i=0;i&lt;nconv;i++) {
+<a name="line44"> 44: </a>      <a href="../../../docs/manualpages/EPS/EPSGetEigenvector.html#EPSGetEigenvector">EPSGetEigenvector</a>(eps,i,xr,xi);
+<a name="line45"> 45: </a><font color="#A020F0">#if defined(PETSC_USE_COMPLEX)</font>
+<a name="line46"> 46: </a>      VecNorm(xr,NORM_2,&amp;normr);
+<a name="line47"> 47: </a>      error = PetscMax(error,PetscAbsReal(normr-PetscRealConstant(1.0)));
+<a name="line48"> 48: </a><font color="#A020F0">#else</font>
+<a name="line49"> 49: </a>      VecNormBegin(xr,NORM_2,&amp;normr);
+<a name="line50"> 50: </a>      VecNormBegin(xi,NORM_2,&amp;normi);
+<a name="line51"> 51: </a>      VecNormEnd(xr,NORM_2,&amp;normr);
+<a name="line52"> 52: </a>      VecNormEnd(xi,NORM_2,&amp;normi);
+<a name="line53"> 53: </a>      error = PetscMax(error,PetscAbsReal(<a href="../../../docs/manualpages/sys/SlepcAbsEigenvalue.html#SlepcAbsEigenvalue">SlepcAbsEigenvalue</a>(normr,normi)-PetscRealConstant(1.0)));
+<a name="line54"> 54: </a><font color="#A020F0">#endif</font>
+<a name="line55"> 55: </a>    }
+<a name="line56"> 56: </a>    VecDestroy(&amp;xr);
+<a name="line57"> 57: </a>    VecDestroy(&amp;xi);
+<a name="line58"> 58: </a>    <font color="#4169E1">if</font> (error&gt;100*PETSC_MACHINE_EPSILON) PetscPrintf(PETSC_COMM_WORLD,<font color="#666666">"Vectors are not normalized. Error=%g\n"</font>,(double)error);
+<a name="line59"> 59: </a>  }
+<a name="line60"> 60: </a>  PetscFunctionReturn(0);
+<a name="line61"> 61: </a>}
+
+<a name="line63"> 63: </a><strong><font color="#4169E1"><a name="main"></a>int main(int argc,char **argv)</font></strong>
+<a name="line64"> 64: </a>{
+<a name="line65"> 65: </a>  Vec            v0;              <font color="#B22222">/* initial vector */</font>
+<a name="line66"> 66: </a>  Mat            A;               <font color="#B22222">/* operator matrix */</font>
+<a name="line67"> 67: </a>  <a href="../../../docs/manualpages/sys/EPS.html#EPS">EPS</a>            eps;             <font color="#B22222">/* eigenproblem solver context */</font>
+<a name="line68"> 68: </a>  PetscReal      tol=0.5*PETSC_SMALL;
+<a name="line69"> 69: </a>  PetscInt       N,m=15,nev;
+<a name="line70"> 70: </a>  PetscScalar    origin=0.0;
+<a name="line71"> 71: </a>  PetscBool      flg,delay,skipnorm=PETSC_FALSE;
+
+<a name="line73"> 73: </a>  <a href="../../../docs/manualpages/sys/SlepcInitialize.html#SlepcInitialize">SlepcInitialize</a>(&amp;argc,&amp;argv,(char*)0,help);
+
+<a name="line75"> 75: </a>  PetscOptionsGetInt(NULL,NULL,<font color="#666666">"-m"</font>,&amp;m,NULL);
+<a name="line76"> 76: </a>  N = m*(m+1)/2;
+<a name="line77"> 77: </a>  PetscPrintf(PETSC_COMM_WORLD,<font color="#666666">"\nMarkov Model, N=%"</font> PetscInt_FMT <font color="#666666">" (m=%"</font> PetscInt_FMT <font color="#666666">")\n\n"</font>,N,m);
+<a name="line78"> 78: </a>  PetscOptionsGetBool(NULL,NULL,<font color="#666666">"-skipnorm"</font>,&amp;skipnorm,NULL);
+
+<a name="line80"> 80: </a>  <font color="#B22222">/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line81"> 81: </a><font color="#B22222">     Compute the operator matrix that defines the eigensystem, Ax=kx</font>
+<a name="line82"> 82: </a><font color="#B22222">     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */</font>
+
+<a name="line84"> 84: </a>  MatCreate(PETSC_COMM_WORLD,&amp;A);
+<a name="line85"> 85: </a>  MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,N,N);
+<a name="line86"> 86: </a>  MatSetFromOptions(A);
+<a name="line87"> 87: </a>  MatSetUp(A);
+<a name="line88"> 88: </a>  MatMarkovModel(m,A);
+
+<a name="line90"> 90: </a>  <font color="#B22222">/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line91"> 91: </a><font color="#B22222">                Create the eigensolver and set various options</font>
+<a name="line92"> 92: </a><font color="#B22222">     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */</font>
+
+<a name="line94"> 94: </a>  <font color="#B22222">/*</font>
+<a name="line95"> 95: </a><font color="#B22222">     Create eigensolver context</font>
+<a name="line96"> 96: </a><font color="#B22222">  */</font>
+<a name="line97"> 97: </a>  <a href="../../../docs/manualpages/EPS/EPSCreate.html#EPSCreate">EPSCreate</a>(PETSC_COMM_WORLD,&amp;eps);
+
+<a name="line99"> 99: </a>  <font color="#B22222">/*</font>
+<a name="line100">100: </a><font color="#B22222">     Set operators. In this case, it is a standard eigenvalue problem</font>
+<a name="line101">101: </a><font color="#B22222">  */</font>
+<a name="line102">102: </a>  <a href="../../../docs/manualpages/EPS/EPSSetOperators.html#EPSSetOperators">EPSSetOperators</a>(eps,A,NULL);
+<a name="line103">103: </a>  <a href="../../../docs/manualpages/EPS/EPSSetProblemType.html#EPSSetProblemType">EPSSetProblemType</a>(eps,<a href="../../../docs/manualpages/sys/EPSProblemType.html#EPSProblemType">EPS_NHEP</a>);
+<a name="line104">104: </a>  <a href="../../../docs/manualpages/EPS/EPSSetTolerances.html#EPSSetTolerances">EPSSetTolerances</a>(eps,tol,PETSC_DEFAULT);
+
+<a name="line106">106: </a>  <font color="#B22222">/*</font>
+<a name="line107">107: </a><font color="#B22222">     Set the custom comparing routine in order to obtain the eigenvalues</font>
+<a name="line108">108: </a><font color="#B22222">     closest to the target on the right only</font>
+<a name="line109">109: </a><font color="#B22222">  */</font>
+<a name="line110">110: </a>  <a href="../../../docs/manualpages/EPS/EPSSetEigenvalueComparison.html#EPSSetEigenvalueComparison">EPSSetEigenvalueComparison</a>(eps,MyEigenSort,&amp;origin);
+
+<a name="line112">112: </a>  <font color="#B22222">/*</font>
+<a name="line113">113: </a><font color="#B22222">     Set solver parameters at runtime</font>
+<a name="line114">114: </a><font color="#B22222">  */</font>
+<a name="line115">115: </a>  <a href="../../../docs/manualpages/EPS/EPSSetFromOptions.html#EPSSetFromOptions">EPSSetFromOptions</a>(eps);
+<a name="line116">116: </a>  PetscObjectTypeCompare((PetscObject)eps,EPSARNOLDI,&amp;flg);
+<a name="line117">117: </a>  <font color="#4169E1">if</font> (flg) {
+<a name="line118">118: </a>    <a href="../../../docs/manualpages/EPS/EPSArnoldiGetDelayed.html#EPSArnoldiGetDelayed">EPSArnoldiGetDelayed</a>(eps,&amp;delay);
+<a name="line119">119: </a>    <font color="#4169E1">if</font> (delay) PetscPrintf(PETSC_COMM_WORLD,<font color="#666666">" Warning: delayed reorthogonalization may be unstable\n"</font>);
+<a name="line120">120: </a>  }
+
+<a name="line122">122: </a>  <font color="#B22222">/*</font>
+<a name="line123">123: </a><font color="#B22222">     Set the initial vector. This is optional, if not done the initial</font>
+<a name="line124">124: </a><font color="#B22222">     vector is set to random values</font>
+<a name="line125">125: </a><font color="#B22222">  */</font>
+<a name="line126">126: </a>  MatCreateVecs(A,&amp;v0,NULL);
+<a name="line127">127: </a>  VecSetValue(v0,0,-1.5,INSERT_VALUES);
+<a name="line128">128: </a>  VecSetValue(v0,1,2.1,INSERT_VALUES);
+<a name="line129">129: </a>  VecAssemblyBegin(v0);
+<a name="line130">130: </a>  VecAssemblyEnd(v0);
+<a name="line131">131: </a>  <a href="../../../docs/manualpages/EPS/EPSSetInitialSpace.html#EPSSetInitialSpace">EPSSetInitialSpace</a>(eps,1,&amp;v0);
+
+<a name="line133">133: </a>  <font color="#B22222">/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line134">134: </a><font color="#B22222">                      Solve the eigensystem</font>
+<a name="line135">135: </a><font color="#B22222">     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */</font>
+
+<a name="line137">137: </a>  <a href="../../../docs/manualpages/EPS/EPSSolve.html#EPSSolve">EPSSolve</a>(eps);
+<a name="line138">138: </a>  <a href="../../../docs/manualpages/EPS/EPSGetDimensions.html#EPSGetDimensions">EPSGetDimensions</a>(eps,&amp;nev,NULL,NULL);
+<a name="line139">139: </a>  PetscPrintf(PETSC_COMM_WORLD,<font color="#666666">" Number of requested eigenvalues: %"</font> PetscInt_FMT <font color="#666666">"\n"</font>,nev);
+
+<a name="line141">141: </a>  <font color="#B22222">/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line142">142: </a><font color="#B22222">                    Display solution and clean up</font>
+<a name="line143">143: </a><font color="#B22222">     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */</font>
+
+<a name="line145">145: </a>  <a href="../../../docs/manualpages/EPS/EPSErrorView.html#EPSErrorView">EPSErrorView</a>(eps,<a href="../../../docs/manualpages/sys/EPSErrorType.html#EPSErrorType">EPS_ERROR_RELATIVE</a>,NULL);
+<a name="line146">146: </a>  <font color="#4169E1">if</font> (!skipnorm) CheckNormalizedVectors(eps);
+<a name="line147">147: </a>  <a href="../../../docs/manualpages/EPS/EPSDestroy.html#EPSDestroy">EPSDestroy</a>(&amp;eps);
+<a name="line148">148: </a>  MatDestroy(&amp;A);
+<a name="line149">149: </a>  VecDestroy(&amp;v0);
+<a name="line150">150: </a>  <a href="../../../docs/manualpages/sys/SlepcFinalize.html#SlepcFinalize">SlepcFinalize</a>();
+<a name="line151">151: </a>  <font color="#4169E1">return</font> 0;
+<a name="line152">152: </a>}
+
+<a name="line154">154: </a><strong><font color="#4169E1"><a name="MatMarkovModel"></a>PetscErrorCode MatMarkovModel(PetscInt m,Mat A)</font></strong>
+<a name="line155">155: </a>{
+<a name="line156">156: </a>  const PetscReal cst = 0.5/(PetscReal)(m-1);
+<a name="line157">157: </a>  PetscReal       pd,pu;
+<a name="line158">158: </a>  PetscInt        Istart,Iend,i,j,jmax,ix=0;
+
+<a name="line161">161: </a>  MatGetOwnershipRange(A,&amp;Istart,&amp;Iend);
+<a name="line162">162: </a>  <font color="#4169E1">for</font> (i=1;i&lt;=m;i++) {
+<a name="line163">163: </a>    jmax = m-i+1;
+<a name="line164">164: </a>    <font color="#4169E1">for</font> (j=1;j&lt;=jmax;j++) {
+<a name="line165">165: </a>      ix = ix + 1;
+<a name="line166">166: </a>      <font color="#4169E1">if</font> (ix-1&lt;Istart || ix&gt;Iend) <font color="#4169E1">continue</font>;  <font color="#B22222">/* compute only owned rows */</font>
+<a name="line167">167: </a>      <font color="#4169E1">if</font> (j!=jmax) {
+<a name="line168">168: </a>        pd = cst*(PetscReal)(i+j-1);
+<a name="line169">169: </a>        <font color="#B22222">/* north */</font>
+<a name="line170">170: </a>        <font color="#4169E1">if</font> (i==1) MatSetValue(A,ix-1,ix,2*pd,INSERT_VALUES);
+<a name="line171">171: </a>        <font color="#4169E1">else</font> MatSetValue(A,ix-1,ix,pd,INSERT_VALUES);
+<a name="line172">172: </a>        <font color="#B22222">/* east */</font>
+<a name="line173">173: </a>        <font color="#4169E1">if</font> (j==1) MatSetValue(A,ix-1,ix+jmax-1,2*pd,INSERT_VALUES);
+<a name="line174">174: </a>        <font color="#4169E1">else</font> MatSetValue(A,ix-1,ix+jmax-1,pd,INSERT_VALUES);
+<a name="line175">175: </a>      }
+<a name="line176">176: </a>      <font color="#B22222">/* south */</font>
+<a name="line177">177: </a>      pu = 0.5 - cst*(PetscReal)(i+j-3);
+<a name="line178">178: </a>      <font color="#4169E1">if</font> (j&gt;1) MatSetValue(A,ix-1,ix-2,pu,INSERT_VALUES);
+<a name="line179">179: </a>      <font color="#B22222">/* west */</font>
+<a name="line180">180: </a>      <font color="#4169E1">if</font> (i&gt;1) MatSetValue(A,ix-1,ix-jmax-2,pu,INSERT_VALUES);
+<a name="line181">181: </a>    }
+<a name="line182">182: </a>  }
+<a name="line183">183: </a>  MatAssemblyBegin(A,MAT_FINAL_ASSEMBLY);
+<a name="line184">184: </a>  MatAssemblyEnd(A,MAT_FINAL_ASSEMBLY);
+<a name="line185">185: </a>  PetscFunctionReturn(0);
+<a name="line186">186: </a>}
+
+<a name="line188">188: </a><font color="#B22222">/*</font>
+<a name="line189">189: </a><font color="#B22222">    Function for user-defined eigenvalue ordering criterion.</font>
+
+<a name="line191">191: </a><font color="#B22222">    Given two eigenvalues ar+i*ai and br+i*bi, the subroutine must choose</font>
+<a name="line192">192: </a><font color="#B22222">    one of them as the preferred one according to the criterion.</font>
+<a name="line193">193: </a><font color="#B22222">    In this example, the preferred value is the one furthest away from the origin.</font>
+<a name="line194">194: </a><font color="#B22222">*/</font>
+<a name="line195">195: </a><strong><font color="#4169E1"><a name="MyEigenSort"></a>PetscErrorCode MyEigenSort(PetscScalar ar,PetscScalar ai,PetscScalar br,PetscScalar bi,PetscInt *r,void *ctx)</font></strong>
+<a name="line196">196: </a>{
+<a name="line197">197: </a>  PetscScalar origin = *(PetscScalar*)ctx;
+<a name="line198">198: </a>  PetscReal   d;
+
+<a name="line201">201: </a>  d = (<a href="../../../docs/manualpages/sys/SlepcAbsEigenvalue.html#SlepcAbsEigenvalue">SlepcAbsEigenvalue</a>(br-origin,bi) - <a href="../../../docs/manualpages/sys/SlepcAbsEigenvalue.html#SlepcAbsEigenvalue">SlepcAbsEigenvalue</a>(ar-origin,ai))/PetscMax(<a href="../../../docs/manualpages/sys/SlepcAbsEigenvalue.html#SlepcAbsEigenvalue">SlepcAbsEigenvalue</a>(ar-origin,ai),<a href="../../../docs/manualpages/sys/SlepcAbsEigenvalue.html#SlepcAbsEigenvalue">SlepcAbsEigenvalue</a>(br-origin,bi));
+<a name="line202">202: </a>  *r = d &gt; PETSC_SQRT_MACHINE_EPSILON ? 1 : (d &lt; -PETSC_SQRT_MACHINE_EPSILON ? -1 : PetscSign(PetscRealPart(br)));
+<a name="line203">203: </a>  PetscFunctionReturn(0);
+<a name="line204">204: </a>}
+
+<a name="line206">206: </a><font color="#B22222">/*TEST</font>
+
+<a name="line208">208: </a><font color="#B22222">   testset:</font>
+<a name="line209">209: </a><font color="#B22222">      args: -eps_nev 4</font>
+<a name="line210">210: </a><font color="#B22222">      output_file: output/test9_1.out</font>
+<a name="line211">211: </a><font color="#B22222">      test:</font>
+<a name="line212">212: </a><font color="#B22222">         suffix: 1</font>
+<a name="line213">213: </a><font color="#B22222">         args: -eps_type {{krylovschur arnoldi lapack}} -eps_ncv 7 -eps_max_it 300</font>
+<a name="line214">214: </a><font color="#B22222">      test:</font>
+<a name="line215">215: </a><font color="#B22222">         suffix: 1_gd</font>
+<a name="line216">216: </a><font color="#B22222">         args: -eps_type gd -st_pc_type none</font>
+<a name="line217">217: </a><font color="#B22222">      test:</font>
+<a name="line218">218: </a><font color="#B22222">         suffix: 1_gd2</font>
+<a name="line219">219: </a><font color="#B22222">         args: -eps_type gd -eps_gd_double_expansion -st_pc_type none</font>
+
+<a name="line221">221: </a><font color="#B22222">   test:</font>
+<a name="line222">222: </a><font color="#B22222">      suffix: 2</font>
+<a name="line223">223: </a><font color="#B22222">      args: -eps_balance {{none oneside twoside}} -eps_krylovschur_locking {{0 1}} -eps_nev 4 -eps_max_it 1500</font>
+<a name="line224">224: </a><font color="#B22222">      requires: double</font>
+<a name="line225">225: </a><font color="#B22222">      output_file: output/test9_1.out</font>
+
+<a name="line227">227: </a><font color="#B22222">   test:</font>
+<a name="line228">228: </a><font color="#B22222">      suffix: 3</font>
+<a name="line229">229: </a><font color="#B22222">      nsize: 2</font>
+<a name="line230">230: </a><font color="#B22222">      args: -eps_type arnoldi -eps_arnoldi_delayed -eps_largest_real -eps_nev 3 -eps_tol 1e-7 -bv_orthog_refine {{never ifneeded}} -skipnorm</font>
+<a name="line231">231: </a><font color="#B22222">      requires: !single</font>
+<a name="line232">232: </a><font color="#B22222">      output_file: output/test9_3.out</font>
+
+<a name="line234">234: </a><font color="#B22222">   test:</font>
+<a name="line235">235: </a><font color="#B22222">      suffix: 4</font>
+<a name="line236">236: </a><font color="#B22222">      args: -eps_nev 4 -eps_true_residual</font>
+<a name="line237">237: </a><font color="#B22222">      requires: !single</font>
+<a name="line238">238: </a><font color="#B22222">      output_file: output/test9_1.out</font>
+
+<a name="line240">240: </a><font color="#B22222">   test:</font>
+<a name="line241">241: </a><font color="#B22222">      suffix: 5</font>
+<a name="line242">242: </a><font color="#B22222">      args: -eps_type jd -eps_nev 3 -eps_target .5 -eps_harmonic -st_ksp_type bicg -st_pc_type lu -eps_jd_minv 2</font>
+<a name="line243">243: </a><font color="#B22222">      filter: sed -e "s/[+-]0\.0*i//g"</font>
+<a name="line244">244: </a><font color="#B22222">      requires: !single</font>
+
+<a name="line246">246: </a><font color="#B22222">   test:</font>
+<a name="line247">247: </a><font color="#B22222">      suffix: 5_arpack</font>
+<a name="line248">248: </a><font color="#B22222">      args: -eps_nev 3 -st_type sinvert -eps_target .5 -eps_type arpack -eps_ncv 10</font>
+<a name="line249">249: </a><font color="#B22222">      requires: arpack !single</font>
+<a name="line250">250: </a><font color="#B22222">      output_file: output/test9_5.out</font>
+
+<a name="line252">252: </a><font color="#B22222">   testset:</font>
+<a name="line253">253: </a><font color="#B22222">      args: -eps_type ciss -eps_tol 1e-9 -rg_type ellipse -rg_ellipse_center 0.55 -rg_ellipse_radius 0.05 -rg_ellipse_vscale 0.1 -eps_ciss_usest 0 -eps_all</font>
+<a name="line254">254: </a><font color="#B22222">      requires: !single</font>
+<a name="line255">255: </a><font color="#B22222">      output_file: output/test9_6.out</font>
+<a name="line256">256: </a><font color="#B22222">      test:</font>
+<a name="line257">257: </a><font color="#B22222">         suffix: 6</font>
+<a name="line258">258: </a><font color="#B22222">      test:</font>
+<a name="line259">259: </a><font color="#B22222">         suffix: 6_hankel</font>
+<a name="line260">260: </a><font color="#B22222">         args: -eps_ciss_extraction hankel -eps_ciss_spurious_threshold 1e-6 -eps_ncv 64</font>
+<a name="line261">261: </a><font color="#B22222">      test:</font>
+<a name="line262">262: </a><font color="#B22222">         suffix: 6_cheby</font>
+<a name="line263">263: </a><font color="#B22222">         args: -eps_ciss_quadrule chebyshev</font>
+<a name="line264">264: </a><font color="#B22222">      test:</font>
+<a name="line265">265: </a><font color="#B22222">         suffix: 6_hankel_cheby</font>
+<a name="line266">266: </a><font color="#B22222">         args: -eps_ciss_extraction hankel -eps_ciss_quadrule chebyshev -eps_ncv 64</font>
+<a name="line267">267: </a><font color="#B22222">      test:</font>
+<a name="line268">268: </a><font color="#B22222">         suffix: 6_refine</font>
+<a name="line269">269: </a><font color="#B22222">         args: -eps_ciss_moments 4 -eps_ciss_blocksize 5 -eps_ciss_refine_inner 1 -eps_ciss_refine_blocksize 2</font>
+<a name="line270">270: </a><font color="#B22222">      test:</font>
+<a name="line271">271: </a><font color="#B22222">         suffix: 6_bcgs</font>
+<a name="line272">272: </a><font color="#B22222">         args: -eps_ciss_realmats -eps_ciss_ksp_type bcgs -eps_ciss_pc_type sor -eps_ciss_integration_points 12</font>
+
+<a name="line274">274: </a><font color="#B22222">   test:</font>
+<a name="line275">275: </a><font color="#B22222">      suffix: 6_cheby_interval</font>
+<a name="line276">276: </a><font color="#B22222">      args: -eps_type ciss -eps_tol 1e-9 -rg_type interval -rg_interval_endpoints 0.5,0.6 -eps_ciss_quadrule chebyshev -eps_ciss_usest 0 -eps_all</font>
+<a name="line277">277: </a><font color="#B22222">      requires: !single</font>
+<a name="line278">278: </a><font color="#B22222">      output_file: output/test9_6.out</font>
+
+<a name="line280">280: </a><font color="#B22222">   testset:</font>
+<a name="line281">281: </a><font color="#B22222">      args: -eps_nev 4 -eps_two_sided -eps_view_vectors ::ascii_info -eps_view_values</font>
+<a name="line282">282: </a><font color="#B22222">      filter: sed -e "s/\(0x[0-9a-fA-F]*\)/objectid/"</font>
+<a name="line283">283: </a><font color="#B22222">      test:</font>
+<a name="line284">284: </a><font color="#B22222">         suffix: 7_real</font>
+<a name="line285">285: </a><font color="#B22222">         requires: !single !complex</font>
+<a name="line286">286: </a><font color="#B22222">      test:</font>
+<a name="line287">287: </a><font color="#B22222">         suffix: 7</font>
+<a name="line288">288: </a><font color="#B22222">         requires: !single complex</font>
+
+<a name="line290">290: </a><font color="#B22222">   test:</font>
+<a name="line291">291: </a><font color="#B22222">      suffix: 8</font>
+<a name="line292">292: </a><font color="#B22222">      args: -eps_nev 4 -eps_ncv 7 -eps_view_values draw -eps_monitor draw::draw_lg</font>
+<a name="line293">293: </a><font color="#B22222">      requires: x</font>
+<a name="line294">294: </a><font color="#B22222">      output_file: output/test9_1.out</font>
+
+<a name="line296">296: </a><font color="#B22222">   test:</font>
+<a name="line297">297: </a><font color="#B22222">      suffix: 5_ksphpddm</font>
+<a name="line298">298: </a><font color="#B22222">      args: -eps_nev 3 -st_type sinvert -eps_target .5 -st_ksp_type hpddm -st_ksp_hpddm_type gcrodr -eps_ncv 10</font>
+<a name="line299">299: </a><font color="#B22222">      requires: hpddm</font>
+<a name="line300">300: </a><font color="#B22222">      output_file: output/test9_5.out</font>
+
+<a name="line302">302: </a><font color="#B22222">   test:</font>
+<a name="line303">303: </a><font color="#B22222">      suffix: 5_pchpddm</font>
+<a name="line304">304: </a><font color="#B22222">      args: -eps_nev 3 -st_type sinvert -eps_target .5 -st_pc_type hpddm -st_pc_hpddm_coarse_pc_type lu -eps_ncv 10</font>
+<a name="line305">305: </a><font color="#B22222">      requires: hpddm</font>
+<a name="line306">306: </a><font color="#B22222">      output_file: output/test9_5.out</font>
+
+<a name="line308">308: </a><font color="#B22222">TEST*/</font>
+</pre>
+</body>
+
+</html>

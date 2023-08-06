@@ -1,0 +1,54 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD> <link rel="canonical" href="https://slepc.upv.es/documentation/current/docs/manualpages/RG/RGComputeQuadrature.html" />
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<link rel="stylesheet" href="/slepc.css" type="text/css">
+<TITLE>RGComputeQuadrature</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+   <div id="version" align=right><b>slepc-3.17.2 2022-08-09</b></div>
+   <div id="bugreport" align=right><a href="mailto:slepc-maint@upv.es?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: slepc-3.17.2 v3.17.2 docs/manualpages/RG/RGComputeQuadrature.html "><small>Report Typos and Errors</small></a></div>
+<H1>RGComputeQuadrature</H1>
+Computes the values of the parameters used in a quadrature rule for a contour integral around the boundary of the region. 
+<H3><FONT COLOR="#883300">Synopsis</FONT></H3>
+<PRE>
+#include "slepcrg.h" 
+PetscErrorCode <A HREF="../RG/RGComputeQuadrature.html#RGComputeQuadrature">RGComputeQuadrature</A>(<A HREF="../sys/RG.html#RG">RG</A> rg,<A HREF="../sys/RGQuadRule.html#RGQuadRule">RGQuadRule</A> quad,PetscInt n,PetscScalar z[],PetscScalar zn[],PetscScalar w[])
+</PRE>
+Not Collective
+<P>
+<H3><FONT COLOR="#883300">Input Parameters</FONT></H3>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>rg   </B></TD><TD>&nbsp;- the region context
+</TD></TR>
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>quad </B></TD><TD>&nbsp;- the type of quadrature
+</TD></TR>
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>n    </B></TD><TD>&nbsp;- number of quadrature points to compute
+</TD></TR></TABLE>
+<P>
+<H3><FONT COLOR="#883300">Output Parameters</FONT></H3>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>z  </B></TD><TD>&nbsp;- quadrature points
+</TD></TR>
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>zn </B></TD><TD>&nbsp;- normalized quadrature points
+</TD></TR>
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>w  </B></TD><TD>&nbsp;- quadrature weights
+</TD></TR></TABLE>
+<P>
+<H3><FONT COLOR="#883300">Notes</FONT></H3>
+In complex scalars, the values returned in z are often the same as those
+computed by <A HREF="../RG/RGComputeContour.html#RGComputeContour">RGComputeContour</A>(), but this is not the case in real scalars
+where all output arguments are real.
+<P>
+The computed values change for different quadrature rules (trapezoidal
+or Chebyshev).
+<P>
+
+<P>
+<H3><FONT COLOR="#883300">See Also</FONT></H3>
+ <A HREF="../RG/RGComputeContour.html#RGComputeContour">RGComputeContour</A>()
+<BR><P><B><FONT COLOR="#883300">Location: </FONT></B><A HREF="../../../src/sys/classes/rg/rgbasic.c.html#RGComputeQuadrature">src/sys/classes/rg/rgbasic.c</A>
+<BR><A HREF="./index.html">Index of all RG routines</A>
+<BR><A HREF="../../../docs/manualpages/index.html">Table of Contents for all manual pages</A>
+<BR><A HREF="../singleindex.html">Index of all manual pages</A>
+</BODY></HTML>

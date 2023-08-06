@@ -1,0 +1,410 @@
+<center><a href="svdsetup.c">Actual source code: svdsetup.c</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="https://slepc.upv.es/documentation/current/src/svd/interface/svdsetup.c.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2022-08-09T09:05:44+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>slepc-3.17.2 2022-08-09</b></div>
+   <div id="bugreport" align=right><a href="mailto:slepc-maint@upv.es?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: slepc-3.17.2 v3.17.2 src/svd/interface/svdsetup.c.html "><small>Report Typos and Errors</small></a></div>
+<pre width="80">
+<a name="line1">  1: </a><font color="#B22222">/*</font>
+<a name="line2">  2: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line3">  3: </a><font color="#B22222">   SLEPc - Scalable Library for Eigenvalue Problem Computations</font>
+<a name="line4">  4: </a><font color="#B22222">   Copyright (c) 2002-, Universitat Politecnica de Valencia, Spain</font>
+
+<a name="line6">  6: </a><font color="#B22222">   This file is part of SLEPc.</font>
+<a name="line7">  7: </a><font color="#B22222">   SLEPc is distributed under a 2-clause BSD license (see LICENSE).</font>
+<a name="line8">  8: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line9">  9: </a><font color="#B22222">*/</font>
+<a name="line10"> 10: </a><font color="#B22222">/*</font>
+<a name="line11"> 11: </a><font color="#B22222">   <a href="../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> routines for setting up the solver</font>
+<a name="line12"> 12: </a><font color="#B22222">*/</font>
+
+<a name="line14"> 14: </a>#include <A href="../../../include/slepc/private/svdimpl.h.html">&lt;slepc/private/svdimpl.h&gt;</A>
+
+<a name="line16"> 16: </a><font color="#B22222">/*@</font>
+<a name="line17"> 17: </a><font color="#B22222">   <a href="../../../docs/manualpages/SVD/SVDSetOperators.html#SVDSetOperators">SVDSetOperators</a> - Set the matrices associated with the singular value problem.</font>
+
+<a name="line19"> 19: </a><font color="#B22222">   Collective on svd</font>
+
+<a name="line21"> 21: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line22"> 22: </a><font color="#B22222">+  svd - the singular value solver context</font>
+<a name="line23"> 23: </a><font color="#B22222">.  A   - the matrix associated with the singular value problem</font>
+<a name="line24"> 24: </a><font color="#B22222">-  B   - the second matrix in the case of GSVD</font>
+
+<a name="line26"> 26: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line28"> 28: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/SVD/SVDSolve.html#SVDSolve">SVDSolve</a>(), <a href="../../../docs/manualpages/SVD/SVDGetOperators.html#SVDGetOperators">SVDGetOperators</a>()</font>
+<a name="line29"> 29: </a><font color="#B22222">@*/</font>
+<a name="line30"> 30: </a><strong><font color="#4169E1"><a name="SVDSetOperators"></a>PetscErrorCode <a href="../../../docs/manualpages/SVD/SVDSetOperators.html#SVDSetOperators">SVDSetOperators</a>(<a href="../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> svd,Mat A,Mat B)</font></strong>
+<a name="line31"> 31: </a>{
+<a name="line32"> 32: </a>  PetscInt       Ma,Na,Mb,Nb,ma,na,mb,nb,M0,N0,m0,n0;
+<a name="line33"> 33: </a>  PetscBool      samesize=PETSC_TRUE;
+
+
+<a name="line41"> 41: </a>  <font color="#B22222">/* Check matrix sizes */</font>
+<a name="line42"> 42: </a>  MatGetSize(A,&amp;Ma,&amp;Na);
+<a name="line43"> 43: </a>  MatGetLocalSize(A,&amp;ma,&amp;na);
+<a name="line44"> 44: </a>  <font color="#4169E1">if</font> (svd-&gt;OP) {
+<a name="line45"> 45: </a>    MatGetSize(svd-&gt;OP,&amp;M0,&amp;N0);
+<a name="line46"> 46: </a>    MatGetLocalSize(svd-&gt;OP,&amp;m0,&amp;n0);
+<a name="line47"> 47: </a>    <font color="#4169E1">if</font> (M0!=Ma || N0!=Na || m0!=ma || n0!=na) samesize = PETSC_FALSE;
+<a name="line48"> 48: </a>  }
+<a name="line49"> 49: </a>  <font color="#4169E1">if</font> (B) {
+<a name="line50"> 50: </a>    MatGetSize(B,&amp;Mb,&amp;Nb);
+<a name="line51"> 51: </a>    MatGetLocalSize(B,&amp;mb,&amp;nb);
+<a name="line54"> 54: </a>    <font color="#4169E1">if</font> (svd-&gt;OPb) {
+<a name="line55"> 55: </a>      MatGetSize(svd-&gt;OPb,&amp;M0,&amp;N0);
+<a name="line56"> 56: </a>      MatGetLocalSize(svd-&gt;OPb,&amp;m0,&amp;n0);
+<a name="line57"> 57: </a>      <font color="#4169E1">if</font> (M0!=Mb || N0!=Nb || m0!=mb || n0!=nb) samesize = PETSC_FALSE;
+<a name="line58"> 58: </a>    }
+<a name="line59"> 59: </a>  }
+
+<a name="line61"> 61: </a>  PetscObjectReference((PetscObject)A);
+<a name="line62"> 62: </a>  <font color="#4169E1">if</font> (B) PetscObjectReference((PetscObject)B);
+<a name="line63"> 63: </a>  <font color="#4169E1">if</font> (svd-&gt;state &amp;&amp; !samesize) <a href="../../../docs/manualpages/SVD/SVDReset.html#SVDReset">SVDReset</a>(svd);
+<a name="line64"> 64: </a>  <font color="#4169E1">else</font> {
+<a name="line65"> 65: </a>    MatDestroy(&amp;svd-&gt;OP);
+<a name="line66"> 66: </a>    MatDestroy(&amp;svd-&gt;OPb);
+<a name="line67"> 67: </a>    MatDestroy(&amp;svd-&gt;A);
+<a name="line68"> 68: </a>    MatDestroy(&amp;svd-&gt;B);
+<a name="line69"> 69: </a>    MatDestroy(&amp;svd-&gt;AT);
+<a name="line70"> 70: </a>    MatDestroy(&amp;svd-&gt;BT);
+<a name="line71"> 71: </a>  }
+<a name="line72"> 72: </a>  svd-&gt;nrma = 0.0;
+<a name="line73"> 73: </a>  svd-&gt;nrmb = 0.0;
+<a name="line74"> 74: </a>  svd-&gt;OP   = A;
+<a name="line75"> 75: </a>  svd-&gt;OPb  = B;
+<a name="line76"> 76: </a>  svd-&gt;state = SVD_STATE_INITIAL;
+<a name="line77"> 77: </a>  PetscFunctionReturn(0);
+<a name="line78"> 78: </a>}
+
+<a name="line80"> 80: </a><font color="#B22222">/*@</font>
+<a name="line81"> 81: </a><font color="#B22222">   <a href="../../../docs/manualpages/SVD/SVDGetOperators.html#SVDGetOperators">SVDGetOperators</a> - Get the matrices associated with the singular value problem.</font>
+
+<a name="line83"> 83: </a><font color="#B22222">   Collective on svd</font>
+
+<a name="line85"> 85: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line86"> 86: </a><font color="#B22222">.  svd - the singular value solver context</font>
+
+<a name="line88"> 88: </a><font color="#B22222">   Output Parameters:</font>
+<a name="line89"> 89: </a><font color="#B22222">+  A  - the matrix associated with the singular value problem</font>
+<a name="line90"> 90: </a><font color="#B22222">-  B  - the second matrix in the case of GSVD</font>
+
+<a name="line92"> 92: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line94"> 94: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/SVD/SVDSolve.html#SVDSolve">SVDSolve</a>(), <a href="../../../docs/manualpages/SVD/SVDSetOperators.html#SVDSetOperators">SVDSetOperators</a>()</font>
+<a name="line95"> 95: </a><font color="#B22222">@*/</font>
+<a name="line96"> 96: </a><strong><font color="#4169E1"><a name="SVDGetOperators"></a>PetscErrorCode <a href="../../../docs/manualpages/SVD/SVDGetOperators.html#SVDGetOperators">SVDGetOperators</a>(<a href="../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> svd,Mat *A,Mat *B)</font></strong>
+<a name="line97"> 97: </a>{
+<a name="line99"> 99: </a>  <font color="#4169E1">if</font> (A) *A = svd-&gt;OP;
+<a name="line100">100: </a>  <font color="#4169E1">if</font> (B) *B = svd-&gt;OPb;
+<a name="line101">101: </a>  PetscFunctionReturn(0);
+<a name="line102">102: </a>}
+
+<a name="line104">104: </a><font color="#B22222">/*@</font>
+<a name="line105">105: </a><font color="#B22222">   <a href="../../../docs/manualpages/SVD/SVDSetUp.html#SVDSetUp">SVDSetUp</a> - Sets up all the internal data structures necessary for the</font>
+<a name="line106">106: </a><font color="#B22222">   execution of the singular value solver.</font>
+
+<a name="line108">108: </a><font color="#B22222">   Collective on svd</font>
+
+<a name="line110">110: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line111">111: </a><font color="#B22222">.  svd   - singular value solver context</font>
+
+<a name="line113">113: </a><font color="#B22222">   Notes:</font>
+<a name="line114">114: </a><font color="#B22222">   This function need not be called explicitly in most cases, since <a href="../../../docs/manualpages/SVD/SVDSolve.html#SVDSolve">SVDSolve</a>()</font>
+<a name="line115">115: </a><font color="#B22222">   calls it. It can be useful when one wants to measure the set-up time</font>
+<a name="line116">116: </a><font color="#B22222">   separately from the solve time.</font>
+
+<a name="line118">118: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line120">120: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/SVD/SVDCreate.html#SVDCreate">SVDCreate</a>(), <a href="../../../docs/manualpages/SVD/SVDSolve.html#SVDSolve">SVDSolve</a>(), <a href="../../../docs/manualpages/SVD/SVDDestroy.html#SVDDestroy">SVDDestroy</a>()</font>
+<a name="line121">121: </a><font color="#B22222">@*/</font>
+<a name="line122">122: </a><strong><font color="#4169E1"><a name="SVDSetUp"></a>PetscErrorCode <a href="../../../docs/manualpages/SVD/SVDSetUp.html#SVDSetUp">SVDSetUp</a>(<a href="../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> svd)</font></strong>
+<a name="line123">123: </a>{
+<a name="line124">124: </a>  PetscBool      flg;
+<a name="line125">125: </a>  PetscInt       M,N,P=0,k,maxnsol;
+<a name="line126">126: </a>  <a href="../../../docs/manualpages/sys/SlepcSC.html#SlepcSC">SlepcSC</a>        sc;
+<a name="line127">127: </a>  Vec            *T;
+<a name="line128">128: </a>  <a href="../../../docs/manualpages/sys/BV.html#BV">BV</a>             bv;
+
+<a name="line131">131: </a>  <font color="#4169E1">if</font> (svd-&gt;state) PetscFunctionReturn(0);
+<a name="line132">132: </a>  PetscLogEventBegin(SVD_SetUp,svd,0,0,0);
+
+<a name="line134">134: </a>  <font color="#B22222">/* reset the convergence flag from the previous solves */</font>
+<a name="line135">135: </a>  svd-&gt;reason = <a href="../../../docs/manualpages/sys/SVDConvergedReason.html#SVDConvergedReason">SVD_CONVERGED_ITERATING</a>;
+
+<a name="line137">137: </a>  <font color="#B22222">/* Set default solver type (<a href="../../../docs/manualpages/SVD/SVDSetFromOptions.html#SVDSetFromOptions">SVDSetFromOptions</a> was not called) */</font>
+<a name="line138">138: </a>  <font color="#4169E1">if</font> (!((PetscObject)svd)-&gt;type_name) <a href="../../../docs/manualpages/SVD/SVDSetType.html#SVDSetType">SVDSetType</a>(svd,SVDCROSS);
+<a name="line139">139: </a>  <font color="#4169E1">if</font> (!svd-&gt;ds) <a href="../../../docs/manualpages/SVD/SVDGetDS.html#SVDGetDS">SVDGetDS</a>(svd,&amp;svd-&gt;ds);
+
+<a name="line141">141: </a>  <font color="#B22222">/* check matrices */</font>
+
+<a name="line144">144: </a>  <font color="#B22222">/* Set default problem type */</font>
+<a name="line145">145: </a>  <font color="#4169E1">if</font> (!svd-&gt;problem_type) {
+<a name="line146">146: </a>    <font color="#4169E1">if</font> (svd-&gt;OPb) <a href="../../../docs/manualpages/SVD/SVDSetProblemType.html#SVDSetProblemType">SVDSetProblemType</a>(svd,<a href="../../../docs/manualpages/sys/SVDProblemType.html#SVDProblemType">SVD_GENERALIZED</a>);
+<a name="line147">147: </a>    <font color="#4169E1">else</font> <a href="../../../docs/manualpages/SVD/SVDSetProblemType.html#SVDSetProblemType">SVDSetProblemType</a>(svd,<a href="../../../docs/manualpages/sys/SVDProblemType.html#SVDProblemType">SVD_STANDARD</a>);
+<a name="line148">148: </a>  } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (!svd-&gt;OPb &amp;&amp; svd-&gt;isgeneralized) {
+<a name="line149">149: </a>    PetscInfo(svd,<font color="#666666">"Problem type set as generalized but no matrix B was provided; reverting to a standard singular value problem\n"</font>);
+<a name="line150">150: </a>    svd-&gt;isgeneralized = PETSC_FALSE;
+<a name="line151">151: </a>    svd-&gt;problem_type = <a href="../../../docs/manualpages/sys/SVDProblemType.html#SVDProblemType">SVD_STANDARD</a>;
+
+<a name="line154">154: </a>  <font color="#B22222">/* determine how to handle the transpose */</font>
+<a name="line155">155: </a>  svd-&gt;expltrans = PETSC_TRUE;
+<a name="line156">156: </a>  <font color="#4169E1">if</font> (svd-&gt;impltrans) svd-&gt;expltrans = PETSC_FALSE;
+<a name="line157">157: </a>  <font color="#4169E1">else</font> {
+<a name="line158">158: </a>    MatHasOperation(svd-&gt;OP,MATOP_TRANSPOSE,&amp;flg);
+<a name="line159">159: </a>    <font color="#4169E1">if</font> (!flg) svd-&gt;expltrans = PETSC_FALSE;
+<a name="line160">160: </a>    <font color="#4169E1">else</font> {
+<a name="line161">161: </a>      PetscObjectTypeCompareAny((PetscObject)svd,&amp;flg,SVDLAPACK,SVDSCALAPACK,SVDELEMENTAL,<font color="#666666">""</font>);
+<a name="line162">162: </a>      <font color="#4169E1">if</font> (flg) svd-&gt;expltrans = PETSC_FALSE;
+<a name="line163">163: </a>    }
+<a name="line164">164: </a>  }
+
+<a name="line166">166: </a>  <font color="#B22222">/* get matrix dimensions */</font>
+<a name="line167">167: </a>  MatGetSize(svd-&gt;OP,&amp;M,&amp;N);
+<a name="line168">168: </a>  <font color="#4169E1">if</font> (svd-&gt;isgeneralized) {
+<a name="line169">169: </a>    MatGetSize(svd-&gt;OPb,&amp;P,NULL);
+<a name="line171">171: </a>  }
+
+<a name="line173">173: </a>  <font color="#B22222">/* build transpose matrix */</font>
+<a name="line174">174: </a>  MatDestroy(&amp;svd-&gt;A);
+<a name="line175">175: </a>  MatDestroy(&amp;svd-&gt;AT);
+<a name="line176">176: </a>  PetscObjectReference((PetscObject)svd-&gt;OP);
+<a name="line177">177: </a>  <font color="#4169E1">if</font> (svd-&gt;expltrans) {
+<a name="line178">178: </a>    <font color="#4169E1">if</font> (svd-&gt;isgeneralized || M&gt;=N) {
+<a name="line179">179: </a>      svd-&gt;A = svd-&gt;OP;
+<a name="line180">180: </a>      MatHermitianTranspose(svd-&gt;OP,MAT_INITIAL_MATRIX,&amp;svd-&gt;AT);
+<a name="line181">181: </a>    } <font color="#4169E1">else</font> {
+<a name="line182">182: </a>      MatHermitianTranspose(svd-&gt;OP,MAT_INITIAL_MATRIX,&amp;svd-&gt;A);
+<a name="line183">183: </a>      svd-&gt;AT = svd-&gt;OP;
+<a name="line184">184: </a>    }
+<a name="line185">185: </a>  } <font color="#4169E1">else</font> {
+<a name="line186">186: </a>    <font color="#4169E1">if</font> (svd-&gt;isgeneralized || M&gt;=N) {
+<a name="line187">187: </a>      svd-&gt;A = svd-&gt;OP;
+<a name="line188">188: </a>      MatCreateHermitianTranspose(svd-&gt;OP,&amp;svd-&gt;AT);
+<a name="line189">189: </a>    } <font color="#4169E1">else</font> {
+<a name="line190">190: </a>      MatCreateHermitianTranspose(svd-&gt;OP,&amp;svd-&gt;A);
+<a name="line191">191: </a>      svd-&gt;AT = svd-&gt;OP;
+<a name="line192">192: </a>    }
+<a name="line193">193: </a>  }
+
+<a name="line195">195: </a>  <font color="#B22222">/* build transpose matrix B for GSVD */</font>
+<a name="line196">196: </a>  <font color="#4169E1">if</font> (svd-&gt;isgeneralized) {
+<a name="line197">197: </a>    MatDestroy(&amp;svd-&gt;B);
+<a name="line198">198: </a>    MatDestroy(&amp;svd-&gt;BT);
+<a name="line199">199: </a>    PetscObjectReference((PetscObject)svd-&gt;OPb);
+<a name="line200">200: </a>    <font color="#4169E1">if</font> (svd-&gt;expltrans) {
+<a name="line201">201: </a>      svd-&gt;B = svd-&gt;OPb;
+<a name="line202">202: </a>      MatHermitianTranspose(svd-&gt;OPb,MAT_INITIAL_MATRIX,&amp;svd-&gt;BT);
+<a name="line203">203: </a>    } <font color="#4169E1">else</font> {
+<a name="line204">204: </a>      svd-&gt;B = svd-&gt;OPb;
+<a name="line205">205: </a>      MatCreateHermitianTranspose(svd-&gt;OPb,&amp;svd-&gt;BT);
+<a name="line206">206: </a>    }
+<a name="line207">207: </a>  }
+
+<a name="line209">209: </a>  <font color="#4169E1">if</font> (!svd-&gt;isgeneralized &amp;&amp; M&lt;N) {
+<a name="line210">210: </a>    <font color="#B22222">/* swap initial vectors */</font>
+<a name="line211">211: </a>    <font color="#4169E1">if</font> (svd-&gt;nini || svd-&gt;ninil) {
+<a name="line212">212: </a>      T=svd-&gt;ISL; svd-&gt;ISL=svd-&gt;IS; svd-&gt;IS=T;
+<a name="line213">213: </a>      k=svd-&gt;ninil; svd-&gt;ninil=svd-&gt;nini; svd-&gt;nini=k;
+<a name="line214">214: </a>    }
+<a name="line215">215: </a>    <font color="#B22222">/* swap basis vectors */</font>
+<a name="line216">216: </a>    <font color="#4169E1">if</font> (!svd-&gt;swapped) {  <font color="#B22222">/* only the first time in case of multiple calls */</font>
+<a name="line217">217: </a>      bv=svd-&gt;V; svd-&gt;V=svd-&gt;U; svd-&gt;U=bv;
+<a name="line218">218: </a>      svd-&gt;swapped = PETSC_TRUE;
+<a name="line219">219: </a>    }
+<a name="line220">220: </a>  }
+
+<a name="line222">222: </a>  maxnsol = svd-&gt;isgeneralized? PetscMin(PetscMin(M,N),P): PetscMin(M,N);
+<a name="line223">223: </a>  svd-&gt;ncv = PetscMin(svd-&gt;ncv,maxnsol);
+<a name="line224">224: </a>  svd-&gt;nsv = PetscMin(svd-&gt;nsv,maxnsol);
+
+<a name="line227">227: </a>  <font color="#B22222">/* relative convergence criterion is not allowed in GSVD */</font>
+<a name="line228">228: </a>  <font color="#4169E1">if</font> (svd-&gt;conv==(<a href="../../../docs/manualpages/sys/SVDConv.html#SVDConv">SVDConv</a>)-1) <a href="../../../docs/manualpages/SVD/SVDSetConvergenceTest.html#SVDSetConvergenceTest">SVDSetConvergenceTest</a>(svd,svd-&gt;isgeneralized?<a href="../../../docs/manualpages/sys/SVDConv.html#SVDConv">SVD_CONV_NORM</a>:<a href="../../../docs/manualpages/sys/SVDConv.html#SVDConv">SVD_CONV_REL</a>);
+
+<a name="line231">231: </a>  <font color="#B22222">/* initialization of matrix norm (stardard case only, for GSVD it is done inside setup()) */</font>
+<a name="line232">232: </a>  <font color="#4169E1">if</font> (!svd-&gt;isgeneralized &amp;&amp; svd-&gt;conv==<a href="../../../docs/manualpages/sys/SVDConv.html#SVDConv">SVD_CONV_NORM</a> &amp;&amp; !svd-&gt;nrma) MatNorm(svd-&gt;OP,NORM_INFINITY,&amp;svd-&gt;nrma);
+
+<a name="line234">234: </a>  <font color="#B22222">/* call specific solver setup */</font>
+<a name="line235">235: </a>  (*svd-&gt;ops-&gt;setup)(svd);
+
+<a name="line237">237: </a>  <font color="#B22222">/* set tolerance if not yet set */</font>
+<a name="line238">238: </a>  <font color="#4169E1">if</font> (svd-&gt;tol==PETSC_DEFAULT) svd-&gt;tol = SLEPC_DEFAULT_TOL;
+
+<a name="line240">240: </a>  <font color="#B22222">/* fill sorting criterion context */</font>
+<a name="line241">241: </a>  <a href="../../../docs/manualpages/DS/DSGetSlepcSC.html#DSGetSlepcSC">DSGetSlepcSC</a>(svd-&gt;ds,&amp;sc);
+<a name="line242">242: </a>  sc-&gt;comparison    = (svd-&gt;which==<a href="../../../docs/manualpages/sys/SVDWhich.html#SVDWhich">SVD_LARGEST</a>)? SlepcCompareLargestReal: SlepcCompareSmallestReal;
+<a name="line243">243: </a>  sc-&gt;comparisonctx = NULL;
+<a name="line244">244: </a>  sc-&gt;map           = NULL;
+<a name="line245">245: </a>  sc-&gt;mapobj        = NULL;
+
+<a name="line247">247: </a>  <font color="#B22222">/* process initial vectors */</font>
+<a name="line248">248: </a>  <font color="#4169E1">if</font> (svd-&gt;nini&lt;0) {
+<a name="line249">249: </a>    k = -svd-&gt;nini;
+<a name="line251">251: </a>    <a href="../../../docs/manualpages/BV/BVInsertVecs.html#BVInsertVecs">BVInsertVecs</a>(svd-&gt;V,0,&amp;k,svd-&gt;IS,PETSC_TRUE);
+<a name="line252">252: </a>    SlepcBasisDestroy_Private(&amp;svd-&gt;nini,&amp;svd-&gt;IS);
+<a name="line253">253: </a>    svd-&gt;nini = k;
+<a name="line254">254: </a>  }
+<a name="line255">255: </a>  <font color="#4169E1">if</font> (svd-&gt;ninil&lt;0) {
+<a name="line256">256: </a>    k = 0;
+<a name="line257">257: </a>    <font color="#4169E1">if</font> (svd-&gt;leftbasis) {
+<a name="line258">258: </a>      k = -svd-&gt;ninil;
+<a name="line260">260: </a>      <a href="../../../docs/manualpages/BV/BVInsertVecs.html#BVInsertVecs">BVInsertVecs</a>(svd-&gt;U,0,&amp;k,svd-&gt;ISL,PETSC_TRUE);
+<a name="line261">261: </a>    } <font color="#4169E1">else</font> PetscInfo(svd,<font color="#666666">"Ignoring initial left vectors\n"</font>);
+<a name="line262">262: </a>    SlepcBasisDestroy_Private(&amp;svd-&gt;ninil,&amp;svd-&gt;ISL);
+<a name="line263">263: </a>    svd-&gt;ninil = k;
+<a name="line264">264: </a>  }
+
+<a name="line266">266: </a>  PetscLogEventEnd(SVD_SetUp,svd,0,0,0);
+<a name="line267">267: </a>  svd-&gt;state = SVD_STATE_SETUP;
+<a name="line268">268: </a>  PetscFunctionReturn(0);
+<a name="line269">269: </a>}
+
+<a name="line271">271: </a><font color="#B22222">/*@C</font>
+<a name="line272">272: </a><font color="#B22222">   <a href="../../../docs/manualpages/SVD/SVDSetInitialSpaces.html#SVDSetInitialSpaces">SVDSetInitialSpaces</a> - Specify two basis of vectors that constitute the initial</font>
+<a name="line273">273: </a><font color="#B22222">   right and/or left spaces.</font>
+
+<a name="line275">275: </a><font color="#B22222">   Collective on svd</font>
+
+<a name="line277">277: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line278">278: </a><font color="#B22222">+  svd   - the singular value solver context</font>
+<a name="line279">279: </a><font color="#B22222">.  nr    - number of right vectors</font>
+<a name="line280">280: </a><font color="#B22222">.  isr   - set of basis vectors of the right initial space</font>
+<a name="line281">281: </a><font color="#B22222">.  nl    - number of left vectors</font>
+<a name="line282">282: </a><font color="#B22222">-  isl   - set of basis vectors of the left initial space</font>
+
+<a name="line284">284: </a><font color="#B22222">   Notes:</font>
+<a name="line285">285: </a><font color="#B22222">   The initial right and left spaces are rough approximations to the right and/or</font>
+<a name="line286">286: </a><font color="#B22222">   left singular subspaces from which the solver starts to iterate.</font>
+<a name="line287">287: </a><font color="#B22222">   It is not necessary to provide both sets of vectors.</font>
+
+<a name="line289">289: </a><font color="#B22222">   Some solvers start to iterate on a single vector (initial vector). In that case,</font>
+<a name="line290">290: </a><font color="#B22222">   the other vectors are ignored.</font>
+
+<a name="line292">292: </a><font color="#B22222">   These vectors do not persist from one <a href="../../../docs/manualpages/SVD/SVDSolve.html#SVDSolve">SVDSolve</a>() call to the other, so the</font>
+<a name="line293">293: </a><font color="#B22222">   initial space should be set every time.</font>
+
+<a name="line295">295: </a><font color="#B22222">   The vectors do not need to be mutually orthonormal, since they are explicitly</font>
+<a name="line296">296: </a><font color="#B22222">   orthonormalized internally.</font>
+
+<a name="line298">298: </a><font color="#B22222">   Common usage of this function is when the user can provide a rough approximation</font>
+<a name="line299">299: </a><font color="#B22222">   of the wanted singular space. Then, convergence may be faster.</font>
+
+<a name="line301">301: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line303">303: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/SVD/SVDSetUp.html#SVDSetUp">SVDSetUp</a>()</font>
+<a name="line304">304: </a><font color="#B22222">@*/</font>
+<a name="line305">305: </a><strong><font color="#4169E1"><a name="SVDSetInitialSpaces"></a>PetscErrorCode <a href="../../../docs/manualpages/SVD/SVDSetInitialSpaces.html#SVDSetInitialSpaces">SVDSetInitialSpaces</a>(<a href="../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> svd,PetscInt nr,Vec isr[],PetscInt nl,Vec isl[])</font></strong>
+<a name="line306">306: </a>{
+<a name="line311">311: </a>  <font color="#4169E1">if</font> (nr&gt;0) {
+<a name="line314">314: </a>  }
+<a name="line316">316: </a>  <font color="#4169E1">if</font> (nl&gt;0) {
+<a name="line319">319: </a>  }
+<a name="line320">320: </a>  SlepcBasisReference_Private(nr,isr,&amp;svd-&gt;nini,&amp;svd-&gt;IS);
+<a name="line321">321: </a>  SlepcBasisReference_Private(nl,isl,&amp;svd-&gt;ninil,&amp;svd-&gt;ISL);
+<a name="line322">322: </a>  <font color="#4169E1">if</font> (nr&gt;0 || nl&gt;0) svd-&gt;state = SVD_STATE_INITIAL;
+<a name="line323">323: </a>  PetscFunctionReturn(0);
+<a name="line324">324: </a>}
+
+<a name="line326">326: </a><font color="#B22222">/*</font>
+<a name="line327">327: </a><font color="#B22222">  SVDSetDimensions_Default - Set reasonable values for ncv, mpd if not set</font>
+<a name="line328">328: </a><font color="#B22222">  by the user. This is called at setup.</font>
+<a name="line329">329: </a><font color="#B22222"> */</font>
+<a name="line330">330: </a><strong><font color="#4169E1"><a name="SVDSetDimensions_Default"></a>PetscErrorCode SVDSetDimensions_Default(<a href="../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> svd)</font></strong>
+<a name="line331">331: </a>{
+<a name="line332">332: </a>  PetscInt       N,M,P,maxnsol;
+
+<a name="line334">334: </a>  MatGetSize(svd-&gt;OP,&amp;M,&amp;N);
+<a name="line335">335: </a>  maxnsol = PetscMin(M,N);
+<a name="line336">336: </a>  <font color="#4169E1">if</font> (svd-&gt;isgeneralized) {
+<a name="line337">337: </a>    MatGetSize(svd-&gt;OPb,&amp;P,NULL);
+<a name="line338">338: </a>    maxnsol = PetscMin(maxnsol,P);
+<a name="line339">339: </a>  }
+<a name="line340">340: </a>  <font color="#4169E1">if</font> (svd-&gt;ncv!=PETSC_DEFAULT) { <font color="#B22222">/* ncv set */</font>
+<a name="line342">342: </a>  } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (svd-&gt;mpd!=PETSC_DEFAULT) { <font color="#B22222">/* mpd set */</font>
+<a name="line343">343: </a>    svd-&gt;ncv = PetscMin(maxnsol,svd-&gt;nsv+svd-&gt;mpd);
+<a name="line344">344: </a>  } <font color="#4169E1">else</font> { <font color="#B22222">/* neither set: defaults depend on nsv being small or large */</font>
+<a name="line345">345: </a>    <font color="#4169E1">if</font> (svd-&gt;nsv&lt;500) svd-&gt;ncv = PetscMin(maxnsol,PetscMax(2*svd-&gt;nsv,10));
+<a name="line346">346: </a>    <font color="#4169E1">else</font> {
+<a name="line347">347: </a>      svd-&gt;mpd = 500;
+<a name="line348">348: </a>      svd-&gt;ncv = PetscMin(maxnsol,svd-&gt;nsv+svd-&gt;mpd);
+<a name="line349">349: </a>    }
+<a name="line350">350: </a>  }
+<a name="line351">351: </a>  <font color="#4169E1">if</font> (svd-&gt;mpd==PETSC_DEFAULT) svd-&gt;mpd = svd-&gt;ncv;
+<a name="line352">352: </a>  PetscFunctionReturn(0);
+<a name="line353">353: </a>}
+
+<a name="line355">355: </a><font color="#B22222">/*@</font>
+<a name="line356">356: </a><font color="#B22222">   <a href="../../../docs/manualpages/SVD/SVDAllocateSolution.html#SVDAllocateSolution">SVDAllocateSolution</a> - Allocate memory storage for common variables such</font>
+<a name="line357">357: </a><font color="#B22222">   as the singular values and the basis vectors.</font>
+
+<a name="line359">359: </a><font color="#B22222">   Collective on svd</font>
+
+<a name="line361">361: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line362">362: </a><font color="#B22222">+  svd   - eigensolver context</font>
+<a name="line363">363: </a><font color="#B22222">-  extra - number of additional positions, used for methods that require a</font>
+<a name="line364">364: </a><font color="#B22222">           working basis slightly larger than ncv</font>
+
+<a name="line366">366: </a><font color="#B22222">   Developer Notes:</font>
+<a name="line367">367: </a><font color="#B22222">   This is SLEPC_EXTERN because it may be required by user plugin <a href="../../../docs/manualpages/sys/SVD.html#SVD">SVD</a></font>
+<a name="line368">368: </a><font color="#B22222">   implementations.</font>
+
+<a name="line370">370: </a><font color="#B22222">   This is called at setup after setting the value of ncv and the flag leftbasis.</font>
+
+<a name="line372">372: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line374">374: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/SVD/SVDSetUp.html#SVDSetUp">SVDSetUp</a>()</font>
+<a name="line375">375: </a><font color="#B22222">@*/</font>
+<a name="line376">376: </a><strong><font color="#4169E1"><a name="SVDAllocateSolution"></a>PetscErrorCode <a href="../../../docs/manualpages/SVD/SVDAllocateSolution.html#SVDAllocateSolution">SVDAllocateSolution</a>(<a href="../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> svd,PetscInt extra)</font></strong>
+<a name="line377">377: </a>{
+<a name="line378">378: </a>  PetscInt       oldsize,requested;
+<a name="line379">379: </a>  Vec            tr,tl;
+
+<a name="line381">381: </a>  requested = svd-&gt;ncv + extra;
+
+<a name="line383">383: </a>  <font color="#B22222">/* oldsize is zero if this is the first time setup is called */</font>
+<a name="line384">384: </a>  <a href="../../../docs/manualpages/BV/BVGetSizes.html#BVGetSizes">BVGetSizes</a>(svd-&gt;V,NULL,NULL,&amp;oldsize);
+
+<a name="line386">386: </a>  <font color="#B22222">/* allocate sigma */</font>
+<a name="line387">387: </a>  <font color="#4169E1">if</font> (requested != oldsize || !svd-&gt;sigma) {
+<a name="line388">388: </a>    PetscFree3(svd-&gt;sigma,svd-&gt;perm,svd-&gt;errest);
+<a name="line389">389: </a>    PetscMalloc3(requested,&amp;svd-&gt;sigma,requested,&amp;svd-&gt;perm,requested,&amp;svd-&gt;errest);
+<a name="line390">390: </a>    PetscLogObjectMemory((PetscObject)svd,PetscMax(0,requested-oldsize)*(2*<font color="#4169E1">sizeof</font>(PetscReal)+<font color="#4169E1">sizeof</font>(PetscInt)));
+<a name="line391">391: </a>  }
+<a name="line392">392: </a>  <font color="#B22222">/* allocate V */</font>
+<a name="line393">393: </a>  <font color="#4169E1">if</font> (!svd-&gt;V) <a href="../../../docs/manualpages/SVD/SVDGetBV.html#SVDGetBV">SVDGetBV</a>(svd,&amp;svd-&gt;V,NULL);
+<a name="line394">394: </a>  <font color="#4169E1">if</font> (!oldsize) {
+<a name="line395">395: </a>    <font color="#4169E1">if</font> (!((PetscObject)(svd-&gt;V))-&gt;type_name) <a href="../../../docs/manualpages/BV/BVSetType.html#BVSetType">BVSetType</a>(svd-&gt;V,BVSVEC);
+<a name="line396">396: </a>    <a href="../../../docs/manualpages/sys/MatCreateVecsEmpty.html#MatCreateVecsEmpty">MatCreateVecsEmpty</a>(svd-&gt;A,&amp;tr,NULL);
+<a name="line397">397: </a>    <a href="../../../docs/manualpages/BV/BVSetSizesFromVec.html#BVSetSizesFromVec">BVSetSizesFromVec</a>(svd-&gt;V,tr,requested);
+<a name="line398">398: </a>    VecDestroy(&amp;tr);
+<a name="line399">399: </a>  } <font color="#4169E1">else</font> <a href="../../../docs/manualpages/BV/BVResize.html#BVResize">BVResize</a>(svd-&gt;V,requested,PETSC_FALSE);
+<a name="line400">400: </a>  <font color="#B22222">/* allocate U */</font>
+<a name="line401">401: </a>  <font color="#4169E1">if</font> (svd-&gt;leftbasis &amp;&amp; !svd-&gt;isgeneralized) {
+<a name="line402">402: </a>    <font color="#4169E1">if</font> (!svd-&gt;U) <a href="../../../docs/manualpages/SVD/SVDGetBV.html#SVDGetBV">SVDGetBV</a>(svd,NULL,&amp;svd-&gt;U);
+<a name="line403">403: </a>    <font color="#4169E1">if</font> (!oldsize) {
+<a name="line404">404: </a>      <font color="#4169E1">if</font> (!((PetscObject)(svd-&gt;U))-&gt;type_name) <a href="../../../docs/manualpages/BV/BVSetType.html#BVSetType">BVSetType</a>(svd-&gt;U,((PetscObject)(svd-&gt;V))-&gt;type_name);
+<a name="line405">405: </a>      <a href="../../../docs/manualpages/sys/MatCreateVecsEmpty.html#MatCreateVecsEmpty">MatCreateVecsEmpty</a>(svd-&gt;A,NULL,&amp;tl);
+<a name="line406">406: </a>      <a href="../../../docs/manualpages/BV/BVSetSizesFromVec.html#BVSetSizesFromVec">BVSetSizesFromVec</a>(svd-&gt;U,tl,requested);
+<a name="line407">407: </a>      VecDestroy(&amp;tl);
+<a name="line408">408: </a>    } <font color="#4169E1">else</font> <a href="../../../docs/manualpages/BV/BVResize.html#BVResize">BVResize</a>(svd-&gt;U,requested,PETSC_FALSE);
+<a name="line409">409: </a>  } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (svd-&gt;isgeneralized) {  <font color="#B22222">/* left basis for the GSVD */</font>
+<a name="line410">410: </a>    <font color="#4169E1">if</font> (!svd-&gt;U) <a href="../../../docs/manualpages/SVD/SVDGetBV.html#SVDGetBV">SVDGetBV</a>(svd,NULL,&amp;svd-&gt;U);
+<a name="line411">411: </a>    <font color="#4169E1">if</font> (!oldsize) {
+<a name="line412">412: </a>      <font color="#4169E1">if</font> (!((PetscObject)(svd-&gt;U))-&gt;type_name) <a href="../../../docs/manualpages/BV/BVSetType.html#BVSetType">BVSetType</a>(svd-&gt;U,((PetscObject)(svd-&gt;V))-&gt;type_name);
+<a name="line413">413: </a>      SVDCreateLeftTemplate(svd,&amp;tl);
+<a name="line414">414: </a>      <a href="../../../docs/manualpages/BV/BVSetSizesFromVec.html#BVSetSizesFromVec">BVSetSizesFromVec</a>(svd-&gt;U,tl,requested);
+<a name="line415">415: </a>      VecDestroy(&amp;tl);
+<a name="line416">416: </a>    } <font color="#4169E1">else</font> <a href="../../../docs/manualpages/BV/BVResize.html#BVResize">BVResize</a>(svd-&gt;U,requested,PETSC_FALSE);
+<a name="line417">417: </a>  }
+<a name="line418">418: </a>  PetscFunctionReturn(0);
+<a name="line419">419: </a>}
+</pre>
+</body>
+
+</html>

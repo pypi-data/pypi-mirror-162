@@ -1,0 +1,909 @@
+<center><a href="nepdefl.c">Actual source code: nepdefl.c</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="https://slepc.upv.es/documentation/current/src/nep/impls/nepdefl.c.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2022-08-09T09:05:54+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>slepc-3.17.2 2022-08-09</b></div>
+   <div id="bugreport" align=right><a href="mailto:slepc-maint@upv.es?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: slepc-3.17.2 v3.17.2 src/nep/impls/nepdefl.c.html "><small>Report Typos and Errors</small></a></div>
+<pre width="80">
+<a name="line1">  1: </a><font color="#B22222">/*</font>
+<a name="line2">  2: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line3">  3: </a><font color="#B22222">   SLEPc - Scalable Library for Eigenvalue Problem Computations</font>
+<a name="line4">  4: </a><font color="#B22222">   Copyright (c) 2002-, Universitat Politecnica de Valencia, Spain</font>
+
+<a name="line6">  6: </a><font color="#B22222">   This file is part of SLEPc.</font>
+<a name="line7">  7: </a><font color="#B22222">   SLEPc is distributed under a 2-clause BSD license (see LICENSE).</font>
+<a name="line8">  8: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line9">  9: </a><font color="#B22222">*/</font>
+
+<a name="line11"> 11: </a>#include <A href="../../../include/slepc/private/nepimpl.h.html">&lt;slepc/private/nepimpl.h&gt;</A>
+<a name="line12"> 12: </a>#include <A href="../../../include/slepcblaslapack.h.html">&lt;slepcblaslapack.h&gt;</A>
+<a name="line13"> 13: </a><font color="#A020F0">#include </font><font color="#666666">"nepdefl.h"</font><font color="#A020F0"></font>
+
+<a name="line15"> 15: </a><strong><font color="#4169E1"><a name="NEPDeflationGetInvariantPair"></a>PetscErrorCode NEPDeflationGetInvariantPair(NEP_EXT_OP extop,<a href="../../../docs/manualpages/sys/BV.html#BV">BV</a> *X,Mat *H)</font></strong>
+<a name="line16"> 16: </a>{
+<a name="line17"> 17: </a>  <font color="#4169E1">if</font> (X) *X = extop-&gt;X;
+<a name="line18"> 18: </a>  <font color="#4169E1">if</font> (H) MatCreateSeqDense(PETSC_COMM_SELF,extop-&gt;szd+1,extop-&gt;szd+1,extop-&gt;H,H);
+<a name="line19"> 19: </a>  PetscFunctionReturn(0);
+<a name="line20"> 20: </a>}
+
+<a name="line22"> 22: </a><strong><font color="#4169E1"><a name="NEPDeflationExtendInvariantPair"></a>PetscErrorCode NEPDeflationExtendInvariantPair(NEP_EXT_OP extop,Vec u,PetscScalar lambda,PetscInt k)</font></strong>
+<a name="line23"> 23: </a>{
+<a name="line24"> 24: </a>  Vec            uu;
+<a name="line25"> 25: </a>  PetscInt       ld,i;
+<a name="line26"> 26: </a>  PetscMPIInt    np;
+<a name="line27"> 27: </a>  PetscReal      norm;
+
+<a name="line29"> 29: </a>  <a href="../../../docs/manualpages/BV/BVGetColumn.html#BVGetColumn">BVGetColumn</a>(extop-&gt;X,k,&amp;uu);
+<a name="line30"> 30: </a>  ld = extop-&gt;szd+1;
+<a name="line31"> 31: </a>  NEPDeflationCopyToExtendedVec(extop,uu,extop-&gt;H+k*ld,u,PETSC_TRUE);
+<a name="line32"> 32: </a>  <a href="../../../docs/manualpages/BV/BVRestoreColumn.html#BVRestoreColumn">BVRestoreColumn</a>(extop-&gt;X,k,&amp;uu);
+<a name="line33"> 33: </a>  <a href="../../../docs/manualpages/BV/BVNormColumn.html#BVNormColumn">BVNormColumn</a>(extop-&gt;X,k,NORM_2,&amp;norm);
+<a name="line34"> 34: </a>  <a href="../../../docs/manualpages/BV/BVScaleColumn.html#BVScaleColumn">BVScaleColumn</a>(extop-&gt;X,k,1.0/norm);
+<a name="line35"> 35: </a>  <a href="http://www.mpich.org/static/docs/latest/www3/MPI_Comm_size.html#MPI_Comm_size">MPI_Comm_size</a>(PetscObjectComm((PetscObject)u),&amp;np);
+<a name="line36"> 36: </a>  <font color="#4169E1">for</font> (i=0;i&lt;k;i++) extop-&gt;H[k*ld+i] *= PetscSqrtReal(np)/norm;
+<a name="line37"> 37: </a>  extop-&gt;H[k*(ld+1)] = lambda;
+<a name="line38"> 38: </a>  PetscFunctionReturn(0);
+<a name="line39"> 39: </a>}
+
+<a name="line41"> 41: </a><strong><font color="#4169E1"><a name="NEPDeflationExtractEigenpair"></a>PetscErrorCode NEPDeflationExtractEigenpair(NEP_EXT_OP extop,PetscInt k,Vec u,PetscScalar lambda,<a href="../../../docs/manualpages/sys/DS.html#DS">DS</a> ds)</font></strong>
+<a name="line42"> 42: </a>{
+<a name="line43"> 43: </a>  PetscScalar    *Ap;
+<a name="line44"> 44: </a>  PetscInt       ldh=extop-&gt;szd+1,ldds,i,j,k1=k+1;
+<a name="line45"> 45: </a>  PetscScalar    *eigr,*eigi,*t,*Z;
+<a name="line46"> 46: </a>  Vec            x;
+
+<a name="line48"> 48: </a>  NEPDeflationExtendInvariantPair(extop,u,lambda,k);
+<a name="line49"> 49: </a>  PetscCalloc3(k1,&amp;eigr,k1,&amp;eigi,extop-&gt;szd,&amp;t);
+<a name="line50"> 50: </a>  <a href="../../../docs/manualpages/DS/DSReset.html#DSReset">DSReset</a>(ds);
+<a name="line51"> 51: </a>  <a href="../../../docs/manualpages/DS/DSSetType.html#DSSetType">DSSetType</a>(ds,<a href="../../../docs/manualpages/DS/DSNHEP.html#DSNHEP">DSNHEP</a>);
+<a name="line52"> 52: </a>  <a href="../../../docs/manualpages/DS/DSAllocate.html#DSAllocate">DSAllocate</a>(ds,ldh);
+<a name="line53"> 53: </a>  <a href="../../../docs/manualpages/DS/DSGetLeadingDimension.html#DSGetLeadingDimension">DSGetLeadingDimension</a>(ds,&amp;ldds);
+<a name="line54"> 54: </a>  <a href="../../../docs/manualpages/DS/DSGetArray.html#DSGetArray">DSGetArray</a>(ds,<a href="../../../docs/manualpages/sys/DSMatType.html#DSMatType">DS_MAT_A</a>,&amp;Ap);
+<a name="line55"> 55: </a>  <font color="#4169E1">for</font> (j=0;j&lt;k1;j++)
+<a name="line56"> 56: </a>    <font color="#4169E1">for</font> (i=0;i&lt;k1;i++) Ap[j*ldds+i] = extop-&gt;H[j*ldh+i];
+<a name="line57"> 57: </a>  <a href="../../../docs/manualpages/DS/DSRestoreArray.html#DSRestoreArray">DSRestoreArray</a>(ds,<a href="../../../docs/manualpages/sys/DSMatType.html#DSMatType">DS_MAT_A</a>,&amp;Ap);
+<a name="line58"> 58: </a>  <a href="../../../docs/manualpages/DS/DSSetDimensions.html#DSSetDimensions">DSSetDimensions</a>(ds,k1,0,k1);
+<a name="line59"> 59: </a>  <a href="../../../docs/manualpages/DS/DSSolve.html#DSSolve">DSSolve</a>(ds,eigr,eigi);
+<a name="line60"> 60: </a>  <a href="../../../docs/manualpages/DS/DSVectors.html#DSVectors">DSVectors</a>(ds,<a href="../../../docs/manualpages/sys/DSMatType.html#DSMatType">DS_MAT_X</a>,&amp;k,NULL);
+<a name="line61"> 61: </a>  <a href="../../../docs/manualpages/DS/DSGetArray.html#DSGetArray">DSGetArray</a>(ds,<a href="../../../docs/manualpages/sys/DSMatType.html#DSMatType">DS_MAT_X</a>,&amp;Z);
+<a name="line62"> 62: </a>  <a href="../../../docs/manualpages/BV/BVMultColumn.html#BVMultColumn">BVMultColumn</a>(extop-&gt;X,1.0,Z[k*ldds+k],k,Z+k*ldds);
+<a name="line63"> 63: </a>  <a href="../../../docs/manualpages/DS/DSRestoreArray.html#DSRestoreArray">DSRestoreArray</a>(ds,<a href="../../../docs/manualpages/sys/DSMatType.html#DSMatType">DS_MAT_X</a>,&amp;Z);
+<a name="line64"> 64: </a>  <a href="../../../docs/manualpages/BV/BVGetColumn.html#BVGetColumn">BVGetColumn</a>(extop-&gt;X,k,&amp;x);
+<a name="line65"> 65: </a>  NEPDeflationCopyToExtendedVec(extop,x,t,u,PETSC_FALSE);
+<a name="line66"> 66: </a>  <a href="../../../docs/manualpages/BV/BVRestoreColumn.html#BVRestoreColumn">BVRestoreColumn</a>(extop-&gt;X,k,&amp;x);
+<a name="line67"> 67: </a>  PetscFree3(eigr,eigi,t);
+<a name="line68"> 68: </a>  PetscFunctionReturn(0);
+<a name="line69"> 69: </a>}
+
+<a name="line71"> 71: </a><strong><font color="#4169E1"><a name="NEPDeflationCopyToExtendedVec"></a>PetscErrorCode NEPDeflationCopyToExtendedVec(NEP_EXT_OP extop,Vec v,PetscScalar *a,Vec vex,PetscBool back)</font></strong>
+<a name="line72"> 72: </a>{
+<a name="line73"> 73: </a>  PetscMPIInt    np,rk,count;
+<a name="line74"> 74: </a>  PetscScalar    *array1,*array2;
+<a name="line75"> 75: </a>  PetscInt       nloc;
+
+<a name="line77"> 77: </a>  <font color="#4169E1">if</font> (extop-&gt;szd) {
+<a name="line78"> 78: </a>    <a href="http://www.mpich.org/static/docs/latest/www3/MPI_Comm_rank.html#MPI_Comm_rank">MPI_Comm_rank</a>(PetscObjectComm((PetscObject)vex),&amp;rk);
+<a name="line79"> 79: </a>    <a href="http://www.mpich.org/static/docs/latest/www3/MPI_Comm_size.html#MPI_Comm_size">MPI_Comm_size</a>(PetscObjectComm((PetscObject)vex),&amp;np);
+<a name="line80"> 80: </a>    <a href="../../../docs/manualpages/BV/BVGetSizes.html#BVGetSizes">BVGetSizes</a>(extop-&gt;nep-&gt;V,&amp;nloc,NULL,NULL);
+<a name="line81"> 81: </a>    <font color="#4169E1">if</font> (v) {
+<a name="line82"> 82: </a>      VecGetArray(v,&amp;array1);
+<a name="line83"> 83: </a>      VecGetArray(vex,&amp;array2);
+<a name="line84"> 84: </a>      <font color="#4169E1">if</font> (back) PetscArraycpy(array1,array2,nloc);
+<a name="line85"> 85: </a>      <font color="#4169E1">else</font> PetscArraycpy(array2,array1,nloc);
+<a name="line86"> 86: </a>      VecRestoreArray(v,&amp;array1);
+<a name="line87"> 87: </a>      VecRestoreArray(vex,&amp;array2);
+<a name="line88"> 88: </a>    }
+<a name="line89"> 89: </a>    <font color="#4169E1">if</font> (a) {
+<a name="line90"> 90: </a>      VecGetArray(vex,&amp;array2);
+<a name="line91"> 91: </a>      <font color="#4169E1">if</font> (back) {
+<a name="line92"> 92: </a>        PetscArraycpy(a,array2+nloc,extop-&gt;szd);
+<a name="line93"> 93: </a>        PetscMPIIntCast(extop-&gt;szd,&amp;count);
+<a name="line94"> 94: </a>        <a href="http://www.mpich.org/static/docs/latest/www3/MPI_Bcast.html#MPI_Bcast">MPI_Bcast</a>(a,count,MPIU_SCALAR,np-1,PetscObjectComm((PetscObject)vex));
+<a name="line95"> 95: </a>      } <font color="#4169E1">else</font> {
+<a name="line96"> 96: </a>        PetscArraycpy(array2+nloc,a,extop-&gt;szd);
+<a name="line97"> 97: </a>        PetscMPIIntCast(extop-&gt;szd,&amp;count);
+<a name="line98"> 98: </a>        <a href="http://www.mpich.org/static/docs/latest/www3/MPI_Bcast.html#MPI_Bcast">MPI_Bcast</a>(array2+nloc,count,MPIU_SCALAR,np-1,PetscObjectComm((PetscObject)vex));
+<a name="line99"> 99: </a>      }
+<a name="line100">100: </a>      VecRestoreArray(vex,&amp;array2);
+<a name="line101">101: </a>    }
+<a name="line102">102: </a>  } <font color="#4169E1">else</font> {
+<a name="line103">103: </a>    <font color="#4169E1">if</font> (back) VecCopy(vex,v);
+<a name="line104">104: </a>    <font color="#4169E1">else</font> VecCopy(v,vex);
+<a name="line105">105: </a>  }
+<a name="line106">106: </a>  PetscFunctionReturn(0);
+<a name="line107">107: </a>}
+
+<a name="line109">109: </a><strong><font color="#4169E1"><a name="NEPDeflationCreateVec"></a>PetscErrorCode NEPDeflationCreateVec(NEP_EXT_OP extop,Vec *v)</font></strong>
+<a name="line110">110: </a>{
+<a name="line111">111: </a>  PetscInt       nloc;
+<a name="line112">112: </a>  Vec            u;
+<a name="line113">113: </a>  VecType        type;
+
+<a name="line115">115: </a>  <font color="#4169E1">if</font> (extop-&gt;szd) {
+<a name="line116">116: </a>    <a href="../../../docs/manualpages/BV/BVGetColumn.html#BVGetColumn">BVGetColumn</a>(extop-&gt;nep-&gt;V,0,&amp;u);
+<a name="line117">117: </a>    VecGetType(u,&amp;type);
+<a name="line118">118: </a>    <a href="../../../docs/manualpages/BV/BVRestoreColumn.html#BVRestoreColumn">BVRestoreColumn</a>(extop-&gt;nep-&gt;V,0,&amp;u);
+<a name="line119">119: </a>    VecCreate(PetscObjectComm((PetscObject)extop-&gt;nep),v);
+<a name="line120">120: </a>    VecSetType(*v,type);
+<a name="line121">121: </a>    <a href="../../../docs/manualpages/BV/BVGetSizes.html#BVGetSizes">BVGetSizes</a>(extop-&gt;nep-&gt;V,&amp;nloc,NULL,NULL);
+<a name="line122">122: </a>    nloc += extop-&gt;szd;
+<a name="line123">123: </a>    VecSetSizes(*v,nloc,PETSC_DECIDE);
+<a name="line124">124: </a>  } <font color="#4169E1">else</font> <a href="../../../docs/manualpages/BV/BVCreateVec.html#BVCreateVec">BVCreateVec</a>(extop-&gt;nep-&gt;V,v);
+<a name="line125">125: </a>  PetscFunctionReturn(0);
+<a name="line126">126: </a>}
+
+<a name="line128">128: </a><strong><font color="#4169E1"><a name="NEPDeflationCreateBV"></a>PetscErrorCode NEPDeflationCreateBV(NEP_EXT_OP extop,PetscInt sz,<a href="../../../docs/manualpages/sys/BV.html#BV">BV</a> *V)</font></strong>
+<a name="line129">129: </a>{
+<a name="line130">130: </a>  PetscInt           nloc;
+<a name="line131">131: </a>  <a href="../../../docs/manualpages/sys/BVType.html#BVType">BVType</a>             type;
+<a name="line132">132: </a>  <a href="../../../docs/manualpages/sys/BVOrthogType.html#BVOrthogType">BVOrthogType</a>       otype;
+<a name="line133">133: </a>  <a href="../../../docs/manualpages/sys/BVOrthogRefineType.html#BVOrthogRefineType">BVOrthogRefineType</a> oref;
+<a name="line134">134: </a>  PetscReal          oeta;
+<a name="line135">135: </a>  <a href="../../../docs/manualpages/sys/BVOrthogBlockType.html#BVOrthogBlockType">BVOrthogBlockType</a>  oblock;
+<a name="line136">136: </a>  <a href="../../../docs/manualpages/sys/NEP.html#NEP">NEP</a>                nep=extop-&gt;nep;
+
+<a name="line138">138: </a>  <font color="#4169E1">if</font> (extop-&gt;szd) {
+<a name="line139">139: </a>    <a href="../../../docs/manualpages/BV/BVGetSizes.html#BVGetSizes">BVGetSizes</a>(nep-&gt;V,&amp;nloc,NULL,NULL);
+<a name="line140">140: </a>    <a href="../../../docs/manualpages/BV/BVCreate.html#BVCreate">BVCreate</a>(PetscObjectComm((PetscObject)nep),V);
+<a name="line141">141: </a>    <a href="../../../docs/manualpages/BV/BVSetSizes.html#BVSetSizes">BVSetSizes</a>(*V,nloc+extop-&gt;szd,PETSC_DECIDE,sz);
+<a name="line142">142: </a>    <a href="../../../docs/manualpages/BV/BVGetType.html#BVGetType">BVGetType</a>(nep-&gt;V,&amp;type);
+<a name="line143">143: </a>    <a href="../../../docs/manualpages/BV/BVSetType.html#BVSetType">BVSetType</a>(*V,type);
+<a name="line144">144: </a>    <a href="../../../docs/manualpages/BV/BVGetOrthogonalization.html#BVGetOrthogonalization">BVGetOrthogonalization</a>(nep-&gt;V,&amp;otype,&amp;oref,&amp;oeta,&amp;oblock);
+<a name="line145">145: </a>    <a href="../../../docs/manualpages/BV/BVSetOrthogonalization.html#BVSetOrthogonalization">BVSetOrthogonalization</a>(*V,otype,oref,oeta,oblock);
+<a name="line146">146: </a>    PetscObjectStateIncrease((PetscObject)*V);
+<a name="line147">147: </a>    PetscLogObjectParent((PetscObject)nep,(PetscObject)*V);
+<a name="line148">148: </a>  } <font color="#4169E1">else</font> <a href="../../../docs/manualpages/BV/BVDuplicateResize.html#BVDuplicateResize">BVDuplicateResize</a>(nep-&gt;V,sz,V);
+<a name="line149">149: </a>  PetscFunctionReturn(0);
+<a name="line150">150: </a>}
+
+<a name="line152">152: </a><strong><font color="#4169E1"><a name="NEPDeflationSetRandomVec"></a>PetscErrorCode NEPDeflationSetRandomVec(NEP_EXT_OP extop,Vec v)</font></strong>
+<a name="line153">153: </a>{
+<a name="line154">154: </a>  PetscInt       n,next,i;
+<a name="line155">155: </a>  PetscRandom    rand;
+<a name="line156">156: </a>  PetscScalar    *array;
+<a name="line157">157: </a>  PetscMPIInt    nn,np;
+
+<a name="line159">159: </a>  <a href="../../../docs/manualpages/BV/BVGetRandomContext.html#BVGetRandomContext">BVGetRandomContext</a>(extop-&gt;nep-&gt;V,&amp;rand);
+<a name="line160">160: </a>  VecSetRandom(v,rand);
+<a name="line161">161: </a>  <font color="#4169E1">if</font> (extop-&gt;szd) {
+<a name="line162">162: </a>    <a href="http://www.mpich.org/static/docs/latest/www3/MPI_Comm_size.html#MPI_Comm_size">MPI_Comm_size</a>(PetscObjectComm((PetscObject)v),&amp;np);
+<a name="line163">163: </a>    <a href="../../../docs/manualpages/BV/BVGetSizes.html#BVGetSizes">BVGetSizes</a>(extop-&gt;nep-&gt;V,&amp;n,NULL,NULL);
+<a name="line164">164: </a>    VecGetLocalSize(v,&amp;next);
+<a name="line165">165: </a>    VecGetArray(v,&amp;array);
+<a name="line166">166: </a>    <font color="#4169E1">for</font> (i=n+extop-&gt;n;i&lt;next;i++) array[i] = 0.0;
+<a name="line167">167: </a>    <font color="#4169E1">for</font> (i=n;i&lt;n+extop-&gt;n;i++) array[i] /= PetscSqrtReal(np);
+<a name="line168">168: </a>    PetscMPIIntCast(extop-&gt;n,&amp;nn);
+<a name="line169">169: </a>    <a href="http://www.mpich.org/static/docs/latest/www3/MPI_Bcast.html#MPI_Bcast">MPI_Bcast</a>(array+n,nn,MPIU_SCALAR,0,PetscObjectComm((PetscObject)v));
+<a name="line170">170: </a>    VecRestoreArray(v,&amp;array);
+<a name="line171">171: </a>  }
+<a name="line172">172: </a>  PetscFunctionReturn(0);
+<a name="line173">173: </a>}
+
+<a name="line175">175: </a><strong><font color="#4169E1"><a name="NEPDeflationEvaluateBasisMat"></a>static PetscErrorCode NEPDeflationEvaluateBasisMat(NEP_EXT_OP extop,PetscInt idx,PetscBool hat,PetscScalar *bval,PetscScalar *Hj,PetscScalar *Hjprev)</font></strong>
+<a name="line176">176: </a>{
+<a name="line177">177: </a>  PetscInt       i,k,n=extop-&gt;n,ldhj=extop-&gt;szd,ldh=extop-&gt;szd+1;
+<a name="line178">178: </a>  PetscScalar    sone=1.0,zero=0.0;
+<a name="line179">179: </a>  PetscBLASInt   ldh_,ldhj_,n_;
+
+<a name="line181">181: </a>  i = (idx&lt;0)?extop-&gt;szd*extop-&gt;szd*(-idx):extop-&gt;szd*extop-&gt;szd;
+<a name="line182">182: </a>  PetscArrayzero(Hj,i);
+<a name="line183">183: </a>  PetscBLASIntCast(ldhj+1,&amp;ldh_);
+<a name="line184">184: </a>  PetscBLASIntCast(ldhj,&amp;ldhj_);
+<a name="line185">185: </a>  PetscBLASIntCast(n,&amp;n_);
+<a name="line186">186: </a>  <font color="#4169E1">if</font> (idx&lt;1) {
+<a name="line187">187: </a>    <font color="#4169E1">if</font> (!hat) <font color="#4169E1">for</font> (i=0;i&lt;extop-&gt;n;i++) Hj[i+i*ldhj] = 1.0;
+<a name="line188">188: </a>    <font color="#4169E1">else</font> <font color="#4169E1">for</font> (i=0;i&lt;extop-&gt;n;i++) Hj[i+i*ldhj] = 0.0;
+<a name="line189">189: </a>  } <font color="#4169E1">else</font> {
+<a name="line190">190: </a>      <font color="#4169E1">for</font> (i=0;i&lt;n;i++) extop-&gt;H[i*ldh+i] -= extop-&gt;bc[idx-1];
+<a name="line191">191: </a>      PetscStackCallBLAS(<font color="#666666">"BLASgemm"</font>,BLASgemm_(<font color="#666666">"N"</font>,<font color="#666666">"N"</font>,&amp;n_,&amp;n_,&amp;n_,&amp;sone,extop-&gt;H,&amp;ldh_,Hjprev,&amp;ldhj_,&amp;zero,Hj,&amp;ldhj_));
+<a name="line192">192: </a>      <font color="#4169E1">for</font> (i=0;i&lt;n;i++) extop-&gt;H[i*ldh+i] += extop-&gt;bc[idx-1];
+<a name="line193">193: </a>      <font color="#4169E1">if</font> (hat) <font color="#4169E1">for</font> (i=0;i&lt;n;i++) Hj[i*(ldhj+1)] += bval[idx-1];
+<a name="line194">194: </a>  }
+<a name="line195">195: </a>  <font color="#4169E1">if</font> (idx&lt;0) {
+<a name="line196">196: </a>    idx = -idx;
+<a name="line197">197: </a>    <font color="#4169E1">for</font> (k=1;k&lt;idx;k++) {
+<a name="line198">198: </a>      <font color="#4169E1">for</font> (i=0;i&lt;n;i++) extop-&gt;H[i*ldh+i] -= extop-&gt;bc[k-1];
+<a name="line199">199: </a>      PetscStackCallBLAS(<font color="#666666">"BLASgemm"</font>,BLASgemm_(<font color="#666666">"N"</font>,<font color="#666666">"N"</font>,&amp;n_,&amp;n_,&amp;n_,&amp;sone,extop-&gt;H,&amp;ldh_,Hj+(k-1)*ldhj*ldhj,&amp;ldhj_,&amp;zero,Hj+k*ldhj*ldhj,&amp;ldhj_));
+<a name="line200">200: </a>      <font color="#4169E1">for</font> (i=0;i&lt;n;i++) extop-&gt;H[i*ldh+i] += extop-&gt;bc[k-1];
+<a name="line201">201: </a>      <font color="#4169E1">if</font> (hat) <font color="#4169E1">for</font> (i=0;i&lt;n;i++) Hj[i*(ldhj+1)] += bval[k-1];
+<a name="line202">202: </a>    }
+<a name="line203">203: </a>  }
+<a name="line204">204: </a>  PetscFunctionReturn(0);
+<a name="line205">205: </a>}
+
+<a name="line207">207: </a><strong><font color="#4169E1"><a name="NEPDeflationLocking"></a>PetscErrorCode NEPDeflationLocking(NEP_EXT_OP extop,Vec u,PetscScalar lambda)</font></strong>
+<a name="line208">208: </a>{
+<a name="line209">209: </a>  PetscInt       i;
+
+<a name="line211">211: </a>  NEPDeflationExtendInvariantPair(extop,u,lambda,extop-&gt;n);
+<a name="line212">212: </a>  extop-&gt;n++;
+<a name="line213">213: </a>  <a href="../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(extop-&gt;X,0,extop-&gt;n);
+<a name="line214">214: </a>  <font color="#4169E1">if</font> (extop-&gt;n &lt;= extop-&gt;szd) {
+<a name="line215">215: </a>    <font color="#B22222">/* update XpX */</font>
+<a name="line216">216: </a>    <a href="../../../docs/manualpages/BV/BVDotColumn.html#BVDotColumn">BVDotColumn</a>(extop-&gt;X,extop-&gt;n-1,extop-&gt;XpX+(extop-&gt;n-1)*extop-&gt;szd);
+<a name="line217">217: </a>    extop-&gt;XpX[(extop-&gt;n-1)*(1+extop-&gt;szd)] = 1.0;
+<a name="line218">218: </a>    <font color="#4169E1">for</font> (i=0;i&lt;extop-&gt;n-1;i++) extop-&gt;XpX[i*extop-&gt;szd+extop-&gt;n-1] = PetscConj(extop-&gt;XpX[(extop-&gt;n-1)*extop-&gt;szd+i]);
+<a name="line219">219: </a>    <font color="#B22222">/* determine minimality index */</font>
+<a name="line220">220: </a>    extop-&gt;midx = PetscMin(extop-&gt;max_midx,extop-&gt;n);
+<a name="line221">221: </a>    <font color="#B22222">/* polynominal basis coefficients */</font>
+<a name="line222">222: </a>    <font color="#4169E1">for</font> (i=0;i&lt;extop-&gt;midx;i++) extop-&gt;bc[i] = extop-&gt;nep-&gt;target;
+<a name="line223">223: </a>    <font color="#B22222">/* evaluate the polynomial basis in H */</font>
+<a name="line224">224: </a>    NEPDeflationEvaluateBasisMat(extop,-extop-&gt;midx,PETSC_FALSE,NULL,extop-&gt;Hj,NULL);
+<a name="line225">225: </a>  }
+<a name="line226">226: </a>  PetscFunctionReturn(0);
+<a name="line227">227: </a>}
+
+<a name="line229">229: </a><strong><font color="#4169E1"><a name="NEPDeflationEvaluateHatFunction"></a>static PetscErrorCode NEPDeflationEvaluateHatFunction(NEP_EXT_OP extop, PetscInt idx,PetscScalar lambda,PetscScalar *y,PetscScalar *hfj,PetscScalar *hfjp,PetscInt ld)</font></strong>
+<a name="line230">230: </a>{
+<a name="line231">231: </a>  PetscInt          i,j,k,off,ini,fin,sz,ldh,n=extop-&gt;n;
+<a name="line232">232: </a>  Mat               A,B;
+<a name="line233">233: </a>  PetscScalar       *array;
+<a name="line234">234: </a>  const PetscScalar *barray;
+
+<a name="line236">236: </a>  <font color="#4169E1">if</font> (idx&lt;0) {ini = 0; fin = extop-&gt;nep-&gt;nt;}
+<a name="line237">237: </a>  <font color="#4169E1">else</font> {ini = idx; fin = idx+1;}
+<a name="line238">238: </a>  <font color="#4169E1">if</font> (y) sz = hfjp?n+2:n+1;
+<a name="line239">239: </a>  <font color="#4169E1">else</font> sz = hfjp?3*n:2*n;
+<a name="line240">240: </a>  ldh = extop-&gt;szd+1;
+<a name="line241">241: </a>  MatCreateSeqDense(PETSC_COMM_SELF,sz,sz,NULL,&amp;A);
+<a name="line242">242: </a>  MatCreateSeqDense(PETSC_COMM_SELF,sz,sz,NULL,&amp;B);
+<a name="line243">243: </a>  MatDenseGetArray(A,&amp;array);
+<a name="line244">244: </a>  <font color="#4169E1">for</font> (j=0;j&lt;n;j++)
+<a name="line245">245: </a>    <font color="#4169E1">for</font> (i=0;i&lt;n;i++) array[j*sz+i] = extop-&gt;H[j*ldh+i];
+<a name="line246">246: </a>  MatDenseRestoreArrayWrite(A,&amp;array);
+<a name="line247">247: </a>  <font color="#4169E1">if</font> (y) {
+<a name="line248">248: </a>    MatDenseGetArray(A,&amp;array);
+<a name="line249">249: </a>    array[extop-&gt;n*(sz+1)] = lambda;
+<a name="line250">250: </a>    <font color="#4169E1">if</font> (hfjp) { array[(n+1)*sz+n] = 1.0; array[(n+1)*sz+n+1] = lambda;}
+<a name="line251">251: </a>    <font color="#4169E1">for</font> (i=0;i&lt;n;i++) array[n*sz+i] = y[i];
+<a name="line252">252: </a>    MatDenseRestoreArrayWrite(A,&amp;array);
+<a name="line253">253: </a>    <font color="#4169E1">for</font> (j=ini;j&lt;fin;j++) {
+<a name="line254">254: </a>      <a href="../../../docs/manualpages/FN/FNEvaluateFunctionMat.html#FNEvaluateFunctionMat">FNEvaluateFunctionMat</a>(extop-&gt;nep-&gt;f[j],A,B);
+<a name="line255">255: </a>      MatDenseGetArrayRead(B,&amp;barray);
+<a name="line256">256: </a>      <font color="#4169E1">for</font> (i=0;i&lt;n;i++) hfj[j*ld+i] = barray[n*sz+i];
+<a name="line257">257: </a>      <font color="#4169E1">if</font> (hfjp) <font color="#4169E1">for</font> (i=0;i&lt;n;i++) hfjp[j*ld+i] = barray[(n+1)*sz+i];
+<a name="line258">258: </a>      MatDenseRestoreArrayRead(B,&amp;barray);
+<a name="line259">259: </a>    }
+<a name="line260">260: </a>  } <font color="#4169E1">else</font> {
+<a name="line261">261: </a>    off = idx&lt;0?ld*n:0;
+<a name="line262">262: </a>    MatDenseGetArray(A,&amp;array);
+<a name="line263">263: </a>    <font color="#4169E1">for</font> (k=0;k&lt;n;k++) {
+<a name="line264">264: </a>      array[(n+k)*sz+k] = 1.0;
+<a name="line265">265: </a>      array[(n+k)*sz+n+k] = lambda;
+<a name="line266">266: </a>    }
+<a name="line267">267: </a>    <font color="#4169E1">if</font> (hfjp) <font color="#4169E1">for</font> (k=0;k&lt;n;k++) {
+<a name="line268">268: </a>      array[(2*n+k)*sz+n+k] = 1.0;
+<a name="line269">269: </a>      array[(2*n+k)*sz+2*n+k] = lambda;
+<a name="line270">270: </a>    }
+<a name="line271">271: </a>    MatDenseRestoreArray(A,&amp;array);
+<a name="line272">272: </a>    <font color="#4169E1">for</font> (j=ini;j&lt;fin;j++) {
+<a name="line273">273: </a>      <a href="../../../docs/manualpages/FN/FNEvaluateFunctionMat.html#FNEvaluateFunctionMat">FNEvaluateFunctionMat</a>(extop-&gt;nep-&gt;f[j],A,B);
+<a name="line274">274: </a>      MatDenseGetArrayRead(B,&amp;barray);
+<a name="line275">275: </a>      <font color="#4169E1">for</font> (i=0;i&lt;n;i++) <font color="#4169E1">for</font> (k=0;k&lt;n;k++) hfj[j*off+i*ld+k] = barray[n*sz+i*sz+k];
+<a name="line276">276: </a>      <font color="#4169E1">if</font> (hfjp) <font color="#4169E1">for</font> (k=0;k&lt;n;k++) <font color="#4169E1">for</font> (i=0;i&lt;n;i++) hfjp[j*off+i*ld+k] = barray[2*n*sz+i*sz+k];
+<a name="line277">277: </a>      MatDenseRestoreArrayRead(B,&amp;barray);
+<a name="line278">278: </a>    }
+<a name="line279">279: </a>  }
+<a name="line280">280: </a>  MatDestroy(&amp;A);
+<a name="line281">281: </a>  MatDestroy(&amp;B);
+<a name="line282">282: </a>  PetscFunctionReturn(0);
+<a name="line283">283: </a>}
+
+<a name="line285">285: </a><strong><font color="#4169E1"><a name="MatMult_NEPDeflation"></a>static PetscErrorCode MatMult_NEPDeflation(Mat M,Vec x,Vec y)</font></strong>
+<a name="line286">286: </a>{
+<a name="line287">287: </a>  NEP_DEF_MATSHELL  *matctx;
+<a name="line288">288: </a>  NEP_EXT_OP        extop;
+<a name="line289">289: </a>  Vec               x1,y1;
+<a name="line290">290: </a>  PetscScalar       *yy,sone=1.0,zero=0.0;
+<a name="line291">291: </a>  const PetscScalar *xx;
+<a name="line292">292: </a>  PetscInt          nloc,i;
+<a name="line293">293: </a>  PetscMPIInt       np;
+<a name="line294">294: </a>  PetscBLASInt      n_,one=1,szd_;
+
+<a name="line296">296: </a>  <a href="http://www.mpich.org/static/docs/latest/www3/MPI_Comm_size.html#MPI_Comm_size">MPI_Comm_size</a>(PetscObjectComm((PetscObject)M),&amp;np);
+<a name="line297">297: </a>  MatShellGetContext(M,&amp;matctx);
+<a name="line298">298: </a>  extop = matctx-&gt;extop;
+<a name="line299">299: </a>  <font color="#4169E1">if</font> (extop-&gt;ref) VecZeroEntries(y);
+<a name="line300">300: </a>  <font color="#4169E1">if</font> (extop-&gt;szd) {
+<a name="line301">301: </a>    x1 = matctx-&gt;w[0]; y1 = matctx-&gt;w[1];
+<a name="line302">302: </a>    VecGetArrayRead(x,&amp;xx);
+<a name="line303">303: </a>    VecPlaceArray(x1,xx);
+<a name="line304">304: </a>    VecGetArray(y,&amp;yy);
+<a name="line305">305: </a>    VecPlaceArray(y1,yy);
+<a name="line306">306: </a>    MatMult(matctx-&gt;T,x1,y1);
+<a name="line307">307: </a>    <font color="#4169E1">if</font> (!extop-&gt;ref &amp;&amp; extop-&gt;n) {
+<a name="line308">308: </a>      VecGetLocalSize(x1,&amp;nloc);
+<a name="line309">309: </a>      <font color="#B22222">/* copy for avoiding warning of constant array xx */</font>
+<a name="line310">310: </a>      <font color="#4169E1">for</font> (i=0;i&lt;extop-&gt;n;i++) matctx-&gt;work[i] = xx[nloc+i]*PetscSqrtReal(np);
+<a name="line311">311: </a>      <a href="../../../docs/manualpages/BV/BVMultVec.html#BVMultVec">BVMultVec</a>(matctx-&gt;U,1.0,1.0,y1,matctx-&gt;work);
+<a name="line312">312: </a>      <a href="../../../docs/manualpages/BV/BVDotVec.html#BVDotVec">BVDotVec</a>(extop-&gt;X,x1,matctx-&gt;work);
+<a name="line313">313: </a>      PetscBLASIntCast(extop-&gt;n,&amp;n_);
+<a name="line314">314: </a>      PetscBLASIntCast(extop-&gt;szd,&amp;szd_);
+<a name="line315">315: </a>      PetscStackCallBLAS(<font color="#666666">"BLASgemv"</font>,BLASgemv_(<font color="#666666">"N"</font>,&amp;n_,&amp;n_,&amp;sone,matctx-&gt;A,&amp;szd_,matctx-&gt;work,&amp;one,&amp;zero,yy+nloc,&amp;one));
+<a name="line316">316: </a>      PetscStackCallBLAS(<font color="#666666">"BLASgemv"</font>,BLASgemv_(<font color="#666666">"N"</font>,&amp;n_,&amp;n_,&amp;sone,matctx-&gt;B,&amp;szd_,xx+nloc,&amp;one,&amp;sone,yy+nloc,&amp;one));
+<a name="line317">317: </a>      <font color="#4169E1">for</font> (i=0;i&lt;extop-&gt;n;i++) yy[nloc+i] /= PetscSqrtReal(np);
+<a name="line318">318: </a>    }
+<a name="line319">319: </a>    VecResetArray(x1);
+<a name="line320">320: </a>    VecRestoreArrayRead(x,&amp;xx);
+<a name="line321">321: </a>    VecResetArray(y1);
+<a name="line322">322: </a>    VecRestoreArray(y,&amp;yy);
+<a name="line323">323: </a>  } <font color="#4169E1">else</font> MatMult(matctx-&gt;T,x,y);
+<a name="line324">324: </a>  PetscFunctionReturn(0);
+<a name="line325">325: </a>}
+
+<a name="line327">327: </a><strong><font color="#4169E1"><a name="MatCreateVecs_NEPDeflation"></a>static PetscErrorCode MatCreateVecs_NEPDeflation(Mat M,Vec *right,Vec *left)</font></strong>
+<a name="line328">328: </a>{
+<a name="line329">329: </a>  NEP_DEF_MATSHELL *matctx;
+
+<a name="line331">331: </a>  MatShellGetContext(M,&amp;matctx);
+<a name="line332">332: </a>  <font color="#4169E1">if</font> (right) VecDuplicate(matctx-&gt;w[0],right);
+<a name="line333">333: </a>  <font color="#4169E1">if</font> (left) VecDuplicate(matctx-&gt;w[0],left);
+<a name="line334">334: </a>  PetscFunctionReturn(0);
+<a name="line335">335: </a>}
+
+<a name="line337">337: </a><strong><font color="#4169E1"><a name="MatDestroy_NEPDeflation"></a>static PetscErrorCode MatDestroy_NEPDeflation(Mat M)</font></strong>
+<a name="line338">338: </a>{
+<a name="line339">339: </a>  NEP_DEF_MATSHELL *matctx;
+
+<a name="line341">341: </a>  MatShellGetContext(M,&amp;matctx);
+<a name="line342">342: </a>  <font color="#4169E1">if</font> (matctx-&gt;extop-&gt;szd) {
+<a name="line343">343: </a>    <a href="../../../docs/manualpages/BV/BVDestroy.html#BVDestroy">BVDestroy</a>(&amp;matctx-&gt;U);
+<a name="line344">344: </a>    PetscFree2(matctx-&gt;hfj,matctx-&gt;work);
+<a name="line345">345: </a>    PetscFree2(matctx-&gt;A,matctx-&gt;B);
+<a name="line346">346: </a>    VecDestroy(&amp;matctx-&gt;w[0]);
+<a name="line347">347: </a>    VecDestroy(&amp;matctx-&gt;w[1]);
+<a name="line348">348: </a>  }
+<a name="line349">349: </a>  <font color="#4169E1">if</font> (matctx-&gt;P != matctx-&gt;T) MatDestroy(&amp;matctx-&gt;P);
+<a name="line350">350: </a>  MatDestroy(&amp;matctx-&gt;T);
+<a name="line351">351: </a>  PetscFree(matctx);
+<a name="line352">352: </a>  PetscFunctionReturn(0);
+<a name="line353">353: </a>}
+
+<a name="line355">355: </a><strong><font color="#4169E1"><a name="NEPDeflationEvaluateBasis"></a>static PetscErrorCode NEPDeflationEvaluateBasis(NEP_EXT_OP extop,PetscScalar lambda,PetscInt n,PetscScalar *val,PetscBool jacobian)</font></strong>
+<a name="line356">356: </a>{
+<a name="line357">357: </a>  PetscScalar p;
+<a name="line358">358: </a>  PetscInt    i;
+
+<a name="line360">360: </a>  <font color="#4169E1">if</font> (!jacobian) {
+<a name="line361">361: </a>    val[0] = 1.0;
+<a name="line362">362: </a>    <font color="#4169E1">for</font> (i=1;i&lt;extop-&gt;n;i++) val[i] = val[i-1]*(lambda-extop-&gt;bc[i-1]);
+<a name="line363">363: </a>  } <font color="#4169E1">else</font> {
+<a name="line364">364: </a>    val[0] = 0.0;
+<a name="line365">365: </a>    p = 1.0;
+<a name="line366">366: </a>    <font color="#4169E1">for</font> (i=1;i&lt;extop-&gt;n;i++) {
+<a name="line367">367: </a>      val[i] = val[i-1]*(lambda-extop-&gt;bc[i-1])+p;
+<a name="line368">368: </a>      p *= (lambda-extop-&gt;bc[i-1]);
+<a name="line369">369: </a>    }
+<a name="line370">370: </a>  }
+<a name="line371">371: </a>  PetscFunctionReturn(0);
+<a name="line372">372: </a>}
+
+<a name="line374">374: </a><strong><font color="#4169E1"><a name="NEPDeflationComputeShellMat"></a>static PetscErrorCode NEPDeflationComputeShellMat(NEP_EXT_OP extop,PetscScalar lambda,PetscBool jacobian,Mat *M)</font></strong>
+<a name="line375">375: </a>{
+<a name="line376">376: </a>  NEP_DEF_MATSHELL *matctx,*matctxC;
+<a name="line377">377: </a>  PetscInt         nloc,mloc,n=extop-&gt;n,j,i,szd=extop-&gt;szd,ldh=szd+1,k;
+<a name="line378">378: </a>  Mat              F,Mshell,Mcomp;
+<a name="line379">379: </a>  PetscBool        ini=PETSC_FALSE;
+<a name="line380">380: </a>  PetscScalar      *hf,*hfj,*hfjp,sone=1.0,*hH,*hHprev,*pts,*B,*A,*Hj=extop-&gt;Hj,*basisv,zero=0.0;
+<a name="line381">381: </a>  PetscBLASInt     n_,info,szd_;
+
+<a name="line383">383: </a>  <font color="#4169E1">if</font> (!M) Mshell = jacobian?extop-&gt;MJ:extop-&gt;MF;
+<a name="line384">384: </a>  <font color="#4169E1">else</font> Mshell = *M;
+<a name="line385">385: </a>  Mcomp = jacobian?extop-&gt;MF:extop-&gt;MJ;
+<a name="line386">386: </a>  <font color="#4169E1">if</font> (!Mshell) {
+<a name="line387">387: </a>    ini = PETSC_TRUE;
+<a name="line388">388: </a>    PetscNew(&amp;matctx);
+<a name="line389">389: </a>    MatGetLocalSize(extop-&gt;nep-&gt;function,&amp;mloc,&amp;nloc);
+<a name="line390">390: </a>    nloc += szd; mloc += szd;
+<a name="line391">391: </a>    MatCreateShell(PetscObjectComm((PetscObject)extop-&gt;nep),nloc,mloc,PETSC_DETERMINE,PETSC_DETERMINE,matctx,&amp;Mshell);
+<a name="line392">392: </a>    MatShellSetOperation(Mshell,MATOP_MULT,(void(*)(void))MatMult_NEPDeflation);
+<a name="line393">393: </a>    MatShellSetOperation(Mshell,MATOP_CREATE_VECS,(void(*)(void))MatCreateVecs_NEPDeflation);
+<a name="line394">394: </a>    MatShellSetOperation(Mshell,MATOP_DESTROY,(void(*)(void))MatDestroy_NEPDeflation);
+<a name="line395">395: </a>    matctx-&gt;nep = extop-&gt;nep;
+<a name="line396">396: </a>    matctx-&gt;extop = extop;
+<a name="line397">397: </a>    <font color="#4169E1">if</font> (!M) {
+<a name="line398">398: </a>      <font color="#4169E1">if</font> (jacobian) { matctx-&gt;jacob = PETSC_TRUE; matctx-&gt;T = extop-&gt;nep-&gt;jacobian; extop-&gt;MJ = Mshell; }
+<a name="line399">399: </a>      <font color="#4169E1">else</font> { matctx-&gt;jacob = PETSC_FALSE; matctx-&gt;T = extop-&gt;nep-&gt;function; extop-&gt;MF = Mshell; }
+<a name="line400">400: </a>      PetscObjectReference((PetscObject)matctx-&gt;T);
+<a name="line401">401: </a>      <font color="#4169E1">if</font> (!jacobian) {
+<a name="line402">402: </a>        <font color="#4169E1">if</font> (extop-&gt;nep-&gt;function_pre &amp;&amp; extop-&gt;nep-&gt;function_pre != extop-&gt;nep-&gt;function) {
+<a name="line403">403: </a>          matctx-&gt;P = extop-&gt;nep-&gt;function_pre;
+<a name="line404">404: </a>          PetscObjectReference((PetscObject)matctx-&gt;P);
+<a name="line405">405: </a>        } <font color="#4169E1">else</font> matctx-&gt;P = matctx-&gt;T;
+<a name="line406">406: </a>      }
+<a name="line407">407: </a>    } <font color="#4169E1">else</font> {
+<a name="line408">408: </a>      matctx-&gt;jacob = jacobian;
+<a name="line409">409: </a>      MatDuplicate(jacobian?extop-&gt;nep-&gt;jacobian:extop-&gt;nep-&gt;function,MAT_DO_NOT_COPY_VALUES,&amp;matctx-&gt;T);
+<a name="line410">410: </a>      *M = Mshell;
+<a name="line411">411: </a>      <font color="#4169E1">if</font> (!jacobian) {
+<a name="line412">412: </a>        <font color="#4169E1">if</font> (extop-&gt;nep-&gt;function_pre &amp;&amp; extop-&gt;nep-&gt;function_pre != extop-&gt;nep-&gt;function) MatDuplicate(extop-&gt;nep-&gt;function_pre,MAT_DO_NOT_COPY_VALUES,&amp;matctx-&gt;P);
+<a name="line413">413: </a>        <font color="#4169E1">else</font> matctx-&gt;P = matctx-&gt;T;
+<a name="line414">414: </a>      }
+<a name="line415">415: </a>    }
+<a name="line416">416: </a>    <font color="#4169E1">if</font> (szd) {
+<a name="line417">417: </a>      <a href="../../../docs/manualpages/BV/BVCreateVec.html#BVCreateVec">BVCreateVec</a>(extop-&gt;nep-&gt;V,matctx-&gt;w);
+<a name="line418">418: </a>      VecDuplicate(matctx-&gt;w[0],matctx-&gt;w+1);
+<a name="line419">419: </a>      <a href="../../../docs/manualpages/BV/BVDuplicateResize.html#BVDuplicateResize">BVDuplicateResize</a>(extop-&gt;nep-&gt;V,szd,&amp;matctx-&gt;U);
+<a name="line420">420: </a>      PetscMalloc2(extop-&gt;simpU?2*(szd)*(szd):2*(szd)*(szd)*extop-&gt;nep-&gt;nt,&amp;matctx-&gt;hfj,szd,&amp;matctx-&gt;work);
+<a name="line421">421: </a>      PetscMalloc2(szd*szd,&amp;matctx-&gt;A,szd*szd,&amp;matctx-&gt;B);
+<a name="line422">422: </a>    }
+<a name="line423">423: </a>  } <font color="#4169E1">else</font> MatShellGetContext(Mshell,&amp;matctx);
+<a name="line424">424: </a>  <font color="#4169E1">if</font> (ini || matctx-&gt;theta != lambda || matctx-&gt;n != extop-&gt;n) {
+<a name="line425">425: </a>    <font color="#4169E1">if</font> (ini || matctx-&gt;theta != lambda) {
+<a name="line426">426: </a>      <font color="#4169E1">if</font> (jacobian) <a href="../../../docs/manualpages/NEP/NEPComputeJacobian.html#NEPComputeJacobian">NEPComputeJacobian</a>(extop-&gt;nep,lambda,matctx-&gt;T);
+<a name="line427">427: </a>      <font color="#4169E1">else</font> <a href="../../../docs/manualpages/NEP/NEPComputeFunction.html#NEPComputeFunction">NEPComputeFunction</a>(extop-&gt;nep,lambda,matctx-&gt;T,matctx-&gt;P);
+<a name="line428">428: </a>    }
+<a name="line429">429: </a>    <font color="#4169E1">if</font> (n) {
+<a name="line430">430: </a>      matctx-&gt;hfjset = PETSC_FALSE;
+<a name="line431">431: </a>      <font color="#4169E1">if</font> (!extop-&gt;simpU) {
+<a name="line432">432: </a>        <font color="#B22222">/* likely hfjp has been already computed */</font>
+<a name="line433">433: </a>        <font color="#4169E1">if</font> (Mcomp) {
+<a name="line434">434: </a>          MatShellGetContext(Mcomp,&amp;matctxC);
+<a name="line435">435: </a>          <font color="#4169E1">if</font> (matctxC-&gt;hfjset &amp;&amp; matctxC-&gt;theta == lambda &amp;&amp; matctxC-&gt;n == extop-&gt;n) {
+<a name="line436">436: </a>            PetscArraycpy(matctx-&gt;hfj,matctxC-&gt;hfj,2*extop-&gt;szd*extop-&gt;szd*extop-&gt;nep-&gt;nt);
+<a name="line437">437: </a>            matctx-&gt;hfjset = PETSC_TRUE;
+<a name="line438">438: </a>          }
+<a name="line439">439: </a>        }
+<a name="line440">440: </a>        hfj = matctx-&gt;hfj; hfjp = matctx-&gt;hfj+extop-&gt;szd*extop-&gt;szd*extop-&gt;nep-&gt;nt;
+<a name="line441">441: </a>        <font color="#4169E1">if</font> (!matctx-&gt;hfjset) {
+<a name="line442">442: </a>          NEPDeflationEvaluateHatFunction(extop,-1,lambda,NULL,hfj,hfjp,n);
+<a name="line443">443: </a>          matctx-&gt;hfjset = PETSC_TRUE;
+<a name="line444">444: </a>        }
+<a name="line445">445: </a>        <a href="../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(matctx-&gt;U,0,n);
+<a name="line446">446: </a>        hf = jacobian?hfjp:hfj;
+<a name="line447">447: </a>        MatCreateSeqDense(PETSC_COMM_SELF,n,n,hf,&amp;F);
+<a name="line448">448: </a>        <a href="../../../docs/manualpages/BV/BVMatMult.html#BVMatMult">BVMatMult</a>(extop-&gt;X,extop-&gt;nep-&gt;A[0],matctx-&gt;U);
+<a name="line449">449: </a>        <a href="../../../docs/manualpages/BV/BVMultInPlace.html#BVMultInPlace">BVMultInPlace</a>(matctx-&gt;U,F,0,n);
+<a name="line450">450: </a>        <a href="../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(extop-&gt;W,0,extop-&gt;n);
+<a name="line451">451: </a>        <font color="#4169E1">for</font> (j=1;j&lt;extop-&gt;nep-&gt;nt;j++) {
+<a name="line452">452: </a>          <a href="../../../docs/manualpages/BV/BVMatMult.html#BVMatMult">BVMatMult</a>(extop-&gt;X,extop-&gt;nep-&gt;A[j],extop-&gt;W);
+<a name="line453">453: </a>          MatDensePlaceArray(F,hf+j*n*n);
+<a name="line454">454: </a>          <a href="../../../docs/manualpages/BV/BVMult.html#BVMult">BVMult</a>(matctx-&gt;U,1.0,1.0,extop-&gt;W,F);
+<a name="line455">455: </a>          MatDenseResetArray(F);
+<a name="line456">456: </a>        }
+<a name="line457">457: </a>        MatDestroy(&amp;F);
+<a name="line458">458: </a>      } <font color="#4169E1">else</font> {
+<a name="line459">459: </a>        hfj = matctx-&gt;hfj;
+<a name="line460">460: </a>        <a href="../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(matctx-&gt;U,0,n);
+<a name="line461">461: </a>        <a href="../../../docs/manualpages/BV/BVMatMult.html#BVMatMult">BVMatMult</a>(extop-&gt;X,matctx-&gt;T,matctx-&gt;U);
+<a name="line462">462: </a>        <font color="#4169E1">for</font> (j=0;j&lt;n;j++) {
+<a name="line463">463: </a>          <font color="#4169E1">for</font> (i=0;i&lt;n;i++) hfj[j*n+i] = -extop-&gt;H[j*ldh+i];
+<a name="line464">464: </a>          hfj[j*(n+1)] += lambda;
+<a name="line465">465: </a>        }
+<a name="line466">466: </a>        PetscBLASIntCast(n,&amp;n_);
+<a name="line467">467: </a>        PetscFPTrapPush(PETSC_FP_TRAP_OFF);
+<a name="line468">468: </a>        PetscStackCallBLAS(<font color="#666666">"LAPACKtrtri"</font>,LAPACKtrtri_(<font color="#666666">"U"</font>,<font color="#666666">"N"</font>,&amp;n_,hfj,&amp;n_,&amp;info));
+<a name="line469">469: </a>        PetscFPTrapPop();
+<a name="line470">470: </a>        SlepcCheckLapackInfo(<font color="#666666">"trtri"</font>,info);
+<a name="line471">471: </a>        MatCreateSeqDense(PETSC_COMM_SELF,n,n,hfj,&amp;F);
+<a name="line472">472: </a>        <a href="../../../docs/manualpages/BV/BVMultInPlace.html#BVMultInPlace">BVMultInPlace</a>(matctx-&gt;U,F,0,n);
+<a name="line473">473: </a>        <font color="#4169E1">if</font> (jacobian) {
+<a name="line474">474: </a>          NEPDeflationComputeFunction(extop,lambda,NULL);
+<a name="line475">475: </a>          MatShellGetContext(extop-&gt;MF,&amp;matctxC);
+<a name="line476">476: </a>          <a href="../../../docs/manualpages/BV/BVMult.html#BVMult">BVMult</a>(matctx-&gt;U,-1.0,1.0,matctxC-&gt;U,F);
+<a name="line477">477: </a>        }
+<a name="line478">478: </a>        MatDestroy(&amp;F);
+<a name="line479">479: </a>      }
+<a name="line480">480: </a>      PetscCalloc3(n,&amp;basisv,szd*szd,&amp;hH,szd*szd,&amp;hHprev);
+<a name="line481">481: </a>      NEPDeflationEvaluateBasis(extop,lambda,n,basisv,jacobian);
+<a name="line482">482: </a>      A = matctx-&gt;A;
+<a name="line483">483: </a>      PetscArrayzero(A,szd*szd);
+<a name="line484">484: </a>      <font color="#4169E1">if</font> (!jacobian) <font color="#4169E1">for</font> (i=0;i&lt;n;i++) A[i*(szd+1)] = 1.0;
+<a name="line485">485: </a>      <font color="#4169E1">for</font> (j=0;j&lt;n;j++)
+<a name="line486">486: </a>        <font color="#4169E1">for</font> (i=0;i&lt;n;i++)
+<a name="line487">487: </a>          <font color="#4169E1">for</font> (k=1;k&lt;extop-&gt;midx;k++) A[j*szd+i] += basisv[k]*PetscConj(Hj[k*szd*szd+i*szd+j]);
+<a name="line488">488: </a>      PetscBLASIntCast(n,&amp;n_);
+<a name="line489">489: </a>      PetscBLASIntCast(szd,&amp;szd_);
+<a name="line490">490: </a>      B = matctx-&gt;B;
+<a name="line491">491: </a>      PetscArrayzero(B,szd*szd);
+<a name="line492">492: </a>      <font color="#4169E1">for</font> (i=1;i&lt;extop-&gt;midx;i++) {
+<a name="line493">493: </a>        NEPDeflationEvaluateBasisMat(extop,i,PETSC_TRUE,basisv,hH,hHprev);
+<a name="line494">494: </a>        PetscStackCallBLAS(<font color="#666666">"BLASgemm"</font>,BLASgemm_(<font color="#666666">"N"</font>,<font color="#666666">"N"</font>,&amp;n_,&amp;n_,&amp;n_,&amp;sone,extop-&gt;XpX,&amp;szd_,hH,&amp;szd_,&amp;zero,hHprev,&amp;szd_));
+<a name="line495">495: </a>        PetscStackCallBLAS(<font color="#666666">"BLASgemm"</font>,BLASgemm_(<font color="#666666">"C"</font>,<font color="#666666">"N"</font>,&amp;n_,&amp;n_,&amp;n_,&amp;sone,extop-&gt;Hj+szd*szd*i,&amp;szd_,hHprev,&amp;szd_,&amp;sone,B,&amp;szd_));
+<a name="line496">496: </a>        pts = hHprev; hHprev = hH; hH = pts;
+<a name="line497">497: </a>      }
+<a name="line498">498: </a>      PetscFree3(basisv,hH,hHprev);
+<a name="line499">499: </a>    }
+<a name="line500">500: </a>    matctx-&gt;theta = lambda;
+<a name="line501">501: </a>    matctx-&gt;n = extop-&gt;n;
+<a name="line502">502: </a>  }
+<a name="line503">503: </a>  PetscFunctionReturn(0);
+<a name="line504">504: </a>}
+
+<a name="line506">506: </a><strong><font color="#4169E1"><a name="NEPDeflationComputeFunction"></a>PetscErrorCode NEPDeflationComputeFunction(NEP_EXT_OP extop,PetscScalar lambda,Mat *F)</font></strong>
+<a name="line507">507: </a>{
+<a name="line508">508: </a>  NEPDeflationComputeShellMat(extop,lambda,PETSC_FALSE,NULL);
+<a name="line509">509: </a>  <font color="#4169E1">if</font> (F) *F = extop-&gt;MF;
+<a name="line510">510: </a>  PetscFunctionReturn(0);
+<a name="line511">511: </a>}
+
+<a name="line513">513: </a><strong><font color="#4169E1"><a name="NEPDeflationComputeJacobian"></a>PetscErrorCode NEPDeflationComputeJacobian(NEP_EXT_OP extop,PetscScalar lambda,Mat *J)</font></strong>
+<a name="line514">514: </a>{
+<a name="line515">515: </a>  NEPDeflationComputeShellMat(extop,lambda,PETSC_TRUE,NULL);
+<a name="line516">516: </a>  <font color="#4169E1">if</font> (J) *J = extop-&gt;MJ;
+<a name="line517">517: </a>  PetscFunctionReturn(0);
+<a name="line518">518: </a>}
+
+<a name="line520">520: </a><strong><font color="#4169E1"><a name="NEPDeflationSolveSetUp"></a>PetscErrorCode NEPDeflationSolveSetUp(NEP_EXT_OP extop,PetscScalar lambda)</font></strong>
+<a name="line521">521: </a>{
+<a name="line522">522: </a>  NEP_DEF_MATSHELL  *matctx;
+<a name="line523">523: </a>  NEP_DEF_FUN_SOLVE solve;
+<a name="line524">524: </a>  PetscInt          i,j,n=extop-&gt;n;
+<a name="line525">525: </a>  Vec               u,tu;
+<a name="line526">526: </a>  Mat               F;
+<a name="line527">527: </a>  PetscScalar       snone=-1.0,sone=1.0;
+<a name="line528">528: </a>  PetscBLASInt      n_,szd_,ldh_,*p,info;
+<a name="line529">529: </a>  Mat               Mshell;
+
+<a name="line531">531: </a>  solve = extop-&gt;solve;
+<a name="line532">532: </a>  <font color="#4169E1">if</font> (lambda!=solve-&gt;theta || n!=solve-&gt;n) {
+<a name="line533">533: </a>    NEPDeflationComputeShellMat(extop,lambda,PETSC_FALSE,solve-&gt;sincf?NULL:&amp;solve-&gt;T);
+<a name="line534">534: </a>    Mshell = (solve-&gt;sincf)?extop-&gt;MF:solve-&gt;T;
+<a name="line535">535: </a>    MatShellGetContext(Mshell,&amp;matctx);
+<a name="line536">536: </a>    NEP_KSPSetOperators(solve-&gt;ksp,matctx-&gt;T,matctx-&gt;P);
+<a name="line537">537: </a>    <font color="#4169E1">if</font> (!extop-&gt;ref &amp;&amp; n) {
+<a name="line538">538: </a>      PetscBLASIntCast(n,&amp;n_);
+<a name="line539">539: </a>      PetscBLASIntCast(extop-&gt;szd,&amp;szd_);
+<a name="line540">540: </a>      PetscBLASIntCast(extop-&gt;szd+1,&amp;ldh_);
+<a name="line541">541: </a>      <font color="#4169E1">if</font> (!extop-&gt;simpU) {
+<a name="line542">542: </a>        <a href="../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(solve-&gt;T_1U,0,n);
+<a name="line543">543: </a>        <font color="#4169E1">for</font> (i=0;i&lt;n;i++) {
+<a name="line544">544: </a>          <a href="../../../docs/manualpages/BV/BVGetColumn.html#BVGetColumn">BVGetColumn</a>(matctx-&gt;U,i,&amp;u);
+<a name="line545">545: </a>          <a href="../../../docs/manualpages/BV/BVGetColumn.html#BVGetColumn">BVGetColumn</a>(solve-&gt;T_1U,i,&amp;tu);
+<a name="line546">546: </a>          KSPSolve(solve-&gt;ksp,u,tu);
+<a name="line547">547: </a>          <a href="../../../docs/manualpages/BV/BVRestoreColumn.html#BVRestoreColumn">BVRestoreColumn</a>(solve-&gt;T_1U,i,&amp;tu);
+<a name="line548">548: </a>          <a href="../../../docs/manualpages/BV/BVRestoreColumn.html#BVRestoreColumn">BVRestoreColumn</a>(matctx-&gt;U,i,&amp;u);
+<a name="line549">549: </a>        }
+<a name="line550">550: </a>        MatCreateSeqDense(PETSC_COMM_SELF,n,n,solve-&gt;work,&amp;F);
+<a name="line551">551: </a>        <a href="../../../docs/manualpages/BV/BVDot.html#BVDot">BVDot</a>(solve-&gt;T_1U,extop-&gt;X,F);
+<a name="line552">552: </a>        MatDestroy(&amp;F);
+<a name="line553">553: </a>      } <font color="#4169E1">else</font> {
+<a name="line554">554: </a>        <font color="#4169E1">for</font> (j=0;j&lt;n;j++)
+<a name="line555">555: </a>          <font color="#4169E1">for</font> (i=0;i&lt;n;i++) solve-&gt;work[j*n+i] = extop-&gt;XpX[j*extop-&gt;szd+i];
+<a name="line556">556: </a>        <font color="#4169E1">for</font> (i=0;i&lt;n;i++) extop-&gt;H[i*ldh_+i] -= lambda;
+<a name="line557">557: </a>        PetscStackCallBLAS(<font color="#666666">"BLAStrsm"</font>,BLAStrsm_(<font color="#666666">"R"</font>,<font color="#666666">"U"</font>,<font color="#666666">"N"</font>,<font color="#666666">"N"</font>,&amp;n_,&amp;n_,&amp;snone,extop-&gt;H,&amp;ldh_,solve-&gt;work,&amp;n_));
+<a name="line558">558: </a>        <font color="#4169E1">for</font> (i=0;i&lt;n;i++) extop-&gt;H[i*ldh_+i] += lambda;
+<a name="line559">559: </a>      }
+<a name="line560">560: </a>      PetscArraycpy(solve-&gt;M,matctx-&gt;B,extop-&gt;szd*extop-&gt;szd);
+<a name="line561">561: </a>      PetscStackCallBLAS(<font color="#666666">"BLASgemm"</font>,BLASgemm_(<font color="#666666">"N"</font>,<font color="#666666">"N"</font>,&amp;n_,&amp;n_,&amp;n_,&amp;snone,matctx-&gt;A,&amp;szd_,solve-&gt;work,&amp;n_,&amp;sone,solve-&gt;M,&amp;szd_));
+<a name="line562">562: </a>      PetscMalloc1(n,&amp;p);
+<a name="line563">563: </a>      PetscFPTrapPush(PETSC_FP_TRAP_OFF);
+<a name="line564">564: </a>      PetscStackCallBLAS(<font color="#666666">"LAPACKgetrf"</font>,LAPACKgetrf_(&amp;n_,&amp;n_,solve-&gt;M,&amp;szd_,p,&amp;info));
+<a name="line565">565: </a>      SlepcCheckLapackInfo(<font color="#666666">"getrf"</font>,info);
+<a name="line566">566: </a>      PetscStackCallBLAS(<font color="#666666">"LAPACKgetri"</font>,LAPACKgetri_(&amp;n_,solve-&gt;M,&amp;szd_,p,solve-&gt;work,&amp;n_,&amp;info));
+<a name="line567">567: </a>      SlepcCheckLapackInfo(<font color="#666666">"getri"</font>,info);
+<a name="line568">568: </a>      PetscFPTrapPop();
+<a name="line569">569: </a>      PetscFree(p);
+<a name="line570">570: </a>    }
+<a name="line571">571: </a>    solve-&gt;theta = lambda;
+<a name="line572">572: </a>    solve-&gt;n = n;
+<a name="line573">573: </a>  }
+<a name="line574">574: </a>  PetscFunctionReturn(0);
+<a name="line575">575: </a>}
+
+<a name="line577">577: </a><strong><font color="#4169E1"><a name="NEPDeflationFunctionSolve"></a>PetscErrorCode NEPDeflationFunctionSolve(NEP_EXT_OP extop,Vec b,Vec x)</font></strong>
+<a name="line578">578: </a>{
+<a name="line579">579: </a>  Vec               b1,x1;
+<a name="line580">580: </a>  PetscScalar       *xx,*bb,*x2,*b2,*w,*w2,snone=-1.0,sone=1.0,zero=0.0;
+<a name="line581">581: </a>  NEP_DEF_MATSHELL  *matctx;
+<a name="line582">582: </a>  NEP_DEF_FUN_SOLVE solve=extop-&gt;solve;
+<a name="line583">583: </a>  PetscBLASInt      one=1,szd_,n_,ldh_;
+<a name="line584">584: </a>  PetscInt          nloc,i;
+<a name="line585">585: </a>  PetscMPIInt       np,count;
+
+<a name="line587">587: </a>  <font color="#4169E1">if</font> (extop-&gt;ref) VecZeroEntries(x);
+<a name="line588">588: </a>  <font color="#4169E1">if</font> (extop-&gt;szd) {
+<a name="line589">589: </a>    x1 = solve-&gt;w[0]; b1 = solve-&gt;w[1];
+<a name="line590">590: </a>    VecGetArray(x,&amp;xx);
+<a name="line591">591: </a>    VecPlaceArray(x1,xx);
+<a name="line592">592: </a>    VecGetArray(b,&amp;bb);
+<a name="line593">593: </a>    VecPlaceArray(b1,bb);
+<a name="line594">594: </a>  } <font color="#4169E1">else</font> {
+<a name="line595">595: </a>    b1 = b; x1 = x;
+<a name="line596">596: </a>  }
+<a name="line597">597: </a>  KSPSolve(extop-&gt;solve-&gt;ksp,b1,x1);
+<a name="line598">598: </a>  <font color="#4169E1">if</font> (!extop-&gt;ref &amp;&amp; extop-&gt;n &amp;&amp; extop-&gt;szd) {
+<a name="line599">599: </a>    PetscBLASIntCast(extop-&gt;szd,&amp;szd_);
+<a name="line600">600: </a>    PetscBLASIntCast(extop-&gt;n,&amp;n_);
+<a name="line601">601: </a>    PetscBLASIntCast(extop-&gt;szd+1,&amp;ldh_);
+<a name="line602">602: </a>    <a href="../../../docs/manualpages/BV/BVGetSizes.html#BVGetSizes">BVGetSizes</a>(extop-&gt;nep-&gt;V,&amp;nloc,NULL,NULL);
+<a name="line603">603: </a>    PetscMalloc2(extop-&gt;n,&amp;b2,extop-&gt;n,&amp;x2);
+<a name="line604">604: </a>    <a href="http://www.mpich.org/static/docs/latest/www3/MPI_Comm_size.html#MPI_Comm_size">MPI_Comm_size</a>(PetscObjectComm((PetscObject)b),&amp;np);
+<a name="line605">605: </a>    <font color="#4169E1">for</font> (i=0;i&lt;extop-&gt;n;i++) b2[i] = bb[nloc+i]*PetscSqrtReal(np);
+<a name="line606">606: </a>    w = solve-&gt;work; w2 = solve-&gt;work+extop-&gt;n;
+<a name="line607">607: </a>    MatShellGetContext(solve-&gt;sincf?extop-&gt;MF:solve-&gt;T,&amp;matctx);
+<a name="line608">608: </a>    PetscArraycpy(w2,b2,extop-&gt;n);
+<a name="line609">609: </a>    <a href="../../../docs/manualpages/BV/BVDotVec.html#BVDotVec">BVDotVec</a>(extop-&gt;X,x1,w);
+<a name="line610">610: </a>    PetscStackCallBLAS(<font color="#666666">"BLASgemv"</font>,BLASgemv_(<font color="#666666">"N"</font>,&amp;n_,&amp;n_,&amp;snone,matctx-&gt;A,&amp;szd_,w,&amp;one,&amp;sone,w2,&amp;one));
+<a name="line611">611: </a>    PetscStackCallBLAS(<font color="#666666">"BLASgemv"</font>,BLASgemv_(<font color="#666666">"N"</font>,&amp;n_,&amp;n_,&amp;sone,solve-&gt;M,&amp;szd_,w2,&amp;one,&amp;zero,x2,&amp;one));
+<a name="line612">612: </a>    <font color="#4169E1">if</font> (extop-&gt;simpU) {
+<a name="line613">613: </a>      <font color="#4169E1">for</font> (i=0;i&lt;extop-&gt;n;i++) extop-&gt;H[i+i*(extop-&gt;szd+1)] -= solve-&gt;theta;
+<a name="line614">614: </a>      <font color="#4169E1">for</font> (i=0;i&lt;extop-&gt;n;i++) w[i] = x2[i];
+<a name="line615">615: </a>      PetscStackCallBLAS(<font color="#666666">"BLAStrsm"</font>,BLAStrsm_(<font color="#666666">"L"</font>,<font color="#666666">"U"</font>,<font color="#666666">"N"</font>,<font color="#666666">"N"</font>,&amp;n_,&amp;one,&amp;snone,extop-&gt;H,&amp;ldh_,w,&amp;n_));
+<a name="line616">616: </a>      <font color="#4169E1">for</font> (i=0;i&lt;extop-&gt;n;i++) extop-&gt;H[i+i*(extop-&gt;szd+1)] += solve-&gt;theta;
+<a name="line617">617: </a>      <a href="../../../docs/manualpages/BV/BVMultVec.html#BVMultVec">BVMultVec</a>(extop-&gt;X,-1.0,1.0,x1,w);
+<a name="line618">618: </a>    } <font color="#4169E1">else</font> <a href="../../../docs/manualpages/BV/BVMultVec.html#BVMultVec">BVMultVec</a>(solve-&gt;T_1U,-1.0,1.0,x1,x2);
+<a name="line619">619: </a>    <font color="#4169E1">for</font> (i=0;i&lt;extop-&gt;n;i++) xx[i+nloc] = x2[i]/PetscSqrtReal(np);
+<a name="line620">620: </a>    PetscMPIIntCast(extop-&gt;n,&amp;count);
+<a name="line621">621: </a>    <a href="http://www.mpich.org/static/docs/latest/www3/MPI_Bcast.html#MPI_Bcast">MPI_Bcast</a>(xx+nloc,count,MPIU_SCALAR,np-1,PetscObjectComm((PetscObject)b));
+<a name="line622">622: </a>  }
+<a name="line623">623: </a>  <font color="#4169E1">if</font> (extop-&gt;szd) {
+<a name="line624">624: </a>    VecResetArray(x1);
+<a name="line625">625: </a>    VecRestoreArray(x,&amp;xx);
+<a name="line626">626: </a>    VecResetArray(b1);
+<a name="line627">627: </a>    VecRestoreArray(b,&amp;bb);
+<a name="line628">628: </a>    <font color="#4169E1">if</font> (!extop-&gt;ref &amp;&amp; extop-&gt;n) PetscFree2(b2,x2);
+<a name="line629">629: </a>  }
+<a name="line630">630: </a>  PetscFunctionReturn(0);
+<a name="line631">631: </a>}
+
+<a name="line633">633: </a><strong><font color="#4169E1"><a name="NEPDeflationSetRefine"></a>PetscErrorCode NEPDeflationSetRefine(NEP_EXT_OP extop,PetscBool ref)</font></strong>
+<a name="line634">634: </a>{
+<a name="line635">635: </a>  extop-&gt;ref = ref;
+<a name="line636">636: </a>  PetscFunctionReturn(0);
+<a name="line637">637: </a>}
+
+<a name="line639">639: </a><strong><font color="#4169E1"><a name="NEPDeflationReset"></a>PetscErrorCode NEPDeflationReset(NEP_EXT_OP extop)</font></strong>
+<a name="line640">640: </a>{
+<a name="line641">641: </a>  PetscInt          j;
+<a name="line642">642: </a>  NEP_DEF_FUN_SOLVE solve;
+
+<a name="line644">644: </a>  <font color="#4169E1">if</font> (!extop) PetscFunctionReturn(0);
+<a name="line645">645: </a>  PetscFree(extop-&gt;H);
+<a name="line646">646: </a>  <a href="../../../docs/manualpages/BV/BVDestroy.html#BVDestroy">BVDestroy</a>(&amp;extop-&gt;X);
+<a name="line647">647: </a>  <font color="#4169E1">if</font> (extop-&gt;szd) {
+<a name="line648">648: </a>    VecDestroy(&amp;extop-&gt;w);
+<a name="line649">649: </a>    PetscFree3(extop-&gt;Hj,extop-&gt;XpX,extop-&gt;bc);
+<a name="line650">650: </a>    <a href="../../../docs/manualpages/BV/BVDestroy.html#BVDestroy">BVDestroy</a>(&amp;extop-&gt;W);
+<a name="line651">651: </a>  }
+<a name="line652">652: </a>  MatDestroy(&amp;extop-&gt;MF);
+<a name="line653">653: </a>  MatDestroy(&amp;extop-&gt;MJ);
+<a name="line654">654: </a>  <font color="#4169E1">if</font> (extop-&gt;solve) {
+<a name="line655">655: </a>    solve = extop-&gt;solve;
+<a name="line656">656: </a>    <font color="#4169E1">if</font> (extop-&gt;szd) {
+<a name="line657">657: </a>      <font color="#4169E1">if</font> (!extop-&gt;simpU) <a href="../../../docs/manualpages/BV/BVDestroy.html#BVDestroy">BVDestroy</a>(&amp;solve-&gt;T_1U);
+<a name="line658">658: </a>      PetscFree2(solve-&gt;M,solve-&gt;work);
+<a name="line659">659: </a>      VecDestroy(&amp;solve-&gt;w[0]);
+<a name="line660">660: </a>      VecDestroy(&amp;solve-&gt;w[1]);
+<a name="line661">661: </a>    }
+<a name="line662">662: </a>    <font color="#4169E1">if</font> (!solve-&gt;sincf) MatDestroy(&amp;solve-&gt;T);
+<a name="line663">663: </a>    PetscFree(extop-&gt;solve);
+<a name="line664">664: </a>  }
+<a name="line665">665: </a>  <font color="#4169E1">if</font> (extop-&gt;proj) {
+<a name="line666">666: </a>    <font color="#4169E1">if</font> (extop-&gt;szd) {
+<a name="line667">667: </a>      <font color="#4169E1">for</font> (j=0;j&lt;extop-&gt;nep-&gt;nt;j++) MatDestroy(&amp;extop-&gt;proj-&gt;V1pApX[j]);
+<a name="line668">668: </a>      MatDestroy(&amp;extop-&gt;proj-&gt;XpV1);
+<a name="line669">669: </a>      PetscFree3(extop-&gt;proj-&gt;V2,extop-&gt;proj-&gt;V1pApX,extop-&gt;proj-&gt;work);
+<a name="line670">670: </a>      VecDestroy(&amp;extop-&gt;proj-&gt;w);
+<a name="line671">671: </a>      <a href="../../../docs/manualpages/BV/BVDestroy.html#BVDestroy">BVDestroy</a>(&amp;extop-&gt;proj-&gt;V1);
+<a name="line672">672: </a>    }
+<a name="line673">673: </a>    PetscFree(extop-&gt;proj);
+<a name="line674">674: </a>  }
+<a name="line675">675: </a>  PetscFree(extop);
+<a name="line676">676: </a>  PetscFunctionReturn(0);
+<a name="line677">677: </a>}
+
+<a name="line679">679: </a><strong><font color="#4169E1"><a name="NEPDeflationInitialize"></a>PetscErrorCode NEPDeflationInitialize(<a href="../../../docs/manualpages/sys/NEP.html#NEP">NEP</a> nep,<a href="../../../docs/manualpages/sys/BV.html#BV">BV</a> X,KSP ksp,PetscBool sincfun,PetscInt sz,NEP_EXT_OP *extop)</font></strong>
+<a name="line680">680: </a>{
+<a name="line681">681: </a>  NEP_EXT_OP        op;
+<a name="line682">682: </a>  NEP_DEF_FUN_SOLVE solve;
+<a name="line683">683: </a>  PetscInt          szd;
+<a name="line684">684: </a>  Vec               x;
+
+<a name="line686">686: </a>  NEPDeflationReset(*extop);
+<a name="line687">687: </a>  PetscNew(&amp;op);
+<a name="line688">688: </a>  *extop  = op;
+<a name="line689">689: </a>  op-&gt;nep = nep;
+<a name="line690">690: </a>  op-&gt;n   = 0;
+<a name="line691">691: </a>  op-&gt;szd = szd = sz-1;
+<a name="line692">692: </a>  op-&gt;max_midx = PetscMin(MAX_MINIDX,szd);
+<a name="line693">693: </a>  op-&gt;X = X;
+<a name="line694">694: </a>  <font color="#4169E1">if</font> (!X) <a href="../../../docs/manualpages/BV/BVDuplicateResize.html#BVDuplicateResize">BVDuplicateResize</a>(nep-&gt;V,sz,&amp;op-&gt;X);
+<a name="line695">695: </a>  <font color="#4169E1">else</font> PetscObjectReference((PetscObject)X);
+<a name="line696">696: </a>  PetscCalloc1(sz*sz,&amp;(op)-&gt;H);
+<a name="line697">697: </a>  <font color="#4169E1">if</font> (op-&gt;szd) {
+<a name="line698">698: </a>    <a href="../../../docs/manualpages/BV/BVGetColumn.html#BVGetColumn">BVGetColumn</a>(op-&gt;X,0,&amp;x);
+<a name="line699">699: </a>    VecDuplicate(x,&amp;op-&gt;w);
+<a name="line700">700: </a>    <a href="../../../docs/manualpages/BV/BVRestoreColumn.html#BVRestoreColumn">BVRestoreColumn</a>(op-&gt;X,0,&amp;x);
+<a name="line701">701: </a>    op-&gt;simpU = PETSC_FALSE;
+<a name="line702">702: </a>    <font color="#4169E1">if</font> (nep-&gt;fui==NEP_USER_INTERFACE_SPLIT) {
+<a name="line703">703: </a>      <font color="#B22222">/* undocumented option to use the simple expression for U = T*X*inv(lambda-H) */</font>
+<a name="line704">704: </a>      PetscOptionsGetBool(NULL,NULL,<font color="#666666">"-nep_deflation_simpleu"</font>,&amp;op-&gt;simpU,NULL);
+<a name="line705">705: </a>    } <font color="#4169E1">else</font> {
+<a name="line706">706: </a>      op-&gt;simpU = PETSC_TRUE;
+<a name="line707">707: </a>    }
+<a name="line708">708: </a>    PetscCalloc3(szd*szd*op-&gt;max_midx,&amp;(op)-&gt;Hj,szd*szd,&amp;(op)-&gt;XpX,szd,&amp;op-&gt;bc);
+<a name="line709">709: </a>    <a href="../../../docs/manualpages/BV/BVDuplicateResize.html#BVDuplicateResize">BVDuplicateResize</a>(op-&gt;X,op-&gt;szd,&amp;op-&gt;W);
+<a name="line710">710: </a>  }
+<a name="line711">711: </a>  <font color="#4169E1">if</font> (ksp) {
+<a name="line712">712: </a>    PetscNew(&amp;solve);
+<a name="line713">713: </a>    op-&gt;solve    = solve;
+<a name="line714">714: </a>    solve-&gt;ksp   = ksp;
+<a name="line715">715: </a>    solve-&gt;sincf = sincfun;
+<a name="line716">716: </a>    solve-&gt;n     = -1;
+<a name="line717">717: </a>    <font color="#4169E1">if</font> (op-&gt;szd) {
+<a name="line718">718: </a>      <font color="#4169E1">if</font> (!op-&gt;simpU) <a href="../../../docs/manualpages/BV/BVDuplicateResize.html#BVDuplicateResize">BVDuplicateResize</a>(nep-&gt;V,szd,&amp;solve-&gt;T_1U);
+<a name="line719">719: </a>      PetscMalloc2(szd*szd,&amp;solve-&gt;M,2*szd*szd,&amp;solve-&gt;work);
+<a name="line720">720: </a>      <a href="../../../docs/manualpages/BV/BVCreateVec.html#BVCreateVec">BVCreateVec</a>(nep-&gt;V,&amp;solve-&gt;w[0]);
+<a name="line721">721: </a>      VecDuplicate(solve-&gt;w[0],&amp;solve-&gt;w[1]);
+<a name="line722">722: </a>    }
+<a name="line723">723: </a>  }
+<a name="line724">724: </a>  PetscFunctionReturn(0);
+<a name="line725">725: </a>}
+
+<a name="line727">727: </a><strong><font color="#4169E1"><a name="NEPDeflationDSNEPComputeMatrix"></a>PetscErrorCode NEPDeflationDSNEPComputeMatrix(<a href="../../../docs/manualpages/sys/DS.html#DS">DS</a> ds,PetscScalar lambda,PetscBool deriv,<a href="../../../docs/manualpages/sys/DSMatType.html#DSMatType">DSMatType</a> mat,void *ctx)</font></strong>
+<a name="line728">728: </a>{
+<a name="line729">729: </a>  PetscScalar       *T,*Ei,*w1,*w2,*w=NULL,*ww,*hH,*hHprev,*pts;
+<a name="line730">730: </a>  PetscScalar       alpha,alpha2,*AB,sone=1.0,zero=0.0,*basisv,s;
+<a name="line731">731: </a>  const PetscScalar *E;
+<a name="line732">732: </a>  PetscInt          i,ldds,nwork=0,szd,nv,j,k,n;
+<a name="line733">733: </a>  PetscBLASInt      inc=1,nv_,ldds_,dim_,dim2,szdk,szd_,n_,ldh_;
+<a name="line734">734: </a>  PetscMPIInt       np;
+<a name="line735">735: </a>  NEP_DEF_PROJECT   proj=(NEP_DEF_PROJECT)ctx;
+<a name="line736">736: </a>  NEP_EXT_OP        extop=proj-&gt;extop;
+<a name="line737">737: </a>  <a href="../../../docs/manualpages/sys/NEP.html#NEP">NEP</a>               nep=extop-&gt;nep;
+
+<a name="line739">739: </a>  <a href="../../../docs/manualpages/DS/DSGetDimensions.html#DSGetDimensions">DSGetDimensions</a>(ds,&amp;nv,NULL,NULL,NULL);
+<a name="line740">740: </a>  <a href="../../../docs/manualpages/DS/DSGetLeadingDimension.html#DSGetLeadingDimension">DSGetLeadingDimension</a>(ds,&amp;ldds);
+<a name="line741">741: </a>  <a href="../../../docs/manualpages/DS/DSGetArray.html#DSGetArray">DSGetArray</a>(ds,mat,&amp;T);
+<a name="line742">742: </a>  PetscArrayzero(T,ldds*nv);
+<a name="line743">743: </a>  PetscBLASIntCast(ldds*nv,&amp;dim2);
+<a name="line744">744: </a>  <font color="#B22222">/* mat = V1^*T(lambda)V1 */</font>
+<a name="line745">745: </a>  <font color="#4169E1">for</font> (i=0;i&lt;nep-&gt;nt;i++) {
+<a name="line746">746: </a>    <font color="#4169E1">if</font> (deriv) <a href="../../../docs/manualpages/FN/FNEvaluateDerivative.html#FNEvaluateDerivative">FNEvaluateDerivative</a>(nep-&gt;f[i],lambda,&amp;alpha);
+<a name="line747">747: </a>    <font color="#4169E1">else</font> <a href="../../../docs/manualpages/FN/FNEvaluateFunction.html#FNEvaluateFunction">FNEvaluateFunction</a>(nep-&gt;f[i],lambda,&amp;alpha);
+<a name="line748">748: </a>    <a href="../../../docs/manualpages/DS/DSGetArray.html#DSGetArray">DSGetArray</a>(ds,DSMatExtra[i],&amp;Ei);
+<a name="line749">749: </a>    PetscStackCallBLAS(<font color="#666666">"BLASaxpy"</font>,BLASaxpy_(&amp;dim2,&amp;alpha,Ei,&amp;inc,T,&amp;inc));
+<a name="line750">750: </a>    <a href="../../../docs/manualpages/DS/DSRestoreArray.html#DSRestoreArray">DSRestoreArray</a>(ds,DSMatExtra[i],&amp;Ei);
+<a name="line751">751: </a>  }
+<a name="line752">752: </a>  <font color="#4169E1">if</font> (!extop-&gt;ref &amp;&amp; extop-&gt;n) {
+<a name="line753">753: </a>    n = extop-&gt;n;
+<a name="line754">754: </a>    szd = extop-&gt;szd;
+<a name="line755">755: </a>    PetscArrayzero(proj-&gt;work,proj-&gt;lwork);
+<a name="line756">756: </a>    PetscBLASIntCast(nv,&amp;nv_);
+<a name="line757">757: </a>    PetscBLASIntCast(n,&amp;n_);
+<a name="line758">758: </a>    PetscBLASIntCast(ldds,&amp;ldds_);
+<a name="line759">759: </a>    PetscBLASIntCast(szd,&amp;szd_);
+<a name="line760">760: </a>    PetscBLASIntCast(proj-&gt;dim,&amp;dim_);
+<a name="line761">761: </a>    PetscBLASIntCast(extop-&gt;szd+1,&amp;ldh_);
+<a name="line762">762: </a>    w1 = proj-&gt;work; w2 = proj-&gt;work+proj-&gt;dim*proj-&gt;dim;
+<a name="line763">763: </a>    nwork += 2*proj-&gt;dim*proj-&gt;dim;
+
+<a name="line765">765: </a>    <font color="#B22222">/* mat = mat + V1^*U(lambda)V2 */</font>
+<a name="line766">766: </a>    <font color="#4169E1">for</font> (i=0;i&lt;nep-&gt;nt;i++) {
+<a name="line767">767: </a>      <font color="#4169E1">if</font> (extop-&gt;simpU) {
+<a name="line768">768: </a>        <font color="#4169E1">if</font> (deriv) <a href="../../../docs/manualpages/FN/FNEvaluateDerivative.html#FNEvaluateDerivative">FNEvaluateDerivative</a>(nep-&gt;f[i],lambda,&amp;alpha);
+<a name="line769">769: </a>        <font color="#4169E1">else</font> <a href="../../../docs/manualpages/FN/FNEvaluateFunction.html#FNEvaluateFunction">FNEvaluateFunction</a>(nep-&gt;f[i],lambda,&amp;alpha);
+<a name="line770">770: </a>        ww = w1; w = w2;
+<a name="line771">771: </a>        PetscArraycpy(ww,proj-&gt;V2,szd*nv);
+<a name="line772">772: </a>        <a href="http://www.mpich.org/static/docs/latest/www3/MPI_Comm_size.html#MPI_Comm_size">MPI_Comm_size</a>(PetscObjectComm((PetscObject)ds),&amp;np);
+<a name="line773">773: </a>        <font color="#4169E1">for</font> (j=0;j&lt;szd*nv;j++) ww[j] *= PetscSqrtReal(np);
+<a name="line774">774: </a>        <font color="#4169E1">for</font> (j=0;j&lt;n;j++) extop-&gt;H[j*ldh_+j] -= lambda;
+<a name="line775">775: </a>        alpha = -alpha;
+<a name="line776">776: </a>        PetscStackCallBLAS(<font color="#666666">"BLAStrsm"</font>,BLAStrsm_(<font color="#666666">"L"</font>,<font color="#666666">"U"</font>,<font color="#666666">"N"</font>,<font color="#666666">"N"</font>,&amp;n_,&amp;nv_,&amp;alpha,extop-&gt;H,&amp;ldh_,ww,&amp;szd_));
+<a name="line777">777: </a>        <font color="#4169E1">if</font> (deriv) {
+<a name="line778">778: </a>          PetscBLASIntCast(szd*nv,&amp;szdk);
+<a name="line779">779: </a>          <a href="../../../docs/manualpages/FN/FNEvaluateFunction.html#FNEvaluateFunction">FNEvaluateFunction</a>(nep-&gt;f[i],lambda,&amp;alpha2);
+<a name="line780">780: </a>          PetscArraycpy(w,proj-&gt;V2,szd*nv);
+<a name="line781">781: </a>          <font color="#4169E1">for</font> (j=0;j&lt;szd*nv;j++) w[j] *= PetscSqrtReal(np);
+<a name="line782">782: </a>          alpha2 = -alpha2;
+<a name="line783">783: </a>          PetscStackCallBLAS(<font color="#666666">"BLAStrsm"</font>,BLAStrsm_(<font color="#666666">"L"</font>,<font color="#666666">"U"</font>,<font color="#666666">"N"</font>,<font color="#666666">"N"</font>,&amp;n_,&amp;nv_,&amp;alpha2,extop-&gt;H,&amp;ldh_,w,&amp;szd_));
+<a name="line784">784: </a>          alpha2 = 1.0;
+<a name="line785">785: </a>          PetscStackCallBLAS(<font color="#666666">"BLAStrsm"</font>,BLAStrsm_(<font color="#666666">"L"</font>,<font color="#666666">"U"</font>,<font color="#666666">"N"</font>,<font color="#666666">"N"</font>,&amp;n_,&amp;nv_,&amp;alpha2,extop-&gt;H,&amp;ldh_,w,&amp;szd_));
+<a name="line786">786: </a>          PetscStackCallBLAS(<font color="#666666">"BLASaxpy"</font>,BLASaxpy_(&amp;szdk,&amp;sone,w,&amp;inc,ww,&amp;inc));
+<a name="line787">787: </a>        }
+<a name="line788">788: </a>        <font color="#4169E1">for</font> (j=0;j&lt;n;j++) extop-&gt;H[j*ldh_+j] += lambda;
+<a name="line789">789: </a>      } <font color="#4169E1">else</font> {
+<a name="line790">790: </a>        NEPDeflationEvaluateHatFunction(extop,i,lambda,NULL,w1,w2,szd);
+<a name="line791">791: </a>        w = deriv?w2:w1; ww = deriv?w1:w2;
+<a name="line792">792: </a>        <a href="http://www.mpich.org/static/docs/latest/www3/MPI_Comm_size.html#MPI_Comm_size">MPI_Comm_size</a>(PetscObjectComm((PetscObject)ds),&amp;np);
+<a name="line793">793: </a>        s = PetscSqrtReal(np);
+<a name="line794">794: </a>        PetscStackCallBLAS(<font color="#666666">"BLASgemm"</font>,BLASgemm_(<font color="#666666">"N"</font>,<font color="#666666">"N"</font>,&amp;n_,&amp;nv_,&amp;n_,&amp;s,w,&amp;szd_,proj-&gt;V2,&amp;szd_,&amp;zero,ww,&amp;szd_));
+<a name="line795">795: </a>      }
+<a name="line796">796: </a>      MatDenseGetArrayRead(proj-&gt;V1pApX[i],&amp;E);
+<a name="line797">797: </a>      PetscStackCallBLAS(<font color="#666666">"BLASgemm"</font>,BLASgemm_(<font color="#666666">"N"</font>,<font color="#666666">"N"</font>,&amp;nv_,&amp;nv_,&amp;n_,&amp;sone,E,&amp;dim_,ww,&amp;szd_,&amp;sone,T,&amp;ldds_));
+<a name="line798">798: </a>      MatDenseRestoreArrayRead(proj-&gt;V1pApX[i],&amp;E);
+<a name="line799">799: </a>    }
+
+<a name="line801">801: </a>    <font color="#B22222">/* mat = mat + V2^*A(lambda)V1 */</font>
+<a name="line802">802: </a>    basisv = proj-&gt;work+nwork; nwork += szd;
+<a name="line803">803: </a>    hH     = proj-&gt;work+nwork; nwork += szd*szd;
+<a name="line804">804: </a>    hHprev = proj-&gt;work+nwork; nwork += szd*szd;
+<a name="line805">805: </a>    AB     = proj-&gt;work+nwork;
+<a name="line806">806: </a>    NEPDeflationEvaluateBasis(extop,lambda,n,basisv,deriv);
+<a name="line807">807: </a>    <font color="#4169E1">if</font> (!deriv) <font color="#4169E1">for</font> (i=0;i&lt;n;i++) AB[i*(szd+1)] = 1.0;
+<a name="line808">808: </a>    <font color="#4169E1">for</font> (j=0;j&lt;n;j++)
+<a name="line809">809: </a>      <font color="#4169E1">for</font> (i=0;i&lt;n;i++)
+<a name="line810">810: </a>        <font color="#4169E1">for</font> (k=1;k&lt;extop-&gt;midx;k++) AB[j*szd+i] += basisv[k]*PetscConj(extop-&gt;Hj[k*szd*szd+i*szd+j]);
+<a name="line811">811: </a>    MatDenseGetArrayRead(proj-&gt;XpV1,&amp;E);
+<a name="line812">812: </a>    PetscStackCallBLAS(<font color="#666666">"BLASgemm"</font>,BLASgemm_(<font color="#666666">"N"</font>,<font color="#666666">"N"</font>,&amp;n_,&amp;nv_,&amp;n_,&amp;sone,AB,&amp;szd_,E,&amp;szd_,&amp;zero,w,&amp;szd_));
+<a name="line813">813: </a>    PetscStackCallBLAS(<font color="#666666">"BLASgemm"</font>,BLASgemm_(<font color="#666666">"C"</font>,<font color="#666666">"N"</font>,&amp;nv_,&amp;nv_,&amp;n_,&amp;sone,proj-&gt;V2,&amp;szd_,w,&amp;szd_,&amp;sone,T,&amp;ldds_));
+<a name="line814">814: </a>    MatDenseRestoreArrayRead(proj-&gt;XpV1,&amp;E);
+
+<a name="line816">816: </a>    <font color="#B22222">/* mat = mat + V2^*B(lambda)V2 */</font>
+<a name="line817">817: </a>    PetscArrayzero(AB,szd*szd);
+<a name="line818">818: </a>    <font color="#4169E1">for</font> (i=1;i&lt;extop-&gt;midx;i++) {
+<a name="line819">819: </a>      NEPDeflationEvaluateBasisMat(extop,i,PETSC_TRUE,basisv,hH,hHprev);
+<a name="line820">820: </a>      PetscStackCallBLAS(<font color="#666666">"BLASgemm"</font>,BLASgemm_(<font color="#666666">"N"</font>,<font color="#666666">"N"</font>,&amp;n_,&amp;n_,&amp;n_,&amp;sone,extop-&gt;XpX,&amp;szd_,hH,&amp;szd_,&amp;zero,hHprev,&amp;szd_));
+<a name="line821">821: </a>      PetscStackCallBLAS(<font color="#666666">"BLASgemm"</font>,BLASgemm_(<font color="#666666">"C"</font>,<font color="#666666">"N"</font>,&amp;n_,&amp;n_,&amp;n_,&amp;sone,extop-&gt;Hj+szd*szd*i,&amp;szd_,hHprev,&amp;szd_,&amp;sone,AB,&amp;szd_));
+<a name="line822">822: </a>      pts = hHprev; hHprev = hH; hH = pts;
+<a name="line823">823: </a>    }
+<a name="line824">824: </a>    PetscStackCallBLAS(<font color="#666666">"BLASgemm"</font>,BLASgemm_(<font color="#666666">"N"</font>,<font color="#666666">"N"</font>,&amp;n_,&amp;nv_,&amp;n_,&amp;sone,AB,&amp;szd_,proj-&gt;V2,&amp;szd_,&amp;zero,w,&amp;szd_));
+<a name="line825">825: </a>    PetscStackCallBLAS(<font color="#666666">"BLASgemm"</font>,BLASgemm_(<font color="#666666">"C"</font>,<font color="#666666">"N"</font>,&amp;nv_,&amp;nv_,&amp;n_,&amp;sone,proj-&gt;V2,&amp;szd_,w,&amp;szd_,&amp;sone,T,&amp;ldds_));
+<a name="line826">826: </a>  }
+<a name="line827">827: </a>  <a href="../../../docs/manualpages/DS/DSRestoreArray.html#DSRestoreArray">DSRestoreArray</a>(ds,mat,&amp;T);
+<a name="line828">828: </a>  PetscFunctionReturn(0);
+<a name="line829">829: </a>}
+
+<a name="line831">831: </a><strong><font color="#4169E1"><a name="NEPDeflationProjectOperator"></a>PetscErrorCode NEPDeflationProjectOperator(NEP_EXT_OP extop,<a href="../../../docs/manualpages/sys/BV.html#BV">BV</a> Vext,<a href="../../../docs/manualpages/sys/DS.html#DS">DS</a> ds,PetscInt j0,PetscInt j1)</font></strong>
+<a name="line832">832: </a>{
+<a name="line833">833: </a>  PetscInt        k,j,n=extop-&gt;n,dim;
+<a name="line834">834: </a>  Vec             v,ve;
+<a name="line835">835: </a>  <a href="../../../docs/manualpages/sys/BV.html#BV">BV</a>              V1;
+<a name="line836">836: </a>  Mat             G;
+<a name="line837">837: </a>  <a href="../../../docs/manualpages/sys/NEP.html#NEP">NEP</a>             nep=extop-&gt;nep;
+<a name="line838">838: </a>  NEP_DEF_PROJECT proj;
+
+<a name="line840">840: </a>  NEPCheckSplit(extop-&gt;nep,1);
+<a name="line841">841: </a>  proj = extop-&gt;proj;
+<a name="line842">842: </a>  <font color="#4169E1">if</font> (!proj) {
+<a name="line843">843: </a>    <font color="#B22222">/* Initialize the projection data structure */</font>
+<a name="line844">844: </a>    PetscNew(&amp;proj);
+<a name="line845">845: </a>    extop-&gt;proj = proj;
+<a name="line846">846: </a>    proj-&gt;extop = extop;
+<a name="line847">847: </a>    <a href="../../../docs/manualpages/BV/BVGetSizes.html#BVGetSizes">BVGetSizes</a>(Vext,NULL,NULL,&amp;dim);
+<a name="line848">848: </a>    proj-&gt;dim = dim;
+<a name="line849">849: </a>    <font color="#4169E1">if</font> (extop-&gt;szd) {
+<a name="line850">850: </a>      proj-&gt;lwork = 3*dim*dim+2*extop-&gt;szd*extop-&gt;szd+extop-&gt;szd;
+<a name="line851">851: </a>      PetscMalloc3(dim*extop-&gt;szd,&amp;proj-&gt;V2,nep-&gt;nt,&amp;proj-&gt;V1pApX,proj-&gt;lwork,&amp;proj-&gt;work);
+<a name="line852">852: </a>      <font color="#4169E1">for</font> (j=0;j&lt;nep-&gt;nt;j++) MatCreateSeqDense(PETSC_COMM_SELF,proj-&gt;dim,extop-&gt;szd,NULL,&amp;proj-&gt;V1pApX[j]);
+<a name="line853">853: </a>      MatCreateSeqDense(PETSC_COMM_SELF,extop-&gt;szd,proj-&gt;dim,NULL,&amp;proj-&gt;XpV1);
+<a name="line854">854: </a>      <a href="../../../docs/manualpages/BV/BVCreateVec.html#BVCreateVec">BVCreateVec</a>(extop-&gt;X,&amp;proj-&gt;w);
+<a name="line855">855: </a>      <a href="../../../docs/manualpages/BV/BVDuplicateResize.html#BVDuplicateResize">BVDuplicateResize</a>(extop-&gt;X,proj-&gt;dim,&amp;proj-&gt;V1);
+<a name="line856">856: </a>    }
+<a name="line857">857: </a>    <a href="../../../docs/manualpages/DS/DSNEPSetComputeMatrixFunction.html#DSNEPSetComputeMatrixFunction">DSNEPSetComputeMatrixFunction</a>(ds,NEPDeflationDSNEPComputeMatrix,(void*)proj);
+<a name="line858">858: </a>  }
+
+<a name="line860">860: </a>  <font color="#B22222">/* Split Vext in V1 and V2 */</font>
+<a name="line861">861: </a>  <font color="#4169E1">if</font> (extop-&gt;szd) {
+<a name="line862">862: </a>    <font color="#4169E1">for</font> (j=j0;j&lt;j1;j++) {
+<a name="line863">863: </a>      <a href="../../../docs/manualpages/BV/BVGetColumn.html#BVGetColumn">BVGetColumn</a>(Vext,j,&amp;ve);
+<a name="line864">864: </a>      <a href="../../../docs/manualpages/BV/BVGetColumn.html#BVGetColumn">BVGetColumn</a>(proj-&gt;V1,j,&amp;v);
+<a name="line865">865: </a>      NEPDeflationCopyToExtendedVec(extop,v,proj-&gt;V2+j*extop-&gt;szd,ve,PETSC_TRUE);
+<a name="line866">866: </a>      <a href="../../../docs/manualpages/BV/BVRestoreColumn.html#BVRestoreColumn">BVRestoreColumn</a>(proj-&gt;V1,j,&amp;v);
+<a name="line867">867: </a>      <a href="../../../docs/manualpages/BV/BVRestoreColumn.html#BVRestoreColumn">BVRestoreColumn</a>(Vext,j,&amp;ve);
+<a name="line868">868: </a>    }
+<a name="line869">869: </a>    V1 = proj-&gt;V1;
+<a name="line870">870: </a>  } <font color="#4169E1">else</font> V1 = Vext;
+
+<a name="line872">872: </a>  <font color="#B22222">/* Compute matrices V1^* A_i V1 */</font>
+<a name="line873">873: </a>  <a href="../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(V1,j0,j1);
+<a name="line874">874: </a>  <font color="#4169E1">for</font> (k=0;k&lt;nep-&gt;nt;k++) {
+<a name="line875">875: </a>    <a href="../../../docs/manualpages/DS/DSGetMat.html#DSGetMat">DSGetMat</a>(ds,DSMatExtra[k],&amp;G);
+<a name="line876">876: </a>    <a href="../../../docs/manualpages/BV/BVMatProject.html#BVMatProject">BVMatProject</a>(V1,nep-&gt;A[k],V1,G);
+<a name="line877">877: </a>    <a href="../../../docs/manualpages/DS/DSRestoreMat.html#DSRestoreMat">DSRestoreMat</a>(ds,DSMatExtra[k],&amp;G);
+<a name="line878">878: </a>  }
+
+<a name="line880">880: </a>  <font color="#4169E1">if</font> (extop-&gt;n) {
+<a name="line881">881: </a>    <font color="#4169E1">if</font> (extop-&gt;szd) {
+<a name="line882">882: </a>      <font color="#B22222">/* Compute matrices V1^* A_i X  and V1^* X */</font>
+<a name="line883">883: </a>      <a href="../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(extop-&gt;W,0,n);
+<a name="line884">884: </a>      <font color="#4169E1">for</font> (k=0;k&lt;nep-&gt;nt;k++) {
+<a name="line885">885: </a>        <a href="../../../docs/manualpages/BV/BVMatMult.html#BVMatMult">BVMatMult</a>(extop-&gt;X,nep-&gt;A[k],extop-&gt;W);
+<a name="line886">886: </a>        <a href="../../../docs/manualpages/BV/BVDot.html#BVDot">BVDot</a>(extop-&gt;W,V1,proj-&gt;V1pApX[k]);
+<a name="line887">887: </a>      }
+<a name="line888">888: </a>      <a href="../../../docs/manualpages/BV/BVDot.html#BVDot">BVDot</a>(V1,extop-&gt;X,proj-&gt;XpV1);
+<a name="line889">889: </a>    }
+<a name="line890">890: </a>  }
+<a name="line891">891: </a>  PetscFunctionReturn(0);
+<a name="line892">892: </a>}
+</pre>
+</body>
+
+</html>

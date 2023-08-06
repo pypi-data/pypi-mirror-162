@@ -1,0 +1,544 @@
+<center><a href="mfnbasic.c">Actual source code: mfnbasic.c</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="https://slepc.upv.es/documentation/current/src/mfn/interface/mfnbasic.c.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2022-08-09T09:05:57+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>slepc-3.17.2 2022-08-09</b></div>
+   <div id="bugreport" align=right><a href="mailto:slepc-maint@upv.es?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: slepc-3.17.2 v3.17.2 src/mfn/interface/mfnbasic.c.html "><small>Report Typos and Errors</small></a></div>
+<pre width="80">
+<a name="line1">  1: </a><font color="#B22222">/*</font>
+<a name="line2">  2: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line3">  3: </a><font color="#B22222">   SLEPc - Scalable Library for Eigenvalue Problem Computations</font>
+<a name="line4">  4: </a><font color="#B22222">   Copyright (c) 2002-, Universitat Politecnica de Valencia, Spain</font>
+
+<a name="line6">  6: </a><font color="#B22222">   This file is part of SLEPc.</font>
+<a name="line7">  7: </a><font color="#B22222">   SLEPc is distributed under a 2-clause BSD license (see LICENSE).</font>
+<a name="line8">  8: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line9">  9: </a><font color="#B22222">*/</font>
+<a name="line10"> 10: </a><font color="#B22222">/*</font>
+<a name="line11"> 11: </a><font color="#B22222">   Basic <a href="../../../docs/manualpages/sys/MFN.html#MFN">MFN</a> routines</font>
+<a name="line12"> 12: </a><font color="#B22222">*/</font>
+
+<a name="line14"> 14: </a>#include <A href="../../../include/slepc/private/mfnimpl.h.html">&lt;slepc/private/mfnimpl.h&gt;</A>
+
+<a name="line16"> 16: </a><font color="#B22222">/* Logging support */</font>
+<a name="line17"> 17: </a>PetscClassId      MFN_CLASSID = 0;
+<a name="line18"> 18: </a>PetscLogEvent     MFN_SetUp = 0,MFN_Solve = 0;
+
+<a name="line20"> 20: </a><font color="#B22222">/* List of registered <a href="../../../docs/manualpages/sys/MFN.html#MFN">MFN</a> routines */</font>
+<a name="line21"> 21: </a>PetscFunctionList MFNList = 0;
+<a name="line22"> 22: </a>PetscBool         MFNRegisterAllCalled = PETSC_FALSE;
+
+<a name="line24"> 24: </a><font color="#B22222">/* List of registered <a href="../../../docs/manualpages/sys/MFN.html#MFN">MFN</a> monitors */</font>
+<a name="line25"> 25: </a>PetscFunctionList MFNMonitorList              = NULL;
+<a name="line26"> 26: </a>PetscFunctionList MFNMonitorCreateList        = NULL;
+<a name="line27"> 27: </a>PetscFunctionList MFNMonitorDestroyList       = NULL;
+<a name="line28"> 28: </a>PetscBool         MFNMonitorRegisterAllCalled = PETSC_FALSE;
+
+<a name="line30"> 30: </a><font color="#B22222">/*@C</font>
+<a name="line31"> 31: </a><font color="#B22222">   <a href="../../../docs/manualpages/MFN/MFNView.html#MFNView">MFNView</a> - Prints the <a href="../../../docs/manualpages/sys/MFN.html#MFN">MFN</a> data structure.</font>
+
+<a name="line33"> 33: </a><font color="#B22222">   Collective on mfn</font>
+
+<a name="line35"> 35: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line36"> 36: </a><font color="#B22222">+  mfn - the matrix function solver context</font>
+<a name="line37"> 37: </a><font color="#B22222">-  viewer - optional visualization context</font>
+
+<a name="line39"> 39: </a><font color="#B22222">   Options Database Key:</font>
+<a name="line40"> 40: </a><font color="#B22222">.  -mfn_view -  Calls <a href="../../../docs/manualpages/MFN/MFNView.html#MFNView">MFNView</a>() at end of <a href="../../../docs/manualpages/MFN/MFNSolve.html#MFNSolve">MFNSolve</a>()</font>
+
+<a name="line42"> 42: </a><font color="#B22222">   Note:</font>
+<a name="line43"> 43: </a><font color="#B22222">   The available visualization contexts include</font>
+<a name="line44"> 44: </a><font color="#B22222">+     PETSC_VIEWER_STDOUT_SELF - standard output (default)</font>
+<a name="line45"> 45: </a><font color="#B22222">-     PETSC_VIEWER_STDOUT_WORLD - synchronized standard</font>
+<a name="line46"> 46: </a><font color="#B22222">         output where only the first processor opens</font>
+<a name="line47"> 47: </a><font color="#B22222">         the file.  All other processors send their</font>
+<a name="line48"> 48: </a><font color="#B22222">         data to the first processor to print.</font>
+
+<a name="line50"> 50: </a><font color="#B22222">   The user can open an alternative visualization context with</font>
+<a name="line51"> 51: </a><font color="#B22222">   PetscViewerASCIIOpen() - output to a specified file.</font>
+
+<a name="line53"> 53: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line55"> 55: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/MFN/MFNCreate.html#MFNCreate">MFNCreate</a>()</font>
+<a name="line56"> 56: </a><font color="#B22222">@*/</font>
+<a name="line57"> 57: </a><strong><font color="#4169E1"><a name="MFNView"></a>PetscErrorCode <a href="../../../docs/manualpages/MFN/MFNView.html#MFNView">MFNView</a>(<a href="../../../docs/manualpages/sys/MFN.html#MFN">MFN</a> mfn,PetscViewer viewer)</font></strong>
+<a name="line58"> 58: </a>{
+<a name="line59"> 59: </a>  PetscBool      isascii;
+
+<a name="line62"> 62: </a>  <font color="#4169E1">if</font> (!viewer) PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)mfn),&amp;viewer);
+
+<a name="line66"> 66: </a>  PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&amp;isascii);
+<a name="line67"> 67: </a>  <font color="#4169E1">if</font> (isascii) {
+<a name="line68"> 68: </a>    PetscObjectPrintClassNamePrefixType((PetscObject)mfn,viewer);
+<a name="line69"> 69: </a>    <font color="#4169E1">if</font> (mfn-&gt;ops-&gt;view) {
+<a name="line70"> 70: </a>      PetscViewerASCIIPushTab(viewer);
+<a name="line71"> 71: </a>      (*mfn-&gt;ops-&gt;view)(mfn,viewer);
+<a name="line72"> 72: </a>      PetscViewerASCIIPopTab(viewer);
+<a name="line73"> 73: </a>    }
+<a name="line74"> 74: </a>    PetscViewerASCIIPrintf(viewer,<font color="#666666">"  number of column vectors (ncv): %"</font> PetscInt_FMT <font color="#666666">"\n"</font>,mfn-&gt;ncv);
+<a name="line75"> 75: </a>    PetscViewerASCIIPrintf(viewer,<font color="#666666">"  maximum number of iterations: %"</font> PetscInt_FMT <font color="#666666">"\n"</font>,mfn-&gt;max_it);
+<a name="line76"> 76: </a>    PetscViewerASCIIPrintf(viewer,<font color="#666666">"  tolerance: %g\n"</font>,(double)mfn-&gt;tol);
+<a name="line77"> 77: </a>  } <font color="#4169E1">else</font> {
+<a name="line78"> 78: </a>    <font color="#4169E1">if</font> (mfn-&gt;ops-&gt;view) (*mfn-&gt;ops-&gt;view)(mfn,viewer);
+<a name="line79"> 79: </a>  }
+<a name="line80"> 80: </a>  PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_INFO);
+<a name="line81"> 81: </a>  <font color="#4169E1">if</font> (!mfn-&gt;V) <a href="../../../docs/manualpages/MFN/MFNGetFN.html#MFNGetFN">MFNGetFN</a>(mfn,&amp;mfn-&gt;fn);
+<a name="line82"> 82: </a>  <a href="../../../docs/manualpages/FN/FNView.html#FNView">FNView</a>(mfn-&gt;fn,viewer);
+<a name="line83"> 83: </a>  <font color="#4169E1">if</font> (!mfn-&gt;V) <a href="../../../docs/manualpages/MFN/MFNGetBV.html#MFNGetBV">MFNGetBV</a>(mfn,&amp;mfn-&gt;V);
+<a name="line84"> 84: </a>  <a href="../../../docs/manualpages/BV/BVView.html#BVView">BVView</a>(mfn-&gt;V,viewer);
+<a name="line85"> 85: </a>  PetscViewerPopFormat(viewer);
+<a name="line86"> 86: </a>  PetscFunctionReturn(0);
+<a name="line87"> 87: </a>}
+
+<a name="line89"> 89: </a><font color="#B22222">/*@C</font>
+<a name="line90"> 90: </a><font color="#B22222">   <a href="../../../docs/manualpages/MFN/MFNViewFromOptions.html#MFNViewFromOptions">MFNViewFromOptions</a> - View from options</font>
+
+<a name="line92"> 92: </a><font color="#B22222">   Collective on <a href="../../../docs/manualpages/sys/MFN.html#MFN">MFN</a></font>
+
+<a name="line94"> 94: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line95"> 95: </a><font color="#B22222">+  mfn  - the matrix function context</font>
+<a name="line96"> 96: </a><font color="#B22222">.  obj  - optional object</font>
+<a name="line97"> 97: </a><font color="#B22222">-  name - command line option</font>
+
+<a name="line99"> 99: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line101">101: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/MFN/MFNView.html#MFNView">MFNView</a>(), <a href="../../../docs/manualpages/MFN/MFNCreate.html#MFNCreate">MFNCreate</a>()</font>
+<a name="line102">102: </a><font color="#B22222">@*/</font>
+<a name="line103">103: </a><strong><font color="#4169E1"><a name="MFNViewFromOptions"></a>PetscErrorCode <a href="../../../docs/manualpages/MFN/MFNViewFromOptions.html#MFNViewFromOptions">MFNViewFromOptions</a>(<a href="../../../docs/manualpages/sys/MFN.html#MFN">MFN</a> mfn,PetscObject obj,const char name[])</font></strong>
+<a name="line104">104: </a>{
+<a name="line106">106: </a>  PetscObjectViewFromOptions((PetscObject)mfn,obj,name);
+<a name="line107">107: </a>  PetscFunctionReturn(0);
+<a name="line108">108: </a>}
+<a name="line109">109: </a><font color="#B22222">/*@C</font>
+<a name="line110">110: </a><font color="#B22222">   <a href="../../../docs/manualpages/MFN/MFNConvergedReasonView.html#MFNConvergedReasonView">MFNConvergedReasonView</a> - Displays the reason an <a href="../../../docs/manualpages/sys/MFN.html#MFN">MFN</a> solve converged or diverged.</font>
+
+<a name="line112">112: </a><font color="#B22222">   Collective on mfn</font>
+
+<a name="line114">114: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line115">115: </a><font color="#B22222">+  mfn - the matrix function context</font>
+<a name="line116">116: </a><font color="#B22222">-  viewer - the viewer to display the reason</font>
+
+<a name="line118">118: </a><font color="#B22222">   Options Database Keys:</font>
+<a name="line119">119: </a><font color="#B22222">.  -mfn_converged_reason - print reason for convergence, and number of iterations</font>
+
+<a name="line121">121: </a><font color="#B22222">   Note:</font>
+<a name="line122">122: </a><font color="#B22222">   To change the format of the output call PetscViewerPushFormat(viewer,format) before</font>
+<a name="line123">123: </a><font color="#B22222">   this call. Use PETSC_VIEWER_DEFAULT for the default, use PETSC_VIEWER_FAILED to only</font>
+<a name="line124">124: </a><font color="#B22222">   display a reason if it fails. The latter can be set in the command line with</font>
+<a name="line125">125: </a><font color="#B22222">   -mfn_converged_reason ::failed</font>
+
+<a name="line127">127: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line129">129: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/MFN/MFNSetTolerances.html#MFNSetTolerances">MFNSetTolerances</a>(), <a href="../../../docs/manualpages/MFN/MFNGetIterationNumber.html#MFNGetIterationNumber">MFNGetIterationNumber</a>(), <a href="../../../docs/manualpages/MFN/MFNConvergedReasonViewFromOptions.html#MFNConvergedReasonViewFromOptions">MFNConvergedReasonViewFromOptions</a>()</font>
+<a name="line130">130: </a><font color="#B22222">@*/</font>
+<a name="line131">131: </a><strong><font color="#4169E1"><a name="MFNConvergedReasonView"></a>PetscErrorCode <a href="../../../docs/manualpages/MFN/MFNConvergedReasonView.html#MFNConvergedReasonView">MFNConvergedReasonView</a>(<a href="../../../docs/manualpages/sys/MFN.html#MFN">MFN</a> mfn,PetscViewer viewer)</font></strong>
+<a name="line132">132: </a>{
+<a name="line133">133: </a>  PetscBool         isAscii;
+<a name="line134">134: </a>  PetscViewerFormat format;
+
+<a name="line136">136: </a>  <font color="#4169E1">if</font> (!viewer) viewer = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)mfn));
+<a name="line137">137: </a>  PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&amp;isAscii);
+<a name="line138">138: </a>  <font color="#4169E1">if</font> (isAscii) {
+<a name="line139">139: </a>    PetscViewerGetFormat(viewer,&amp;format);
+<a name="line140">140: </a>    PetscViewerASCIIAddTab(viewer,((PetscObject)mfn)-&gt;tablevel);
+<a name="line141">141: </a>    <font color="#4169E1">if</font> (mfn-&gt;reason &gt; 0 &amp;&amp; format != PETSC_VIEWER_FAILED) PetscViewerASCIIPrintf(viewer,<font color="#666666">"%s Matrix function solve converged due to %s; iterations %"</font> PetscInt_FMT <font color="#666666">"\n"</font>,((PetscObject)mfn)-&gt;prefix?((PetscObject)mfn)-&gt;prefix:<font color="#666666">""</font>,MFNConvergedReasons[mfn-&gt;reason],mfn-&gt;its);
+<a name="line142">142: </a>    <font color="#4169E1">else</font> <font color="#4169E1">if</font> (mfn-&gt;reason &lt;= 0) PetscViewerASCIIPrintf(viewer,<font color="#666666">"%s Matrix function solve did not converge due to %s; iterations %"</font> PetscInt_FMT <font color="#666666">"\n"</font>,((PetscObject)mfn)-&gt;prefix?((PetscObject)mfn)-&gt;prefix:<font color="#666666">""</font>,MFNConvergedReasons[mfn-&gt;reason],mfn-&gt;its);
+<a name="line143">143: </a>    PetscViewerASCIISubtractTab(viewer,((PetscObject)mfn)-&gt;tablevel);
+<a name="line144">144: </a>  }
+<a name="line145">145: </a>  PetscFunctionReturn(0);
+<a name="line146">146: </a>}
+
+<a name="line148">148: </a><font color="#B22222">/*@</font>
+<a name="line149">149: </a><font color="#B22222">   <a href="../../../docs/manualpages/MFN/MFNConvergedReasonViewFromOptions.html#MFNConvergedReasonViewFromOptions">MFNConvergedReasonViewFromOptions</a> - Processes command line options to determine if/how</font>
+<a name="line150">150: </a><font color="#B22222">   the <a href="../../../docs/manualpages/sys/MFN.html#MFN">MFN</a> converged reason is to be viewed.</font>
+
+<a name="line152">152: </a><font color="#B22222">   Collective on mfn</font>
+
+<a name="line154">154: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line155">155: </a><font color="#B22222">.  mfn - the matrix function context</font>
+
+<a name="line157">157: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line159">159: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/MFN/MFNConvergedReasonView.html#MFNConvergedReasonView">MFNConvergedReasonView</a>()</font>
+<a name="line160">160: </a><font color="#B22222">@*/</font>
+<a name="line161">161: </a><strong><font color="#4169E1"><a name="MFNConvergedReasonViewFromOptions"></a>PetscErrorCode <a href="../../../docs/manualpages/MFN/MFNConvergedReasonViewFromOptions.html#MFNConvergedReasonViewFromOptions">MFNConvergedReasonViewFromOptions</a>(<a href="../../../docs/manualpages/sys/MFN.html#MFN">MFN</a> mfn)</font></strong>
+<a name="line162">162: </a>{
+<a name="line163">163: </a>  PetscViewer       viewer;
+<a name="line164">164: </a>  PetscBool         flg;
+<a name="line165">165: </a>  static PetscBool  incall = PETSC_FALSE;
+<a name="line166">166: </a>  PetscViewerFormat format;
+
+<a name="line168">168: </a>  <font color="#4169E1">if</font> (incall) PetscFunctionReturn(0);
+<a name="line169">169: </a>  incall = PETSC_TRUE;
+<a name="line170">170: </a>  PetscOptionsGetViewer(PetscObjectComm((PetscObject)mfn),((PetscObject)mfn)-&gt;options,((PetscObject)mfn)-&gt;prefix,<font color="#666666">"-mfn_converged_reason"</font>,&amp;viewer,&amp;format,&amp;flg);
+<a name="line171">171: </a>  <font color="#4169E1">if</font> (flg) {
+<a name="line172">172: </a>    PetscViewerPushFormat(viewer,format);
+<a name="line173">173: </a>    <a href="../../../docs/manualpages/MFN/MFNConvergedReasonView.html#MFNConvergedReasonView">MFNConvergedReasonView</a>(mfn,viewer);
+<a name="line174">174: </a>    PetscViewerPopFormat(viewer);
+<a name="line175">175: </a>    PetscViewerDestroy(&amp;viewer);
+<a name="line176">176: </a>  }
+<a name="line177">177: </a>  incall = PETSC_FALSE;
+<a name="line178">178: </a>  PetscFunctionReturn(0);
+<a name="line179">179: </a>}
+
+<a name="line181">181: </a><font color="#B22222">/*@</font>
+<a name="line182">182: </a><font color="#B22222">   <a href="../../../docs/manualpages/MFN/MFNCreate.html#MFNCreate">MFNCreate</a> - Creates the default <a href="../../../docs/manualpages/sys/MFN.html#MFN">MFN</a> context.</font>
+
+<a name="line184">184: </a><font color="#B22222">   Collective</font>
+
+<a name="line186">186: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line187">187: </a><font color="#B22222">.  comm - MPI communicator</font>
+
+<a name="line189">189: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line190">190: </a><font color="#B22222">.  outmfn - location to put the <a href="../../../docs/manualpages/sys/MFN.html#MFN">MFN</a> context</font>
+
+<a name="line192">192: </a><font color="#B22222">   Note:</font>
+<a name="line193">193: </a><font color="#B22222">   The default <a href="../../../docs/manualpages/sys/MFN.html#MFN">MFN</a> type is MFNKRYLOV</font>
+
+<a name="line195">195: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line197">197: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/MFN/MFNSetUp.html#MFNSetUp">MFNSetUp</a>(), <a href="../../../docs/manualpages/MFN/MFNSolve.html#MFNSolve">MFNSolve</a>(), <a href="../../../docs/manualpages/MFN/MFNDestroy.html#MFNDestroy">MFNDestroy</a>(), <a href="../../../docs/manualpages/sys/MFN.html#MFN">MFN</a></font>
+<a name="line198">198: </a><font color="#B22222">@*/</font>
+<a name="line199">199: </a><strong><font color="#4169E1"><a name="MFNCreate"></a>PetscErrorCode <a href="../../../docs/manualpages/MFN/MFNCreate.html#MFNCreate">MFNCreate</a>(MPI_Comm comm,<a href="../../../docs/manualpages/sys/MFN.html#MFN">MFN</a> *outmfn)</font></strong>
+<a name="line200">200: </a>{
+<a name="line201">201: </a>  <a href="../../../docs/manualpages/sys/MFN.html#MFN">MFN</a>            mfn;
+
+<a name="line204">204: </a>  *outmfn = 0;
+<a name="line205">205: </a>  <a href="../../../docs/manualpages/MFN/MFNInitializePackage.html#MFNInitializePackage">MFNInitializePackage</a>();
+<a name="line206">206: </a>  SlepcHeaderCreate(mfn,MFN_CLASSID,<font color="#666666">"<a href="../../../docs/manualpages/sys/MFN.html#MFN">MFN</a>"</font>,<font color="#666666">"Matrix Function"</font>,<font color="#666666">"<a href="../../../docs/manualpages/sys/MFN.html#MFN">MFN</a>"</font>,comm,<a href="../../../docs/manualpages/MFN/MFNDestroy.html#MFNDestroy">MFNDestroy</a>,<a href="../../../docs/manualpages/MFN/MFNView.html#MFNView">MFNView</a>);
+
+<a name="line208">208: </a>  mfn-&gt;A               = NULL;
+<a name="line209">209: </a>  mfn-&gt;fn              = NULL;
+<a name="line210">210: </a>  mfn-&gt;max_it          = PETSC_DEFAULT;
+<a name="line211">211: </a>  mfn-&gt;ncv             = PETSC_DEFAULT;
+<a name="line212">212: </a>  mfn-&gt;tol             = PETSC_DEFAULT;
+<a name="line213">213: </a>  mfn-&gt;errorifnotconverged = PETSC_FALSE;
+
+<a name="line215">215: </a>  mfn-&gt;numbermonitors  = 0;
+
+<a name="line217">217: </a>  mfn-&gt;V               = NULL;
+<a name="line218">218: </a>  mfn-&gt;nwork           = 0;
+<a name="line219">219: </a>  mfn-&gt;work            = NULL;
+<a name="line220">220: </a>  mfn-&gt;data            = NULL;
+
+<a name="line222">222: </a>  mfn-&gt;its             = 0;
+<a name="line223">223: </a>  mfn-&gt;nv              = 0;
+<a name="line224">224: </a>  mfn-&gt;errest          = 0;
+<a name="line225">225: </a>  mfn-&gt;setupcalled     = 0;
+<a name="line226">226: </a>  mfn-&gt;reason          = <a href="../../../docs/manualpages/sys/MFNConvergedReason.html#MFNConvergedReason">MFN_CONVERGED_ITERATING</a>;
+
+<a name="line228">228: </a>  *outmfn = mfn;
+<a name="line229">229: </a>  PetscFunctionReturn(0);
+<a name="line230">230: </a>}
+
+<a name="line232">232: </a><font color="#B22222">/*@C</font>
+<a name="line233">233: </a><font color="#B22222">   <a href="../../../docs/manualpages/MFN/MFNSetType.html#MFNSetType">MFNSetType</a> - Selects the particular solver to be used in the <a href="../../../docs/manualpages/sys/MFN.html#MFN">MFN</a> object.</font>
+
+<a name="line235">235: </a><font color="#B22222">   Logically Collective on mfn</font>
+
+<a name="line237">237: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line238">238: </a><font color="#B22222">+  mfn  - the matrix function context</font>
+<a name="line239">239: </a><font color="#B22222">-  type - a known method</font>
+
+<a name="line241">241: </a><font color="#B22222">   Options Database Key:</font>
+<a name="line242">242: </a><font color="#B22222">.  -mfn_type &lt;method&gt; - Sets the method; use -help for a list</font>
+<a name="line243">243: </a><font color="#B22222">    of available methods</font>
+
+<a name="line245">245: </a><font color="#B22222">   Notes:</font>
+<a name="line246">246: </a><font color="#B22222">   See "slepc/include/slepcmfn.h" for available methods. The default</font>
+<a name="line247">247: </a><font color="#B22222">   is MFNKRYLOV</font>
+
+<a name="line249">249: </a><font color="#B22222">   Normally, it is best to use the <a href="../../../docs/manualpages/MFN/MFNSetFromOptions.html#MFNSetFromOptions">MFNSetFromOptions</a>() command and</font>
+<a name="line250">250: </a><font color="#B22222">   then set the <a href="../../../docs/manualpages/sys/MFN.html#MFN">MFN</a> type from the options database rather than by using</font>
+<a name="line251">251: </a><font color="#B22222">   this routine.  Using the options database provides the user with</font>
+<a name="line252">252: </a><font color="#B22222">   maximum flexibility in evaluating the different available methods.</font>
+<a name="line253">253: </a><font color="#B22222">   The <a href="../../../docs/manualpages/MFN/MFNSetType.html#MFNSetType">MFNSetType</a>() routine is provided for those situations where it</font>
+<a name="line254">254: </a><font color="#B22222">   is necessary to set the iterative solver independently of the command</font>
+<a name="line255">255: </a><font color="#B22222">   line or options database.</font>
+
+<a name="line257">257: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line259">259: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/sys/MFNType.html#MFNType">MFNType</a></font>
+<a name="line260">260: </a><font color="#B22222">@*/</font>
+<a name="line261">261: </a><strong><font color="#4169E1"><a name="MFNSetType"></a>PetscErrorCode <a href="../../../docs/manualpages/MFN/MFNSetType.html#MFNSetType">MFNSetType</a>(<a href="../../../docs/manualpages/sys/MFN.html#MFN">MFN</a> mfn,<a href="../../../docs/manualpages/sys/MFNType.html#MFNType">MFNType</a> type)</font></strong>
+<a name="line262">262: </a>{
+<a name="line263">263: </a>  PetscErrorCode (*r)(<a href="../../../docs/manualpages/sys/MFN.html#MFN">MFN</a>);
+<a name="line264">264: </a>  PetscBool      match;
+
+
+<a name="line269">269: </a>  PetscObjectTypeCompare((PetscObject)mfn,type,&amp;match);
+<a name="line270">270: </a>  <font color="#4169E1">if</font> (match) PetscFunctionReturn(0);
+
+<a name="line272">272: </a>  PetscFunctionListFind(MFNList,type,&amp;r);
+
+<a name="line275">275: </a>  <font color="#4169E1">if</font> (mfn-&gt;ops-&gt;destroy) (*mfn-&gt;ops-&gt;destroy)(mfn);
+<a name="line276">276: </a>  PetscMemzero(mfn-&gt;ops,<font color="#4169E1">sizeof</font>(<font color="#4169E1">struct _MFNOps</font>));
+
+<a name="line278">278: </a>  mfn-&gt;setupcalled = 0;
+<a name="line279">279: </a>  PetscObjectChangeTypeName((PetscObject)mfn,type);
+<a name="line280">280: </a>  (*r)(mfn);
+<a name="line281">281: </a>  PetscFunctionReturn(0);
+<a name="line282">282: </a>}
+
+<a name="line284">284: </a><font color="#B22222">/*@C</font>
+<a name="line285">285: </a><font color="#B22222">   <a href="../../../docs/manualpages/MFN/MFNGetType.html#MFNGetType">MFNGetType</a> - Gets the <a href="../../../docs/manualpages/sys/MFN.html#MFN">MFN</a> type as a string from the <a href="../../../docs/manualpages/sys/MFN.html#MFN">MFN</a> object.</font>
+
+<a name="line287">287: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line289">289: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line290">290: </a><font color="#B22222">.  mfn - the matrix function context</font>
+
+<a name="line292">292: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line293">293: </a><font color="#B22222">.  type - name of <a href="../../../docs/manualpages/sys/MFN.html#MFN">MFN</a> method</font>
+
+<a name="line295">295: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line297">297: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/MFN/MFNSetType.html#MFNSetType">MFNSetType</a>()</font>
+<a name="line298">298: </a><font color="#B22222">@*/</font>
+<a name="line299">299: </a><strong><font color="#4169E1"><a name="MFNGetType"></a>PetscErrorCode <a href="../../../docs/manualpages/MFN/MFNGetType.html#MFNGetType">MFNGetType</a>(<a href="../../../docs/manualpages/sys/MFN.html#MFN">MFN</a> mfn,<a href="../../../docs/manualpages/sys/MFNType.html#MFNType">MFNType</a> *type)</font></strong>
+<a name="line300">300: </a>{
+<a name="line303">303: </a>  *type = ((PetscObject)mfn)-&gt;type_name;
+<a name="line304">304: </a>  PetscFunctionReturn(0);
+<a name="line305">305: </a>}
+
+<a name="line307">307: </a><font color="#B22222">/*@C</font>
+<a name="line308">308: </a><font color="#B22222">   <a href="../../../docs/manualpages/MFN/MFNRegister.html#MFNRegister">MFNRegister</a> - Adds a method to the matrix function solver package.</font>
+
+<a name="line310">310: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line312">312: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line313">313: </a><font color="#B22222">+  name - name of a new user-defined solver</font>
+<a name="line314">314: </a><font color="#B22222">-  function - routine to create the solver context</font>
+
+<a name="line316">316: </a><font color="#B22222">   Notes:</font>
+<a name="line317">317: </a><font color="#B22222">   <a href="../../../docs/manualpages/MFN/MFNRegister.html#MFNRegister">MFNRegister</a>() may be called multiple times to add several user-defined solvers.</font>
+
+<a name="line319">319: </a><font color="#B22222">   Sample usage:</font>
+<a name="line320">320: </a><font color="#B22222">.vb</font>
+<a name="line321">321: </a><font color="#B22222">    <a href="../../../docs/manualpages/MFN/MFNRegister.html#MFNRegister">MFNRegister</a>("my_solver",MySolverCreate);</font>
+<a name="line322">322: </a><font color="#B22222">.ve</font>
+
+<a name="line324">324: </a><font color="#B22222">   Then, your solver can be chosen with the procedural interface via</font>
+<a name="line325">325: </a><font color="#B22222">$     <a href="../../../docs/manualpages/MFN/MFNSetType.html#MFNSetType">MFNSetType</a>(mfn,"my_solver")</font>
+<a name="line326">326: </a><font color="#B22222">   or at runtime via the option</font>
+<a name="line327">327: </a><font color="#B22222">$     -mfn_type my_solver</font>
+
+<a name="line329">329: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line331">331: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/MFN/MFNRegisterAll.html#MFNRegisterAll">MFNRegisterAll</a>()</font>
+<a name="line332">332: </a><font color="#B22222">@*/</font>
+<a name="line333">333: </a><strong><font color="#4169E1"><a name="MFNRegister"></a>PetscErrorCode <a href="../../../docs/manualpages/MFN/MFNRegister.html#MFNRegister">MFNRegister</a>(const char *name,PetscErrorCode (*function)(<a href="../../../docs/manualpages/sys/MFN.html#MFN">MFN</a>))</font></strong>
+<a name="line334">334: </a>{
+<a name="line335">335: </a>  <a href="../../../docs/manualpages/MFN/MFNInitializePackage.html#MFNInitializePackage">MFNInitializePackage</a>();
+<a name="line336">336: </a>  PetscFunctionListAdd(&amp;MFNList,name,function);
+<a name="line337">337: </a>  PetscFunctionReturn(0);
+<a name="line338">338: </a>}
+
+<a name="line340">340: </a><font color="#B22222">/*@C</font>
+<a name="line341">341: </a><font color="#B22222">   <a href="../../../docs/manualpages/MFN/MFNMonitorRegister.html#MFNMonitorRegister">MFNMonitorRegister</a> - Adds <a href="../../../docs/manualpages/sys/MFN.html#MFN">MFN</a> monitor routine.</font>
+
+<a name="line343">343: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line345">345: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line346">346: </a><font color="#B22222">+  name    - name of a new monitor routine</font>
+<a name="line347">347: </a><font color="#B22222">.  vtype   - a PetscViewerType for the output</font>
+<a name="line348">348: </a><font color="#B22222">.  format  - a PetscViewerFormat for the output</font>
+<a name="line349">349: </a><font color="#B22222">.  monitor - monitor routine</font>
+<a name="line350">350: </a><font color="#B22222">.  create  - creation routine, or NULL</font>
+<a name="line351">351: </a><font color="#B22222">-  destroy - destruction routine, or NULL</font>
+
+<a name="line353">353: </a><font color="#B22222">   Notes:</font>
+<a name="line354">354: </a><font color="#B22222">   <a href="../../../docs/manualpages/MFN/MFNMonitorRegister.html#MFNMonitorRegister">MFNMonitorRegister</a>() may be called multiple times to add several user-defined monitors.</font>
+
+<a name="line356">356: </a><font color="#B22222">   Sample usage:</font>
+<a name="line357">357: </a><font color="#B22222">.vb</font>
+<a name="line358">358: </a><font color="#B22222">   <a href="../../../docs/manualpages/MFN/MFNMonitorRegister.html#MFNMonitorRegister">MFNMonitorRegister</a>("my_monitor",PETSCVIEWERASCII,PETSC_VIEWER_ASCII_INFO_DETAIL,MyMonitor,NULL,NULL);</font>
+<a name="line359">359: </a><font color="#B22222">.ve</font>
+
+<a name="line361">361: </a><font color="#B22222">   Then, your monitor can be chosen with the procedural interface via</font>
+<a name="line362">362: </a><font color="#B22222">$      <a href="../../../docs/manualpages/MFN/MFNMonitorSetFromOptions.html#MFNMonitorSetFromOptions">MFNMonitorSetFromOptions</a>(mfn,"-mfn_monitor_my_monitor","my_monitor",NULL)</font>
+<a name="line363">363: </a><font color="#B22222">   or at runtime via the option</font>
+<a name="line364">364: </a><font color="#B22222">$      -mfn_monitor_my_monitor</font>
+
+<a name="line366">366: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line368">368: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/MFN/MFNMonitorRegisterAll.html#MFNMonitorRegisterAll">MFNMonitorRegisterAll</a>()</font>
+<a name="line369">369: </a><font color="#B22222">@*/</font>
+<a name="line370">370: </a><strong><font color="#4169E1"><a name="MFNMonitorRegister"></a>PetscErrorCode <a href="../../../docs/manualpages/MFN/MFNMonitorRegister.html#MFNMonitorRegister">MFNMonitorRegister</a>(const char name[],PetscViewerType vtype,PetscViewerFormat format,PetscErrorCode (*monitor)(<a href="../../../docs/manualpages/sys/MFN.html#MFN">MFN</a>,PetscInt,PetscReal,PetscViewerAndFormat*),PetscErrorCode (*create)(PetscViewer,PetscViewerFormat,void*,PetscViewerAndFormat**),PetscErrorCode (*destroy)(PetscViewerAndFormat**))</font></strong>
+<a name="line371">371: </a>{
+<a name="line372">372: </a>  char           key[PETSC_MAX_PATH_LEN];
+
+<a name="line374">374: </a>  <a href="../../../docs/manualpages/MFN/MFNInitializePackage.html#MFNInitializePackage">MFNInitializePackage</a>();
+<a name="line375">375: </a>  SlepcMonitorMakeKey_Internal(name,vtype,format,key);
+<a name="line376">376: </a>  PetscFunctionListAdd(&amp;MFNMonitorList,key,monitor);
+<a name="line377">377: </a>  <font color="#4169E1">if</font> (create)  PetscFunctionListAdd(&amp;MFNMonitorCreateList,key,create);
+<a name="line378">378: </a>  <font color="#4169E1">if</font> (destroy) PetscFunctionListAdd(&amp;MFNMonitorDestroyList,key,destroy);
+<a name="line379">379: </a>  PetscFunctionReturn(0);
+<a name="line380">380: </a>}
+
+<a name="line382">382: </a><font color="#B22222">/*@</font>
+<a name="line383">383: </a><font color="#B22222">   <a href="../../../docs/manualpages/MFN/MFNReset.html#MFNReset">MFNReset</a> - Resets the <a href="../../../docs/manualpages/sys/MFN.html#MFN">MFN</a> context to the initial state (prior to setup)</font>
+<a name="line384">384: </a><font color="#B22222">   and destroys any allocated Vecs and Mats.</font>
+
+<a name="line386">386: </a><font color="#B22222">   Collective on mfn</font>
+
+<a name="line388">388: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line389">389: </a><font color="#B22222">.  mfn - matrix function context obtained from <a href="../../../docs/manualpages/MFN/MFNCreate.html#MFNCreate">MFNCreate</a>()</font>
+
+<a name="line391">391: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line393">393: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/MFN/MFNDestroy.html#MFNDestroy">MFNDestroy</a>()</font>
+<a name="line394">394: </a><font color="#B22222">@*/</font>
+<a name="line395">395: </a><strong><font color="#4169E1"><a name="MFNReset"></a>PetscErrorCode <a href="../../../docs/manualpages/MFN/MFNReset.html#MFNReset">MFNReset</a>(<a href="../../../docs/manualpages/sys/MFN.html#MFN">MFN</a> mfn)</font></strong>
+<a name="line396">396: </a>{
+<a name="line398">398: </a>  <font color="#4169E1">if</font> (!mfn) PetscFunctionReturn(0);
+<a name="line399">399: </a>  <font color="#4169E1">if</font> (mfn-&gt;ops-&gt;reset) (mfn-&gt;ops-&gt;reset)(mfn);
+<a name="line400">400: </a>  MatDestroy(&amp;mfn-&gt;A);
+<a name="line401">401: </a>  <a href="../../../docs/manualpages/BV/BVDestroy.html#BVDestroy">BVDestroy</a>(&amp;mfn-&gt;V);
+<a name="line402">402: </a>  VecDestroyVecs(mfn-&gt;nwork,&amp;mfn-&gt;work);
+<a name="line403">403: </a>  mfn-&gt;nwork = 0;
+<a name="line404">404: </a>  mfn-&gt;setupcalled = 0;
+<a name="line405">405: </a>  PetscFunctionReturn(0);
+<a name="line406">406: </a>}
+
+<a name="line408">408: </a><font color="#B22222">/*@C</font>
+<a name="line409">409: </a><font color="#B22222">   <a href="../../../docs/manualpages/MFN/MFNDestroy.html#MFNDestroy">MFNDestroy</a> - Destroys the <a href="../../../docs/manualpages/sys/MFN.html#MFN">MFN</a> context.</font>
+
+<a name="line411">411: </a><font color="#B22222">   Collective on mfn</font>
+
+<a name="line413">413: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line414">414: </a><font color="#B22222">.  mfn - matrix function context obtained from <a href="../../../docs/manualpages/MFN/MFNCreate.html#MFNCreate">MFNCreate</a>()</font>
+
+<a name="line416">416: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line418">418: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/MFN/MFNCreate.html#MFNCreate">MFNCreate</a>(), <a href="../../../docs/manualpages/MFN/MFNSetUp.html#MFNSetUp">MFNSetUp</a>(), <a href="../../../docs/manualpages/MFN/MFNSolve.html#MFNSolve">MFNSolve</a>()</font>
+<a name="line419">419: </a><font color="#B22222">@*/</font>
+<a name="line420">420: </a><strong><font color="#4169E1"><a name="MFNDestroy"></a>PetscErrorCode <a href="../../../docs/manualpages/MFN/MFNDestroy.html#MFNDestroy">MFNDestroy</a>(<a href="../../../docs/manualpages/sys/MFN.html#MFN">MFN</a> *mfn)</font></strong>
+<a name="line421">421: </a>{
+<a name="line422">422: </a>  <font color="#4169E1">if</font> (!*mfn) PetscFunctionReturn(0);
+<a name="line424">424: </a>  <font color="#4169E1">if</font> (--((PetscObject)(*mfn))-&gt;refct &gt; 0) { *mfn = 0; PetscFunctionReturn(0); }
+<a name="line425">425: </a>  <a href="../../../docs/manualpages/MFN/MFNReset.html#MFNReset">MFNReset</a>(*mfn);
+<a name="line426">426: </a>  <font color="#4169E1">if</font> ((*mfn)-&gt;ops-&gt;destroy) (*(*mfn)-&gt;ops-&gt;destroy)(*mfn);
+<a name="line427">427: </a>  <a href="../../../docs/manualpages/FN/FNDestroy.html#FNDestroy">FNDestroy</a>(&amp;(*mfn)-&gt;fn);
+<a name="line428">428: </a>  MatDestroy(&amp;(*mfn)-&gt;AT);
+<a name="line429">429: </a>  <a href="../../../docs/manualpages/MFN/MFNMonitorCancel.html#MFNMonitorCancel">MFNMonitorCancel</a>(*mfn);
+<a name="line430">430: </a>  PetscHeaderDestroy(mfn);
+<a name="line431">431: </a>  PetscFunctionReturn(0);
+<a name="line432">432: </a>}
+
+<a name="line434">434: </a><font color="#B22222">/*@</font>
+<a name="line435">435: </a><font color="#B22222">   <a href="../../../docs/manualpages/MFN/MFNSetBV.html#MFNSetBV">MFNSetBV</a> - Associates a basis vectors object to the matrix function solver.</font>
+
+<a name="line437">437: </a><font color="#B22222">   Collective on mfn</font>
+
+<a name="line439">439: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line440">440: </a><font color="#B22222">+  mfn - matrix function context obtained from <a href="../../../docs/manualpages/MFN/MFNCreate.html#MFNCreate">MFNCreate</a>()</font>
+<a name="line441">441: </a><font color="#B22222">-  bv  - the basis vectors object</font>
+
+<a name="line443">443: </a><font color="#B22222">   Note:</font>
+<a name="line444">444: </a><font color="#B22222">   Use <a href="../../../docs/manualpages/MFN/MFNGetBV.html#MFNGetBV">MFNGetBV</a>() to retrieve the basis vectors context (for example,</font>
+<a name="line445">445: </a><font color="#B22222">   to free it at the end of the computations).</font>
+
+<a name="line447">447: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line449">449: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/MFN/MFNGetBV.html#MFNGetBV">MFNGetBV</a>()</font>
+<a name="line450">450: </a><font color="#B22222">@*/</font>
+<a name="line451">451: </a><strong><font color="#4169E1"><a name="MFNSetBV"></a>PetscErrorCode <a href="../../../docs/manualpages/MFN/MFNSetBV.html#MFNSetBV">MFNSetBV</a>(<a href="../../../docs/manualpages/sys/MFN.html#MFN">MFN</a> mfn,<a href="../../../docs/manualpages/sys/BV.html#BV">BV</a> bv)</font></strong>
+<a name="line452">452: </a>{
+<a name="line456">456: </a>  PetscObjectReference((PetscObject)bv);
+<a name="line457">457: </a>  <a href="../../../docs/manualpages/BV/BVDestroy.html#BVDestroy">BVDestroy</a>(&amp;mfn-&gt;V);
+<a name="line458">458: </a>  mfn-&gt;V = bv;
+<a name="line459">459: </a>  PetscLogObjectParent((PetscObject)mfn,(PetscObject)mfn-&gt;V);
+<a name="line460">460: </a>  PetscFunctionReturn(0);
+<a name="line461">461: </a>}
+
+<a name="line463">463: </a><font color="#B22222">/*@</font>
+<a name="line464">464: </a><font color="#B22222">   <a href="../../../docs/manualpages/MFN/MFNGetBV.html#MFNGetBV">MFNGetBV</a> - Obtain the basis vectors object associated to the matrix</font>
+<a name="line465">465: </a><font color="#B22222">   function solver.</font>
+
+<a name="line467">467: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line469">469: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line470">470: </a><font color="#B22222">.  mfn - matrix function context obtained from <a href="../../../docs/manualpages/MFN/MFNCreate.html#MFNCreate">MFNCreate</a>()</font>
+
+<a name="line472">472: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line473">473: </a><font color="#B22222">.  bv - basis vectors context</font>
+
+<a name="line475">475: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line477">477: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/MFN/MFNSetBV.html#MFNSetBV">MFNSetBV</a>()</font>
+<a name="line478">478: </a><font color="#B22222">@*/</font>
+<a name="line479">479: </a><strong><font color="#4169E1"><a name="MFNGetBV"></a>PetscErrorCode <a href="../../../docs/manualpages/MFN/MFNGetBV.html#MFNGetBV">MFNGetBV</a>(<a href="../../../docs/manualpages/sys/MFN.html#MFN">MFN</a> mfn,<a href="../../../docs/manualpages/sys/BV.html#BV">BV</a> *bv)</font></strong>
+<a name="line480">480: </a>{
+<a name="line483">483: </a>  <font color="#4169E1">if</font> (!mfn-&gt;V) {
+<a name="line484">484: </a>    <a href="../../../docs/manualpages/BV/BVCreate.html#BVCreate">BVCreate</a>(PetscObjectComm((PetscObject)mfn),&amp;mfn-&gt;V);
+<a name="line485">485: </a>    PetscObjectIncrementTabLevel((PetscObject)mfn-&gt;V,(PetscObject)mfn,0);
+<a name="line486">486: </a>    PetscLogObjectParent((PetscObject)mfn,(PetscObject)mfn-&gt;V);
+<a name="line487">487: </a>    PetscObjectSetOptions((PetscObject)mfn-&gt;V,((PetscObject)mfn)-&gt;options);
+<a name="line488">488: </a>  }
+<a name="line489">489: </a>  *bv = mfn-&gt;V;
+<a name="line490">490: </a>  PetscFunctionReturn(0);
+<a name="line491">491: </a>}
+
+<a name="line493">493: </a><font color="#B22222">/*@</font>
+<a name="line494">494: </a><font color="#B22222">   <a href="../../../docs/manualpages/MFN/MFNSetFN.html#MFNSetFN">MFNSetFN</a> - Specifies the function to be computed.</font>
+
+<a name="line496">496: </a><font color="#B22222">   Collective on mfn</font>
+
+<a name="line498">498: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line499">499: </a><font color="#B22222">+  mfn - matrix function context obtained from <a href="../../../docs/manualpages/MFN/MFNCreate.html#MFNCreate">MFNCreate</a>()</font>
+<a name="line500">500: </a><font color="#B22222">-  fn  - the math function object</font>
+
+<a name="line502">502: </a><font color="#B22222">   Note:</font>
+<a name="line503">503: </a><font color="#B22222">   Use <a href="../../../docs/manualpages/MFN/MFNGetFN.html#MFNGetFN">MFNGetFN</a>() to retrieve the math function context (for example,</font>
+<a name="line504">504: </a><font color="#B22222">   to free it at the end of the computations).</font>
+
+<a name="line506">506: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line508">508: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/MFN/MFNGetFN.html#MFNGetFN">MFNGetFN</a>()</font>
+<a name="line509">509: </a><font color="#B22222">@*/</font>
+<a name="line510">510: </a><strong><font color="#4169E1"><a name="MFNSetFN"></a>PetscErrorCode <a href="../../../docs/manualpages/MFN/MFNSetFN.html#MFNSetFN">MFNSetFN</a>(<a href="../../../docs/manualpages/sys/MFN.html#MFN">MFN</a> mfn,<a href="../../../docs/manualpages/sys/FN.html#FN">FN</a> fn)</font></strong>
+<a name="line511">511: </a>{
+<a name="line515">515: </a>  PetscObjectReference((PetscObject)fn);
+<a name="line516">516: </a>  <a href="../../../docs/manualpages/FN/FNDestroy.html#FNDestroy">FNDestroy</a>(&amp;mfn-&gt;fn);
+<a name="line517">517: </a>  mfn-&gt;fn = fn;
+<a name="line518">518: </a>  PetscLogObjectParent((PetscObject)mfn,(PetscObject)mfn-&gt;fn);
+<a name="line519">519: </a>  PetscFunctionReturn(0);
+<a name="line520">520: </a>}
+
+<a name="line522">522: </a><font color="#B22222">/*@</font>
+<a name="line523">523: </a><font color="#B22222">   <a href="../../../docs/manualpages/MFN/MFNGetFN.html#MFNGetFN">MFNGetFN</a> - Obtain the math function object associated to the <a href="../../../docs/manualpages/sys/MFN.html#MFN">MFN</a> object.</font>
+
+<a name="line525">525: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line527">527: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line528">528: </a><font color="#B22222">.  mfn - matrix function context obtained from <a href="../../../docs/manualpages/MFN/MFNCreate.html#MFNCreate">MFNCreate</a>()</font>
+
+<a name="line530">530: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line531">531: </a><font color="#B22222">.  fn - math function context</font>
+
+<a name="line533">533: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line535">535: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/MFN/MFNSetFN.html#MFNSetFN">MFNSetFN</a>()</font>
+<a name="line536">536: </a><font color="#B22222">@*/</font>
+<a name="line537">537: </a><strong><font color="#4169E1"><a name="MFNGetFN"></a>PetscErrorCode <a href="../../../docs/manualpages/MFN/MFNGetFN.html#MFNGetFN">MFNGetFN</a>(<a href="../../../docs/manualpages/sys/MFN.html#MFN">MFN</a> mfn,<a href="../../../docs/manualpages/sys/FN.html#FN">FN</a> *fn)</font></strong>
+<a name="line538">538: </a>{
+<a name="line541">541: </a>  <font color="#4169E1">if</font> (!mfn-&gt;fn) {
+<a name="line542">542: </a>    <a href="../../../docs/manualpages/FN/FNCreate.html#FNCreate">FNCreate</a>(PetscObjectComm((PetscObject)mfn),&amp;mfn-&gt;fn);
+<a name="line543">543: </a>    PetscObjectIncrementTabLevel((PetscObject)mfn-&gt;fn,(PetscObject)mfn,0);
+<a name="line544">544: </a>    PetscLogObjectParent((PetscObject)mfn,(PetscObject)mfn-&gt;fn);
+<a name="line545">545: </a>    PetscObjectSetOptions((PetscObject)mfn-&gt;fn,((PetscObject)mfn)-&gt;options);
+<a name="line546">546: </a>  }
+<a name="line547">547: </a>  *fn = mfn-&gt;fn;
+<a name="line548">548: </a>  PetscFunctionReturn(0);
+<a name="line549">549: </a>}
+</pre>
+</body>
+
+</html>

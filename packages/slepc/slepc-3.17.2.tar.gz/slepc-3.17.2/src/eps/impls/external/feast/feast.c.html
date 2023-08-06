@@ -1,0 +1,341 @@
+<center><a href="feast.c">Actual source code: feast.c</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="https://slepc.upv.es/documentation/current/src/eps/impls/external/feast/feast.c.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2022-08-09T09:05:37+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>slepc-3.17.2 2022-08-09</b></div>
+   <div id="bugreport" align=right><a href="mailto:slepc-maint@upv.es?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: slepc-3.17.2 v3.17.2 src/eps/impls/external/feast/feast.c.html "><small>Report Typos and Errors</small></a></div>
+<pre width="80">
+<a name="line1">  1: </a><font color="#B22222">/*</font>
+<a name="line2">  2: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line3">  3: </a><font color="#B22222">   SLEPc - Scalable Library for Eigenvalue Problem Computations</font>
+<a name="line4">  4: </a><font color="#B22222">   Copyright (c) 2002-, Universitat Politecnica de Valencia, Spain</font>
+
+<a name="line6">  6: </a><font color="#B22222">   This file is part of SLEPc.</font>
+<a name="line7">  7: </a><font color="#B22222">   SLEPc is distributed under a 2-clause BSD license (see LICENSE).</font>
+<a name="line8">  8: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line9">  9: </a><font color="#B22222">*/</font>
+<a name="line10"> 10: </a><font color="#B22222">/*</font>
+<a name="line11"> 11: </a><font color="#B22222">   This file implements a wrapper to the FEAST solver in MKL</font>
+<a name="line12"> 12: </a><font color="#B22222">*/</font>
+
+<a name="line14"> 14: </a><font color="#A020F0">#include &lt;petscsys.h&gt;</font>
+<a name="line15"> 15: </a><font color="#A020F0">#if defined(PETSC_HAVE_MKL_INTEL_ILP64)</font>
+<a name="line16"> 16: </a><strong><font color="#228B22">#define MKL_ILP64</font></strong>
+<a name="line17"> 17: </a><font color="#A020F0">#endif</font>
+<a name="line18"> 18: </a><font color="#A020F0">#include &lt;mkl.h&gt;</font>
+<a name="line19"> 19: </a>#include <A href="../../../../../include/slepc/private/epsimpl.h.html">&lt;slepc/private/epsimpl.h&gt;</A>
+
+<a name="line21"> 21: </a><font color="#A020F0">#if defined(PETSC_USE_COMPLEX)</font>
+<a name="line22"> 22: </a><font color="#A020F0">#  if defined(PETSC_USE_REAL_SINGLE)</font>
+<a name="line23"> 23: </a><font color="#A020F0">#    define FEAST_RCI cfeast_hrci</font>
+<a name="line24"> 24: </a><font color="#A020F0">#    define SCALAR_CAST (MKL_Complex8*)</font>
+<a name="line25"> 25: </a><font color="#A020F0">#  else</font>
+<a name="line26"> 26: </a><font color="#A020F0">#    define FEAST_RCI zfeast_hrci</font>
+<a name="line27"> 27: </a><font color="#A020F0">#    define SCALAR_CAST (MKL_Complex16*)</font>
+<a name="line28"> 28: </a><font color="#A020F0">#  endif</font>
+<a name="line29"> 29: </a><font color="#A020F0">#else</font>
+<a name="line30"> 30: </a><font color="#A020F0">#  if defined(PETSC_USE_REAL_SINGLE)</font>
+<a name="line31"> 31: </a><font color="#A020F0">#    define FEAST_RCI sfeast_srci</font>
+<a name="line32"> 32: </a><font color="#A020F0">#  else</font>
+<a name="line33"> 33: </a><font color="#A020F0">#    define FEAST_RCI dfeast_srci</font>
+<a name="line34"> 34: </a><font color="#A020F0">#  endif</font>
+<a name="line35"> 35: </a><font color="#A020F0">#  define SCALAR_CAST</font>
+<a name="line36"> 36: </a><font color="#A020F0">#endif</font>
+
+<a name="line38"> 38: </a><font color="#4169E1">typedef</font> <font color="#4169E1">struct</font> {
+<a name="line39"> 39: </a>  PetscInt      npoints;          <font color="#B22222">/* number of contour points */</font>
+<a name="line40"> 40: </a>  PetscScalar   *work1,*Aq,*Bq;   <font color="#B22222">/* workspace */</font>
+<a name="line41"> 41: </a><font color="#A020F0">#if defined(PETSC_USE_REAL_SINGLE)</font>
+<a name="line42"> 42: </a>  MKL_Complex8  *work2;
+<a name="line43"> 43: </a><font color="#A020F0">#else</font>
+<a name="line44"> 44: </a>  MKL_Complex16 *work2;
+<a name="line45"> 45: </a><font color="#A020F0">#endif</font>
+<a name="line46"> 46: </a>} EPS_FEAST;
+
+<a name="line48"> 48: </a><strong><font color="#4169E1"><a name="EPSSetUp_FEAST"></a>PetscErrorCode EPSSetUp_FEAST(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps)</font></strong>
+<a name="line49"> 49: </a>{
+<a name="line50"> 50: </a>  PetscInt       ncv;
+<a name="line51"> 51: </a>  EPS_FEAST      *ctx = (EPS_FEAST*)eps-&gt;data;
+<a name="line52"> 52: </a>  PetscMPIInt    size;
+
+<a name="line54"> 54: </a>  <a href="http://www.mpich.org/static/docs/latest/www3/MPI_Comm_size.html#MPI_Comm_size">MPI_Comm_size</a>(PetscObjectComm((PetscObject)eps),&amp;size);
+<a name="line56"> 56: </a>  EPSCheckHermitianDefinite(eps);
+<a name="line57"> 57: </a>  EPSCheckSinvertCayley(eps);
+<a name="line58"> 58: </a>  <font color="#4169E1">if</font> (eps-&gt;ncv!=PETSC_DEFAULT) {
+<a name="line60"> 60: </a>  } <font color="#4169E1">else</font> eps-&gt;ncv = PetscMin(PetscMax(20,2*eps-&gt;nev+1),eps-&gt;n); <font color="#B22222">/* set default value of ncv */</font>
+<a name="line61"> 61: </a>  <font color="#4169E1">if</font> (eps-&gt;mpd!=PETSC_DEFAULT) PetscInfo(eps,<font color="#666666">"Warning: parameter mpd ignored\n"</font>);
+<a name="line62"> 62: </a>  <font color="#4169E1">if</font> (eps-&gt;max_it==PETSC_DEFAULT) eps-&gt;max_it = 20;
+<a name="line63"> 63: </a>  <font color="#4169E1">if</font> (!eps-&gt;which) eps-&gt;which = <a href="../../../../../docs/manualpages/sys/EPSWhich.html#EPSWhich">EPS_ALL</a>;
+<a name="line65"> 65: </a>  EPSCheckUnsupported(eps,EPS_FEATURE_BALANCE | EPS_FEATURE_ARBITRARY | EPS_FEATURE_CONVERGENCE | EPS_FEATURE_STOPPING | EPS_FEATURE_TWOSIDED);
+<a name="line66"> 66: </a>  EPSCheckIgnored(eps,EPS_FEATURE_EXTRACTION);
+
+<a name="line68"> 68: </a>  <font color="#4169E1">if</font> (!ctx-&gt;npoints) ctx-&gt;npoints = 8;
+
+<a name="line70"> 70: </a>  ncv = eps-&gt;ncv;
+<a name="line71"> 71: </a>  PetscFree4(ctx-&gt;work1,ctx-&gt;work2,ctx-&gt;Aq,ctx-&gt;Bq);
+<a name="line72"> 72: </a>  PetscMalloc4(eps-&gt;nloc*ncv,&amp;ctx-&gt;work1,eps-&gt;nloc*ncv,&amp;ctx-&gt;work2,ncv*ncv,&amp;ctx-&gt;Aq,ncv*ncv,&amp;ctx-&gt;Bq);
+<a name="line73"> 73: </a>  PetscLogObjectMemory((PetscObject)eps,(2*eps-&gt;nloc*ncv+2*ncv*ncv)*<font color="#4169E1">sizeof</font>(PetscScalar));
+
+<a name="line75"> 75: </a>  <a href="../../../../../docs/manualpages/EPS/EPSAllocateSolution.html#EPSAllocateSolution">EPSAllocateSolution</a>(eps,0);
+<a name="line76"> 76: </a>  <a href="../../../../../docs/manualpages/EPS/EPSSetWorkVecs.html#EPSSetWorkVecs">EPSSetWorkVecs</a>(eps,2);
+<a name="line77"> 77: </a>  PetscFunctionReturn(0);
+<a name="line78"> 78: </a>}
+
+<a name="line80"> 80: </a><strong><font color="#4169E1"><a name="EPSSolve_FEAST"></a>PetscErrorCode EPSSolve_FEAST(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps)</font></strong>
+<a name="line81"> 81: </a>{
+<a name="line82"> 82: </a>  EPS_FEAST      *ctx = (EPS_FEAST*)eps-&gt;data;
+<a name="line83"> 83: </a>  MKL_INT        fpm[128],ijob,n,ncv,nconv,loop,info;
+<a name="line84"> 84: </a>  PetscReal      *evals,epsout=0.0;
+<a name="line85"> 85: </a>  PetscInt       i,k,nmat;
+<a name="line86"> 86: </a>  PetscScalar    *pV,*pz;
+<a name="line87"> 87: </a>  Vec            x,y,w=eps-&gt;work[0],z=eps-&gt;work[1];
+<a name="line88"> 88: </a>  Mat            A,B;
+<a name="line89"> 89: </a><font color="#A020F0">#if defined(PETSC_USE_REAL_SINGLE)</font>
+<a name="line90"> 90: </a>  MKL_Complex8   Ze;
+<a name="line91"> 91: </a><font color="#A020F0">#else</font>
+<a name="line92"> 92: </a>  MKL_Complex16  Ze;
+<a name="line93"> 93: </a><font color="#A020F0">#endif</font>
+
+<a name="line95"> 95: </a>  ncv = eps-&gt;ncv;
+<a name="line96"> 96: </a>  n   = eps-&gt;nloc;
+
+<a name="line98"> 98: </a>  <font color="#B22222">/* parameters */</font>
+<a name="line99"> 99: </a>  feastinit(fpm);
+<a name="line100">100: </a>  fpm[0] = (eps-&gt;numbermonitors&gt;0)? 1: 0;   <font color="#B22222">/* runtime comments */</font>
+<a name="line101">101: </a>  fpm[1] = ctx-&gt;npoints;                    <font color="#B22222">/* contour points */</font>
+<a name="line102">102: </a><font color="#A020F0">#if !defined(PETSC_USE_REAL_SINGLE)</font>
+<a name="line103">103: </a>  fpm[2] = -PetscLog10Real(eps-&gt;tol);       <font color="#B22222">/* tolerance for trace */</font>
+<a name="line104">104: </a><font color="#A020F0">#endif</font>
+<a name="line105">105: </a>  fpm[3] = eps-&gt;max_it;                     <font color="#B22222">/* refinement loops */</font>
+<a name="line106">106: </a>  fpm[5] = 1;                               <font color="#B22222">/* second stopping criterion */</font>
+<a name="line107">107: </a><font color="#A020F0">#if defined(PETSC_USE_REAL_SINGLE)</font>
+<a name="line108">108: </a>  fpm[6] = -PetscLog10Real(eps-&gt;tol);       <font color="#B22222">/* tolerance for trace */</font>
+<a name="line109">109: </a><font color="#A020F0">#endif</font>
+
+<a name="line111">111: </a>  PetscMalloc1(eps-&gt;ncv,&amp;evals);
+<a name="line112">112: </a>  <a href="../../../../../docs/manualpages/BV/BVGetArray.html#BVGetArray">BVGetArray</a>(eps-&gt;V,&amp;pV);
+
+<a name="line114">114: </a>  ijob = -1;           <font color="#B22222">/* first call to reverse communication interface */</font>
+<a name="line115">115: </a>  <a href="../../../../../docs/manualpages/ST/STGetNumMatrices.html#STGetNumMatrices">STGetNumMatrices</a>(eps-&gt;st,&amp;nmat);
+<a name="line116">116: </a>  <a href="../../../../../docs/manualpages/ST/STGetMatrix.html#STGetMatrix">STGetMatrix</a>(eps-&gt;st,0,&amp;A);
+<a name="line117">117: </a>  <font color="#4169E1">if</font> (nmat&gt;1) <a href="../../../../../docs/manualpages/ST/STGetMatrix.html#STGetMatrix">STGetMatrix</a>(eps-&gt;st,1,&amp;B);
+<a name="line118">118: </a>  <font color="#4169E1">else</font> B = NULL;
+<a name="line119">119: </a>  <a href="../../../../../docs/manualpages/sys/MatCreateVecsEmpty.html#MatCreateVecsEmpty">MatCreateVecsEmpty</a>(A,&amp;x,&amp;y);
+
+<a name="line121">121: </a>  <font color="#4169E1">do</font> {
+
+<a name="line123">123: </a>    FEAST_RCI(&amp;ijob,&amp;n,&amp;Ze,SCALAR_CAST ctx-&gt;work1,ctx-&gt;work2,SCALAR_CAST ctx-&gt;Aq,SCALAR_CAST ctx-&gt;Bq,fpm,&amp;epsout,&amp;loop,&amp;eps-&gt;inta,&amp;eps-&gt;intb,&amp;ncv,evals,SCALAR_CAST pV,&amp;nconv,eps-&gt;errest,&amp;info);
+
+<a name="line126">126: </a>    <font color="#4169E1">if</font> (ijob == 10) {
+<a name="line127">127: </a>      <font color="#B22222">/* set new quadrature point */</font>
+<a name="line128">128: </a>      <a href="../../../../../docs/manualpages/ST/STSetShift.html#STSetShift">STSetShift</a>(eps-&gt;st,Ze.real);
+<a name="line129">129: </a>    } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (ijob == 20) {
+<a name="line130">130: </a>      <font color="#B22222">/* use same quadrature point and factorization for transpose solve */</font>
+<a name="line131">131: </a>    } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (ijob == 11 || ijob == 21) {
+<a name="line132">132: </a>      <font color="#B22222">/* linear solve (A-sigma*B)\work2, overwrite work2 */</font>
+<a name="line133">133: </a>      <font color="#4169E1">for</font> (k=0;k&lt;ncv;k++) {
+<a name="line134">134: </a>        VecGetArray(z,&amp;pz);
+<a name="line135">135: </a><font color="#A020F0">#if defined(PETSC_USE_COMPLEX)</font>
+<a name="line136">136: </a>        <font color="#4169E1">for</font> (i=0;i&lt;eps-&gt;nloc;i++) pz[i] = PetscCMPLX(ctx-&gt;work2[eps-&gt;nloc*k+i].real,ctx-&gt;work2[eps-&gt;nloc*k+i].imag);
+<a name="line137">137: </a><font color="#A020F0">#else</font>
+<a name="line138">138: </a>        <font color="#4169E1">for</font> (i=0;i&lt;eps-&gt;nloc;i++) pz[i] = ctx-&gt;work2[eps-&gt;nloc*k+i].real;
+<a name="line139">139: </a><font color="#A020F0">#endif</font>
+<a name="line140">140: </a>        VecRestoreArray(z,&amp;pz);
+<a name="line141">141: </a>        <font color="#4169E1">if</font> (ijob == 11) <a href="../../../../../docs/manualpages/ST/STMatSolve.html#STMatSolve">STMatSolve</a>(eps-&gt;st,z,w);
+<a name="line142">142: </a>        <font color="#4169E1">else</font> {
+<a name="line143">143: </a>          VecConjugate(z);
+<a name="line144">144: </a>          <a href="../../../../../docs/manualpages/ST/STMatSolveTranspose.html#STMatSolveTranspose">STMatSolveTranspose</a>(eps-&gt;st,z,w);
+<a name="line145">145: </a>          VecConjugate(w);
+<a name="line146">146: </a>        }
+<a name="line147">147: </a>        VecGetArray(w,&amp;pz);
+<a name="line148">148: </a><font color="#A020F0">#if defined(PETSC_USE_COMPLEX)</font>
+<a name="line149">149: </a>        <font color="#4169E1">for</font> (i=0;i&lt;eps-&gt;nloc;i++) {
+<a name="line150">150: </a>          ctx-&gt;work2[eps-&gt;nloc*k+i].real = PetscRealPart(pz[i]);
+<a name="line151">151: </a>          ctx-&gt;work2[eps-&gt;nloc*k+i].imag = PetscImaginaryPart(pz[i]);
+<a name="line152">152: </a>        }
+<a name="line153">153: </a><font color="#A020F0">#else</font>
+<a name="line154">154: </a>        <font color="#4169E1">for</font> (i=0;i&lt;eps-&gt;nloc;i++) ctx-&gt;work2[eps-&gt;nloc*k+i].real = pz[i];
+<a name="line155">155: </a><font color="#A020F0">#endif</font>
+<a name="line156">156: </a>        VecRestoreArray(w,&amp;pz);
+<a name="line157">157: </a>      }
+<a name="line158">158: </a>    } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (ijob == 30 || ijob == 40) {
+<a name="line159">159: </a>      <font color="#B22222">/* multiplication A*V or B*V, result in work1 */</font>
+<a name="line160">160: </a>      <font color="#4169E1">for</font> (k=fpm[23]-1;k&lt;fpm[23]+fpm[24]-1;k++) {
+<a name="line161">161: </a>        VecPlaceArray(x,&amp;pV[k*eps-&gt;nloc]);
+<a name="line162">162: </a>        VecPlaceArray(y,&amp;ctx-&gt;work1[k*eps-&gt;nloc]);
+<a name="line163">163: </a>        <font color="#4169E1">if</font> (ijob == 30) MatMult(A,x,y);
+<a name="line164">164: </a>        <font color="#4169E1">else</font> <font color="#4169E1">if</font> (nmat&gt;1) MatMult(B,x,y);
+<a name="line165">165: </a>        <font color="#4169E1">else</font> VecCopy(x,y);
+<a name="line166">166: </a>        VecResetArray(x);
+<a name="line167">167: </a>        VecResetArray(y);
+<a name="line168">168: </a>      }
+
+<a name="line171">171: </a>  } <font color="#4169E1">while</font> (ijob);
+
+<a name="line173">173: </a>  eps-&gt;reason = <a href="../../../../../docs/manualpages/sys/EPSConvergedReason.html#EPSConvergedReason">EPS_CONVERGED_TOL</a>;
+<a name="line174">174: </a>  eps-&gt;its    = loop;
+<a name="line175">175: </a>  eps-&gt;nconv  = nconv;
+<a name="line176">176: </a>  <font color="#4169E1">if</font> (info) {
+<a name="line177">177: </a>    <font color="#4169E1">switch</font> (info) {
+<a name="line178">178: </a>      <font color="#4169E1">case</font> 1:  <font color="#B22222">/* No eigenvalue has been found in the proposed search interval */</font>
+<a name="line179">179: </a>        eps-&gt;nconv = 0;
+<a name="line180">180: </a>        <font color="#4169E1">break</font>;
+<a name="line181">181: </a>      <font color="#4169E1">case</font> 2:   <font color="#B22222">/* FEAST did not converge "yet" */</font>
+<a name="line182">182: </a>        eps-&gt;reason = <a href="../../../../../docs/manualpages/sys/EPSConvergedReason.html#EPSConvergedReason">EPS_DIVERGED_ITS</a>;
+<a name="line183">183: </a>        <font color="#4169E1">break</font>;
+<a name="line184">184: </a><strong><font color="#FF0000">      default:</font></strong>
+<a name="line185">185: </a>        SETERRQ(PetscObjectComm((PetscObject)eps),PETSC_ERR_LIB,<font color="#666666">"Error reported by FEAST (%d)"</font>,info);
+<a name="line186">186: </a>    }
+<a name="line187">187: </a>  }
+
+<a name="line189">189: </a>  <font color="#4169E1">for</font> (i=0;i&lt;eps-&gt;nconv;i++) eps-&gt;eigr[i] = evals[i];
+
+<a name="line191">191: </a>  <a href="../../../../../docs/manualpages/BV/BVRestoreArray.html#BVRestoreArray">BVRestoreArray</a>(eps-&gt;V,&amp;pV);
+<a name="line192">192: </a>  VecDestroy(&amp;x);
+<a name="line193">193: </a>  VecDestroy(&amp;y);
+<a name="line194">194: </a>  PetscFree(evals);
+<a name="line195">195: </a>  PetscFunctionReturn(0);
+<a name="line196">196: </a>}
+
+<a name="line198">198: </a><strong><font color="#4169E1"><a name="EPSReset_FEAST"></a>PetscErrorCode EPSReset_FEAST(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps)</font></strong>
+<a name="line199">199: </a>{
+<a name="line200">200: </a>  EPS_FEAST      *ctx = (EPS_FEAST*)eps-&gt;data;
+
+<a name="line202">202: </a>  PetscFree4(ctx-&gt;work1,ctx-&gt;work2,ctx-&gt;Aq,ctx-&gt;Bq);
+<a name="line203">203: </a>  PetscFunctionReturn(0);
+<a name="line204">204: </a>}
+
+<a name="line206">206: </a><strong><font color="#4169E1"><a name="EPSDestroy_FEAST"></a>PetscErrorCode EPSDestroy_FEAST(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps)</font></strong>
+<a name="line207">207: </a>{
+<a name="line208">208: </a>  PetscFree(eps-&gt;data);
+<a name="line209">209: </a>  PetscObjectComposeFunction((PetscObject)eps,<font color="#666666">"EPSFEASTSetNumPoints_C"</font>,NULL);
+<a name="line210">210: </a>  PetscObjectComposeFunction((PetscObject)eps,<font color="#666666">"EPSFEASTGetNumPoints_C"</font>,NULL);
+<a name="line211">211: </a>  PetscFunctionReturn(0);
+<a name="line212">212: </a>}
+
+<a name="line214">214: </a><strong><font color="#4169E1"><a name="EPSSetFromOptions_FEAST"></a>PetscErrorCode EPSSetFromOptions_FEAST(PetscOptionItems *PetscOptionsObject,<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps)</font></strong>
+<a name="line215">215: </a>{
+<a name="line216">216: </a>  EPS_FEAST      *ctx = (EPS_FEAST*)eps-&gt;data;
+<a name="line217">217: </a>  PetscInt       n;
+<a name="line218">218: </a>  PetscBool      flg;
+
+<a name="line220">220: </a>  PetscOptionsHead(PetscOptionsObject,<font color="#666666">"<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> FEAST Options"</font>);
+
+<a name="line222">222: </a>    n = ctx-&gt;npoints;
+<a name="line223">223: </a>    PetscOptionsInt(<font color="#666666">"-eps_feast_num_points"</font>,<font color="#666666">"Number of contour integration points"</font>,<font color="#666666">"<a href="../../../../../docs/manualpages/EPS/EPSFEASTSetNumPoints.html#EPSFEASTSetNumPoints">EPSFEASTSetNumPoints</a>"</font>,n,&amp;n,&amp;flg);
+<a name="line224">224: </a>    <font color="#4169E1">if</font> (flg) <a href="../../../../../docs/manualpages/EPS/EPSFEASTSetNumPoints.html#EPSFEASTSetNumPoints">EPSFEASTSetNumPoints</a>(eps,n);
+
+<a name="line226">226: </a>  PetscOptionsTail();
+<a name="line227">227: </a>  PetscFunctionReturn(0);
+<a name="line228">228: </a>}
+
+<a name="line230">230: </a><strong><font color="#4169E1"><a name="EPSView_FEAST"></a>PetscErrorCode EPSView_FEAST(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps,PetscViewer viewer)</font></strong>
+<a name="line231">231: </a>{
+<a name="line232">232: </a>  EPS_FEAST      *ctx = (EPS_FEAST*)eps-&gt;data;
+<a name="line233">233: </a>  PetscBool      isascii;
+
+<a name="line235">235: </a>  PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&amp;isascii);
+<a name="line236">236: </a>  <font color="#4169E1">if</font> (isascii) PetscViewerASCIIPrintf(viewer,<font color="#666666">"  number of contour integration points=%"</font> PetscInt_FMT <font color="#666666">"\n"</font>,ctx-&gt;npoints);
+<a name="line237">237: </a>  PetscFunctionReturn(0);
+<a name="line238">238: </a>}
+
+<a name="line240">240: </a><strong><font color="#4169E1"><a name="EPSSetDefaultST_FEAST"></a>PetscErrorCode EPSSetDefaultST_FEAST(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps)</font></strong>
+<a name="line241">241: </a>{
+<a name="line242">242: </a>  <font color="#4169E1">if</font> (!((PetscObject)eps-&gt;st)-&gt;type_name) <a href="../../../../../docs/manualpages/ST/STSetType.html#STSetType">STSetType</a>(eps-&gt;st,STSINVERT);
+<a name="line243">243: </a>  PetscFunctionReturn(0);
+<a name="line244">244: </a>}
+
+<a name="line246">246: </a><strong><font color="#4169E1"><a name="EPSFEASTSetNumPoints_FEAST"></a>static PetscErrorCode EPSFEASTSetNumPoints_FEAST(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps,PetscInt npoints)</font></strong>
+<a name="line247">247: </a>{
+<a name="line248">248: </a>  EPS_FEAST *ctx = (EPS_FEAST*)eps-&gt;data;
+
+<a name="line250">250: </a>  <font color="#4169E1">if</font> (npoints == PETSC_DEFAULT) ctx-&gt;npoints = 8;
+<a name="line251">251: </a>  <font color="#4169E1">else</font> ctx-&gt;npoints = npoints;
+<a name="line252">252: </a>  PetscFunctionReturn(0);
+<a name="line253">253: </a>}
+
+<a name="line255">255: </a><font color="#B22222">/*@</font>
+<a name="line256">256: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/EPS/EPSFEASTSetNumPoints.html#EPSFEASTSetNumPoints">EPSFEASTSetNumPoints</a> - Sets the number of contour integration points for</font>
+<a name="line257">257: </a><font color="#B22222">   the FEAST package.</font>
+
+<a name="line259">259: </a><font color="#B22222">   Collective on <a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a></font>
+
+<a name="line261">261: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line262">262: </a><font color="#B22222">+  eps     - the eigenproblem solver context</font>
+<a name="line263">263: </a><font color="#B22222">-  npoints - number of contour integration points</font>
+
+<a name="line265">265: </a><font color="#B22222">   Options Database Key:</font>
+<a name="line266">266: </a><font color="#B22222">.  -eps_feast_num_points - Sets the number of points</font>
+
+<a name="line268">268: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line270">270: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/EPS/EPSFEASTGetNumPoints.html#EPSFEASTGetNumPoints">EPSFEASTGetNumPoints</a>()</font>
+<a name="line271">271: </a><font color="#B22222">@*/</font>
+<a name="line272">272: </a><strong><font color="#4169E1"><a name="EPSFEASTSetNumPoints"></a>PetscErrorCode <a href="../../../../../docs/manualpages/EPS/EPSFEASTSetNumPoints.html#EPSFEASTSetNumPoints">EPSFEASTSetNumPoints</a>(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps,PetscInt npoints)</font></strong>
+<a name="line273">273: </a>{
+<a name="line276">276: </a>  PetscTryMethod(eps,<font color="#666666">"EPSFEASTSetNumPoints_C"</font>,(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a>,PetscInt),(eps,npoints));
+<a name="line277">277: </a>  PetscFunctionReturn(0);
+<a name="line278">278: </a>}
+
+<a name="line280">280: </a><strong><font color="#4169E1"><a name="EPSFEASTGetNumPoints_FEAST"></a>static PetscErrorCode EPSFEASTGetNumPoints_FEAST(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps,PetscInt *npoints)</font></strong>
+<a name="line281">281: </a>{
+<a name="line282">282: </a>  EPS_FEAST *ctx = (EPS_FEAST*)eps-&gt;data;
+
+<a name="line284">284: </a>  *npoints = ctx-&gt;npoints;
+<a name="line285">285: </a>  PetscFunctionReturn(0);
+<a name="line286">286: </a>}
+
+<a name="line288">288: </a><font color="#B22222">/*@</font>
+<a name="line289">289: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/EPS/EPSFEASTGetNumPoints.html#EPSFEASTGetNumPoints">EPSFEASTGetNumPoints</a> - Gets the number of contour integration points for</font>
+<a name="line290">290: </a><font color="#B22222">   the FEAST package.</font>
+
+<a name="line292">292: </a><font color="#B22222">   Collective on <a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a></font>
+
+<a name="line294">294: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line295">295: </a><font color="#B22222">.  eps     - the eigenproblem solver context</font>
+
+<a name="line297">297: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line298">298: </a><font color="#B22222">.  npoints - number of contour integration points</font>
+
+<a name="line300">300: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line302">302: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/EPS/EPSFEASTSetNumPoints.html#EPSFEASTSetNumPoints">EPSFEASTSetNumPoints</a>()</font>
+<a name="line303">303: </a><font color="#B22222">@*/</font>
+<a name="line304">304: </a><strong><font color="#4169E1"><a name="EPSFEASTGetNumPoints"></a>PetscErrorCode <a href="../../../../../docs/manualpages/EPS/EPSFEASTGetNumPoints.html#EPSFEASTGetNumPoints">EPSFEASTGetNumPoints</a>(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps,PetscInt *npoints)</font></strong>
+<a name="line305">305: </a>{
+<a name="line308">308: </a>  PetscUseMethod(eps,<font color="#666666">"EPSFEASTGetNumPoints_C"</font>,(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a>,PetscInt*),(eps,npoints));
+<a name="line309">309: </a>  PetscFunctionReturn(0);
+<a name="line310">310: </a>}
+
+<a name="line312">312: </a><strong><font color="#4169E1"><a name="EPSCreate_FEAST"></a>SLEPC_EXTERN PetscErrorCode EPSCreate_FEAST(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps)</font></strong>
+<a name="line313">313: </a>{
+<a name="line314">314: </a>  EPS_FEAST      *ctx;
+
+<a name="line316">316: </a>  PetscNewLog(eps,&amp;ctx);
+<a name="line317">317: </a>  eps-&gt;data = (void*)ctx;
+
+<a name="line319">319: </a>  eps-&gt;categ = EPS_CATEGORY_CONTOUR;
+
+<a name="line321">321: </a>  eps-&gt;ops-&gt;solve          = EPSSolve_FEAST;
+<a name="line322">322: </a>  eps-&gt;ops-&gt;setup          = EPSSetUp_FEAST;
+<a name="line323">323: </a>  eps-&gt;ops-&gt;setupsort      = EPSSetUpSort_Basic;
+<a name="line324">324: </a>  eps-&gt;ops-&gt;setfromoptions = EPSSetFromOptions_FEAST;
+<a name="line325">325: </a>  eps-&gt;ops-&gt;destroy        = EPSDestroy_FEAST;
+<a name="line326">326: </a>  eps-&gt;ops-&gt;reset          = EPSReset_FEAST;
+<a name="line327">327: </a>  eps-&gt;ops-&gt;view           = EPSView_FEAST;
+<a name="line328">328: </a>  eps-&gt;ops-&gt;setdefaultst   = EPSSetDefaultST_FEAST;
+
+<a name="line330">330: </a>  PetscObjectComposeFunction((PetscObject)eps,<font color="#666666">"EPSFEASTSetNumPoints_C"</font>,EPSFEASTSetNumPoints_FEAST);
+<a name="line331">331: </a>  PetscObjectComposeFunction((PetscObject)eps,<font color="#666666">"EPSFEASTGetNumPoints_C"</font>,EPSFEASTGetNumPoints_FEAST);
+<a name="line332">332: </a>  PetscFunctionReturn(0);
+<a name="line333">333: </a>}
+</pre>
+</body>
+
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD> <link rel="canonical" href="https://slepc.upv.es/documentation/current/docs/manualpages/sys/MatNormEstimate.html" />
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<link rel="stylesheet" href="/slepc.css" type="text/css">
+<TITLE>MatNormEstimate</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+   <div id="version" align=right><b>slepc-3.17.2 2022-08-09</b></div>
+   <div id="bugreport" align=right><a href="mailto:slepc-maint@upv.es?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: slepc-3.17.2 v3.17.2 docs/manualpages/sys/MatNormEstimate.html "><small>Report Typos and Errors</small></a></div>
+<H1>MatNormEstimate</H1>
+Estimate the 2-norm of a matrix. 
+<H3><FONT COLOR="#883300">Synopsis</FONT></H3>
+<PRE>
+#include "slepcsys.h" 
+PetscErrorCode <A HREF="../sys/MatNormEstimate.html#MatNormEstimate">MatNormEstimate</A>(Mat A,Vec vrn,Vec w,PetscReal *nrm)
+</PRE>
+Collective on A
+<P>
+<H3><FONT COLOR="#883300">Input Parameters</FONT></H3>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>A   </B></TD><TD>&nbsp;- the matrix
+</TD></TR>
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>vrn </B></TD><TD>&nbsp;- random vector with normally distributed entries (can be NULL)
+</TD></TR>
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>w   </B></TD><TD>&nbsp;- workspace vector (can be NULL)
+</TD></TR></TABLE>
+<P>
+<H3><FONT COLOR="#883300">Output Parameter</FONT></H3>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>nrm </B></TD><TD>&nbsp;- the norm estimate
+</TD></TR></TABLE>
+<P>
+<H3><FONT COLOR="#883300">Notes</FONT></H3>
+Does not need access to the matrix entries, just performs a matrix-vector product.
+Based on work by I. Ipsen and coworkers https://ipsen.math.ncsu.edu/ps/slides_ima.pdf
+<P>
+The input vector vrn must have unit 2-norm.
+If vrn is NULL, then it is created internally and filled with <A HREF="../sys/VecSetRandomNormal.html#VecSetRandomNormal">VecSetRandomNormal</A>().
+<P>
+
+<P>
+<H3><FONT COLOR="#883300">See Also</FONT></H3>
+ <A HREF="../sys/VecSetRandomNormal.html#VecSetRandomNormal">VecSetRandomNormal</A>()
+<BR><P><B><FONT COLOR="#883300">Location: </FONT></B><A HREF="../../../src/sys/mat/matutil.c.html#MatNormEstimate">src/sys/mat/matutil.c</A>
+<BR><A HREF="./index.html">Index of all sys routines</A>
+<BR><A HREF="../../../docs/manualpages/index.html">Table of Contents for all manual pages</A>
+<BR><A HREF="../singleindex.html">Index of all manual pages</A>
+</BODY></HTML>

@@ -1,0 +1,540 @@
+<center><a href="svdmon.c">Actual source code: svdmon.c</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="https://slepc.upv.es/documentation/current/src/svd/interface/svdmon.c.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2022-08-09T09:05:44+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>slepc-3.17.2 2022-08-09</b></div>
+   <div id="bugreport" align=right><a href="mailto:slepc-maint@upv.es?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: slepc-3.17.2 v3.17.2 src/svd/interface/svdmon.c.html "><small>Report Typos and Errors</small></a></div>
+<pre width="80">
+<a name="line1">  1: </a><font color="#B22222">/*</font>
+<a name="line2">  2: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line3">  3: </a><font color="#B22222">   SLEPc - Scalable Library for Eigenvalue Problem Computations</font>
+<a name="line4">  4: </a><font color="#B22222">   Copyright (c) 2002-, Universitat Politecnica de Valencia, Spain</font>
+
+<a name="line6">  6: </a><font color="#B22222">   This file is part of SLEPc.</font>
+<a name="line7">  7: </a><font color="#B22222">   SLEPc is distributed under a 2-clause BSD license (see LICENSE).</font>
+<a name="line8">  8: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line9">  9: </a><font color="#B22222">*/</font>
+<a name="line10"> 10: </a><font color="#B22222">/*</font>
+<a name="line11"> 11: </a><font color="#B22222">   <a href="../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> routines related to monitors</font>
+<a name="line12"> 12: </a><font color="#B22222">*/</font>
+
+<a name="line14"> 14: </a>#include <A href="../../../include/slepc/private/svdimpl.h.html">&lt;slepc/private/svdimpl.h&gt;</A>
+<a name="line15"> 15: </a><font color="#A020F0">#include &lt;petscdraw.h&gt;</font>
+
+<a name="line17"> 17: </a><strong><font color="#4169E1"><a name="SVDMonitorLGCreate"></a>PetscErrorCode SVDMonitorLGCreate(MPI_Comm comm,const char host[],const char label[],const char metric[],PetscInt l,const char *names[],int x,int y,int m,int n,PetscDrawLG *lgctx)</font></strong>
+<a name="line18"> 18: </a>{
+<a name="line19"> 19: </a>  PetscDraw      draw;
+<a name="line20"> 20: </a>  PetscDrawAxis  axis;
+<a name="line21"> 21: </a>  PetscDrawLG    lg;
+
+<a name="line23"> 23: </a>  PetscDrawCreate(comm,host,label,x,y,m,n,&amp;draw);
+<a name="line24"> 24: </a>  PetscDrawSetFromOptions(draw);
+<a name="line25"> 25: </a>  PetscDrawLGCreate(draw,l,&amp;lg);
+<a name="line26"> 26: </a>  <font color="#4169E1">if</font> (names) PetscDrawLGSetLegend(lg,names);
+<a name="line27"> 27: </a>  PetscDrawLGSetFromOptions(lg);
+<a name="line28"> 28: </a>  PetscDrawLGGetAxis(lg,&amp;axis);
+<a name="line29"> 29: </a>  PetscDrawAxisSetLabels(axis,<font color="#666666">"Convergence"</font>,<font color="#666666">"Iteration"</font>,metric);
+<a name="line30"> 30: </a>  PetscDrawDestroy(&amp;draw);
+<a name="line31"> 31: </a>  *lgctx = lg;
+<a name="line32"> 32: </a>  PetscFunctionReturn(0);
+<a name="line33"> 33: </a>}
+
+<a name="line35"> 35: </a><font color="#B22222">/*</font>
+<a name="line36"> 36: </a><font color="#B22222">   Runs the user provided monitor routines, if any.</font>
+<a name="line37"> 37: </a><font color="#B22222">*/</font>
+<a name="line38"> 38: </a><strong><font color="#4169E1"><a name="SVDMonitor"></a>PetscErrorCode SVDMonitor(<a href="../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> svd,PetscInt it,PetscInt nconv,PetscReal *sigma,PetscReal *errest,PetscInt nest)</font></strong>
+<a name="line39"> 39: </a>{
+<a name="line40"> 40: </a>  PetscInt       i,n = svd-&gt;numbermonitors;
+
+<a name="line42"> 42: </a>  <font color="#4169E1">for</font> (i=0;i&lt;n;i++) (*svd-&gt;monitor[i])(svd,it,nconv,sigma,errest,nest,svd-&gt;monitorcontext[i]);
+<a name="line43"> 43: </a>  PetscFunctionReturn(0);
+<a name="line44"> 44: </a>}
+
+<a name="line46"> 46: </a><font color="#B22222">/*@C</font>
+<a name="line47"> 47: </a><font color="#B22222">   <a href="../../../docs/manualpages/SVD/SVDMonitorSet.html#SVDMonitorSet">SVDMonitorSet</a> - Sets an ADDITIONAL function to be called at every</font>
+<a name="line48"> 48: </a><font color="#B22222">   iteration to monitor the error estimates for each requested singular triplet.</font>
+
+<a name="line50"> 50: </a><font color="#B22222">   Logically Collective on svd</font>
+
+<a name="line52"> 52: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line53"> 53: </a><font color="#B22222">+  svd     - singular value solver context obtained from <a href="../../../docs/manualpages/SVD/SVDCreate.html#SVDCreate">SVDCreate</a>()</font>
+<a name="line54"> 54: </a><font color="#B22222">.  monitor - pointer to function (if this is NULL, it turns off monitoring)</font>
+<a name="line55"> 55: </a><font color="#B22222">.  mctx    - [optional] context for private data for the</font>
+<a name="line56"> 56: </a><font color="#B22222">             monitor routine (use NULL if no context is desired)</font>
+<a name="line57"> 57: </a><font color="#B22222">-  monitordestroy - [optional] routine that frees monitor context (may be NULL)</font>
+
+<a name="line59"> 59: </a><font color="#B22222">   Calling Sequence of monitor:</font>
+<a name="line60"> 60: </a><font color="#B22222">$   monitor(<a href="../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> svd,PetscInt its,PetscInt nconv,PetscReal *sigma,PetscReal *errest,PetscInt nest,void *mctx)</font>
+
+<a name="line62"> 62: </a><font color="#B22222">+  svd    - singular value solver context obtained from <a href="../../../docs/manualpages/SVD/SVDCreate.html#SVDCreate">SVDCreate</a>()</font>
+<a name="line63"> 63: </a><font color="#B22222">.  its    - iteration number</font>
+<a name="line64"> 64: </a><font color="#B22222">.  nconv  - number of converged singular triplets</font>
+<a name="line65"> 65: </a><font color="#B22222">.  sigma  - singular values</font>
+<a name="line66"> 66: </a><font color="#B22222">.  errest - relative error estimates for each singular triplet</font>
+<a name="line67"> 67: </a><font color="#B22222">.  nest   - number of error estimates</font>
+<a name="line68"> 68: </a><font color="#B22222">-  mctx   - optional monitoring context, as set by <a href="../../../docs/manualpages/SVD/SVDMonitorSet.html#SVDMonitorSet">SVDMonitorSet</a>()</font>
+
+<a name="line70"> 70: </a><font color="#B22222">   Options Database Keys:</font>
+<a name="line71"> 71: </a><font color="#B22222">+    -svd_monitor        - print only the first error estimate</font>
+<a name="line72"> 72: </a><font color="#B22222">.    -svd_monitor_all    - print error estimates at each iteration</font>
+<a name="line73"> 73: </a><font color="#B22222">.    -svd_monitor_conv   - print the singular value approximations only when</font>
+<a name="line74"> 74: </a><font color="#B22222">      convergence has been reached</font>
+<a name="line75"> 75: </a><font color="#B22222">.    -svd_monitor draw::draw_lg - sets line graph monitor for the first unconverged</font>
+<a name="line76"> 76: </a><font color="#B22222">      approximate singular value</font>
+<a name="line77"> 77: </a><font color="#B22222">.    -svd_monitor_all draw::draw_lg - sets line graph monitor for all unconverged</font>
+<a name="line78"> 78: </a><font color="#B22222">      approximate singular values</font>
+<a name="line79"> 79: </a><font color="#B22222">.    -svd_monitor_conv draw::draw_lg - sets line graph monitor for convergence history</font>
+<a name="line80"> 80: </a><font color="#B22222">-    -svd_monitor_cancel - cancels all monitors that have been hardwired into</font>
+<a name="line81"> 81: </a><font color="#B22222">      a code by calls to <a href="../../../docs/manualpages/SVD/SVDMonitorSet.html#SVDMonitorSet">SVDMonitorSet</a>(), but does not cancel those set via</font>
+<a name="line82"> 82: </a><font color="#B22222">      the options database.</font>
+
+<a name="line84"> 84: </a><font color="#B22222">   Notes:</font>
+<a name="line85"> 85: </a><font color="#B22222">   Several different monitoring routines may be set by calling</font>
+<a name="line86"> 86: </a><font color="#B22222">   <a href="../../../docs/manualpages/SVD/SVDMonitorSet.html#SVDMonitorSet">SVDMonitorSet</a>() multiple times; all will be called in the</font>
+<a name="line87"> 87: </a><font color="#B22222">   order in which they were set.</font>
+
+<a name="line89"> 89: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line91"> 91: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/SVD/SVDMonitorFirst.html#SVDMonitorFirst">SVDMonitorFirst</a>(), <a href="../../../docs/manualpages/SVD/SVDMonitorAll.html#SVDMonitorAll">SVDMonitorAll</a>(), <a href="../../../docs/manualpages/SVD/SVDMonitorCancel.html#SVDMonitorCancel">SVDMonitorCancel</a>()</font>
+<a name="line92"> 92: </a><font color="#B22222">@*/</font>
+<a name="line93"> 93: </a><strong><font color="#4169E1"><a name="SVDMonitorSet"></a>PetscErrorCode <a href="../../../docs/manualpages/SVD/SVDMonitorSet.html#SVDMonitorSet">SVDMonitorSet</a>(<a href="../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> svd,PetscErrorCode (*monitor)(<a href="../../../docs/manualpages/sys/SVD.html#SVD">SVD</a>,PetscInt,PetscInt,PetscReal*,PetscReal*,PetscInt,void*),void *mctx,PetscErrorCode (*monitordestroy)(void**))</font></strong>
+<a name="line94"> 94: </a>{
+<a name="line97"> 97: </a>  svd-&gt;monitor[svd-&gt;numbermonitors]           = monitor;
+<a name="line98"> 98: </a>  svd-&gt;monitorcontext[svd-&gt;numbermonitors]    = (void*)mctx;
+<a name="line99"> 99: </a>  svd-&gt;monitordestroy[svd-&gt;numbermonitors++]  = monitordestroy;
+<a name="line100">100: </a>  PetscFunctionReturn(0);
+<a name="line101">101: </a>}
+
+<a name="line103">103: </a><font color="#B22222">/*@</font>
+<a name="line104">104: </a><font color="#B22222">   <a href="../../../docs/manualpages/SVD/SVDMonitorCancel.html#SVDMonitorCancel">SVDMonitorCancel</a> - Clears all monitors for an <a href="../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> object.</font>
+
+<a name="line106">106: </a><font color="#B22222">   Logically Collective on svd</font>
+
+<a name="line108">108: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line109">109: </a><font color="#B22222">.  svd - singular value solver context obtained from <a href="../../../docs/manualpages/SVD/SVDCreate.html#SVDCreate">SVDCreate</a>()</font>
+
+<a name="line111">111: </a><font color="#B22222">   Options Database Key:</font>
+<a name="line112">112: </a><font color="#B22222">.    -svd_monitor_cancel - Cancels all monitors that have been hardwired</font>
+<a name="line113">113: </a><font color="#B22222">      into a code by calls to <a href="../../../docs/manualpages/SVD/SVDMonitorSet.html#SVDMonitorSet">SVDMonitorSet</a>(),</font>
+<a name="line114">114: </a><font color="#B22222">      but does not cancel those set via the options database.</font>
+
+<a name="line116">116: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line118">118: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/SVD/SVDMonitorSet.html#SVDMonitorSet">SVDMonitorSet</a>()</font>
+<a name="line119">119: </a><font color="#B22222">@*/</font>
+<a name="line120">120: </a><strong><font color="#4169E1"><a name="SVDMonitorCancel"></a>PetscErrorCode <a href="../../../docs/manualpages/SVD/SVDMonitorCancel.html#SVDMonitorCancel">SVDMonitorCancel</a>(<a href="../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> svd)</font></strong>
+<a name="line121">121: </a>{
+<a name="line122">122: </a>  PetscInt       i;
+
+<a name="line125">125: </a>  <font color="#4169E1">for</font> (i=0; i&lt;svd-&gt;numbermonitors; i++) {
+<a name="line126">126: </a>    <font color="#4169E1">if</font> (svd-&gt;monitordestroy[i]) (*svd-&gt;monitordestroy[i])(&amp;svd-&gt;monitorcontext[i]);
+<a name="line127">127: </a>  }
+<a name="line128">128: </a>  svd-&gt;numbermonitors = 0;
+<a name="line129">129: </a>  PetscFunctionReturn(0);
+<a name="line130">130: </a>}
+
+<a name="line132">132: </a><font color="#B22222">/*@C</font>
+<a name="line133">133: </a><font color="#B22222">   <a href="../../../docs/manualpages/SVD/SVDGetMonitorContext.html#SVDGetMonitorContext">SVDGetMonitorContext</a> - Gets the monitor context, as set by</font>
+<a name="line134">134: </a><font color="#B22222">   <a href="../../../docs/manualpages/SVD/SVDMonitorSet.html#SVDMonitorSet">SVDMonitorSet</a>() for the FIRST monitor only.</font>
+
+<a name="line136">136: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line138">138: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line139">139: </a><font color="#B22222">.  svd - singular value solver context obtained from <a href="../../../docs/manualpages/SVD/SVDCreate.html#SVDCreate">SVDCreate</a>()</font>
+
+<a name="line141">141: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line142">142: </a><font color="#B22222">.  ctx - monitor context</font>
+
+<a name="line144">144: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line146">146: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/SVD/SVDMonitorSet.html#SVDMonitorSet">SVDMonitorSet</a>()</font>
+<a name="line147">147: </a><font color="#B22222">@*/</font>
+<a name="line148">148: </a><strong><font color="#4169E1"><a name="SVDGetMonitorContext"></a>PetscErrorCode <a href="../../../docs/manualpages/SVD/SVDGetMonitorContext.html#SVDGetMonitorContext">SVDGetMonitorContext</a>(<a href="../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> svd,void *ctx)</font></strong>
+<a name="line149">149: </a>{
+<a name="line151">151: </a>  *(void**)ctx = svd-&gt;monitorcontext[0];
+<a name="line152">152: </a>  PetscFunctionReturn(0);
+<a name="line153">153: </a>}
+
+<a name="line155">155: </a><font color="#B22222">/*@C</font>
+<a name="line156">156: </a><font color="#B22222">   <a href="../../../docs/manualpages/SVD/SVDMonitorFirst.html#SVDMonitorFirst">SVDMonitorFirst</a> - Print the first unconverged approximate value and</font>
+<a name="line157">157: </a><font color="#B22222">   error estimate at each iteration of the singular value solver.</font>
+
+<a name="line159">159: </a><font color="#B22222">   Collective on svd</font>
+
+<a name="line161">161: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line162">162: </a><font color="#B22222">+  svd    - singular value solver context</font>
+<a name="line163">163: </a><font color="#B22222">.  its    - iteration number</font>
+<a name="line164">164: </a><font color="#B22222">.  nconv  - number of converged singular triplets so far</font>
+<a name="line165">165: </a><font color="#B22222">.  sigma  - singular values</font>
+<a name="line166">166: </a><font color="#B22222">.  errest - error estimates</font>
+<a name="line167">167: </a><font color="#B22222">.  nest   - number of error estimates to display</font>
+<a name="line168">168: </a><font color="#B22222">-  vf     - viewer and format for monitoring</font>
+
+<a name="line170">170: </a><font color="#B22222">   Options Database Key:</font>
+<a name="line171">171: </a><font color="#B22222">.  -svd_monitor - activates <a href="../../../docs/manualpages/SVD/SVDMonitorFirst.html#SVDMonitorFirst">SVDMonitorFirst</a>()</font>
+
+<a name="line173">173: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line175">175: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/SVD/SVDMonitorSet.html#SVDMonitorSet">SVDMonitorSet</a>(), <a href="../../../docs/manualpages/SVD/SVDMonitorAll.html#SVDMonitorAll">SVDMonitorAll</a>(), <a href="../../../docs/manualpages/SVD/SVDMonitorConverged.html#SVDMonitorConverged">SVDMonitorConverged</a>()</font>
+<a name="line176">176: </a><font color="#B22222">@*/</font>
+<a name="line177">177: </a><strong><font color="#4169E1"><a name="SVDMonitorFirst"></a>PetscErrorCode <a href="../../../docs/manualpages/SVD/SVDMonitorFirst.html#SVDMonitorFirst">SVDMonitorFirst</a>(<a href="../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> svd,PetscInt its,PetscInt nconv,PetscReal *sigma,PetscReal *errest,PetscInt nest,PetscViewerAndFormat *vf)</font></strong>
+<a name="line178">178: </a>{
+<a name="line179">179: </a>  PetscViewer    viewer = vf-&gt;viewer;
+
+<a name="line183">183: </a>  <font color="#4169E1">if</font> (its==1 &amp;&amp; ((PetscObject)svd)-&gt;prefix) PetscViewerASCIIPrintf(viewer,<font color="#666666">"  Singular value approximations and residual norms for %s solve.\n"</font>,((PetscObject)svd)-&gt;prefix);
+<a name="line184">184: </a>  <font color="#4169E1">if</font> (nconv&lt;nest) {
+<a name="line185">185: </a>    PetscViewerPushFormat(viewer,vf-&gt;format);
+<a name="line186">186: </a>    PetscViewerASCIIAddTab(viewer,((PetscObject)svd)-&gt;tablevel);
+<a name="line187">187: </a>    PetscViewerASCIIPrintf(viewer,<font color="#666666">"%3"</font> PetscInt_FMT <font color="#666666">" <a href="../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> nconv=%"</font> PetscInt_FMT <font color="#666666">" first unconverged value (error)"</font>,its,nconv);
+<a name="line188">188: </a>    PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);
+<a name="line189">189: </a>    PetscViewerASCIIPrintf(viewer,<font color="#666666">" %g (%10.8e)\n"</font>,(double)sigma[nconv],(double)errest[nconv]);
+<a name="line190">190: </a>    PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);
+<a name="line191">191: </a>    PetscViewerASCIISubtractTab(viewer,((PetscObject)svd)-&gt;tablevel);
+<a name="line192">192: </a>    PetscViewerPopFormat(viewer);
+<a name="line193">193: </a>  }
+<a name="line194">194: </a>  PetscFunctionReturn(0);
+<a name="line195">195: </a>}
+
+<a name="line197">197: </a><font color="#B22222">/*@C</font>
+<a name="line198">198: </a><font color="#B22222">   <a href="../../../docs/manualpages/SVD/SVDMonitorAll.html#SVDMonitorAll">SVDMonitorAll</a> - Print the current approximate values and</font>
+<a name="line199">199: </a><font color="#B22222">   error estimates at each iteration of the singular value solver.</font>
+
+<a name="line201">201: </a><font color="#B22222">   Collective on svd</font>
+
+<a name="line203">203: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line204">204: </a><font color="#B22222">+  svd    - singular value solver context</font>
+<a name="line205">205: </a><font color="#B22222">.  its    - iteration number</font>
+<a name="line206">206: </a><font color="#B22222">.  nconv  - number of converged singular triplets so far</font>
+<a name="line207">207: </a><font color="#B22222">.  sigma  - singular values</font>
+<a name="line208">208: </a><font color="#B22222">.  errest - error estimates</font>
+<a name="line209">209: </a><font color="#B22222">.  nest   - number of error estimates to display</font>
+<a name="line210">210: </a><font color="#B22222">-  vf     - viewer and format for monitoring</font>
+
+<a name="line212">212: </a><font color="#B22222">   Options Database Key:</font>
+<a name="line213">213: </a><font color="#B22222">.  -svd_monitor_all - activates <a href="../../../docs/manualpages/SVD/SVDMonitorAll.html#SVDMonitorAll">SVDMonitorAll</a>()</font>
+
+<a name="line215">215: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line217">217: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/SVD/SVDMonitorSet.html#SVDMonitorSet">SVDMonitorSet</a>(), <a href="../../../docs/manualpages/SVD/SVDMonitorFirst.html#SVDMonitorFirst">SVDMonitorFirst</a>(), <a href="../../../docs/manualpages/SVD/SVDMonitorConverged.html#SVDMonitorConverged">SVDMonitorConverged</a>()</font>
+<a name="line218">218: </a><font color="#B22222">@*/</font>
+<a name="line219">219: </a><strong><font color="#4169E1"><a name="SVDMonitorAll"></a>PetscErrorCode <a href="../../../docs/manualpages/SVD/SVDMonitorAll.html#SVDMonitorAll">SVDMonitorAll</a>(<a href="../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> svd,PetscInt its,PetscInt nconv,PetscReal *sigma,PetscReal *errest,PetscInt nest,PetscViewerAndFormat *vf)</font></strong>
+<a name="line220">220: </a>{
+<a name="line221">221: </a>  PetscInt       i;
+<a name="line222">222: </a>  PetscViewer    viewer = vf-&gt;viewer;
+
+<a name="line226">226: </a>  PetscViewerPushFormat(viewer,vf-&gt;format);
+<a name="line227">227: </a>  PetscViewerASCIIAddTab(viewer,((PetscObject)svd)-&gt;tablevel);
+<a name="line228">228: </a>  <font color="#4169E1">if</font> (its==1 &amp;&amp; ((PetscObject)svd)-&gt;prefix) PetscViewerASCIIPrintf(viewer,<font color="#666666">"  Singular value approximations and residual norms for %s solve.\n"</font>,((PetscObject)svd)-&gt;prefix);
+<a name="line229">229: </a>  PetscViewerASCIIPrintf(viewer,<font color="#666666">"%3"</font> PetscInt_FMT <font color="#666666">" <a href="../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> nconv=%"</font> PetscInt_FMT <font color="#666666">" Values (Errors)"</font>,its,nconv);
+<a name="line230">230: </a>  PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);
+<a name="line231">231: </a>  <font color="#4169E1">for</font> (i=0;i&lt;nest;i++) PetscViewerASCIIPrintf(viewer,<font color="#666666">" %g (%10.8e)"</font>,(double)sigma[i],(double)errest[i]);
+<a name="line232">232: </a>  PetscViewerASCIIPrintf(viewer,<font color="#666666">"\n"</font>);
+<a name="line233">233: </a>  PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);
+<a name="line234">234: </a>  PetscViewerASCIISubtractTab(viewer,((PetscObject)svd)-&gt;tablevel);
+<a name="line235">235: </a>  PetscViewerPopFormat(viewer);
+<a name="line236">236: </a>  PetscFunctionReturn(0);
+<a name="line237">237: </a>}
+
+<a name="line239">239: </a><font color="#B22222">/*@C</font>
+<a name="line240">240: </a><font color="#B22222">   <a href="../../../docs/manualpages/SVD/SVDMonitorConverged.html#SVDMonitorConverged">SVDMonitorConverged</a> - Print the approximate values and</font>
+<a name="line241">241: </a><font color="#B22222">   error estimates as they converge.</font>
+
+<a name="line243">243: </a><font color="#B22222">   Collective on svd</font>
+
+<a name="line245">245: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line246">246: </a><font color="#B22222">+  svd    - singular value solver context</font>
+<a name="line247">247: </a><font color="#B22222">.  its    - iteration number</font>
+<a name="line248">248: </a><font color="#B22222">.  nconv  - number of converged singular triplets so far</font>
+<a name="line249">249: </a><font color="#B22222">.  sigma  - singular values</font>
+<a name="line250">250: </a><font color="#B22222">.  errest - error estimates</font>
+<a name="line251">251: </a><font color="#B22222">.  nest   - number of error estimates to display</font>
+<a name="line252">252: </a><font color="#B22222">-  vf     - viewer and format for monitoring</font>
+
+<a name="line254">254: </a><font color="#B22222">   Options Database Key:</font>
+<a name="line255">255: </a><font color="#B22222">.  -svd_monitor_conv - activates <a href="../../../docs/manualpages/SVD/SVDMonitorConverged.html#SVDMonitorConverged">SVDMonitorConverged</a>()</font>
+
+<a name="line257">257: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line259">259: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/SVD/SVDMonitorSet.html#SVDMonitorSet">SVDMonitorSet</a>(), <a href="../../../docs/manualpages/SVD/SVDMonitorFirst.html#SVDMonitorFirst">SVDMonitorFirst</a>(), <a href="../../../docs/manualpages/SVD/SVDMonitorAll.html#SVDMonitorAll">SVDMonitorAll</a>()</font>
+<a name="line260">260: </a><font color="#B22222">@*/</font>
+<a name="line261">261: </a><strong><font color="#4169E1"><a name="SVDMonitorConverged"></a>PetscErrorCode <a href="../../../docs/manualpages/SVD/SVDMonitorConverged.html#SVDMonitorConverged">SVDMonitorConverged</a>(<a href="../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> svd,PetscInt its,PetscInt nconv,PetscReal *sigma,PetscReal *errest,PetscInt nest,PetscViewerAndFormat *vf)</font></strong>
+<a name="line262">262: </a>{
+<a name="line263">263: </a>  PetscInt       i;
+<a name="line264">264: </a>  PetscViewer    viewer = vf-&gt;viewer;
+<a name="line265">265: </a>  SlepcConvMon   ctx;
+
+<a name="line269">269: </a>  ctx = (SlepcConvMon)vf-&gt;data;
+<a name="line270">270: </a>  <font color="#4169E1">if</font> (its==1 &amp;&amp; ((PetscObject)svd)-&gt;prefix) PetscViewerASCIIPrintf(viewer,<font color="#666666">"  Convergence history for %s solve.\n"</font>,((PetscObject)svd)-&gt;prefix);
+<a name="line271">271: </a>  <font color="#4169E1">if</font> (its==1) ctx-&gt;oldnconv = 0;
+<a name="line272">272: </a>  <font color="#4169E1">if</font> (ctx-&gt;oldnconv!=nconv) {
+<a name="line273">273: </a>    PetscViewerPushFormat(viewer,vf-&gt;format);
+<a name="line274">274: </a>    PetscViewerASCIIAddTab(viewer,((PetscObject)svd)-&gt;tablevel);
+<a name="line275">275: </a>    <font color="#4169E1">for</font> (i=ctx-&gt;oldnconv;i&lt;nconv;i++) {
+<a name="line276">276: </a>      PetscViewerASCIIPrintf(viewer,<font color="#666666">"%3"</font> PetscInt_FMT <font color="#666666">" <a href="../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> converged value (error) #%"</font> PetscInt_FMT,its,i);
+<a name="line277">277: </a>      PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);
+<a name="line278">278: </a>      PetscViewerASCIIPrintf(viewer,<font color="#666666">" %g (%10.8e)\n"</font>,(double)sigma[i],(double)errest[i]);
+<a name="line279">279: </a>      PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);
+<a name="line280">280: </a>    }
+<a name="line281">281: </a>    PetscViewerASCIISubtractTab(viewer,((PetscObject)svd)-&gt;tablevel);
+<a name="line282">282: </a>    PetscViewerPopFormat(viewer);
+<a name="line283">283: </a>    ctx-&gt;oldnconv = nconv;
+<a name="line284">284: </a>  }
+<a name="line285">285: </a>  PetscFunctionReturn(0);
+<a name="line286">286: </a>}
+
+<a name="line288">288: </a><strong><font color="#4169E1"><a name="SVDMonitorConvergedCreate"></a>PetscErrorCode SVDMonitorConvergedCreate(PetscViewer viewer,PetscViewerFormat format,void *ctx,PetscViewerAndFormat **vf)</font></strong>
+<a name="line289">289: </a>{
+<a name="line290">290: </a>  SlepcConvMon   mctx;
+
+<a name="line292">292: </a>  PetscViewerAndFormatCreate(viewer,format,vf);
+<a name="line293">293: </a>  PetscNew(&amp;mctx);
+<a name="line294">294: </a>  mctx-&gt;ctx = ctx;
+<a name="line295">295: </a>  (*vf)-&gt;data = (void*)mctx;
+<a name="line296">296: </a>  PetscFunctionReturn(0);
+<a name="line297">297: </a>}
+
+<a name="line299">299: </a><strong><font color="#4169E1"><a name="SVDMonitorConvergedDestroy"></a>PetscErrorCode SVDMonitorConvergedDestroy(PetscViewerAndFormat **vf)</font></strong>
+<a name="line300">300: </a>{
+<a name="line301">301: </a>  <font color="#4169E1">if</font> (!*vf) PetscFunctionReturn(0);
+<a name="line302">302: </a>  PetscFree((*vf)-&gt;data);
+<a name="line303">303: </a>  PetscViewerDestroy(&amp;(*vf)-&gt;viewer);
+<a name="line304">304: </a>  PetscDrawLGDestroy(&amp;(*vf)-&gt;lg);
+<a name="line305">305: </a>  PetscFree(*vf);
+<a name="line306">306: </a>  PetscFunctionReturn(0);
+<a name="line307">307: </a>}
+
+<a name="line309">309: </a><font color="#B22222">/*@C</font>
+<a name="line310">310: </a><font color="#B22222">   <a href="../../../docs/manualpages/SVD/SVDMonitorFirstDrawLG.html#SVDMonitorFirstDrawLG">SVDMonitorFirstDrawLG</a> - Plots the error estimate of the first unconverged</font>
+<a name="line311">311: </a><font color="#B22222">   approximation at each iteration of the singular value solver.</font>
+
+<a name="line313">313: </a><font color="#B22222">   Collective on svd</font>
+
+<a name="line315">315: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line316">316: </a><font color="#B22222">+  svd    - singular value solver context</font>
+<a name="line317">317: </a><font color="#B22222">.  its    - iteration number</font>
+<a name="line318">318: </a><font color="#B22222">.  its    - iteration number</font>
+<a name="line319">319: </a><font color="#B22222">.  nconv  - number of converged singular triplets so far</font>
+<a name="line320">320: </a><font color="#B22222">.  sigma  - singular values</font>
+<a name="line321">321: </a><font color="#B22222">.  errest - error estimates</font>
+<a name="line322">322: </a><font color="#B22222">.  nest   - number of error estimates to display</font>
+<a name="line323">323: </a><font color="#B22222">-  vf     - viewer and format for monitoring</font>
+
+<a name="line325">325: </a><font color="#B22222">   Options Database Key:</font>
+<a name="line326">326: </a><font color="#B22222">.  -svd_monitor draw::draw_lg - activates <a href="../../../docs/manualpages/SVD/SVDMonitorFirstDrawLG.html#SVDMonitorFirstDrawLG">SVDMonitorFirstDrawLG</a>()</font>
+
+<a name="line328">328: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line330">330: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/SVD/SVDMonitorSet.html#SVDMonitorSet">SVDMonitorSet</a>()</font>
+<a name="line331">331: </a><font color="#B22222">@*/</font>
+<a name="line332">332: </a><strong><font color="#4169E1"><a name="SVDMonitorFirstDrawLG"></a>PetscErrorCode <a href="../../../docs/manualpages/SVD/SVDMonitorFirstDrawLG.html#SVDMonitorFirstDrawLG">SVDMonitorFirstDrawLG</a>(<a href="../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> svd,PetscInt its,PetscInt nconv,PetscReal *sigma,PetscReal *errest,PetscInt nest,PetscViewerAndFormat *vf)</font></strong>
+<a name="line333">333: </a>{
+<a name="line334">334: </a>  PetscViewer    viewer = vf-&gt;viewer;
+<a name="line335">335: </a>  PetscDrawLG    lg = vf-&gt;lg;
+<a name="line336">336: </a>  PetscReal      x,y;
+
+<a name="line341">341: </a>  PetscViewerPushFormat(viewer,vf-&gt;format);
+<a name="line342">342: </a>  <font color="#4169E1">if</font> (its==1) {
+<a name="line343">343: </a>    PetscDrawLGReset(lg);
+<a name="line344">344: </a>    PetscDrawLGSetDimension(lg,1);
+<a name="line345">345: </a>    PetscDrawLGSetLimits(lg,1,1,PetscLog10Real(svd-&gt;tol)-2,0.0);
+<a name="line346">346: </a>  }
+<a name="line347">347: </a>  <font color="#4169E1">if</font> (nconv&lt;nest) {
+<a name="line348">348: </a>    x = (PetscReal)its;
+<a name="line349">349: </a>    <font color="#4169E1">if</font> (errest[nconv] &gt; 0.0) y = PetscLog10Real(errest[nconv]);
+<a name="line350">350: </a>    <font color="#4169E1">else</font> y = 0.0;
+<a name="line351">351: </a>    PetscDrawLGAddPoint(lg,&amp;x,&amp;y);
+<a name="line352">352: </a>    <font color="#4169E1">if</font> (its &lt;= 20 || !(its % 5) || svd-&gt;reason) {
+<a name="line353">353: </a>      PetscDrawLGDraw(lg);
+<a name="line354">354: </a>      PetscDrawLGSave(lg);
+<a name="line355">355: </a>    }
+<a name="line356">356: </a>  }
+<a name="line357">357: </a>  PetscViewerPopFormat(viewer);
+<a name="line358">358: </a>  PetscFunctionReturn(0);
+<a name="line359">359: </a>}
+
+<a name="line361">361: </a><font color="#B22222">/*@C</font>
+<a name="line362">362: </a><font color="#B22222">   <a href="../../../docs/manualpages/SVD/SVDMonitorFirstDrawLGCreate.html#SVDMonitorFirstDrawLGCreate">SVDMonitorFirstDrawLGCreate</a> - Creates the plotter for the first error estimate.</font>
+
+<a name="line364">364: </a><font color="#B22222">   Collective on viewer</font>
+
+<a name="line366">366: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line367">367: </a><font color="#B22222">+  viewer - the viewer</font>
+<a name="line368">368: </a><font color="#B22222">.  format - the viewer format</font>
+<a name="line369">369: </a><font color="#B22222">-  ctx    - an optional user context</font>
+
+<a name="line371">371: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line372">372: </a><font color="#B22222">.  vf     - the viewer and format context</font>
+
+<a name="line374">374: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line376">376: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/SVD/SVDMonitorSet.html#SVDMonitorSet">SVDMonitorSet</a>()</font>
+<a name="line377">377: </a><font color="#B22222">@*/</font>
+<a name="line378">378: </a><strong><font color="#4169E1"><a name="SVDMonitorFirstDrawLGCreate"></a>PetscErrorCode <a href="../../../docs/manualpages/SVD/SVDMonitorFirstDrawLGCreate.html#SVDMonitorFirstDrawLGCreate">SVDMonitorFirstDrawLGCreate</a>(PetscViewer viewer,PetscViewerFormat format,void *ctx,PetscViewerAndFormat **vf)</font></strong>
+<a name="line379">379: </a>{
+<a name="line380">380: </a>  PetscViewerAndFormatCreate(viewer,format,vf);
+<a name="line381">381: </a>  (*vf)-&gt;data = ctx;
+<a name="line382">382: </a>  SVDMonitorLGCreate(PetscObjectComm((PetscObject)viewer),NULL,<font color="#666666">"First Error Estimate"</font>,<font color="#666666">"Log Error Estimate"</font>,1,NULL,PETSC_DECIDE,PETSC_DECIDE,400,300,&amp;(*vf)-&gt;lg);
+<a name="line383">383: </a>  PetscFunctionReturn(0);
+<a name="line384">384: </a>}
+
+<a name="line386">386: </a><font color="#B22222">/*@C</font>
+<a name="line387">387: </a><font color="#B22222">   <a href="../../../docs/manualpages/SVD/SVDMonitorAllDrawLG.html#SVDMonitorAllDrawLG">SVDMonitorAllDrawLG</a> - Plots the error estimate of all unconverged</font>
+<a name="line388">388: </a><font color="#B22222">   approximations at each iteration of the singular value solver.</font>
+
+<a name="line390">390: </a><font color="#B22222">   Collective on svd</font>
+
+<a name="line392">392: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line393">393: </a><font color="#B22222">+  svd    - singular value solver context</font>
+<a name="line394">394: </a><font color="#B22222">.  its    - iteration number</font>
+<a name="line395">395: </a><font color="#B22222">.  its    - iteration number</font>
+<a name="line396">396: </a><font color="#B22222">.  nconv  - number of converged singular triplets so far</font>
+<a name="line397">397: </a><font color="#B22222">.  sigma  - singular values</font>
+<a name="line398">398: </a><font color="#B22222">.  errest - error estimates</font>
+<a name="line399">399: </a><font color="#B22222">.  nest   - number of error estimates to display</font>
+<a name="line400">400: </a><font color="#B22222">-  vf     - viewer and format for monitoring</font>
+
+<a name="line402">402: </a><font color="#B22222">   Options Database Key:</font>
+<a name="line403">403: </a><font color="#B22222">.  -svd_monitor_all draw::draw_lg - activates <a href="../../../docs/manualpages/SVD/SVDMonitorAllDrawLG.html#SVDMonitorAllDrawLG">SVDMonitorAllDrawLG</a>()</font>
+
+<a name="line405">405: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line407">407: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/SVD/SVDMonitorSet.html#SVDMonitorSet">SVDMonitorSet</a>()</font>
+<a name="line408">408: </a><font color="#B22222">@*/</font>
+<a name="line409">409: </a><strong><font color="#4169E1"><a name="SVDMonitorAllDrawLG"></a>PetscErrorCode <a href="../../../docs/manualpages/SVD/SVDMonitorAllDrawLG.html#SVDMonitorAllDrawLG">SVDMonitorAllDrawLG</a>(<a href="../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> svd,PetscInt its,PetscInt nconv,PetscReal *sigma,PetscReal *errest,PetscInt nest,PetscViewerAndFormat *vf)</font></strong>
+<a name="line410">410: </a>{
+<a name="line411">411: </a>  PetscViewer    viewer = vf-&gt;viewer;
+<a name="line412">412: </a>  PetscDrawLG    lg = vf-&gt;lg;
+<a name="line413">413: </a>  PetscInt       i,n = PetscMin(svd-&gt;nsv,255);
+<a name="line414">414: </a>  PetscReal      *x,*y;
+
+<a name="line419">419: </a>  PetscViewerPushFormat(viewer,vf-&gt;format);
+<a name="line420">420: </a>  <font color="#4169E1">if</font> (its==1) {
+<a name="line421">421: </a>    PetscDrawLGReset(lg);
+<a name="line422">422: </a>    PetscDrawLGSetDimension(lg,n);
+<a name="line423">423: </a>    PetscDrawLGSetLimits(lg,1,1,PetscLog10Real(svd-&gt;tol)-2,0.0);
+<a name="line424">424: </a>  }
+<a name="line425">425: </a>  PetscMalloc2(n,&amp;x,n,&amp;y);
+<a name="line426">426: </a>  <font color="#4169E1">for</font> (i=0;i&lt;n;i++) {
+<a name="line427">427: </a>    x[i] = (PetscReal)its;
+<a name="line428">428: </a>    <font color="#4169E1">if</font> (i &lt; nest &amp;&amp; errest[i] &gt; 0.0) y[i] = PetscLog10Real(errest[i]);
+<a name="line429">429: </a>    <font color="#4169E1">else</font> y[i] = 0.0;
+<a name="line430">430: </a>  }
+<a name="line431">431: </a>  PetscDrawLGAddPoint(lg,x,y);
+<a name="line432">432: </a>  <font color="#4169E1">if</font> (its &lt;= 20 || !(its % 5) || svd-&gt;reason) {
+<a name="line433">433: </a>    PetscDrawLGDraw(lg);
+<a name="line434">434: </a>    PetscDrawLGSave(lg);
+<a name="line435">435: </a>  }
+<a name="line436">436: </a>  PetscFree2(x,y);
+<a name="line437">437: </a>  PetscViewerPopFormat(viewer);
+<a name="line438">438: </a>  PetscFunctionReturn(0);
+<a name="line439">439: </a>}
+
+<a name="line441">441: </a><font color="#B22222">/*@C</font>
+<a name="line442">442: </a><font color="#B22222">   <a href="../../../docs/manualpages/SVD/SVDMonitorAllDrawLGCreate.html#SVDMonitorAllDrawLGCreate">SVDMonitorAllDrawLGCreate</a> - Creates the plotter for all the error estimates.</font>
+
+<a name="line444">444: </a><font color="#B22222">   Collective on viewer</font>
+
+<a name="line446">446: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line447">447: </a><font color="#B22222">+  viewer - the viewer</font>
+<a name="line448">448: </a><font color="#B22222">.  format - the viewer format</font>
+<a name="line449">449: </a><font color="#B22222">-  ctx    - an optional user context</font>
+
+<a name="line451">451: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line452">452: </a><font color="#B22222">.  vf     - the viewer and format context</font>
+
+<a name="line454">454: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line456">456: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/SVD/SVDMonitorSet.html#SVDMonitorSet">SVDMonitorSet</a>()</font>
+<a name="line457">457: </a><font color="#B22222">@*/</font>
+<a name="line458">458: </a><strong><font color="#4169E1"><a name="SVDMonitorAllDrawLGCreate"></a>PetscErrorCode <a href="../../../docs/manualpages/SVD/SVDMonitorAllDrawLGCreate.html#SVDMonitorAllDrawLGCreate">SVDMonitorAllDrawLGCreate</a>(PetscViewer viewer,PetscViewerFormat format,void *ctx,PetscViewerAndFormat **vf)</font></strong>
+<a name="line459">459: </a>{
+<a name="line460">460: </a>  PetscViewerAndFormatCreate(viewer,format,vf);
+<a name="line461">461: </a>  (*vf)-&gt;data = ctx;
+<a name="line462">462: </a>  SVDMonitorLGCreate(PetscObjectComm((PetscObject)viewer),NULL,<font color="#666666">"All Error Estimates"</font>,<font color="#666666">"Log Error Estimate"</font>,1,NULL,PETSC_DECIDE,PETSC_DECIDE,400,300,&amp;(*vf)-&gt;lg);
+<a name="line463">463: </a>  PetscFunctionReturn(0);
+<a name="line464">464: </a>}
+
+<a name="line466">466: </a><font color="#B22222">/*@C</font>
+<a name="line467">467: </a><font color="#B22222">   <a href="../../../docs/manualpages/SVD/SVDMonitorConvergedDrawLG.html#SVDMonitorConvergedDrawLG">SVDMonitorConvergedDrawLG</a> - Plots the number of converged eigenvalues</font>
+<a name="line468">468: </a><font color="#B22222">   at each iteration of the singular value solver.</font>
+
+<a name="line470">470: </a><font color="#B22222">   Collective on svd</font>
+
+<a name="line472">472: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line473">473: </a><font color="#B22222">+  svd    - singular value solver context</font>
+<a name="line474">474: </a><font color="#B22222">.  its    - iteration number</font>
+<a name="line475">475: </a><font color="#B22222">.  its    - iteration number</font>
+<a name="line476">476: </a><font color="#B22222">.  nconv  - number of converged singular triplets so far</font>
+<a name="line477">477: </a><font color="#B22222">.  sigma  - singular values</font>
+<a name="line478">478: </a><font color="#B22222">.  errest - error estimates</font>
+<a name="line479">479: </a><font color="#B22222">.  nest   - number of error estimates to display</font>
+<a name="line480">480: </a><font color="#B22222">-  vf     - viewer and format for monitoring</font>
+
+<a name="line482">482: </a><font color="#B22222">   Options Database Key:</font>
+<a name="line483">483: </a><font color="#B22222">.  -svd_monitor_conv draw::draw_lg - activates <a href="../../../docs/manualpages/SVD/SVDMonitorConvergedDrawLG.html#SVDMonitorConvergedDrawLG">SVDMonitorConvergedDrawLG</a>()</font>
+
+<a name="line485">485: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line487">487: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/SVD/SVDMonitorSet.html#SVDMonitorSet">SVDMonitorSet</a>()</font>
+<a name="line488">488: </a><font color="#B22222">@*/</font>
+<a name="line489">489: </a><strong><font color="#4169E1"><a name="SVDMonitorConvergedDrawLG"></a>PetscErrorCode <a href="../../../docs/manualpages/SVD/SVDMonitorConvergedDrawLG.html#SVDMonitorConvergedDrawLG">SVDMonitorConvergedDrawLG</a>(<a href="../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> svd,PetscInt its,PetscInt nconv,PetscReal *sigma,PetscReal *errest,PetscInt nest,PetscViewerAndFormat *vf)</font></strong>
+<a name="line490">490: </a>{
+<a name="line491">491: </a>  PetscViewer      viewer = vf-&gt;viewer;
+<a name="line492">492: </a>  PetscDrawLG      lg = vf-&gt;lg;
+<a name="line493">493: </a>  PetscReal        x,y;
+
+<a name="line498">498: </a>  PetscViewerPushFormat(viewer,vf-&gt;format);
+<a name="line499">499: </a>  <font color="#4169E1">if</font> (its==1) {
+<a name="line500">500: </a>    PetscDrawLGReset(lg);
+<a name="line501">501: </a>    PetscDrawLGSetDimension(lg,1);
+<a name="line502">502: </a>    PetscDrawLGSetLimits(lg,1,1,0,svd-&gt;nsv);
+<a name="line503">503: </a>  }
+<a name="line504">504: </a>  x = (PetscReal)its;
+<a name="line505">505: </a>  y = (PetscReal)svd-&gt;nconv;
+<a name="line506">506: </a>  PetscDrawLGAddPoint(lg,&amp;x,&amp;y);
+<a name="line507">507: </a>  <font color="#4169E1">if</font> (its &lt;= 20 || !(its % 5) || svd-&gt;reason) {
+<a name="line508">508: </a>    PetscDrawLGDraw(lg);
+<a name="line509">509: </a>    PetscDrawLGSave(lg);
+<a name="line510">510: </a>  }
+<a name="line511">511: </a>  PetscViewerPopFormat(viewer);
+<a name="line512">512: </a>  PetscFunctionReturn(0);
+<a name="line513">513: </a>}
+
+<a name="line515">515: </a><font color="#B22222">/*@C</font>
+<a name="line516">516: </a><font color="#B22222">   <a href="../../../docs/manualpages/SVD/SVDMonitorConvergedDrawLGCreate.html#SVDMonitorConvergedDrawLGCreate">SVDMonitorConvergedDrawLGCreate</a> - Creates the plotter for the convergence history.</font>
+
+<a name="line518">518: </a><font color="#B22222">   Collective on viewer</font>
+
+<a name="line520">520: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line521">521: </a><font color="#B22222">+  viewer - the viewer</font>
+<a name="line522">522: </a><font color="#B22222">.  format - the viewer format</font>
+<a name="line523">523: </a><font color="#B22222">-  ctx    - an optional user context</font>
+
+<a name="line525">525: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line526">526: </a><font color="#B22222">.  vf     - the viewer and format context</font>
+
+<a name="line528">528: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line530">530: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/SVD/SVDMonitorSet.html#SVDMonitorSet">SVDMonitorSet</a>()</font>
+<a name="line531">531: </a><font color="#B22222">@*/</font>
+<a name="line532">532: </a><strong><font color="#4169E1"><a name="SVDMonitorConvergedDrawLGCreate"></a>PetscErrorCode <a href="../../../docs/manualpages/SVD/SVDMonitorConvergedDrawLGCreate.html#SVDMonitorConvergedDrawLGCreate">SVDMonitorConvergedDrawLGCreate</a>(PetscViewer viewer,PetscViewerFormat format,void *ctx,PetscViewerAndFormat **vf)</font></strong>
+<a name="line533">533: </a>{
+<a name="line534">534: </a>  SlepcConvMon   mctx;
+
+<a name="line536">536: </a>  PetscViewerAndFormatCreate(viewer,format,vf);
+<a name="line537">537: </a>  PetscNew(&amp;mctx);
+<a name="line538">538: </a>  mctx-&gt;ctx = ctx;
+<a name="line539">539: </a>  (*vf)-&gt;data = (void*)mctx;
+<a name="line540">540: </a>  SVDMonitorLGCreate(PetscObjectComm((PetscObject)viewer),NULL,<font color="#666666">"Convergence History"</font>,<font color="#666666">"Number Converged"</font>,1,NULL,PETSC_DECIDE,PETSC_DECIDE,400,300,&amp;(*vf)-&gt;lg);
+<a name="line541">541: </a>  PetscFunctionReturn(0);
+<a name="line542">542: </a>}
+</pre>
+</body>
+
+</html>

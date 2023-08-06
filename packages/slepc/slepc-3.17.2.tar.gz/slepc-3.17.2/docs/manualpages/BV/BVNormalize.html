@@ -1,0 +1,53 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD> <link rel="canonical" href="https://slepc.upv.es/documentation/current/docs/manualpages/BV/BVNormalize.html" />
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<link rel="stylesheet" href="/slepc.css" type="text/css">
+<TITLE>BVNormalize</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+   <div id="version" align=right><b>slepc-3.17.2 2022-08-09</b></div>
+   <div id="bugreport" align=right><a href="mailto:slepc-maint@upv.es?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: slepc-3.17.2 v3.17.2 docs/manualpages/BV/BVNormalize.html "><small>Report Typos and Errors</small></a></div>
+<H1>BVNormalize</H1>
+Normalize all columns (starting from the leading ones). 
+<H3><FONT COLOR="#883300">Synopsis</FONT></H3>
+<PRE>
+#include "slepcbv.h" 
+PetscErrorCode <A HREF="../BV/BVNormalize.html#BVNormalize">BVNormalize</A>(<A HREF="../sys/BV.html#BV">BV</A> bv,PetscScalar *eigi)
+</PRE>
+Collective on bv
+<P>
+<H3><FONT COLOR="#883300">Input Parameters</FONT></H3>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>bv   </B></TD><TD>&nbsp;- basis vectors
+</TD></TR>
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>eigi </B></TD><TD>&nbsp;- (optional) imaginary parts of eigenvalues
+</TD></TR></TABLE>
+<P>
+<H3><FONT COLOR="#883300">Notes</FONT></H3>
+On output, all columns will have unit norm. The normalization is done with
+respect to the 2-norm, or to the B-norm if a non-standard inner product has
+been specified with <A HREF="../BV/BVSetMatrix.html#BVSetMatrix">BVSetMatrix</A>(), see <A HREF="../BV/BVNormColumn.html#BVNormColumn">BVNormColumn</A>().
+<P>
+If the optional argument eigi is passed (taken into account only in real
+scalars) it is interpreted as the imaginary parts of the eigenvalues and
+the <A HREF="../sys/BV.html#BV">BV</A> is supposed to contain the corresponding eigenvectors. Suppose the
+first three values are eigi = { 0, alpha, -alpha }, then the first column
+is normalized as usual, but the second and third ones are normalized assuming
+that they contain the real and imaginary parts of a complex conjugate pair of
+eigenvectors.
+<P>
+If eigi is passed, the inner-product matrix is ignored.
+<P>
+If there are leading columns, they are not modified (are assumed to be already
+normalized).
+<P>
+
+<P>
+<H3><FONT COLOR="#883300">See Also</FONT></H3>
+ <A HREF="../BV/BVNormColumn.html#BVNormColumn">BVNormColumn</A>()
+<BR><P><B><FONT COLOR="#883300">Location: </FONT></B><A HREF="../../../src/sys/classes/bv/interface/bvglobal.c.html#BVNormalize">src/sys/classes/bv/interface/bvglobal.c</A>
+<BR><A HREF="./index.html">Index of all BV routines</A>
+<BR><A HREF="../../../docs/manualpages/index.html">Table of Contents for all manual pages</A>
+<BR><A HREF="../singleindex.html">Index of all manual pages</A>
+</BODY></HTML>

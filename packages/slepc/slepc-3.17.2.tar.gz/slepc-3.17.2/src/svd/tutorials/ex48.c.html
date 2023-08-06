@@ -1,0 +1,183 @@
+<center><a href="ex48.c">Actual source code: ex48.c</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="https://slepc.upv.es/documentation/current/src/svd/tutorials/ex48.c.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2022-08-09T09:05:47+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>slepc-3.17.2 2022-08-09</b></div>
+   <div id="bugreport" align=right><a href="mailto:slepc-maint@upv.es?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: slepc-3.17.2 v3.17.2 src/svd/tutorials/ex48.c.html "><small>Report Typos and Errors</small></a></div>
+<pre width="80">
+<a name="line1">  1: </a><font color="#B22222">/*</font>
+<a name="line2">  2: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line3">  3: </a><font color="#B22222">   SLEPc - Scalable Library for Eigenvalue Problem Computations</font>
+<a name="line4">  4: </a><font color="#B22222">   Copyright (c) 2002-, Universitat Politecnica de Valencia, Spain</font>
+
+<a name="line6">  6: </a><font color="#B22222">   This file is part of SLEPc.</font>
+<a name="line7">  7: </a><font color="#B22222">   SLEPc is distributed under a 2-clause BSD license (see LICENSE).</font>
+<a name="line8">  8: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line9">  9: </a><font color="#B22222">*/</font>
+
+<a name="line11"> 11: </a>static char help[] = <font color="#666666">"Solves a GSVD problem with matrices loaded from a file.\n"</font>
+<a name="line12"> 12: </a>  <font color="#666666">"The command line options are:\n"</font>
+<a name="line13"> 13: </a>  <font color="#666666">"  -f1 &lt;filename&gt;, PETSc binary file containing matrix A.\n"</font>
+<a name="line14"> 14: </a>  <font color="#666666">"  -f2 &lt;filename&gt;, PETSc binary file containing matrix B (optional).\n\n"</font>;
+
+<a name="line16"> 16: </a>#include <A href="../../../include/slepcsvd.h.html">&lt;slepcsvd.h&gt;</A>
+
+<a name="line18"> 18: </a><strong><font color="#4169E1"><a name="main"></a>int main(int argc,char **argv)</font></strong>
+<a name="line19"> 19: </a>{
+<a name="line20"> 20: </a>  Mat            A,B;             <font color="#B22222">/* matrices */</font>
+<a name="line21"> 21: </a>  <a href="../../../docs/manualpages/sys/SVD.html#SVD">SVD</a>            svd;             <font color="#B22222">/* singular value problem solver context */</font>
+<a name="line22"> 22: </a>  PetscInt       i,m,n,p,Istart,Iend,col[2];
+<a name="line23"> 23: </a>  PetscScalar    vals[] = { -1, 1 };
+<a name="line24"> 24: </a>  char           filename[PETSC_MAX_PATH_LEN];
+<a name="line25"> 25: </a>  PetscViewer    viewer;
+<a name="line26"> 26: </a>  PetscBool      flg,terse;
+
+<a name="line28"> 28: </a>  <a href="../../../docs/manualpages/sys/SlepcInitialize.html#SlepcInitialize">SlepcInitialize</a>(&amp;argc,&amp;argv,(char*)0,help);
+
+<a name="line30"> 30: </a>  <font color="#B22222">/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line31"> 31: </a><font color="#B22222">        Load matrices that define the generalized singular value problem</font>
+<a name="line32"> 32: </a><font color="#B22222">     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */</font>
+
+<a name="line34"> 34: </a>  PetscPrintf(PETSC_COMM_WORLD,<font color="#666666">"\nGeneralized singular value problem stored in file.\n\n"</font>);
+<a name="line35"> 35: </a>  PetscOptionsGetString(NULL,NULL,<font color="#666666">"-f1"</font>,filename,<font color="#4169E1">sizeof</font>(filename),&amp;flg);
+
+<a name="line38"> 38: </a><font color="#A020F0">#if defined(PETSC_USE_COMPLEX)</font>
+<a name="line39"> 39: </a>  PetscPrintf(PETSC_COMM_WORLD,<font color="#666666">" Reading COMPLEX matrix from a binary file...\n"</font>);
+<a name="line40"> 40: </a><font color="#A020F0">#else</font>
+<a name="line41"> 41: </a>  PetscPrintf(PETSC_COMM_WORLD,<font color="#666666">" Reading REAL matrix from a binary file...\n"</font>);
+<a name="line42"> 42: </a><font color="#A020F0">#endif</font>
+<a name="line43"> 43: </a>  PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&amp;viewer);
+<a name="line44"> 44: </a>  MatCreate(PETSC_COMM_WORLD,&amp;A);
+<a name="line45"> 45: </a>  MatSetFromOptions(A);
+<a name="line46"> 46: </a>  MatLoad(A,viewer);
+<a name="line47"> 47: </a>  PetscViewerDestroy(&amp;viewer);
+
+<a name="line49"> 49: </a>  MatGetSize(A,&amp;m,&amp;n);
+
+<a name="line51"> 51: </a>  PetscOptionsGetString(NULL,NULL,<font color="#666666">"-f2"</font>,filename,<font color="#4169E1">sizeof</font>(filename),&amp;flg);
+<a name="line52"> 52: </a>  <font color="#4169E1">if</font> (flg) {
+<a name="line53"> 53: </a>    PetscViewerBinaryOpen(PETSC_COMM_WORLD,filename,FILE_MODE_READ,&amp;viewer);
+<a name="line54"> 54: </a>    MatCreate(PETSC_COMM_WORLD,&amp;B);
+<a name="line55"> 55: </a>    MatSetFromOptions(B);
+<a name="line56"> 56: </a>    MatLoad(B,viewer);
+<a name="line57"> 57: </a>    PetscViewerDestroy(&amp;viewer);
+<a name="line58"> 58: </a>  } <font color="#4169E1">else</font> {
+<a name="line59"> 59: </a>    p = n+1;
+<a name="line60"> 60: </a>    PetscOptionsGetInt(NULL,NULL,<font color="#666666">"-p"</font>,&amp;p,&amp;flg);
+<a name="line61"> 61: </a>    PetscPrintf(PETSC_COMM_WORLD,<font color="#666666">" Matrix B was not provided, setting B=bidiag(1,-1) with p=%"</font> PetscInt_FMT <font color="#666666">"\n\n"</font>,p);
+<a name="line62"> 62: </a>    MatCreate(PETSC_COMM_WORLD,&amp;B);
+<a name="line63"> 63: </a>    MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,p,n);
+<a name="line64"> 64: </a>    MatSetFromOptions(B);
+<a name="line65"> 65: </a>    MatSetUp(B);
+<a name="line66"> 66: </a>    MatGetOwnershipRange(B,&amp;Istart,&amp;Iend);
+<a name="line67"> 67: </a>    <font color="#4169E1">for</font> (i=Istart;i&lt;Iend;i++) {
+<a name="line68"> 68: </a>      col[0]=i-1; col[1]=i;
+<a name="line69"> 69: </a>      <font color="#4169E1">if</font> (i==0) MatSetValue(B,i,col[1],vals[1],INSERT_VALUES);
+<a name="line70"> 70: </a>      <font color="#4169E1">else</font> <font color="#4169E1">if</font> (i&lt;n) MatSetValues(B,1,&amp;i,2,col,vals,INSERT_VALUES);
+<a name="line71"> 71: </a>      <font color="#4169E1">else</font> <font color="#4169E1">if</font> (i==n) MatSetValue(B,i,col[0],vals[0],INSERT_VALUES);
+<a name="line72"> 72: </a>    }
+<a name="line73"> 73: </a>    MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);
+<a name="line74"> 74: </a>    MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);
+<a name="line75"> 75: </a>  }
+
+<a name="line77"> 77: </a>  <font color="#B22222">/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line78"> 78: </a><font color="#B22222">           Create the singular value solver and set various options</font>
+<a name="line79"> 79: </a><font color="#B22222">     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */</font>
+
+<a name="line81"> 81: </a>  <font color="#B22222">/*</font>
+<a name="line82"> 82: </a><font color="#B22222">     Create singular value solver context</font>
+<a name="line83"> 83: </a><font color="#B22222">  */</font>
+<a name="line84"> 84: </a>  <a href="../../../docs/manualpages/SVD/SVDCreate.html#SVDCreate">SVDCreate</a>(PETSC_COMM_WORLD,&amp;svd);
+
+<a name="line86"> 86: </a>  <font color="#B22222">/*</font>
+<a name="line87"> 87: </a><font color="#B22222">     Set operators of GSVD problem</font>
+<a name="line88"> 88: </a><font color="#B22222">  */</font>
+<a name="line89"> 89: </a>  <a href="../../../docs/manualpages/SVD/SVDSetOperators.html#SVDSetOperators">SVDSetOperators</a>(svd,A,B);
+<a name="line90"> 90: </a>  <a href="../../../docs/manualpages/SVD/SVDSetProblemType.html#SVDSetProblemType">SVDSetProblemType</a>(svd,<a href="../../../docs/manualpages/sys/SVDProblemType.html#SVDProblemType">SVD_GENERALIZED</a>);
+
+<a name="line92"> 92: </a>  <font color="#B22222">/*</font>
+<a name="line93"> 93: </a><font color="#B22222">     Set solver parameters at runtime</font>
+<a name="line94"> 94: </a><font color="#B22222">  */</font>
+<a name="line95"> 95: </a>  <a href="../../../docs/manualpages/SVD/SVDSetFromOptions.html#SVDSetFromOptions">SVDSetFromOptions</a>(svd);
+
+<a name="line97"> 97: </a>  <font color="#B22222">/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line98"> 98: </a><font color="#B22222">                      Solve the problem and print solution</font>
+<a name="line99"> 99: </a><font color="#B22222">     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */</font>
+
+<a name="line101">101: </a>  <a href="../../../docs/manualpages/SVD/SVDSolve.html#SVDSolve">SVDSolve</a>(svd);
+
+<a name="line103">103: </a>  <font color="#B22222">/* show detailed info unless -terse option is given by user */</font>
+<a name="line104">104: </a>  PetscOptionsHasName(NULL,NULL,<font color="#666666">"-terse"</font>,&amp;terse);
+<a name="line105">105: </a>  <font color="#4169E1">if</font> (terse) <a href="../../../docs/manualpages/SVD/SVDErrorView.html#SVDErrorView">SVDErrorView</a>(svd,<a href="../../../docs/manualpages/sys/SVDErrorType.html#SVDErrorType">SVD_ERROR_NORM</a>,NULL);
+<a name="line106">106: </a>  <font color="#4169E1">else</font> {
+<a name="line107">107: </a>    PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO_DETAIL);
+<a name="line108">108: </a>    <a href="../../../docs/manualpages/SVD/SVDConvergedReasonView.html#SVDConvergedReasonView">SVDConvergedReasonView</a>(svd,PETSC_VIEWER_STDOUT_WORLD);
+<a name="line109">109: </a>    <a href="../../../docs/manualpages/SVD/SVDErrorView.html#SVDErrorView">SVDErrorView</a>(svd,<a href="../../../docs/manualpages/sys/SVDErrorType.html#SVDErrorType">SVD_ERROR_NORM</a>,PETSC_VIEWER_STDOUT_WORLD);
+<a name="line110">110: </a>    PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);
+<a name="line111">111: </a>  }
+<a name="line112">112: </a>  <a href="../../../docs/manualpages/SVD/SVDDestroy.html#SVDDestroy">SVDDestroy</a>(&amp;svd);
+<a name="line113">113: </a>  MatDestroy(&amp;A);
+<a name="line114">114: </a>  MatDestroy(&amp;B);
+<a name="line115">115: </a>  <a href="../../../docs/manualpages/sys/SlepcFinalize.html#SlepcFinalize">SlepcFinalize</a>();
+<a name="line116">116: </a>  <font color="#4169E1">return</font> 0;
+<a name="line117">117: </a>}
+<a name="line118">118: </a><font color="#B22222">/*TEST</font>
+
+<a name="line120">120: </a><font color="#B22222">   testset:</font>
+<a name="line121">121: </a><font color="#B22222">      requires: double !complex !defined(PETSC_USE_64BIT_INDICES)</font>
+<a name="line122">122: </a><font color="#B22222">      args: -f1 ${SLEPC_DIR}/share/slepc/datafiles/matrices/bfw62a.petsc -f2 ${SLEPC_DIR}/share/slepc/datafiles/matrices/bfw62b.petsc -svd_nsv 3 -terse</font>
+<a name="line123">123: </a><font color="#B22222">      output_file: output/ex48_1.out</font>
+<a name="line124">124: </a><font color="#B22222">      test:</font>
+<a name="line125">125: </a><font color="#B22222">         suffix: 1</font>
+<a name="line126">126: </a><font color="#B22222">         args: -svd_type trlanczos -svd_trlanczos_explicitmatrix {{0 1}}</font>
+<a name="line127">127: </a><font color="#B22222">         TODO: does not work for largest singular values</font>
+<a name="line128">128: </a><font color="#B22222">      test:</font>
+<a name="line129">129: </a><font color="#B22222">         suffix: 1_spqr</font>
+<a name="line130">130: </a><font color="#B22222">         args: -svd_type trlanczos -svd_trlanczos_explicitmatrix -svd_trlanczos_pc_type qr</font>
+<a name="line131">131: </a><font color="#B22222">         requires: suitesparse</font>
+<a name="line132">132: </a><font color="#B22222">         TODO: does not work for largest singular values</font>
+<a name="line133">133: </a><font color="#B22222">      test:</font>
+<a name="line134">134: </a><font color="#B22222">         suffix: 1_cross</font>
+<a name="line135">135: </a><font color="#B22222">         args: -svd_type cross -svd_cross_explicitmatrix</font>
+<a name="line136">136: </a><font color="#B22222">      test:</font>
+<a name="line137">137: </a><font color="#B22222">         suffix: 1_cyclic</font>
+<a name="line138">138: </a><font color="#B22222">         args: -svd_type cyclic -svd_cyclic_explicitmatrix</font>
+
+<a name="line140">140: </a><font color="#B22222">   testset:</font>
+<a name="line141">141: </a><font color="#B22222">      requires: double complex datafilespath !defined(PETSC_USE_64BIT_INDICES)</font>
+<a name="line142">142: </a><font color="#B22222">      args: -f1 ${DATAFILESPATH}/matrices/complex/qc324.petsc -svd_nsv 3 -terse</font>
+<a name="line143">143: </a><font color="#B22222">      output_file: output/ex48_2.out</font>
+<a name="line144">144: </a><font color="#B22222">      filter: sed -e "s/30749/30748/"</font>
+<a name="line145">145: </a><font color="#B22222">      timeoutfactor: 2</font>
+<a name="line146">146: </a><font color="#B22222">      test:</font>
+<a name="line147">147: </a><font color="#B22222">         suffix: 2</font>
+<a name="line148">148: </a><font color="#B22222">         args: -svd_type trlanczos -svd_trlanczos_explicitmatrix {{0 1}} -svd_trlanczos_ksp_rtol 1e-10</font>
+<a name="line149">149: </a><font color="#B22222">         requires: !defined(PETSCTEST_VALGRIND)</font>
+<a name="line150">150: </a><font color="#B22222">      test:</font>
+<a name="line151">151: </a><font color="#B22222">         suffix: 2_spqr</font>
+<a name="line152">152: </a><font color="#B22222">         args: -svd_type trlanczos -svd_trlanczos_explicitmatrix -svd_trlanczos_pc_type qr -svd_trlanczos_ksp_rtol 1e-10</font>
+<a name="line153">153: </a><font color="#B22222">         requires: suitesparse</font>
+<a name="line154">154: </a><font color="#B22222">      test:</font>
+<a name="line155">155: </a><font color="#B22222">         suffix: 2_cross</font>
+<a name="line156">156: </a><font color="#B22222">         args: -svd_type cross -svd_cross_explicitmatrix</font>
+<a name="line157">157: </a><font color="#B22222">      test:</font>
+<a name="line158">158: </a><font color="#B22222">         suffix: 2_cyclic</font>
+<a name="line159">159: </a><font color="#B22222">         args: -svd_type cyclic -svd_cyclic_explicitmatrix</font>
+
+<a name="line161">161: </a><font color="#B22222">   test:</font>
+<a name="line162">162: </a><font color="#B22222">      requires: double complex datafilespath !defined(PETSC_USE_64BIT_INDICES) !defined(PETSCTEST_VALGRIND)</font>
+<a name="line163">163: </a><font color="#B22222">      args: -f1 ${DATAFILESPATH}/matrices/complex/qc324.petsc -p 320 -svd_nsv 3 -svd_type trlanczos -svd_trlanczos_ksp_rtol 1e-14 -terse</font>
+<a name="line164">164: </a><font color="#B22222">      timeoutfactor: 2</font>
+<a name="line165">165: </a><font color="#B22222">      suffix: 3</font>
+
+<a name="line167">167: </a><font color="#B22222">TEST*/</font>
+</pre>
+</body>
+
+</html>

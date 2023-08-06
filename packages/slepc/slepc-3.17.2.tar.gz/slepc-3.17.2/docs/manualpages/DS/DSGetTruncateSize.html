@@ -1,0 +1,53 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD> <link rel="canonical" href="https://slepc.upv.es/documentation/current/docs/manualpages/DS/DSGetTruncateSize.html" />
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<link rel="stylesheet" href="/slepc.css" type="text/css">
+<TITLE>DSGetTruncateSize</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+   <div id="version" align=right><b>slepc-3.17.2 2022-08-09</b></div>
+   <div id="bugreport" align=right><a href="mailto:slepc-maint@upv.es?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: slepc-3.17.2 v3.17.2 docs/manualpages/DS/DSGetTruncateSize.html "><small>Report Typos and Errors</small></a></div>
+<H1>DSGetTruncateSize</H1>
+Gets the correct size to be used in <A HREF="../DS/DSTruncate.html#DSTruncate">DSTruncate</A>() to avoid breaking a 2x2 block. 
+<H3><FONT COLOR="#883300">Synopsis</FONT></H3>
+<PRE>
+#include "slepcds.h" 
+PetscErrorCode <A HREF="../DS/DSGetTruncateSize.html#DSGetTruncateSize">DSGetTruncateSize</A>(<A HREF="../sys/DS.html#DS">DS</A> ds,PetscInt l,PetscInt n,PetscInt *k)
+</PRE>
+Not Collective
+<P>
+<H3><FONT COLOR="#883300">Input Parameters</FONT></H3>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>ds </B></TD><TD>&nbsp;- the direct solver context
+</TD></TR>
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>l  </B></TD><TD>&nbsp;- the size of the locked part (set to 0 to use ds-&gt;l)
+</TD></TR>
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>n  </B></TD><TD>&nbsp;- the total matrix size (set to 0 to use ds-&gt;n)
+</TD></TR>
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>k  </B></TD><TD>&nbsp;- the wanted truncation size
+</TD></TR></TABLE>
+<P>
+<H3><FONT COLOR="#883300">Output Parameter</FONT></H3>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>k  </B></TD><TD>&nbsp;- the possibly modified value of the truncation size
+</TD></TR></TABLE>
+<P>
+<H3><FONT COLOR="#883300">Notes</FONT></H3>
+This should be called before <A HREF="../DS/DSTruncate.html#DSTruncate">DSTruncate</A>() to make sure that the truncation
+does not break a 2x2 block corresponding to a complex conjugate eigenvalue.
+<P>
+The total size is n (either user-provided or ds-&gt;n if 0 is passed). The
+size where the truncation is intended is equal to l+k (where l can be
+equal to the locked size ds-&gt;l if set to 0). Then if there is a 2x2 block
+at the l+k limit, the value of k is increased (or decreased) by 1.
+<P>
+
+<P>
+<H3><FONT COLOR="#883300">See Also</FONT></H3>
+ <A HREF="../DS/DSTruncate.html#DSTruncate">DSTruncate</A>(), <A HREF="../DS/DSSetDimensions.html#DSSetDimensions">DSSetDimensions</A>()
+<BR><P><B><FONT COLOR="#883300">Location: </FONT></B><A HREF="../../../src/sys/classes/ds/interface/dsops.c.html#DSGetTruncateSize">src/sys/classes/ds/interface/dsops.c</A>
+<BR><A HREF="./index.html">Index of all DS routines</A>
+<BR><A HREF="../../../docs/manualpages/index.html">Table of Contents for all manual pages</A>
+<BR><A HREF="../singleindex.html">Index of all manual pages</A>
+</BODY></HTML>

@@ -1,0 +1,699 @@
+<center><a href="ex31.c">Actual source code: ex31.c</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="https://slepc.upv.es/documentation/current/src/eps/tutorials/ex31.c.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2022-08-09T09:05:42+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>slepc-3.17.2 2022-08-09</b></div>
+   <div id="bugreport" align=right><a href="mailto:slepc-maint@upv.es?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: slepc-3.17.2 v3.17.2 src/eps/tutorials/ex31.c.html "><small>Report Typos and Errors</small></a></div>
+<pre width="80">
+<a name="line1">  1: </a><font color="#B22222">/*</font>
+<a name="line2">  2: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line3">  3: </a><font color="#B22222">   SLEPc - Scalable Library for Eigenvalue Problem Computations</font>
+<a name="line4">  4: </a><font color="#B22222">   Copyright (c) 2002-, Universitat Politecnica de Valencia, Spain</font>
+
+<a name="line6">  6: </a><font color="#B22222">   This file is part of SLEPc.</font>
+<a name="line7">  7: </a><font color="#B22222">   SLEPc is distributed under a 2-clause BSD license (see LICENSE).</font>
+<a name="line8">  8: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line9">  9: </a><font color="#B22222">*/</font>
+
+<a name="line11"> 11: </a>static char help[] = <font color="#666666">"Power grid small signal stability analysis of WECC 9 bus system.\n\</font>
+<a name="line12"> 12: </a><font color="#666666">This example is based on the 9-bus (node) example given in the book Power\n\</font>
+<a name="line13"> 13: </a><font color="#666666">Systems Dynamics and Stability (Chapter 8) by P. Sauer and M. A. Pai.\n\</font>
+<a name="line14"> 14: </a><font color="#666666">The power grid in this example consists of 9 buses (nodes), 3 generators,\n\</font>
+<a name="line15"> 15: </a><font color="#666666">3 loads, and 9 transmission lines. The network equations are written\n\</font>
+<a name="line16"> 16: </a><font color="#666666">in current balance form using rectangular coordinates. It uses the SLEPc\n\</font>
+<a name="line17"> 17: </a><font color="#666666">package to calculate the eigenvalues for small signal stability analysis\n\n"</font>;
+
+<a name="line19"> 19: </a><font color="#B22222">/*</font>
+<a name="line20"> 20: </a><font color="#B22222">   This example is based on PETSc's ex9bus example (under TS).</font>
+
+<a name="line22"> 22: </a><font color="#B22222">   The equations for the stability analysis are described by the DAE</font>
+
+<a name="line24"> 24: </a><font color="#B22222">   \dot{x} = f(x,y,t)</font>
+<a name="line25"> 25: </a><font color="#B22222">     0     = g(x,y,t)</font>
+
+<a name="line27"> 27: </a><font color="#B22222">   where the generators are described by differential equations, while the algebraic</font>
+<a name="line28"> 28: </a><font color="#B22222">   constraints define the network equations.</font>
+
+<a name="line30"> 30: </a><font color="#B22222">   The generators are modeled with a 4th order differential equation describing the electrical</font>
+<a name="line31"> 31: </a><font color="#B22222">   and mechanical dynamics. Each generator also has an exciter system modeled by 3rd order</font>
+<a name="line32"> 32: </a><font color="#B22222">   diff. eqns. describing the exciter, voltage regulator, and the feedback stabilizer</font>
+<a name="line33"> 33: </a><font color="#B22222">   mechanism.</font>
+
+<a name="line35"> 35: </a><font color="#B22222">   The network equations are described by nodal current balance equations.</font>
+<a name="line36"> 36: </a><font color="#B22222">    I(x,y) - Y*V = 0</font>
+
+<a name="line38"> 38: </a><font color="#B22222">   where:</font>
+<a name="line39"> 39: </a><font color="#B22222">    I(x,y) is the current injected from generators and loads.</font>
+<a name="line40"> 40: </a><font color="#B22222">      Y    is the admittance matrix, and</font>
+<a name="line41"> 41: </a><font color="#B22222">      V    is the voltage vector</font>
+
+<a name="line43"> 43: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+
+<a name="line45"> 45: </a><font color="#B22222">   The linearized equations for the eigenvalue analysis are</font>
+
+<a name="line47"> 47: </a><font color="#B22222">     \dot{\delta{x}} = f_x*\delta{x} + f_y*\delta{y}</font>
+<a name="line48"> 48: </a><font color="#B22222">             0       = g_x*\delta{x} + g_y*\delta{y}</font>
+
+<a name="line50"> 50: </a><font color="#B22222">   This gives the linearized sensitivity matrix</font>
+<a name="line51"> 51: </a><font color="#B22222">     A = | f_x  f_y |</font>
+<a name="line52"> 52: </a><font color="#B22222">         | g_x  g_y |</font>
+
+<a name="line54"> 54: </a><font color="#B22222">   We are interested in the eigenvalues of the Schur complement of A</font>
+<a name="line55"> 55: </a><font color="#B22222">     \hat{A} = f_x - g_x*inv(g_y)*f_y</font>
+
+<a name="line57"> 57: </a><font color="#B22222">   Example contributed by: Shrirang Abhyankar</font>
+<a name="line58"> 58: </a><font color="#B22222">*/</font>
+
+<a name="line60"> 60: </a><font color="#A020F0">#include &lt;petscdm.h&gt;</font>
+<a name="line61"> 61: </a><font color="#A020F0">#include &lt;petscdmda.h&gt;</font>
+<a name="line62"> 62: </a><font color="#A020F0">#include &lt;petscdmcomposite.h&gt;</font>
+<a name="line63"> 63: </a>#include <A href="../../../include/slepceps.h.html">&lt;slepceps.h&gt;</A>
+
+<a name="line65"> 65: </a><strong><font color="#228B22">#define freq 60</font></strong>
+<a name="line66"> 66: </a><strong><font color="#228B22">#define w_s (2*PETSC_PI*freq)</font></strong>
+
+<a name="line68"> 68: </a><font color="#B22222">/* Sizes and indices */</font>
+<a name="line69"> 69: </a>const PetscInt nbus    = 9; <font color="#B22222">/* Number of network buses */</font>
+<a name="line70"> 70: </a>const PetscInt ngen    = 3; <font color="#B22222">/* Number of generators */</font>
+<a name="line71"> 71: </a>const PetscInt nload   = 3; <font color="#B22222">/* Number of loads */</font>
+<a name="line72"> 72: </a>const PetscInt gbus[3] = {0,1,2}; <font color="#B22222">/* Buses at which generators are incident */</font>
+<a name="line73"> 73: </a>const PetscInt lbus[3] = {4,5,7}; <font color="#B22222">/* Buses at which loads are incident */</font>
+
+<a name="line75"> 75: </a><font color="#B22222">/* Generator real and reactive powers (found via loadflow) */</font>
+<a name="line76"> 76: </a>const PetscScalar PG[3] = {0.716786142395021,1.630000000000000,0.850000000000000};
+<a name="line77"> 77: </a>const PetscScalar QG[3] = {0.270702180178785,0.066120127797275,-0.108402221791588};
+<a name="line78"> 78: </a><font color="#B22222">/* Generator constants */</font>
+<a name="line79"> 79: </a>const PetscScalar H[3]    = {23.64,6.4,3.01};   <font color="#B22222">/* Inertia constant */</font>
+<a name="line80"> 80: </a>const PetscScalar Rs[3]   = {0.0,0.0,0.0}; <font color="#B22222">/* Stator Resistance */</font>
+<a name="line81"> 81: </a>const PetscScalar Xd[3]   = {0.146,0.8958,1.3125};  <font color="#B22222">/* d-axis reactance */</font>
+<a name="line82"> 82: </a>const PetscScalar Xdp[3]  = {0.0608,0.1198,0.1813}; <font color="#B22222">/* d-axis transient reactance */</font>
+<a name="line83"> 83: </a>const PetscScalar Xq[3]   = {0.0969,0.8645,1.2578}; <font color="#B22222">/* q-axis reactance Xq(1) set to 0.4360, value given in text 0.0969 */</font>
+<a name="line84"> 84: </a>const PetscScalar Xqp[3]  = {0.0969,0.1969,0.25}; <font color="#B22222">/* q-axis transient reactance */</font>
+<a name="line85"> 85: </a>const PetscScalar Td0p[3] = {8.96,6.0,5.89}; <font color="#B22222">/* d-axis open circuit time constant */</font>
+<a name="line86"> 86: </a>const PetscScalar Tq0p[3] = {0.31,0.535,0.6}; <font color="#B22222">/* q-axis open circuit time constant */</font>
+<a name="line87"> 87: </a>PetscScalar M[3]; <font color="#B22222">/* M = 2*H/w_s */</font>
+<a name="line88"> 88: </a>PetscScalar D[3]; <font color="#B22222">/* D = 0.1*M */</font>
+
+<a name="line90"> 90: </a>PetscScalar TM[3]; <font color="#B22222">/* Mechanical Torque */</font>
+<a name="line91"> 91: </a><font color="#B22222">/* Exciter system constants */</font>
+<a name="line92"> 92: </a>const PetscScalar KA[3] = {20.0,20.0,20.0};  <font color="#B22222">/* Voltage regulartor gain constant */</font>
+<a name="line93"> 93: </a>const PetscScalar TA[3] = {0.2,0.2,0.2};     <font color="#B22222">/* Voltage regulator time constant */</font>
+<a name="line94"> 94: </a>const PetscScalar KE[3] = {1.0,1.0,1.0};     <font color="#B22222">/* Exciter gain constant */</font>
+<a name="line95"> 95: </a>const PetscScalar TE[3] = {0.314,0.314,0.314}; <font color="#B22222">/* Exciter time constant */</font>
+<a name="line96"> 96: </a>const PetscScalar KF[3] = {0.063,0.063,0.063};  <font color="#B22222">/* Feedback stabilizer gain constant */</font>
+<a name="line97"> 97: </a>const PetscScalar TF[3] = {0.35,0.35,0.35};    <font color="#B22222">/* Feedback stabilizer time constant */</font>
+<a name="line98"> 98: </a>const PetscScalar k1[3] = {0.0039,0.0039,0.0039};
+<a name="line99"> 99: </a>const PetscScalar k2[3] = {1.555,1.555,1.555};  <font color="#B22222">/* k1 and k2 for calculating the saturation function SE = k1*exp(k2*Efd) */</font>
+
+<a name="line101">101: </a>PetscScalar Vref[3];
+<a name="line102">102: </a><font color="#B22222">/* Load constants</font>
+<a name="line103">103: </a><font color="#B22222">  We use a composite load model that describes the load and reactive powers at each time instant as follows</font>
+<a name="line104">104: </a><font color="#B22222">  P(t) = \sum\limits_{i=0}^ld_nsegsp \ld_alphap_i*P_D0(\frac{V_m(t)}{V_m0})^\ld_betap_i</font>
+<a name="line105">105: </a><font color="#B22222">  Q(t) = \sum\limits_{i=0}^ld_nsegsq \ld_alphaq_i*Q_D0(\frac{V_m(t)}{V_m0})^\ld_betaq_i</font>
+<a name="line106">106: </a><font color="#B22222">  where</font>
+<a name="line107">107: </a><font color="#B22222">    ld_nsegsp,ld_nsegsq - Number of individual load models for real and reactive power loads</font>
+<a name="line108">108: </a><font color="#B22222">    ld_alphap,ld_alphap - Percentage contribution (weights) or loads</font>
+<a name="line109">109: </a><font color="#B22222">    P_D0                - Real power load</font>
+<a name="line110">110: </a><font color="#B22222">    Q_D0                - Reactive power load</font>
+<a name="line111">111: </a><font color="#B22222">    V_m(t)              - Voltage magnitude at time t</font>
+<a name="line112">112: </a><font color="#B22222">    V_m0                - Voltage magnitude at t = 0</font>
+<a name="line113">113: </a><font color="#B22222">    ld_betap, ld_betaq  - exponents describing the load model for real and reactive part</font>
+
+<a name="line115">115: </a><font color="#B22222">    Note: All loads have the same characteristic currently.</font>
+<a name="line116">116: </a><font color="#B22222">*/</font>
+<a name="line117">117: </a>const PetscScalar PD0[3] = {1.25,0.9,1.0};
+<a name="line118">118: </a>const PetscScalar QD0[3] = {0.5,0.3,0.35};
+<a name="line119">119: </a>const PetscInt    ld_nsegsp[3] = {3,3,3};
+<a name="line120">120: </a>const PetscScalar ld_alphap[3] = {0.0,0.0,1.0};
+<a name="line121">121: </a>const PetscScalar ld_betap[3]  = {2.0,1.0,0.0};
+<a name="line122">122: </a>const PetscInt    ld_nsegsq[3] = {3,3,3};
+<a name="line123">123: </a>const PetscScalar ld_alphaq[3] = {0.0,0.0,1.0};
+<a name="line124">124: </a>const PetscScalar ld_betaq[3]  = {2.0,1.0,0.0};
+
+<a name="line126">126: </a><font color="#4169E1">typedef</font> <font color="#4169E1">struct</font> {
+<a name="line127">127: </a>  DM       dmgen, dmnet; <font color="#B22222">/* DMs to manage generator and network subsystem */</font>
+<a name="line128">128: </a>  DM       dmpgrid;      <font color="#B22222">/* Composite DM to manage the entire power grid */</font>
+<a name="line129">129: </a>  Mat      Ybus;         <font color="#B22222">/* Network admittance matrix */</font>
+<a name="line130">130: </a>  Vec      V0;           <font color="#B22222">/* Initial voltage vector (Power flow solution) */</font>
+<a name="line131">131: </a>  PetscInt neqs_gen,neqs_net,neqs_pgrid;
+<a name="line132">132: </a>  IS       is_diff;      <font color="#B22222">/* indices for differential equations */</font>
+<a name="line133">133: </a>  IS       is_alg;       <font color="#B22222">/* indices for algebraic equations */</font>
+<a name="line134">134: </a>} Userctx;
+
+<a name="line136">136: </a><font color="#B22222">/* Converts from machine frame (dq) to network (phase a real,imag) reference frame */</font>
+<a name="line137">137: </a><strong><font color="#4169E1"><a name="dq2ri"></a>PetscErrorCode dq2ri(PetscScalar Fd,PetscScalar Fq,PetscScalar delta,PetscScalar *Fr,PetscScalar *Fi)</font></strong>
+<a name="line138">138: </a>{
+<a name="line139">139: </a>  *Fr =  Fd*PetscSinScalar(delta) + Fq*PetscCosScalar(delta);
+<a name="line140">140: </a>  *Fi = -Fd*PetscCosScalar(delta) + Fq*PetscSinScalar(delta);
+<a name="line141">141: </a>  PetscFunctionReturn(0);
+<a name="line142">142: </a>}
+
+<a name="line144">144: </a><font color="#B22222">/* Converts from network frame ([phase a real,imag) to machine (dq) reference frame */</font>
+<a name="line145">145: </a><strong><font color="#4169E1"><a name="ri2dq"></a>PetscErrorCode ri2dq(PetscScalar Fr,PetscScalar Fi,PetscScalar delta,PetscScalar *Fd,PetscScalar *Fq)</font></strong>
+<a name="line146">146: </a>{
+<a name="line147">147: </a>  *Fd =  Fr*PetscSinScalar(delta) - Fi*PetscCosScalar(delta);
+<a name="line148">148: </a>  *Fq =  Fr*PetscCosScalar(delta) + Fi*PetscSinScalar(delta);
+<a name="line149">149: </a>  PetscFunctionReturn(0);
+<a name="line150">150: </a>}
+
+<a name="line152">152: </a><strong><font color="#4169E1"><a name="SetInitialGuess"></a>PetscErrorCode SetInitialGuess(Vec X,Userctx *user)</font></strong>
+<a name="line153">153: </a>{
+<a name="line154">154: </a>  Vec            Xgen,Xnet;
+<a name="line155">155: </a>  PetscScalar    *xgen,*xnet;
+<a name="line156">156: </a>  PetscInt       i,idx=0;
+<a name="line157">157: </a>  PetscScalar    Vr,Vi,IGr,IGi,Vm,Vm2;
+<a name="line158">158: </a>  PetscScalar    Eqp,Edp,delta;
+<a name="line159">159: </a>  PetscScalar    Efd,RF,VR; <font color="#B22222">/* Exciter variables */</font>
+<a name="line160">160: </a>  PetscScalar    Id,Iq;  <font color="#B22222">/* Generator dq axis currents */</font>
+<a name="line161">161: </a>  PetscScalar    theta,Vd,Vq,SE;
+
+<a name="line163">163: </a>  M[0] = 2*H[0]/w_s; M[1] = 2*H[1]/w_s; M[2] = 2*H[2]/w_s;
+<a name="line164">164: </a>      <font color="#B22222">/*      D[0] = 0.1*M[0]; D[1] = 0.1*M[1]; D[2] = 0.1*M[2];</font>
+<a name="line165">165: </a><font color="#B22222">       */</font>
+<a name="line166">166: </a>  D[0] = D[1] = D[2] = 0.0;
+<a name="line167">167: </a>  DMCompositeGetLocalVectors(user-&gt;dmpgrid,&amp;Xgen,&amp;Xnet);
+
+<a name="line169">169: </a>  <font color="#B22222">/* Network subsystem initialization */</font>
+<a name="line170">170: </a>  VecCopy(user-&gt;V0,Xnet);
+
+<a name="line172">172: </a>  <font color="#B22222">/* Generator subsystem initialization */</font>
+<a name="line173">173: </a>  VecGetArray(Xgen,&amp;xgen);
+<a name="line174">174: </a>  VecGetArray(Xnet,&amp;xnet);
+
+<a name="line176">176: </a>  <font color="#4169E1">for</font> (i=0; i &lt; ngen; i++) {
+<a name="line177">177: </a>    Vr  = xnet[2*gbus[i]]; <font color="#B22222">/* Real part of generator terminal voltage */</font>
+<a name="line178">178: </a>    Vi  = xnet[2*gbus[i]+1]; <font color="#B22222">/* Imaginary part of the generator terminal voltage */</font>
+<a name="line179">179: </a>    Vm  = PetscSqrtScalar(Vr*Vr + Vi*Vi); Vm2 = Vm*Vm;
+<a name="line180">180: </a>    IGr = (Vr*PG[i] + Vi*QG[i])/Vm2;
+<a name="line181">181: </a>    IGi = (Vi*PG[i] - Vr*QG[i])/Vm2;
+
+<a name="line183">183: </a>    delta = atan2(Vi+Xq[i]*IGr,Vr-Xq[i]*IGi); <font color="#B22222">/* Machine angle */</font>
+
+<a name="line185">185: </a>    theta = PETSC_PI/2.0 - delta;
+
+<a name="line187">187: </a>    Id = IGr*PetscCosScalar(theta) - IGi*PetscSinScalar(theta); <font color="#B22222">/* d-axis stator current */</font>
+<a name="line188">188: </a>    Iq = IGr*PetscSinScalar(theta) + IGi*PetscCosScalar(theta); <font color="#B22222">/* q-axis stator current */</font>
+
+<a name="line190">190: </a>    Vd = Vr*PetscCosScalar(theta) - Vi*PetscSinScalar(theta);
+<a name="line191">191: </a>    Vq = Vr*PetscSinScalar(theta) + Vi*PetscCosScalar(theta);
+
+<a name="line193">193: </a>    Edp = Vd + Rs[i]*Id - Xqp[i]*Iq; <font color="#B22222">/* d-axis transient EMF */</font>
+<a name="line194">194: </a>    Eqp = Vq + Rs[i]*Iq + Xdp[i]*Id; <font color="#B22222">/* q-axis transient EMF */</font>
+
+<a name="line196">196: </a>    TM[i] = PG[i];
+
+<a name="line198">198: </a>    <font color="#B22222">/* The generator variables are ordered as [Eqp,Edp,delta,w,Id,Iq] */</font>
+<a name="line199">199: </a>    xgen[idx]   = Eqp;
+<a name="line200">200: </a>    xgen[idx+1] = Edp;
+<a name="line201">201: </a>    xgen[idx+2] = delta;
+<a name="line202">202: </a>    xgen[idx+3] = w_s;
+
+<a name="line204">204: </a>    idx = idx + 4;
+
+<a name="line206">206: </a>    xgen[idx]   = Id;
+<a name="line207">207: </a>    xgen[idx+1] = Iq;
+
+<a name="line209">209: </a>    idx = idx + 2;
+
+<a name="line211">211: </a>    <font color="#B22222">/* Exciter */</font>
+<a name="line212">212: </a>    Efd = Eqp + (Xd[i] - Xdp[i])*Id;
+<a name="line213">213: </a>    SE  = k1[i]*PetscExpScalar(k2[i]*Efd);
+<a name="line214">214: </a>    VR  =  KE[i]*Efd + SE;
+<a name="line215">215: </a>    RF  =  KF[i]*Efd/TF[i];
+
+<a name="line217">217: </a>    xgen[idx]   = Efd;
+<a name="line218">218: </a>    xgen[idx+1] = RF;
+<a name="line219">219: </a>    xgen[idx+2] = VR;
+
+<a name="line221">221: </a>    Vref[i] = Vm + (VR/KA[i]);
+
+<a name="line223">223: </a>    idx = idx + 3;
+<a name="line224">224: </a>  }
+
+<a name="line226">226: </a>  VecRestoreArray(Xgen,&amp;xgen);
+<a name="line227">227: </a>  VecRestoreArray(Xnet,&amp;xnet);
+
+<a name="line229">229: </a>  <font color="#B22222">/* VecView(Xgen,0); */</font>
+<a name="line230">230: </a>  DMCompositeGather(user-&gt;dmpgrid,INSERT_VALUES,X,Xgen,Xnet);
+<a name="line231">231: </a>  DMCompositeRestoreLocalVectors(user-&gt;dmpgrid,&amp;Xgen,&amp;Xnet);
+<a name="line232">232: </a>  PetscFunctionReturn(0);
+<a name="line233">233: </a>}
+
+<a name="line235">235: </a><strong><font color="#4169E1"><a name="PreallocateJacobian"></a>PetscErrorCode PreallocateJacobian(Mat J,Userctx *user)</font></strong>
+<a name="line236">236: </a>{
+<a name="line237">237: </a>  PetscInt       *d_nnz;
+<a name="line238">238: </a>  PetscInt       i,idx=0,start=0;
+<a name="line239">239: </a>  PetscInt       ncols;
+
+<a name="line241">241: </a>  PetscMalloc1(user-&gt;neqs_pgrid,&amp;d_nnz);
+<a name="line242">242: </a>  <font color="#4169E1">for</font> (i=0; i&lt;user-&gt;neqs_pgrid; i++) d_nnz[i] = 0;
+<a name="line243">243: </a>  <font color="#B22222">/* Generator subsystem */</font>
+<a name="line244">244: </a>  <font color="#4169E1">for</font> (i=0; i &lt; ngen; i++) {
+
+<a name="line246">246: </a>    d_nnz[idx]   += 3;
+<a name="line247">247: </a>    d_nnz[idx+1] += 2;
+<a name="line248">248: </a>    d_nnz[idx+2] += 2;
+<a name="line249">249: </a>    d_nnz[idx+3] += 5;
+<a name="line250">250: </a>    d_nnz[idx+4] += 6;
+<a name="line251">251: </a>    d_nnz[idx+5] += 6;
+
+<a name="line253">253: </a>    d_nnz[user-&gt;neqs_gen+2*gbus[i]]   += 3;
+<a name="line254">254: </a>    d_nnz[user-&gt;neqs_gen+2*gbus[i]+1] += 3;
+
+<a name="line256">256: </a>    d_nnz[idx+6] += 2;
+<a name="line257">257: </a>    d_nnz[idx+7] += 2;
+<a name="line258">258: </a>    d_nnz[idx+8] += 5;
+
+<a name="line260">260: </a>    idx = idx + 9;
+<a name="line261">261: </a>  }
+
+<a name="line263">263: </a>  start = user-&gt;neqs_gen;
+
+<a name="line265">265: </a>  <font color="#4169E1">for</font> (i=0; i &lt; nbus; i++) {
+<a name="line266">266: </a>    MatGetRow(user-&gt;Ybus,2*i,&amp;ncols,NULL,NULL);
+<a name="line267">267: </a>    d_nnz[start+2*i]   += ncols;
+<a name="line268">268: </a>    d_nnz[start+2*i+1] += ncols;
+<a name="line269">269: </a>    MatRestoreRow(user-&gt;Ybus,2*i,&amp;ncols,NULL,NULL);
+<a name="line270">270: </a>  }
+
+<a name="line272">272: </a>  MatSeqAIJSetPreallocation(J,0,d_nnz);
+
+<a name="line274">274: </a>  PetscFree(d_nnz);
+<a name="line275">275: </a>  PetscFunctionReturn(0);
+<a name="line276">276: </a>}
+
+<a name="line278">278: </a><font color="#B22222">/*</font>
+<a name="line279">279: </a><font color="#B22222">   J = [-df_dx, -df_dy</font>
+<a name="line280">280: </a><font color="#B22222">        dg_dx, dg_dy]</font>
+<a name="line281">281: </a><font color="#B22222">*/</font>
+<a name="line282">282: </a><strong><font color="#4169E1"><a name="ResidualJacobian"></a>PetscErrorCode ResidualJacobian(Vec X,Mat J,void *ctx)</font></strong>
+<a name="line283">283: </a>{
+<a name="line284">284: </a>  Userctx        *user=(Userctx*)ctx;
+<a name="line285">285: </a>  Vec            Xgen,Xnet;
+<a name="line286">286: </a>  PetscScalar    *xgen,*xnet;
+<a name="line287">287: </a>  PetscInt       i,idx=0;
+<a name="line288">288: </a>  PetscScalar    Vr,Vi,Vm,Vm2;
+<a name="line289">289: </a>  PetscScalar    Eqp,Edp,delta; <font color="#B22222">/* Generator variables */</font>
+<a name="line290">290: </a>  PetscScalar    Efd;
+<a name="line291">291: </a>  PetscScalar    Id,Iq;  <font color="#B22222">/* Generator dq axis currents */</font>
+<a name="line292">292: </a>  PetscScalar    Vd,Vq;
+<a name="line293">293: </a>  PetscScalar    val[10];
+<a name="line294">294: </a>  PetscInt       row[2],col[10];
+<a name="line295">295: </a>  PetscInt       net_start=user-&gt;neqs_gen;
+<a name="line296">296: </a>  PetscScalar    Zdq_inv[4],det;
+<a name="line297">297: </a>  PetscScalar    dVd_dVr,dVd_dVi,dVq_dVr,dVq_dVi,dVd_ddelta,dVq_ddelta;
+<a name="line298">298: </a>  PetscScalar    dIGr_ddelta,dIGi_ddelta,dIGr_dId,dIGr_dIq,dIGi_dId,dIGi_dIq;
+<a name="line299">299: </a>  PetscScalar    dSE_dEfd;
+<a name="line300">300: </a>  PetscScalar    dVm_dVd,dVm_dVq,dVm_dVr,dVm_dVi;
+<a name="line301">301: </a>  PetscInt          ncols;
+<a name="line302">302: </a>  const PetscInt    *cols;
+<a name="line303">303: </a>  const PetscScalar *yvals;
+<a name="line304">304: </a>  PetscInt          k;
+<a name="line305">305: </a>  PetscScalar PD,QD,Vm0,*v0,Vm4;
+<a name="line306">306: </a>  PetscScalar dPD_dVr,dPD_dVi,dQD_dVr,dQD_dVi;
+<a name="line307">307: </a>  PetscScalar dIDr_dVr,dIDr_dVi,dIDi_dVr,dIDi_dVi;
+
+<a name="line309">309: </a>  MatZeroEntries(J);
+<a name="line310">310: </a>  DMCompositeGetLocalVectors(user-&gt;dmpgrid,&amp;Xgen,&amp;Xnet);
+<a name="line311">311: </a>  DMCompositeScatter(user-&gt;dmpgrid,X,Xgen,Xnet);
+
+<a name="line313">313: </a>  VecGetArray(Xgen,&amp;xgen);
+<a name="line314">314: </a>  VecGetArray(Xnet,&amp;xnet);
+
+<a name="line316">316: </a>  <font color="#B22222">/* Generator subsystem */</font>
+<a name="line317">317: </a>  <font color="#4169E1">for</font> (i=0; i &lt; ngen; i++) {
+<a name="line318">318: </a>    Eqp   = xgen[idx];
+<a name="line319">319: </a>    Edp   = xgen[idx+1];
+<a name="line320">320: </a>    delta = xgen[idx+2];
+<a name="line321">321: </a>    Id    = xgen[idx+4];
+<a name="line322">322: </a>    Iq    = xgen[idx+5];
+<a name="line323">323: </a>    Efd   = xgen[idx+6];
+
+<a name="line325">325: </a>    <font color="#B22222">/*    fgen[idx]   = (Eqp + (Xd[i] - Xdp[i])*Id - Efd)/Td0p[i]; */</font>
+<a name="line326">326: </a>    row[0] = idx;
+<a name="line327">327: </a>    col[0] = idx;           col[1] = idx+4;          col[2] = idx+6;
+<a name="line328">328: </a>    val[0] = 1/ Td0p[i]; val[1] = (Xd[i] - Xdp[i])/ Td0p[i]; val[2] = -1/Td0p[i];
+
+<a name="line330">330: </a>    MatSetValues(J,1,row,3,col,val,INSERT_VALUES);
+
+<a name="line332">332: </a>    <font color="#B22222">/*    fgen[idx+1] = (Edp - (Xq[i] - Xqp[i])*Iq)/Tq0p[i]; */</font>
+<a name="line333">333: </a>    row[0] = idx + 1;
+<a name="line334">334: </a>    col[0] = idx + 1;       col[1] = idx+5;
+<a name="line335">335: </a>    val[0] = 1/Tq0p[i]; val[1] = -(Xq[i] - Xqp[i])/Tq0p[i];
+<a name="line336">336: </a>    MatSetValues(J,1,row,2,col,val,INSERT_VALUES);
+
+<a name="line338">338: </a>    <font color="#B22222">/*    fgen[idx+2] = - w + w_s; */</font>
+<a name="line339">339: </a>    row[0] = idx + 2;
+<a name="line340">340: </a>    col[0] = idx + 2; col[1] = idx + 3;
+<a name="line341">341: </a>    val[0] = 0;       val[1] = -1;
+<a name="line342">342: </a>    MatSetValues(J,1,row,2,col,val,INSERT_VALUES);
+
+<a name="line344">344: </a>    <font color="#B22222">/*    fgen[idx+3] = (-TM[i] + Edp*Id + Eqp*Iq + (Xqp[i] - Xdp[i])*Id*Iq + D[i]*(w - w_s))/M[i]; */</font>
+<a name="line345">345: </a>    row[0] = idx + 3;
+<a name="line346">346: </a>    col[0] = idx; col[1] = idx + 1; col[2] = idx + 3;       col[3] = idx + 4;                  col[4] = idx + 5;
+<a name="line347">347: </a>    val[0] = Iq/M[i];  val[1] = Id/M[i];      val[2] = D[i]/M[i]; val[3] = (Edp + (Xqp[i]-Xdp[i])*Iq)/M[i]; val[4] = (Eqp + (Xqp[i] - Xdp[i])*Id)/M[i];
+<a name="line348">348: </a>    MatSetValues(J,1,row,5,col,val,INSERT_VALUES);
+
+<a name="line350">350: </a>    Vr   = xnet[2*gbus[i]]; <font color="#B22222">/* Real part of generator terminal voltage */</font>
+<a name="line351">351: </a>    Vi   = xnet[2*gbus[i]+1]; <font color="#B22222">/* Imaginary part of the generator terminal voltage */</font>
+<a name="line352">352: </a>    ri2dq(Vr,Vi,delta,&amp;Vd,&amp;Vq);
+
+<a name="line354">354: </a>    det = Rs[i]*Rs[i] + Xdp[i]*Xqp[i];
+
+<a name="line356">356: </a>    Zdq_inv[0] = Rs[i]/det;
+<a name="line357">357: </a>    Zdq_inv[1] = Xqp[i]/det;
+<a name="line358">358: </a>    Zdq_inv[2] = -Xdp[i]/det;
+<a name="line359">359: </a>    Zdq_inv[3] = Rs[i]/det;
+
+<a name="line361">361: </a>    dVd_dVr    = PetscSinScalar(delta); dVd_dVi = -PetscCosScalar(delta);
+<a name="line362">362: </a>    dVq_dVr    = PetscCosScalar(delta); dVq_dVi = PetscSinScalar(delta);
+<a name="line363">363: </a>    dVd_ddelta = Vr*PetscCosScalar(delta) + Vi*PetscSinScalar(delta);
+<a name="line364">364: </a>    dVq_ddelta = -Vr*PetscSinScalar(delta) + Vi*PetscCosScalar(delta);
+
+<a name="line366">366: </a>    <font color="#B22222">/*    fgen[idx+4] = Zdq_inv[0]*(-Edp + Vd) + Zdq_inv[1]*(-Eqp + Vq) + Id; */</font>
+<a name="line367">367: </a>    row[0] = idx+4;
+<a name="line368">368: </a>    col[0] = idx;         col[1] = idx+1;        col[2] = idx + 2;
+<a name="line369">369: </a>    val[0] = -Zdq_inv[1]; val[1] = -Zdq_inv[0];  val[2] = Zdq_inv[0]*dVd_ddelta + Zdq_inv[1]*dVq_ddelta;
+<a name="line370">370: </a>    col[3] = idx + 4; col[4] = net_start+2*gbus[i];                     col[5] = net_start + 2*gbus[i]+1;
+<a name="line371">371: </a>    val[3] = 1;       val[4] = Zdq_inv[0]*dVd_dVr + Zdq_inv[1]*dVq_dVr; val[5] = Zdq_inv[0]*dVd_dVi + Zdq_inv[1]*dVq_dVi;
+<a name="line372">372: </a>    MatSetValues(J,1,row,6,col,val,INSERT_VALUES);
+
+<a name="line374">374: </a>    <font color="#B22222">/*  fgen[idx+5] = Zdq_inv[2]*(-Edp + Vd) + Zdq_inv[3]*(-Eqp + Vq) + Iq; */</font>
+<a name="line375">375: </a>    row[0] = idx+5;
+<a name="line376">376: </a>    col[0] = idx;         col[1] = idx+1;        col[2] = idx + 2;
+<a name="line377">377: </a>    val[0] = -Zdq_inv[3]; val[1] = -Zdq_inv[2];  val[2] = Zdq_inv[2]*dVd_ddelta + Zdq_inv[3]*dVq_ddelta;
+<a name="line378">378: </a>    col[3] = idx + 5; col[4] = net_start+2*gbus[i];                     col[5] = net_start + 2*gbus[i]+1;
+<a name="line379">379: </a>    val[3] = 1;       val[4] = Zdq_inv[2]*dVd_dVr + Zdq_inv[3]*dVq_dVr; val[5] = Zdq_inv[2]*dVd_dVi + Zdq_inv[3]*dVq_dVi;
+<a name="line380">380: </a>    MatSetValues(J,1,row,6,col,val,INSERT_VALUES);
+
+<a name="line382">382: </a>    dIGr_ddelta = Id*PetscCosScalar(delta) - Iq*PetscSinScalar(delta);
+<a name="line383">383: </a>    dIGi_ddelta = Id*PetscSinScalar(delta) + Iq*PetscCosScalar(delta);
+<a name="line384">384: </a>    dIGr_dId    = PetscSinScalar(delta);  dIGr_dIq = PetscCosScalar(delta);
+<a name="line385">385: </a>    dIGi_dId    = -PetscCosScalar(delta); dIGi_dIq = PetscSinScalar(delta);
+
+<a name="line387">387: </a>    <font color="#B22222">/* fnet[2*gbus[i]]   -= IGi; */</font>
+<a name="line388">388: </a>    row[0] = net_start + 2*gbus[i];
+<a name="line389">389: </a>    col[0] = idx+2;        col[1] = idx + 4;   col[2] = idx + 5;
+<a name="line390">390: </a>    val[0] = -dIGi_ddelta; val[1] = -dIGi_dId; val[2] = -dIGi_dIq;
+<a name="line391">391: </a>    MatSetValues(J,1,row,3,col,val,INSERT_VALUES);
+
+<a name="line393">393: </a>    <font color="#B22222">/* fnet[2*gbus[i]+1]   -= IGr; */</font>
+<a name="line394">394: </a>    row[0] = net_start + 2*gbus[i]+1;
+<a name="line395">395: </a>    col[0] = idx+2;        col[1] = idx + 4;   col[2] = idx + 5;
+<a name="line396">396: </a>    val[0] = -dIGr_ddelta; val[1] = -dIGr_dId; val[2] = -dIGr_dIq;
+<a name="line397">397: </a>    MatSetValues(J,1,row,3,col,val,INSERT_VALUES);
+
+<a name="line399">399: </a>    Vm = PetscSqrtScalar(Vd*Vd + Vq*Vq); Vm2 = Vm*Vm;
+
+<a name="line401">401: </a>    <font color="#B22222">/*    fgen[idx+6] = (KE[i]*Efd + SE - VR)/TE[i]; */</font>
+<a name="line402">402: </a>    <font color="#B22222">/*    SE  = k1[i]*PetscExpScalar(k2[i]*Efd); */</font>
+
+<a name="line404">404: </a>    dSE_dEfd = k1[i]*k2[i]*PetscExpScalar(k2[i]*Efd);
+
+<a name="line406">406: </a>    row[0] = idx + 6;
+<a name="line407">407: </a>    col[0] = idx + 6;                     col[1] = idx + 8;
+<a name="line408">408: </a>    val[0] = (KE[i] + dSE_dEfd)/TE[i];  val[1] = -1/TE[i];
+<a name="line409">409: </a>    MatSetValues(J,1,row,2,col,val,INSERT_VALUES);
+
+<a name="line411">411: </a>    <font color="#B22222">/* Exciter differential equations */</font>
+
+<a name="line413">413: </a>    <font color="#B22222">/*    fgen[idx+7] = (RF - KF[i]*Efd/TF[i])/TF[i]; */</font>
+<a name="line414">414: </a>    row[0] = idx + 7;
+<a name="line415">415: </a>    col[0] = idx + 6;       col[1] = idx + 7;
+<a name="line416">416: </a>    val[0] = (-KF[i]/TF[i])/TF[i];  val[1] = 1/TF[i];
+<a name="line417">417: </a>    MatSetValues(J,1,row,2,col,val,INSERT_VALUES);
+
+<a name="line419">419: </a>    <font color="#B22222">/*    fgen[idx+8] = (VR - KA[i]*RF + KA[i]*KF[i]*Efd/TF[i] - KA[i]*(Vref[i] - Vm))/TA[i]; */</font>
+<a name="line420">420: </a>    <font color="#B22222">/* Vm = (Vd^2 + Vq^2)^0.5; */</font>
+
+<a name="line422">422: </a>    dVm_dVd = Vd/Vm; dVm_dVq = Vq/Vm;
+<a name="line423">423: </a>    dVm_dVr = dVm_dVd*dVd_dVr + dVm_dVq*dVq_dVr;
+<a name="line424">424: </a>    dVm_dVi = dVm_dVd*dVd_dVi + dVm_dVq*dVq_dVi;
+<a name="line425">425: </a>    row[0]  = idx + 8;
+<a name="line426">426: </a>    col[0]  = idx + 6;           col[1] = idx + 7; col[2] = idx + 8;
+<a name="line427">427: </a>    val[0]  = (KA[i]*KF[i]/TF[i])/TA[i]; val[1] = -KA[i]/TA[i];  val[2] = 1/TA[i];
+<a name="line428">428: </a>    col[3]  = net_start + 2*gbus[i]; col[4] = net_start + 2*gbus[i]+1;
+<a name="line429">429: </a>    val[3]  = KA[i]*dVm_dVr/TA[i];         val[4] = KA[i]*dVm_dVi/TA[i];
+<a name="line430">430: </a>    MatSetValues(J,1,row,5,col,val,INSERT_VALUES);
+<a name="line431">431: </a>    idx     = idx + 9;
+<a name="line432">432: </a>  }
+
+<a name="line434">434: </a>  <font color="#4169E1">for</font> (i=0; i&lt;nbus; i++) {
+<a name="line435">435: </a>    MatGetRow(user-&gt;Ybus,2*i,&amp;ncols,&amp;cols,&amp;yvals);
+<a name="line436">436: </a>    row[0] = net_start + 2*i;
+<a name="line437">437: </a>    <font color="#4169E1">for</font> (k=0; k&lt;ncols; k++) {
+<a name="line438">438: </a>      col[k] = net_start + cols[k];
+<a name="line439">439: </a>      val[k] = yvals[k];
+<a name="line440">440: </a>    }
+<a name="line441">441: </a>    MatSetValues(J,1,row,ncols,col,val,INSERT_VALUES);
+<a name="line442">442: </a>    MatRestoreRow(user-&gt;Ybus,2*i,&amp;ncols,&amp;cols,&amp;yvals);
+
+<a name="line444">444: </a>    MatGetRow(user-&gt;Ybus,2*i+1,&amp;ncols,&amp;cols,&amp;yvals);
+<a name="line445">445: </a>    row[0] = net_start + 2*i+1;
+<a name="line446">446: </a>    <font color="#4169E1">for</font> (k=0; k&lt;ncols; k++) {
+<a name="line447">447: </a>      col[k] = net_start + cols[k];
+<a name="line448">448: </a>      val[k] = yvals[k];
+<a name="line449">449: </a>    }
+<a name="line450">450: </a>    MatSetValues(J,1,row,ncols,col,val,INSERT_VALUES);
+<a name="line451">451: </a>    MatRestoreRow(user-&gt;Ybus,2*i+1,&amp;ncols,&amp;cols,&amp;yvals);
+<a name="line452">452: </a>  }
+
+<a name="line454">454: </a>  MatAssemblyBegin(J,MAT_FLUSH_ASSEMBLY);
+<a name="line455">455: </a>  MatAssemblyEnd(J,MAT_FLUSH_ASSEMBLY);
+
+<a name="line457">457: </a>  VecGetArray(user-&gt;V0,&amp;v0);
+<a name="line458">458: </a>  <font color="#4169E1">for</font> (i=0; i &lt; nload; i++) {
+<a name="line459">459: </a>    Vr      = xnet[2*lbus[i]]; <font color="#B22222">/* Real part of load bus voltage */</font>
+<a name="line460">460: </a>    Vi      = xnet[2*lbus[i]+1]; <font color="#B22222">/* Imaginary part of the load bus voltage */</font>
+<a name="line461">461: </a>    Vm      = PetscSqrtScalar(Vr*Vr + Vi*Vi); Vm2 = Vm*Vm; Vm4 = Vm2*Vm2;
+<a name="line462">462: </a>    Vm0     = PetscSqrtScalar(v0[2*lbus[i]]*v0[2*lbus[i]] + v0[2*lbus[i]+1]*v0[2*lbus[i]+1]);
+<a name="line463">463: </a>    PD      = QD = 0.0;
+<a name="line464">464: </a>    dPD_dVr = dPD_dVi = dQD_dVr = dQD_dVi = 0.0;
+<a name="line465">465: </a>    <font color="#4169E1">for</font> (k=0; k &lt; ld_nsegsp[i]; k++) {
+<a name="line466">466: </a>      PD      += ld_alphap[k]*PD0[i]*PetscPowScalar((Vm/Vm0),ld_betap[k]);
+<a name="line467">467: </a>      dPD_dVr += ld_alphap[k]*ld_betap[k]*PD0[i]*PetscPowScalar((1/Vm0),ld_betap[k])*Vr*PetscPowScalar(Vm,(ld_betap[k]-2));
+<a name="line468">468: </a>      dPD_dVi += ld_alphap[k]*ld_betap[k]*PD0[i]*PetscPowScalar((1/Vm0),ld_betap[k])*Vi*PetscPowScalar(Vm,(ld_betap[k]-2));
+<a name="line469">469: </a>    }
+<a name="line470">470: </a>    <font color="#4169E1">for</font> (k=0; k &lt; ld_nsegsq[i]; k++) {
+<a name="line471">471: </a>      QD      += ld_alphaq[k]*QD0[i]*PetscPowScalar((Vm/Vm0),ld_betaq[k]);
+<a name="line472">472: </a>      dQD_dVr += ld_alphaq[k]*ld_betaq[k]*QD0[i]*PetscPowScalar((1/Vm0),ld_betaq[k])*Vr*PetscPowScalar(Vm,(ld_betaq[k]-2));
+<a name="line473">473: </a>      dQD_dVi += ld_alphaq[k]*ld_betaq[k]*QD0[i]*PetscPowScalar((1/Vm0),ld_betaq[k])*Vi*PetscPowScalar(Vm,(ld_betaq[k]-2));
+<a name="line474">474: </a>    }
+
+<a name="line476">476: </a>    <font color="#B22222">/*    IDr = (PD*Vr + QD*Vi)/Vm2; */</font>
+<a name="line477">477: </a>    <font color="#B22222">/*    IDi = (-QD*Vr + PD*Vi)/Vm2; */</font>
+
+<a name="line479">479: </a>    dIDr_dVr = (dPD_dVr*Vr + dQD_dVr*Vi + PD)/Vm2 - ((PD*Vr + QD*Vi)*2*Vr)/Vm4;
+<a name="line480">480: </a>    dIDr_dVi = (dPD_dVi*Vr + dQD_dVi*Vi + QD)/Vm2 - ((PD*Vr + QD*Vi)*2*Vi)/Vm4;
+
+<a name="line482">482: </a>    dIDi_dVr = (-dQD_dVr*Vr + dPD_dVr*Vi - QD)/Vm2 - ((-QD*Vr + PD*Vi)*2*Vr)/Vm4;
+<a name="line483">483: </a>    dIDi_dVi = (-dQD_dVi*Vr + dPD_dVi*Vi + PD)/Vm2 - ((-QD*Vr + PD*Vi)*2*Vi)/Vm4;
+
+<a name="line485">485: </a>    <font color="#B22222">/*    fnet[2*lbus[i]]   += IDi; */</font>
+<a name="line486">486: </a>    row[0] = net_start + 2*lbus[i];
+<a name="line487">487: </a>    col[0] = net_start + 2*lbus[i];  col[1] = net_start + 2*lbus[i]+1;
+<a name="line488">488: </a>    val[0] = dIDi_dVr;               val[1] = dIDi_dVi;
+<a name="line489">489: </a>    MatSetValues(J,1,row,2,col,val,ADD_VALUES);
+<a name="line490">490: </a>    <font color="#B22222">/*    fnet[2*lbus[i]+1] += IDr; */</font>
+<a name="line491">491: </a>    row[0] = net_start + 2*lbus[i]+1;
+<a name="line492">492: </a>    col[0] = net_start + 2*lbus[i];  col[1] = net_start + 2*lbus[i]+1;
+<a name="line493">493: </a>    val[0] = dIDr_dVr;               val[1] = dIDr_dVi;
+<a name="line494">494: </a>    MatSetValues(J,1,row,2,col,val,ADD_VALUES);
+<a name="line495">495: </a>  }
+<a name="line496">496: </a>  VecRestoreArray(user-&gt;V0,&amp;v0);
+
+<a name="line498">498: </a>  VecRestoreArray(Xgen,&amp;xgen);
+<a name="line499">499: </a>  VecRestoreArray(Xnet,&amp;xnet);
+
+<a name="line501">501: </a>  DMCompositeRestoreLocalVectors(user-&gt;dmpgrid,&amp;Xgen,&amp;Xnet);
+
+<a name="line503">503: </a>  MatAssemblyBegin(J,MAT_FINAL_ASSEMBLY);
+<a name="line504">504: </a>  MatAssemblyEnd(J,MAT_FINAL_ASSEMBLY);
+<a name="line505">505: </a>  PetscFunctionReturn(0);
+<a name="line506">506: </a>}
+
+<a name="line508">508: </a><strong><font color="#4169E1"><a name="main"></a>int main(int argc,char **argv)</font></strong>
+<a name="line509">509: </a>{
+<a name="line510">510: </a>  <a href="../../../docs/manualpages/sys/EPS.html#EPS">EPS</a>            eps;
+<a name="line511">511: </a>  <a href="../../../docs/manualpages/sys/EPSType.html#EPSType">EPSType</a>        type;
+<a name="line512">512: </a>  PetscMPIInt    size;
+<a name="line513">513: </a>  Userctx        user;
+<a name="line514">514: </a>  PetscViewer    Xview,Ybusview;
+<a name="line515">515: </a>  Vec            X,Xr,Xi;
+<a name="line516">516: </a>  Mat            J,Jred=NULL;
+<a name="line517">517: </a>  IS             is0,is1;
+<a name="line518">518: </a>  PetscInt       i,*idx2,its,nev,nconv;
+<a name="line519">519: </a>  PetscReal      error,re,im;
+<a name="line520">520: </a>  PetscScalar    kr,ki;
+<a name="line521">521: </a>  PetscBool      terse;
+
+<a name="line523">523: </a>  <a href="../../../docs/manualpages/sys/SlepcInitialize.html#SlepcInitialize">SlepcInitialize</a>(&amp;argc,&amp;argv,(char*)0,help);
+<a name="line524">524: </a>  <a href="http://www.mpich.org/static/docs/latest/www3/MPI_Comm_size.html#MPI_Comm_size">MPI_Comm_size</a>(PETSC_COMM_WORLD,&amp;size);
+<a name="line526">526: </a>  <font color="#B22222">/* show detailed info unless -terse option is given by user */</font>
+<a name="line527">527: </a>  PetscOptionsHasName(NULL,NULL,<font color="#666666">"-terse"</font>,&amp;terse);
+
+<a name="line529">529: </a>  user.neqs_gen   = 9*ngen; <font color="#B22222">/* # eqs. for generator subsystem */</font>
+<a name="line530">530: </a>  user.neqs_net   = 2*nbus; <font color="#B22222">/* # eqs. for network subsystem   */</font>
+<a name="line531">531: </a>  user.neqs_pgrid = user.neqs_gen + user.neqs_net;
+<a name="line532">532: </a>  PetscPrintf(PETSC_COMM_WORLD,<font color="#666666">"\nStability analysis in a network with %"</font> PetscInt_FMT <font color="#666666">" buses and %"</font> PetscInt_FMT <font color="#666666">" generators\n\n"</font>,nbus,ngen);
+
+<a name="line534">534: </a>  <font color="#B22222">/* Create indices for differential and algebraic equations */</font>
+<a name="line535">535: </a>  PetscMalloc1(7*ngen,&amp;idx2);
+<a name="line536">536: </a>  <font color="#4169E1">for</font> (i=0; i&lt;ngen; i++) {
+<a name="line537">537: </a>    idx2[7*i]   = 9*i;   idx2[7*i+1] = 9*i+1; idx2[7*i+2] = 9*i+2; idx2[7*i+3] = 9*i+3;
+<a name="line538">538: </a>    idx2[7*i+4] = 9*i+6; idx2[7*i+5] = 9*i+7; idx2[7*i+6] = 9*i+8;
+<a name="line539">539: </a>  }
+<a name="line540">540: </a>  ISCreateGeneral(PETSC_COMM_WORLD,7*ngen,idx2,PETSC_COPY_VALUES,&amp;user.is_diff);
+<a name="line541">541: </a>  ISComplement(user.is_diff,0,user.neqs_pgrid,&amp;user.is_alg);
+<a name="line542">542: </a>  PetscFree(idx2);
+
+<a name="line544">544: </a>  <font color="#B22222">/* Read initial voltage vector and Ybus */</font>
+<a name="line545">545: </a>  PetscViewerBinaryOpen(PETSC_COMM_WORLD,<font color="#666666">"X.bin"</font>,FILE_MODE_READ,&amp;Xview);
+<a name="line546">546: </a>  PetscViewerBinaryOpen(PETSC_COMM_WORLD,<font color="#666666">"Ybus.bin"</font>,FILE_MODE_READ,&amp;Ybusview);
+
+<a name="line548">548: </a>  VecCreate(PETSC_COMM_WORLD,&amp;user.V0);
+<a name="line549">549: </a>  VecSetSizes(user.V0,PETSC_DECIDE,user.neqs_net);
+<a name="line550">550: </a>  VecLoad(user.V0,Xview);
+
+<a name="line552">552: </a>  MatCreate(PETSC_COMM_WORLD,&amp;user.Ybus);
+<a name="line553">553: </a>  MatSetSizes(user.Ybus,PETSC_DECIDE,PETSC_DECIDE,user.neqs_net,user.neqs_net);
+<a name="line554">554: </a>  MatSetType(user.Ybus,MATBAIJ);
+<a name="line555">555: </a>  <font color="#B22222">/*  MatSetBlockSize(user.Ybus,2); */</font>
+<a name="line556">556: </a>  MatLoad(user.Ybus,Ybusview);
+
+<a name="line558">558: </a>  PetscViewerDestroy(&amp;Xview);
+<a name="line559">559: </a>  PetscViewerDestroy(&amp;Ybusview);
+
+<a name="line561">561: </a>  <font color="#B22222">/* Create DMs for generator and network subsystems */</font>
+<a name="line562">562: </a>  DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,user.neqs_gen,1,1,NULL,&amp;user.dmgen);
+<a name="line563">563: </a>  DMSetOptionsPrefix(user.dmgen,<font color="#666666">"dmgen_"</font>);
+<a name="line564">564: </a>  DMSetFromOptions(user.dmgen);
+<a name="line565">565: </a>  DMSetUp(user.dmgen);
+<a name="line566">566: </a>  DMDACreate1d(PETSC_COMM_WORLD,DM_BOUNDARY_NONE,user.neqs_net,1,1,NULL,&amp;user.dmnet);
+<a name="line567">567: </a>  DMSetOptionsPrefix(user.dmnet,<font color="#666666">"dmnet_"</font>);
+<a name="line568">568: </a>  DMSetFromOptions(user.dmnet);
+<a name="line569">569: </a>  DMSetUp(user.dmnet);
+
+<a name="line571">571: </a>  <font color="#B22222">/* Create a composite DM packer and add the two DMs */</font>
+<a name="line572">572: </a>  DMCompositeCreate(PETSC_COMM_WORLD,&amp;user.dmpgrid);
+<a name="line573">573: </a>  DMSetOptionsPrefix(user.dmpgrid,<font color="#666666">"pgrid_"</font>);
+<a name="line574">574: </a>  DMCompositeAddDM(user.dmpgrid,user.dmgen);
+<a name="line575">575: </a>  DMCompositeAddDM(user.dmpgrid,user.dmnet);
+
+<a name="line577">577: </a>  DMCreateGlobalVector(user.dmpgrid,&amp;X);
+
+<a name="line579">579: </a>  MatCreate(PETSC_COMM_WORLD,&amp;J);
+<a name="line580">580: </a>  MatSetSizes(J,PETSC_DECIDE,PETSC_DECIDE,user.neqs_pgrid,user.neqs_pgrid);
+<a name="line581">581: </a>  MatSetFromOptions(J);
+<a name="line582">582: </a>  PreallocateJacobian(J,&amp;user);
+
+<a name="line584">584: </a>  <font color="#B22222">/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line585">585: </a><font color="#B22222">     Set initial conditions</font>
+<a name="line586">586: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */</font>
+<a name="line587">587: </a>  SetInitialGuess(X,&amp;user);
+
+<a name="line589">589: </a>  <font color="#B22222">/* Form Jacobian */</font>
+<a name="line590">590: </a>  ResidualJacobian(X,J,(void*)&amp;user);
+<a name="line591">591: </a>  MatScale(J,-1);
+<a name="line592">592: </a>  is0 = user.is_diff;
+<a name="line593">593: </a>  is1 = user.is_alg;
+
+<a name="line595">595: </a>  MatGetSchurComplement(J,is1,is1,is0,is0,MAT_IGNORE_MATRIX,NULL,MAT_SCHUR_COMPLEMENT_AINV_DIAG,MAT_INITIAL_MATRIX,&amp;Jred);
+
+<a name="line597">597: </a>  <font color="#4169E1">if</font> (!terse) MatView(Jred,NULL);
+
+<a name="line599">599: </a>  MatCreateVecs(Jred,NULL,&amp;Xr);
+<a name="line600">600: </a>  MatCreateVecs(Jred,NULL,&amp;Xi);
+
+<a name="line602">602: </a>  <font color="#B22222">/* Create the eigensolver and set the various options */</font>
+<a name="line603">603: </a>  <a href="../../../docs/manualpages/EPS/EPSCreate.html#EPSCreate">EPSCreate</a>(PETSC_COMM_WORLD,&amp;eps);
+<a name="line604">604: </a>  <a href="../../../docs/manualpages/EPS/EPSSetOperators.html#EPSSetOperators">EPSSetOperators</a>(eps,Jred,NULL);
+<a name="line605">605: </a>  <a href="../../../docs/manualpages/EPS/EPSSetProblemType.html#EPSSetProblemType">EPSSetProblemType</a>(eps,<a href="../../../docs/manualpages/sys/EPSProblemType.html#EPSProblemType">EPS_NHEP</a>);
+<a name="line606">606: </a>  <a href="../../../docs/manualpages/EPS/EPSSetFromOptions.html#EPSSetFromOptions">EPSSetFromOptions</a>(eps);
+
+<a name="line608">608: </a>  <font color="#B22222">/* Solve the eigenvalue problem */</font>
+<a name="line609">609: </a>  <a href="../../../docs/manualpages/EPS/EPSSolve.html#EPSSolve">EPSSolve</a>(eps);
+
+<a name="line611">611: </a>  <a href="../../../docs/manualpages/EPS/EPSGetIterationNumber.html#EPSGetIterationNumber">EPSGetIterationNumber</a>(eps,&amp;its);
+<a name="line612">612: </a>  PetscPrintf(PETSC_COMM_WORLD,<font color="#666666">" Number of iterations of the eigensolver: %"</font> PetscInt_FMT <font color="#666666">"\n"</font>,its);
+<a name="line613">613: </a>  <a href="../../../docs/manualpages/EPS/EPSGetType.html#EPSGetType">EPSGetType</a>(eps,&amp;type);
+<a name="line614">614: </a>  PetscPrintf(PETSC_COMM_WORLD,<font color="#666666">" Solution method: %s\n\n"</font>, type);
+<a name="line615">615: </a>  <a href="../../../docs/manualpages/EPS/EPSGetDimensions.html#EPSGetDimensions">EPSGetDimensions</a>(eps,&amp;nev,NULL,NULL);
+<a name="line616">616: </a>  PetscPrintf(PETSC_COMM_WORLD,<font color="#666666">" Number of requested eigenvalues: %"</font> PetscInt_FMT <font color="#666666">"\n"</font>,nev);
+
+<a name="line618">618: </a>  <font color="#B22222">/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line619">619: </a><font color="#B22222">                    Display solution and clean up</font>
+<a name="line620">620: </a><font color="#B22222">     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */</font>
+<a name="line621">621: </a>  <font color="#4169E1">if</font> (terse) <a href="../../../docs/manualpages/EPS/EPSErrorView.html#EPSErrorView">EPSErrorView</a>(eps,<a href="../../../docs/manualpages/sys/EPSErrorType.html#EPSErrorType">EPS_ERROR_RELATIVE</a>,NULL);
+<a name="line622">622: </a>  <font color="#4169E1">else</font> {
+<a name="line623">623: </a>    <font color="#B22222">/* Get number of converged approximate eigenpairs */</font>
+<a name="line624">624: </a>    <a href="../../../docs/manualpages/EPS/EPSGetConverged.html#EPSGetConverged">EPSGetConverged</a>(eps,&amp;nconv);
+<a name="line625">625: </a>    PetscPrintf(PETSC_COMM_WORLD,<font color="#666666">" Number of converged eigenpairs: %"</font> PetscInt_FMT <font color="#666666">"\n\n"</font>,nconv);
+
+<a name="line627">627: </a>    <font color="#4169E1">if</font> (nconv&gt;0) {
+<a name="line628">628: </a>      <font color="#B22222">/* Display eigenvalues and relative errors */</font>
+<a name="line629">629: </a>      PetscCall(PetscPrintf(PETSC_COMM_WORLD,
+<a name="line630">630: </a>           <font color="#666666">"           k          ||Ax-kx||/||kx||\n"</font>
+<a name="line631">631: </a>           <font color="#666666">"   ----------------- ------------------\n"</font>));
+
+<a name="line633">633: </a>      <font color="#4169E1">for</font> (i=0;i&lt;nconv;i++) {
+<a name="line634">634: </a>        <font color="#B22222">/* Get converged eigenpairs: i-th eigenvalue is stored in kr (real part) and</font>
+<a name="line635">635: </a><font color="#B22222">          ki (imaginary part) */</font>
+<a name="line636">636: </a>        <a href="../../../docs/manualpages/EPS/EPSGetEigenpair.html#EPSGetEigenpair">EPSGetEigenpair</a>(eps,i,&amp;kr,&amp;ki,Xr,Xi);
+<a name="line637">637: </a>        <font color="#B22222">/* Compute the relative error associated to each eigenpair */</font>
+<a name="line638">638: </a>        <a href="../../../docs/manualpages/EPS/EPSComputeError.html#EPSComputeError">EPSComputeError</a>(eps,i,<a href="../../../docs/manualpages/sys/EPSErrorType.html#EPSErrorType">EPS_ERROR_RELATIVE</a>,&amp;error);
+
+<a name="line640">640: </a><font color="#A020F0">#if defined(PETSC_USE_COMPLEX)</font>
+<a name="line641">641: </a>        re = PetscRealPart(kr);
+<a name="line642">642: </a>        im = PetscImaginaryPart(kr);
+<a name="line643">643: </a><font color="#A020F0">#else</font>
+<a name="line644">644: </a>        re = kr;
+<a name="line645">645: </a>        im = ki;
+<a name="line646">646: </a><font color="#A020F0">#endif</font>
+<a name="line647">647: </a>        <font color="#4169E1">if</font> (im!=0.0) PetscPrintf(PETSC_COMM_WORLD,<font color="#666666">" %9f%+9fi %12g\n"</font>,(double)re,(double)im,(double)error);
+<a name="line648">648: </a>        <font color="#4169E1">else</font> PetscPrintf(PETSC_COMM_WORLD,<font color="#666666">"   %12f       %12g\n"</font>,(double)re,(double)error);
+<a name="line649">649: </a>      }
+<a name="line650">650: </a>      PetscPrintf(PETSC_COMM_WORLD,<font color="#666666">"\n"</font>);
+<a name="line651">651: </a>    }
+<a name="line652">652: </a>  }
+
+<a name="line654">654: </a>  <font color="#B22222">/* Free work space */</font>
+<a name="line655">655: </a>  <a href="../../../docs/manualpages/EPS/EPSDestroy.html#EPSDestroy">EPSDestroy</a>(&amp;eps);
+<a name="line656">656: </a>  MatDestroy(&amp;J);
+<a name="line657">657: </a>  MatDestroy(&amp;Jred);
+<a name="line658">658: </a>  MatDestroy(&amp;user.Ybus);
+<a name="line659">659: </a>  VecDestroy(&amp;X);
+<a name="line660">660: </a>  VecDestroy(&amp;Xr);
+<a name="line661">661: </a>  VecDestroy(&amp;Xi);
+<a name="line662">662: </a>  VecDestroy(&amp;user.V0);
+<a name="line663">663: </a>  DMDestroy(&amp;user.dmgen);
+<a name="line664">664: </a>  DMDestroy(&amp;user.dmnet);
+<a name="line665">665: </a>  DMDestroy(&amp;user.dmpgrid);
+<a name="line666">666: </a>  ISDestroy(&amp;user.is_diff);
+<a name="line667">667: </a>  ISDestroy(&amp;user.is_alg);
+<a name="line668">668: </a>  <a href="../../../docs/manualpages/sys/SlepcFinalize.html#SlepcFinalize">SlepcFinalize</a>();
+<a name="line669">669: </a>  <font color="#4169E1">return</font> 0;
+<a name="line670">670: </a>}
+
+<a name="line672">672: </a><font color="#B22222">/*TEST</font>
+
+<a name="line674">674: </a><font color="#B22222">   build:</font>
+<a name="line675">675: </a><font color="#B22222">      requires: !complex</font>
+
+<a name="line677">677: </a><font color="#B22222">   test:</font>
+<a name="line678">678: </a><font color="#B22222">      suffix: 1</font>
+<a name="line679">679: </a><font color="#B22222">      args: -terse</font>
+<a name="line680">680: </a><font color="#B22222">      requires: double !complex !defined(PETSC_USE_64BIT_INDICES)</font>
+<a name="line681">681: </a><font color="#B22222">      localrunfiles: X.bin Ybus.bin</font>
+
+<a name="line683">683: </a><font color="#B22222">TEST*/</font>
+</pre>
+</body>
+
+</html>

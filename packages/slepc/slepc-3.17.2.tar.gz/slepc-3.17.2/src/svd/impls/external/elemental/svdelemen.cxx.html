@@ -1,0 +1,119 @@
+<center><a href="svdelemen.cxx">Actual source code: svdelemen.cxx</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="https://slepc.upv.es/documentation/current/src/svd/impls/external/elemental/svdelemen.cxx.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2022-08-09T09:05:45+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>slepc-3.17.2 2022-08-09</b></div>
+   <div id="bugreport" align=right><a href="mailto:slepc-maint@upv.es?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: slepc-3.17.2 v3.17.2 src/svd/impls/external/elemental/svdelemen.cxx.html "><small>Report Typos and Errors</small></a></div>
+<pre width="80">
+<a name="line1">  1: </a><font color="#B22222">/*</font>
+<a name="line2">  2: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line3">  3: </a><font color="#B22222">   SLEPc - Scalable Library for Eigenvalue Problem Computations</font>
+<a name="line4">  4: </a><font color="#B22222">   Copyright (c) 2002-, Universitat Politecnica de Valencia, Spain</font>
+
+<a name="line6">  6: </a><font color="#B22222">   This file is part of SLEPc.</font>
+<a name="line7">  7: </a><font color="#B22222">   SLEPc is distributed under a 2-clause BSD license (see LICENSE).</font>
+<a name="line8">  8: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line9">  9: </a><font color="#B22222">*/</font>
+<a name="line10"> 10: </a><font color="#B22222">/*</font>
+<a name="line11"> 11: </a><font color="#B22222">   This file implements a wrapper to the Elemental <a href="../../../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> solver</font>
+<a name="line12"> 12: </a><font color="#B22222">*/</font>
+
+<a name="line14"> 14: </a>#include <A href="../../../../../include/slepc/private/svdimpl.h.html">&lt;slepc/private/svdimpl.h&gt;</A>
+<a name="line15"> 15: </a><font color="#A020F0">#include &lt;petsc/private/petscelemental.h&gt;</font>
+
+<a name="line17"> 17: </a><font color="#4169E1">typedef</font> <font color="#4169E1">struct</font> {
+<a name="line18"> 18: </a>  Mat Ae;        <font color="#B22222">/* converted matrix */</font>
+<a name="line19"> 19: </a>} SVD_Elemental;
+
+<a name="line21"> 21: </a><strong><font color="#4169E1"><a name="SVDSetUp_Elemental"></a>PetscErrorCode SVDSetUp_Elemental(<a href="../../../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> svd)</font></strong>
+<a name="line22"> 22: </a>{
+<a name="line23"> 23: </a>  SVD_Elemental  *ctx = (SVD_Elemental*)svd-&gt;data;
+<a name="line24"> 24: </a>  PetscInt       M,N;
+
+<a name="line26"> 26: </a>  SVDCheckStandard(svd);
+<a name="line27"> 27: </a>  MatGetSize(svd-&gt;A,&amp;M,&amp;N);
+<a name="line29"> 29: </a>  svd-&gt;ncv = N;
+<a name="line30"> 30: </a>  <font color="#4169E1">if</font> (svd-&gt;mpd!=PETSC_DEFAULT) PetscInfo(svd,<font color="#666666">"Warning: parameter mpd ignored\n"</font>);
+<a name="line31"> 31: </a>  <font color="#4169E1">if</font> (svd-&gt;max_it==PETSC_DEFAULT) svd-&gt;max_it = 1;
+<a name="line32"> 32: </a>  svd-&gt;leftbasis = PETSC_TRUE;
+<a name="line33"> 33: </a>  SVDCheckUnsupported(svd,SVD_FEATURE_STOPPING);
+<a name="line34"> 34: </a>  <a href="../../../../../docs/manualpages/SVD/SVDAllocateSolution.html#SVDAllocateSolution">SVDAllocateSolution</a>(svd,0);
+
+<a name="line36"> 36: </a>  <font color="#B22222">/* convert matrix */</font>
+<a name="line37"> 37: </a>  MatDestroy(&amp;ctx-&gt;Ae);
+<a name="line38"> 38: </a>  MatConvert(svd-&gt;OP,MATELEMENTAL,MAT_INITIAL_MATRIX,&amp;ctx-&gt;Ae);
+<a name="line39"> 39: </a>  PetscFunctionReturn(0);
+<a name="line40"> 40: </a>}
+
+<a name="line42"> 42: </a><strong><font color="#4169E1"><a name="SVDSolve_Elemental"></a>PetscErrorCode SVDSolve_Elemental(<a href="../../../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> svd)</font></strong>
+<a name="line43"> 43: </a>{
+<a name="line44"> 44: </a>  SVD_Elemental  *ctx = (SVD_Elemental*)svd-&gt;data;
+<a name="line45"> 45: </a>  Mat            A = ctx-&gt;Ae,Z,Q,U,V;
+<a name="line46"> 46: </a>  Mat_Elemental  *a = (Mat_Elemental*)A-&gt;data,*q,*z;
+<a name="line47"> 47: </a>  PetscInt       i,rrank,ridx,erow;
+
+<a name="line49"> 49: </a><strong><font color="#FF0000">  El:</font></strong>:DistMatrix&lt;PetscReal,El::STAR,El::VC&gt; sigma(*a-&gt;grid);
+<a name="line50"> 50: </a>  MatDuplicate(A,MAT_DO_NOT_COPY_VALUES,&amp;Z);
+<a name="line51"> 51: </a>  MatDuplicate(A,MAT_DO_NOT_COPY_VALUES,&amp;Q);
+<a name="line52"> 52: </a>  z = (Mat_Elemental*)Z-&gt;data;
+<a name="line53"> 53: </a>  q = (Mat_Elemental*)Q-&gt;data;
+
+<a name="line55"> 55: </a><strong><font color="#FF0000">  El:</font></strong>:<a href="../../../../../docs/manualpages/sys/SVD.html#SVD">SVD</a>(*a-&gt;emat,*z-&gt;emat,sigma,*q-&gt;emat);
+
+<a name="line57"> 57: </a>  <font color="#4169E1">for</font> (i=0;i&lt;svd-&gt;ncv;i++) {
+<a name="line58"> 58: </a>    P2RO(A,1,i,&amp;rrank,&amp;ridx);
+<a name="line59"> 59: </a>    RO2E(A,1,rrank,ridx,&amp;erow);
+<a name="line60"> 60: </a>    svd-&gt;sigma[i] = sigma.Get(erow,0);
+<a name="line61"> 61: </a>  }
+<a name="line62"> 62: </a>  <a href="../../../../../docs/manualpages/BV/BVGetMat.html#BVGetMat">BVGetMat</a>(svd-&gt;U,&amp;U);
+<a name="line63"> 63: </a>  MatConvert(Z,MATDENSE,MAT_REUSE_MATRIX,&amp;U);
+<a name="line64"> 64: </a>  <a href="../../../../../docs/manualpages/BV/BVRestoreMat.html#BVRestoreMat">BVRestoreMat</a>(svd-&gt;U,&amp;U);
+<a name="line65"> 65: </a>  MatDestroy(&amp;Z);
+<a name="line66"> 66: </a>  <a href="../../../../../docs/manualpages/BV/BVGetMat.html#BVGetMat">BVGetMat</a>(svd-&gt;V,&amp;V);
+<a name="line67"> 67: </a>  MatConvert(Q,MATDENSE,MAT_REUSE_MATRIX,&amp;V);
+<a name="line68"> 68: </a>  <a href="../../../../../docs/manualpages/BV/BVRestoreMat.html#BVRestoreMat">BVRestoreMat</a>(svd-&gt;V,&amp;V);
+<a name="line69"> 69: </a>  MatDestroy(&amp;Q);
+
+<a name="line71"> 71: </a>  svd-&gt;nconv  = svd-&gt;ncv;
+<a name="line72"> 72: </a>  svd-&gt;its    = 1;
+<a name="line73"> 73: </a>  svd-&gt;reason = <a href="../../../../../docs/manualpages/sys/SVDConvergedReason.html#SVDConvergedReason">SVD_CONVERGED_TOL</a>;
+<a name="line74"> 74: </a>  PetscFunctionReturn(0);
+<a name="line75"> 75: </a>}
+
+<a name="line77"> 77: </a><strong><font color="#4169E1"><a name="SVDDestroy_Elemental"></a>PetscErrorCode SVDDestroy_Elemental(<a href="../../../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> svd)</font></strong>
+<a name="line78"> 78: </a>{
+<a name="line79"> 79: </a>  PetscFree(svd-&gt;data);
+<a name="line80"> 80: </a>  PetscFunctionReturn(0);
+<a name="line81"> 81: </a>}
+
+<a name="line83"> 83: </a><strong><font color="#4169E1"><a name="SVDReset_Elemental"></a>PetscErrorCode SVDReset_Elemental(<a href="../../../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> svd)</font></strong>
+<a name="line84"> 84: </a>{
+<a name="line85"> 85: </a>  SVD_Elemental  *ctx = (SVD_Elemental*)svd-&gt;data;
+
+<a name="line87"> 87: </a>  MatDestroy(&amp;ctx-&gt;Ae);
+<a name="line88"> 88: </a>  PetscFunctionReturn(0);
+<a name="line89"> 89: </a>}
+
+<a name="line91"> 91: </a><strong><font color="#4169E1"><a name="SVDCreate_Elemental"></a>SLEPC_EXTERN PetscErrorCode SVDCreate_Elemental(<a href="../../../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> svd)</font></strong>
+<a name="line92"> 92: </a>{
+<a name="line93"> 93: </a>  SVD_Elemental  *ctx;
+
+<a name="line95"> 95: </a>  PetscNewLog(svd,&amp;ctx);
+<a name="line96"> 96: </a>  svd-&gt;data = (void*)ctx;
+
+<a name="line98"> 98: </a>  svd-&gt;ops-&gt;solve          = SVDSolve_Elemental;
+<a name="line99"> 99: </a>  svd-&gt;ops-&gt;setup          = SVDSetUp_Elemental;
+<a name="line100">100: </a>  svd-&gt;ops-&gt;destroy        = SVDDestroy_Elemental;
+<a name="line101">101: </a>  svd-&gt;ops-&gt;reset          = SVDReset_Elemental;
+<a name="line102">102: </a>  PetscFunctionReturn(0);
+<a name="line103">103: </a>}
+</pre>
+</body>
+
+</html>

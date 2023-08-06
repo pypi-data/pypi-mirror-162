@@ -1,0 +1,461 @@
+<center><a href="svdsolve.c">Actual source code: svdsolve.c</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="https://slepc.upv.es/documentation/current/src/svd/interface/svdsolve.c.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2022-08-09T09:05:44+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>slepc-3.17.2 2022-08-09</b></div>
+   <div id="bugreport" align=right><a href="mailto:slepc-maint@upv.es?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: slepc-3.17.2 v3.17.2 src/svd/interface/svdsolve.c.html "><small>Report Typos and Errors</small></a></div>
+<pre width="80">
+<a name="line1">  1: </a><font color="#B22222">/*</font>
+<a name="line2">  2: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line3">  3: </a><font color="#B22222">   SLEPc - Scalable Library for Eigenvalue Problem Computations</font>
+<a name="line4">  4: </a><font color="#B22222">   Copyright (c) 2002-, Universitat Politecnica de Valencia, Spain</font>
+
+<a name="line6">  6: </a><font color="#B22222">   This file is part of SLEPc.</font>
+<a name="line7">  7: </a><font color="#B22222">   SLEPc is distributed under a 2-clause BSD license (see LICENSE).</font>
+<a name="line8">  8: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line9">  9: </a><font color="#B22222">*/</font>
+<a name="line10"> 10: </a><font color="#B22222">/*</font>
+<a name="line11"> 11: </a><font color="#B22222">   <a href="../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> routines related to the solution process</font>
+<a name="line12"> 12: </a><font color="#B22222">*/</font>
+
+<a name="line14"> 14: </a>#include <A href="../../../include/slepc/private/svdimpl.h.html">&lt;slepc/private/svdimpl.h&gt;</A>
+
+<a name="line16"> 16: </a><font color="#B22222">/*</font>
+<a name="line17"> 17: </a><font color="#B22222">  SVDComputeVectors_Left - Compute left singular vectors as U=A*V.</font>
+<a name="line18"> 18: </a><font color="#B22222">  Only done if the leftbasis flag is false. Assumes V is available.</font>
+<a name="line19"> 19: </a><font color="#B22222"> */</font>
+<a name="line20"> 20: </a><strong><font color="#4169E1"><a name="SVDComputeVectors_Left"></a>PetscErrorCode SVDComputeVectors_Left(<a href="../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> svd)</font></strong>
+<a name="line21"> 21: </a>{
+<a name="line22"> 22: </a>  Vec            tl;
+<a name="line23"> 23: </a>  PetscInt       oldsize;
+
+<a name="line25"> 25: </a>  <font color="#4169E1">if</font> (!svd-&gt;leftbasis) {
+<a name="line26"> 26: </a>    <font color="#B22222">/* generate left singular vectors on U */</font>
+<a name="line27"> 27: </a>    <font color="#4169E1">if</font> (!svd-&gt;U) <a href="../../../docs/manualpages/SVD/SVDGetBV.html#SVDGetBV">SVDGetBV</a>(svd,NULL,&amp;svd-&gt;U);
+<a name="line28"> 28: </a>    <a href="../../../docs/manualpages/BV/BVGetSizes.html#BVGetSizes">BVGetSizes</a>(svd-&gt;U,NULL,NULL,&amp;oldsize);
+<a name="line29"> 29: </a>    <font color="#4169E1">if</font> (!oldsize) {
+<a name="line30"> 30: </a>      <font color="#4169E1">if</font> (!((PetscObject)(svd-&gt;U))-&gt;type_name) <a href="../../../docs/manualpages/BV/BVSetType.html#BVSetType">BVSetType</a>(svd-&gt;U,((PetscObject)(svd-&gt;V))-&gt;type_name);
+<a name="line31"> 31: </a>      <a href="../../../docs/manualpages/sys/MatCreateVecsEmpty.html#MatCreateVecsEmpty">MatCreateVecsEmpty</a>(svd-&gt;A,NULL,&amp;tl);
+<a name="line32"> 32: </a>      <a href="../../../docs/manualpages/BV/BVSetSizesFromVec.html#BVSetSizesFromVec">BVSetSizesFromVec</a>(svd-&gt;U,tl,svd-&gt;ncv);
+<a name="line33"> 33: </a>      VecDestroy(&amp;tl);
+<a name="line34"> 34: </a>    }
+<a name="line35"> 35: </a>    <a href="../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(svd-&gt;V,0,svd-&gt;nconv);
+<a name="line36"> 36: </a>    <a href="../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(svd-&gt;U,0,svd-&gt;nconv);
+<a name="line37"> 37: </a>    <a href="../../../docs/manualpages/BV/BVMatMult.html#BVMatMult">BVMatMult</a>(svd-&gt;V,svd-&gt;A,svd-&gt;U);
+<a name="line38"> 38: </a>    <a href="../../../docs/manualpages/BV/BVOrthogonalize.html#BVOrthogonalize">BVOrthogonalize</a>(svd-&gt;U,NULL);
+<a name="line39"> 39: </a>  }
+<a name="line40"> 40: </a>  PetscFunctionReturn(0);
+<a name="line41"> 41: </a>}
+
+<a name="line43"> 43: </a><strong><font color="#4169E1"><a name="SVDComputeVectors"></a>PetscErrorCode SVDComputeVectors(<a href="../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> svd)</font></strong>
+<a name="line44"> 44: </a>{
+<a name="line45"> 45: </a>  SVDCheckSolved(svd,1);
+<a name="line46"> 46: </a>  <font color="#4169E1">if</font> (svd-&gt;state==SVD_STATE_SOLVED &amp;&amp; svd-&gt;ops-&gt;computevectors) (*svd-&gt;ops-&gt;computevectors)(svd);
+<a name="line47"> 47: </a>  svd-&gt;state = SVD_STATE_VECTORS;
+<a name="line48"> 48: </a>  PetscFunctionReturn(0);
+<a name="line49"> 49: </a>}
+
+<a name="line51"> 51: </a><font color="#B22222">/*@</font>
+<a name="line52"> 52: </a><font color="#B22222">   <a href="../../../docs/manualpages/SVD/SVDSolve.html#SVDSolve">SVDSolve</a> - Solves the singular value problem.</font>
+
+<a name="line54"> 54: </a><font color="#B22222">   Collective on svd</font>
+
+<a name="line56"> 56: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line57"> 57: </a><font color="#B22222">.  svd - singular value solver context obtained from <a href="../../../docs/manualpages/SVD/SVDCreate.html#SVDCreate">SVDCreate</a>()</font>
+
+<a name="line59"> 59: </a><font color="#B22222">   Options Database Keys:</font>
+<a name="line60"> 60: </a><font color="#B22222">+  -svd_view - print information about the solver used</font>
+<a name="line61"> 61: </a><font color="#B22222">.  -svd_view_mat0 - view the first matrix (A)</font>
+<a name="line62"> 62: </a><font color="#B22222">.  -svd_view_mat1 - view the second matrix (B)</font>
+<a name="line63"> 63: </a><font color="#B22222">.  -svd_view_vectors - view the computed singular vectors</font>
+<a name="line64"> 64: </a><font color="#B22222">.  -svd_view_values - view the computed singular values</font>
+<a name="line65"> 65: </a><font color="#B22222">.  -svd_converged_reason - print reason for convergence, and number of iterations</font>
+<a name="line66"> 66: </a><font color="#B22222">.  -svd_error_absolute - print absolute errors of each singular triplet</font>
+<a name="line67"> 67: </a><font color="#B22222">.  -svd_error_relative - print relative errors of each singular triplet</font>
+<a name="line68"> 68: </a><font color="#B22222">-  -svd_error_norm     - print errors relative to the matrix norms of each singular triplet</font>
+
+<a name="line70"> 70: </a><font color="#B22222">   Notes:</font>
+<a name="line71"> 71: </a><font color="#B22222">   All the command-line options listed above admit an optional argument specifying</font>
+<a name="line72"> 72: </a><font color="#B22222">   the viewer type and options. For instance, use '-svd_view_mat0 binary:amatrix.bin'</font>
+<a name="line73"> 73: </a><font color="#B22222">   to save the A matrix to a binary file, '-svd_view_values draw' to draw the computed</font>
+<a name="line74"> 74: </a><font color="#B22222">   singular values graphically, or '-svd_error_relative :myerr.m:ascii_matlab' to save</font>
+<a name="line75"> 75: </a><font color="#B22222">   the errors in a file that can be executed in Matlab.</font>
+
+<a name="line77"> 77: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line79"> 79: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/SVD/SVDCreate.html#SVDCreate">SVDCreate</a>(), <a href="../../../docs/manualpages/SVD/SVDSetUp.html#SVDSetUp">SVDSetUp</a>(), <a href="../../../docs/manualpages/SVD/SVDDestroy.html#SVDDestroy">SVDDestroy</a>()</font>
+<a name="line80"> 80: </a><font color="#B22222">@*/</font>
+<a name="line81"> 81: </a><strong><font color="#4169E1"><a name="SVDSolve"></a>PetscErrorCode <a href="../../../docs/manualpages/SVD/SVDSolve.html#SVDSolve">SVDSolve</a>(<a href="../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> svd)</font></strong>
+<a name="line82"> 82: </a>{
+<a name="line83"> 83: </a>  PetscInt       i,*workperm;
+
+<a name="line86"> 86: </a>  <font color="#4169E1">if</font> (svd-&gt;state&gt;=SVD_STATE_SOLVED) PetscFunctionReturn(0);
+<a name="line87"> 87: </a>  PetscLogEventBegin(SVD_Solve,svd,0,0,0);
+
+<a name="line89"> 89: </a>  <font color="#B22222">/* call setup */</font>
+<a name="line90"> 90: </a>  <a href="../../../docs/manualpages/SVD/SVDSetUp.html#SVDSetUp">SVDSetUp</a>(svd);
+<a name="line91"> 91: </a>  svd-&gt;its = 0;
+<a name="line92"> 92: </a>  svd-&gt;nconv = 0;
+<a name="line93"> 93: </a>  <font color="#4169E1">for</font> (i=0;i&lt;svd-&gt;ncv;i++) {
+<a name="line94"> 94: </a>    svd-&gt;sigma[i]  = 0.0;
+<a name="line95"> 95: </a>    svd-&gt;errest[i] = 0.0;
+<a name="line96"> 96: </a>    svd-&gt;perm[i]   = i;
+<a name="line97"> 97: </a>  }
+<a name="line98"> 98: </a>  <a href="../../../docs/manualpages/SVD/SVDViewFromOptions.html#SVDViewFromOptions">SVDViewFromOptions</a>(svd,NULL,<font color="#666666">"-svd_view_pre"</font>);
+
+<a name="line100">100: </a>  <font color="#4169E1">switch</font> (svd-&gt;problem_type) {
+<a name="line101">101: </a>    <font color="#4169E1">case</font> <a href="../../../docs/manualpages/sys/SVDProblemType.html#SVDProblemType">SVD_STANDARD</a>:
+<a name="line102">102: </a>      (*svd-&gt;ops-&gt;solve)(svd);
+<a name="line103">103: </a>      <font color="#4169E1">break</font>;
+<a name="line104">104: </a>    <font color="#4169E1">case</font> <a href="../../../docs/manualpages/sys/SVDProblemType.html#SVDProblemType">SVD_GENERALIZED</a>:
+<a name="line105">105: </a>      (*svd-&gt;ops-&gt;solveg)(svd);
+<a name="line106">106: </a>      <font color="#4169E1">break</font>;
+<a name="line107">107: </a>  }
+<a name="line108">108: </a>  svd-&gt;state = SVD_STATE_SOLVED;
+
+<a name="line110">110: </a>  <font color="#B22222">/* sort singular triplets */</font>
+<a name="line111">111: </a>  <font color="#4169E1">if</font> (svd-&gt;which == <a href="../../../docs/manualpages/sys/SVDWhich.html#SVDWhich">SVD_SMALLEST</a>) PetscSortRealWithPermutation(svd-&gt;nconv,svd-&gt;sigma,svd-&gt;perm);
+<a name="line112">112: </a>  <font color="#4169E1">else</font> {
+<a name="line113">113: </a>    PetscMalloc1(svd-&gt;nconv,&amp;workperm);
+<a name="line114">114: </a>    <font color="#4169E1">for</font> (i=0;i&lt;svd-&gt;nconv;i++) workperm[i] = i;
+<a name="line115">115: </a>    PetscSortRealWithPermutation(svd-&gt;nconv,svd-&gt;sigma,workperm);
+<a name="line116">116: </a>    <font color="#4169E1">for</font> (i=0;i&lt;svd-&gt;nconv;i++) svd-&gt;perm[i] = workperm[svd-&gt;nconv-i-1];
+<a name="line117">117: </a>    PetscFree(workperm);
+<a name="line118">118: </a>  }
+<a name="line119">119: </a>  PetscLogEventEnd(SVD_Solve,svd,0,0,0);
+
+<a name="line121">121: </a>  <font color="#B22222">/* various viewers */</font>
+<a name="line122">122: </a>  <a href="../../../docs/manualpages/SVD/SVDViewFromOptions.html#SVDViewFromOptions">SVDViewFromOptions</a>(svd,NULL,<font color="#666666">"-svd_view"</font>);
+<a name="line123">123: </a>  <a href="../../../docs/manualpages/SVD/SVDConvergedReasonViewFromOptions.html#SVDConvergedReasonViewFromOptions">SVDConvergedReasonViewFromOptions</a>(svd);
+<a name="line124">124: </a>  <a href="../../../docs/manualpages/SVD/SVDErrorViewFromOptions.html#SVDErrorViewFromOptions">SVDErrorViewFromOptions</a>(svd);
+<a name="line125">125: </a>  <a href="../../../docs/manualpages/SVD/SVDValuesViewFromOptions.html#SVDValuesViewFromOptions">SVDValuesViewFromOptions</a>(svd);
+<a name="line126">126: </a>  <a href="../../../docs/manualpages/SVD/SVDVectorsViewFromOptions.html#SVDVectorsViewFromOptions">SVDVectorsViewFromOptions</a>(svd);
+<a name="line127">127: </a>  MatViewFromOptions(svd-&gt;OP,(PetscObject)svd,<font color="#666666">"-svd_view_mat0"</font>);
+<a name="line128">128: </a>  <font color="#4169E1">if</font> (svd-&gt;isgeneralized) MatViewFromOptions(svd-&gt;OPb,(PetscObject)svd,<font color="#666666">"-svd_view_mat1"</font>);
+
+<a name="line130">130: </a>  <font color="#B22222">/* Remove the initial subspaces */</font>
+<a name="line131">131: </a>  svd-&gt;nini = 0;
+<a name="line132">132: </a>  svd-&gt;ninil = 0;
+<a name="line133">133: </a>  PetscFunctionReturn(0);
+<a name="line134">134: </a>}
+
+<a name="line136">136: </a><font color="#B22222">/*@</font>
+<a name="line137">137: </a><font color="#B22222">   <a href="../../../docs/manualpages/SVD/SVDGetIterationNumber.html#SVDGetIterationNumber">SVDGetIterationNumber</a> - Gets the current iteration number. If the</font>
+<a name="line138">138: </a><font color="#B22222">   call to <a href="../../../docs/manualpages/SVD/SVDSolve.html#SVDSolve">SVDSolve</a>() is complete, then it returns the number of iterations</font>
+<a name="line139">139: </a><font color="#B22222">   carried out by the solution method.</font>
+
+<a name="line141">141: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line143">143: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line144">144: </a><font color="#B22222">.  svd - the singular value solver context</font>
+
+<a name="line146">146: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line147">147: </a><font color="#B22222">.  its - number of iterations</font>
+
+<a name="line149">149: </a><font color="#B22222">   Note:</font>
+<a name="line150">150: </a><font color="#B22222">   During the i-th iteration this call returns i-1. If <a href="../../../docs/manualpages/SVD/SVDSolve.html#SVDSolve">SVDSolve</a>() is</font>
+<a name="line151">151: </a><font color="#B22222">   complete, then parameter "its" contains either the iteration number at</font>
+<a name="line152">152: </a><font color="#B22222">   which convergence was successfully reached, or failure was detected.</font>
+<a name="line153">153: </a><font color="#B22222">   Call <a href="../../../docs/manualpages/SVD/SVDGetConvergedReason.html#SVDGetConvergedReason">SVDGetConvergedReason</a>() to determine if the solver converged or</font>
+<a name="line154">154: </a><font color="#B22222">   failed and why.</font>
+
+<a name="line156">156: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line158">158: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/SVD/SVDGetConvergedReason.html#SVDGetConvergedReason">SVDGetConvergedReason</a>(), <a href="../../../docs/manualpages/SVD/SVDSetTolerances.html#SVDSetTolerances">SVDSetTolerances</a>()</font>
+<a name="line159">159: </a><font color="#B22222">@*/</font>
+<a name="line160">160: </a><strong><font color="#4169E1"><a name="SVDGetIterationNumber"></a>PetscErrorCode <a href="../../../docs/manualpages/SVD/SVDGetIterationNumber.html#SVDGetIterationNumber">SVDGetIterationNumber</a>(<a href="../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> svd,PetscInt *its)</font></strong>
+<a name="line161">161: </a>{
+<a name="line164">164: </a>  *its = svd-&gt;its;
+<a name="line165">165: </a>  PetscFunctionReturn(0);
+<a name="line166">166: </a>}
+
+<a name="line168">168: </a><font color="#B22222">/*@</font>
+<a name="line169">169: </a><font color="#B22222">   <a href="../../../docs/manualpages/SVD/SVDGetConvergedReason.html#SVDGetConvergedReason">SVDGetConvergedReason</a> - Gets the reason why the <a href="../../../docs/manualpages/SVD/SVDSolve.html#SVDSolve">SVDSolve</a>() iteration was</font>
+<a name="line170">170: </a><font color="#B22222">   stopped.</font>
+
+<a name="line172">172: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line174">174: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line175">175: </a><font color="#B22222">.  svd - the singular value solver context</font>
+
+<a name="line177">177: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line178">178: </a><font color="#B22222">.  reason - negative value indicates diverged, positive value converged</font>
+<a name="line179">179: </a><font color="#B22222">   (see <a href="../../../docs/manualpages/sys/SVDConvergedReason.html#SVDConvergedReason">SVDConvergedReason</a>)</font>
+
+<a name="line181">181: </a><font color="#B22222">   Options Database Key:</font>
+<a name="line182">182: </a><font color="#B22222">.  -svd_converged_reason - print the reason to a viewer</font>
+
+<a name="line184">184: </a><font color="#B22222">   Notes:</font>
+<a name="line185">185: </a><font color="#B22222">   Possible values for reason are</font>
+<a name="line186">186: </a><font color="#B22222">+  <a href="../../../docs/manualpages/sys/SVDConvergedReason.html#SVDConvergedReason">SVD_CONVERGED_TOL</a> - converged up to tolerance</font>
+<a name="line187">187: </a><font color="#B22222">.  <a href="../../../docs/manualpages/sys/SVDConvergedReason.html#SVDConvergedReason">SVD_CONVERGED_USER</a> - converged due to a user-defined condition</font>
+<a name="line188">188: </a><font color="#B22222">.  <a href="../../../docs/manualpages/sys/SVDConvergedReason.html#SVDConvergedReason">SVD_CONVERGED_MAXIT</a> - reached the maximum number of iterations with <a href="../../../docs/manualpages/sys/SVDConv.html#SVDConv">SVD_CONV_MAXIT</a> criterion</font>
+<a name="line189">189: </a><font color="#B22222">.  <a href="../../../docs/manualpages/sys/SVDConvergedReason.html#SVDConvergedReason">SVD_DIVERGED_ITS</a> - required more than max_it iterations to reach convergence</font>
+<a name="line190">190: </a><font color="#B22222">-  <a href="../../../docs/manualpages/sys/SVDConvergedReason.html#SVDConvergedReason">SVD_DIVERGED_BREAKDOWN</a> - generic breakdown in method</font>
+
+<a name="line192">192: </a><font color="#B22222">   Can only be called after the call to <a href="../../../docs/manualpages/SVD/SVDSolve.html#SVDSolve">SVDSolve</a>() is complete.</font>
+
+<a name="line194">194: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line196">196: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/SVD/SVDSetTolerances.html#SVDSetTolerances">SVDSetTolerances</a>(), <a href="../../../docs/manualpages/SVD/SVDSolve.html#SVDSolve">SVDSolve</a>(), <a href="../../../docs/manualpages/sys/SVDConvergedReason.html#SVDConvergedReason">SVDConvergedReason</a></font>
+<a name="line197">197: </a><font color="#B22222">@*/</font>
+<a name="line198">198: </a><strong><font color="#4169E1"><a name="SVDGetConvergedReason"></a>PetscErrorCode <a href="../../../docs/manualpages/SVD/SVDGetConvergedReason.html#SVDGetConvergedReason">SVDGetConvergedReason</a>(<a href="../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> svd,<a href="../../../docs/manualpages/sys/SVDConvergedReason.html#SVDConvergedReason">SVDConvergedReason</a> *reason)</font></strong>
+<a name="line199">199: </a>{
+<a name="line202">202: </a>  SVDCheckSolved(svd,1);
+<a name="line203">203: </a>  *reason = svd-&gt;reason;
+<a name="line204">204: </a>  PetscFunctionReturn(0);
+<a name="line205">205: </a>}
+
+<a name="line207">207: </a><font color="#B22222">/*@</font>
+<a name="line208">208: </a><font color="#B22222">   <a href="../../../docs/manualpages/SVD/SVDGetConverged.html#SVDGetConverged">SVDGetConverged</a> - Gets the number of converged singular values.</font>
+
+<a name="line210">210: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line212">212: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line213">213: </a><font color="#B22222">.  svd - the singular value solver context</font>
+
+<a name="line215">215: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line216">216: </a><font color="#B22222">.  nconv - number of converged singular values</font>
+
+<a name="line218">218: </a><font color="#B22222">   Note:</font>
+<a name="line219">219: </a><font color="#B22222">   This function should be called after <a href="../../../docs/manualpages/SVD/SVDSolve.html#SVDSolve">SVDSolve</a>() has finished.</font>
+
+<a name="line221">221: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line223">223: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/SVD/SVDSetDimensions.html#SVDSetDimensions">SVDSetDimensions</a>(), <a href="../../../docs/manualpages/SVD/SVDSolve.html#SVDSolve">SVDSolve</a>(), <a href="../../../docs/manualpages/SVD/SVDGetSingularTriplet.html#SVDGetSingularTriplet">SVDGetSingularTriplet</a>()</font>
+<a name="line224">224: </a><font color="#B22222">@*/</font>
+<a name="line225">225: </a><strong><font color="#4169E1"><a name="SVDGetConverged"></a>PetscErrorCode <a href="../../../docs/manualpages/SVD/SVDGetConverged.html#SVDGetConverged">SVDGetConverged</a>(<a href="../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> svd,PetscInt *nconv)</font></strong>
+<a name="line226">226: </a>{
+<a name="line229">229: </a>  SVDCheckSolved(svd,1);
+<a name="line230">230: </a>  *nconv = svd-&gt;nconv;
+<a name="line231">231: </a>  PetscFunctionReturn(0);
+<a name="line232">232: </a>}
+
+<a name="line234">234: </a><font color="#B22222">/*@C</font>
+<a name="line235">235: </a><font color="#B22222">   <a href="../../../docs/manualpages/SVD/SVDGetSingularTriplet.html#SVDGetSingularTriplet">SVDGetSingularTriplet</a> - Gets the i-th triplet of the singular value decomposition</font>
+<a name="line236">236: </a><font color="#B22222">   as computed by <a href="../../../docs/manualpages/SVD/SVDSolve.html#SVDSolve">SVDSolve</a>(). The solution consists in the singular value and its left</font>
+<a name="line237">237: </a><font color="#B22222">   and right singular vectors.</font>
+
+<a name="line239">239: </a><font color="#B22222">   Not Collective, but vectors are shared by all processors that share the <a href="../../../docs/manualpages/sys/SVD.html#SVD">SVD</a></font>
+
+<a name="line241">241: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line242">242: </a><font color="#B22222">+  svd - singular value solver context</font>
+<a name="line243">243: </a><font color="#B22222">-  i   - index of the solution</font>
+
+<a name="line245">245: </a><font color="#B22222">   Output Parameters:</font>
+<a name="line246">246: </a><font color="#B22222">+  sigma - singular value</font>
+<a name="line247">247: </a><font color="#B22222">.  u     - left singular vector</font>
+<a name="line248">248: </a><font color="#B22222">-  v     - right singular vector</font>
+
+<a name="line250">250: </a><font color="#B22222">   Note:</font>
+<a name="line251">251: </a><font color="#B22222">   Both u or v can be NULL if singular vectors are not required.</font>
+<a name="line252">252: </a><font color="#B22222">   Otherwise, the caller must provide valid Vec objects, i.e.,</font>
+<a name="line253">253: </a><font color="#B22222">   they must be created by the calling program with e.g. MatCreateVecs().</font>
+
+<a name="line255">255: </a><font color="#B22222">   The index i should be a value between 0 and nconv-1 (see <a href="../../../docs/manualpages/SVD/SVDGetConverged.html#SVDGetConverged">SVDGetConverged</a>()).</font>
+<a name="line256">256: </a><font color="#B22222">   Singular triplets are indexed according to the ordering criterion established</font>
+<a name="line257">257: </a><font color="#B22222">   with <a href="../../../docs/manualpages/SVD/SVDSetWhichSingularTriplets.html#SVDSetWhichSingularTriplets">SVDSetWhichSingularTriplets</a>().</font>
+
+<a name="line259">259: </a><font color="#B22222">   In the case of GSVD, the solution consists in three vectors u,v,x that are</font>
+<a name="line260">260: </a><font color="#B22222">   returned as follows. Vector x is returned in the right singular vector</font>
+<a name="line261">261: </a><font color="#B22222">   (argument v) and has length equal to the number of columns of A and B.</font>
+<a name="line262">262: </a><font color="#B22222">   The other two vectors are returned stacked on top of each other [u;v] in</font>
+<a name="line263">263: </a><font color="#B22222">   the left singular vector argument, with length equal to m+n (number of rows</font>
+<a name="line264">264: </a><font color="#B22222">   of A plus number of rows of B).</font>
+
+<a name="line266">266: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line268">268: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/SVD/SVDSolve.html#SVDSolve">SVDSolve</a>(), <a href="../../../docs/manualpages/SVD/SVDGetConverged.html#SVDGetConverged">SVDGetConverged</a>(), <a href="../../../docs/manualpages/SVD/SVDSetWhichSingularTriplets.html#SVDSetWhichSingularTriplets">SVDSetWhichSingularTriplets</a>()</font>
+<a name="line269">269: </a><font color="#B22222">@*/</font>
+<a name="line270">270: </a><strong><font color="#4169E1"><a name="SVDGetSingularTriplet"></a>PetscErrorCode <a href="../../../docs/manualpages/SVD/SVDGetSingularTriplet.html#SVDGetSingularTriplet">SVDGetSingularTriplet</a>(<a href="../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> svd,PetscInt i,PetscReal *sigma,Vec u,Vec v)</font></strong>
+<a name="line271">271: </a>{
+<a name="line272">272: </a>  PetscInt       M,N;
+<a name="line273">273: </a>  Vec            w;
+
+<a name="line277">277: </a>  SVDCheckSolved(svd,1);
+<a name="line282">282: </a>  <font color="#4169E1">if</font> (sigma) *sigma = svd-&gt;sigma[svd-&gt;perm[i]];
+<a name="line283">283: </a>  <font color="#4169E1">if</font> (u || v) {
+<a name="line284">284: </a>    <font color="#4169E1">if</font> (!svd-&gt;isgeneralized) {
+<a name="line285">285: </a>      MatGetSize(svd-&gt;OP,&amp;M,&amp;N);
+<a name="line286">286: </a>      <font color="#4169E1">if</font> (M&lt;N) { w = u; u = v; v = w; }
+<a name="line287">287: </a>    }
+<a name="line288">288: </a>    SVDComputeVectors(svd);
+<a name="line289">289: </a>    <font color="#4169E1">if</font> (u) <a href="../../../docs/manualpages/BV/BVCopyVec.html#BVCopyVec">BVCopyVec</a>(svd-&gt;U,svd-&gt;perm[i],u);
+<a name="line290">290: </a>    <font color="#4169E1">if</font> (v) <a href="../../../docs/manualpages/BV/BVCopyVec.html#BVCopyVec">BVCopyVec</a>(svd-&gt;V,svd-&gt;perm[i],v);
+<a name="line291">291: </a>  }
+<a name="line292">292: </a>  PetscFunctionReturn(0);
+<a name="line293">293: </a>}
+
+<a name="line295">295: </a><font color="#B22222">/*</font>
+<a name="line296">296: </a><font color="#B22222">   SVDComputeResidualNorms_Standard - Computes the norms of the left and</font>
+<a name="line297">297: </a><font color="#B22222">   right residuals associated with the i-th computed singular triplet.</font>
+
+<a name="line299">299: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line300">300: </a><font color="#B22222">     sigma - singular value</font>
+<a name="line301">301: </a><font color="#B22222">     u,v   - singular vectors</font>
+<a name="line302">302: </a><font color="#B22222">     x,y   - two work vectors with the same dimensions as u,v</font>
+<a name="line303">303: </a><font color="#B22222">*/</font>
+<a name="line304">304: </a><strong><font color="#4169E1"><a name="SVDComputeResidualNorms_Standard"></a>static PetscErrorCode SVDComputeResidualNorms_Standard(<a href="../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> svd,PetscReal sigma,Vec u,Vec v,Vec x,Vec y,PetscReal *norm1,PetscReal *norm2)</font></strong>
+<a name="line305">305: </a>{
+<a name="line306">306: </a>  PetscInt       M,N;
+
+<a name="line308">308: </a>  <font color="#B22222">/* norm1 = ||A*v-sigma*u||_2 */</font>
+<a name="line309">309: </a>  <font color="#4169E1">if</font> (norm1) {
+<a name="line310">310: </a>    MatMult(svd-&gt;OP,v,x);
+<a name="line311">311: </a>    VecAXPY(x,-sigma,u);
+<a name="line312">312: </a>    VecNorm(x,NORM_2,norm1);
+<a name="line313">313: </a>  }
+<a name="line314">314: </a>  <font color="#B22222">/* norm2 = ||A^T*u-sigma*v||_2 */</font>
+<a name="line315">315: </a>  <font color="#4169E1">if</font> (norm2) {
+<a name="line316">316: </a>    MatGetSize(svd-&gt;OP,&amp;M,&amp;N);
+<a name="line317">317: </a>    <font color="#4169E1">if</font> (M&lt;N) MatMult(svd-&gt;A,u,y);
+<a name="line318">318: </a>    <font color="#4169E1">else</font> MatMult(svd-&gt;AT,u,y);
+<a name="line319">319: </a>    VecAXPY(y,-sigma,v);
+<a name="line320">320: </a>    VecNorm(y,NORM_2,norm2);
+<a name="line321">321: </a>  }
+<a name="line322">322: </a>  PetscFunctionReturn(0);
+<a name="line323">323: </a>}
+
+<a name="line325">325: </a><font color="#B22222">/*</font>
+<a name="line326">326: </a><font color="#B22222">   SVDComputeResidualNorms_Generalized - In GSVD, compute the residual norms</font>
+<a name="line327">327: </a><font color="#B22222">   norm1 = ||s^2*A'*u-c*B'*B*x||_2 and norm2 = ||c^2*B'*v-s*A'*A*x||_2.</font>
+
+<a name="line329">329: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line330">330: </a><font color="#B22222">     sigma - singular value</font>
+<a name="line331">331: </a><font color="#B22222">     uv    - left singular vectors [u;v]</font>
+<a name="line332">332: </a><font color="#B22222">     x     - right singular vector</font>
+<a name="line333">333: </a><font color="#B22222">     y,z   - two work vectors with the same dimension as x</font>
+<a name="line334">334: </a><font color="#B22222">*/</font>
+<a name="line335">335: </a><strong><font color="#4169E1"><a name="SVDComputeResidualNorms_Generalized"></a>static PetscErrorCode SVDComputeResidualNorms_Generalized(<a href="../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> svd,PetscReal sigma,Vec uv,Vec x,Vec y,Vec z,PetscReal *norm1,PetscReal *norm2)</font></strong>
+<a name="line336">336: </a>{
+<a name="line337">337: </a>  Vec            u,v,ax,bx,nest,aux[2];
+<a name="line338">338: </a>  PetscReal      c,s;
+
+<a name="line340">340: </a>  MatCreateVecs(svd-&gt;OP,NULL,&amp;u);
+<a name="line341">341: </a>  MatCreateVecs(svd-&gt;OPb,NULL,&amp;v);
+<a name="line342">342: </a>  aux[0] = u;
+<a name="line343">343: </a>  aux[1] = v;
+<a name="line344">344: </a>  VecCreateNest(PetscObjectComm((PetscObject)svd),2,NULL,aux,&amp;nest);
+<a name="line345">345: </a>  VecCopy(uv,nest);
+
+<a name="line347">347: </a>  s = 1.0/PetscSqrtReal(1.0+sigma*sigma);
+<a name="line348">348: </a>  c = sigma*s;
+
+<a name="line350">350: </a>  <font color="#B22222">/* norm1 = ||s^2*A'*u-c*B'*B*x||_2 */</font>
+<a name="line351">351: </a>  <font color="#4169E1">if</font> (norm1) {
+<a name="line352">352: </a>    VecDuplicate(v,&amp;bx);
+<a name="line353">353: </a>    MatMultHermitianTranspose(svd-&gt;OP,u,z);
+<a name="line354">354: </a>    MatMult(svd-&gt;OPb,x,bx);
+<a name="line355">355: </a>    MatMultHermitianTranspose(svd-&gt;OPb,bx,y);
+<a name="line356">356: </a>    VecAXPBY(y,s*s,-c,z);
+<a name="line357">357: </a>    VecNorm(y,NORM_2,norm1);
+<a name="line358">358: </a>    VecDestroy(&amp;bx);
+<a name="line359">359: </a>  }
+<a name="line360">360: </a>  <font color="#B22222">/* norm2 = ||c^2*B'*v-s*A'*A*x||_2 */</font>
+<a name="line361">361: </a>  <font color="#4169E1">if</font> (norm2) {
+<a name="line362">362: </a>    VecDuplicate(u,&amp;ax);
+<a name="line363">363: </a>    MatMultHermitianTranspose(svd-&gt;OPb,v,z);
+<a name="line364">364: </a>    MatMult(svd-&gt;OP,x,ax);
+<a name="line365">365: </a>    MatMultHermitianTranspose(svd-&gt;OP,ax,y);
+<a name="line366">366: </a>    VecAXPBY(y,c*c,-s,z);
+<a name="line367">367: </a>    VecNorm(y,NORM_2,norm2);
+<a name="line368">368: </a>    VecDestroy(&amp;ax);
+<a name="line369">369: </a>  }
+
+<a name="line371">371: </a>  VecDestroy(&amp;v);
+<a name="line372">372: </a>  VecDestroy(&amp;u);
+<a name="line373">373: </a>  VecDestroy(&amp;nest);
+<a name="line374">374: </a>  PetscFunctionReturn(0);
+<a name="line375">375: </a>}
+
+<a name="line377">377: </a><font color="#B22222">/*@</font>
+<a name="line378">378: </a><font color="#B22222">   <a href="../../../docs/manualpages/SVD/SVDComputeError.html#SVDComputeError">SVDComputeError</a> - Computes the error (based on the residual norm) associated</font>
+<a name="line379">379: </a><font color="#B22222">   with the i-th singular triplet.</font>
+
+<a name="line381">381: </a><font color="#B22222">   Collective on svd</font>
+
+<a name="line383">383: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line384">384: </a><font color="#B22222">+  svd  - the singular value solver context</font>
+<a name="line385">385: </a><font color="#B22222">.  i    - the solution index</font>
+<a name="line386">386: </a><font color="#B22222">-  type - the type of error to compute</font>
+
+<a name="line388">388: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line389">389: </a><font color="#B22222">.  error - the error</font>
+
+<a name="line391">391: </a><font color="#B22222">   Notes:</font>
+<a name="line392">392: </a><font color="#B22222">   The error can be computed in various ways, all of them based on the residual</font>
+<a name="line393">393: </a><font color="#B22222">   norm obtained as sqrt(n1^2+n2^2) with n1 = ||A*v-sigma*u||_2 and</font>
+<a name="line394">394: </a><font color="#B22222">   n2 = ||A^T*u-sigma*v||_2, where sigma is the singular value, u is the left</font>
+<a name="line395">395: </a><font color="#B22222">   singular vector and v is the right singular vector.</font>
+
+<a name="line397">397: </a><font color="#B22222">   In the case of the GSVD, the two components of the residual norm are</font>
+<a name="line398">398: </a><font color="#B22222">   n1 = ||s^2*A'*u-c*B'*B*x||_2 and n2 = ||c^2*B'*v-s*A'*A*x||_2, where [u;v]</font>
+<a name="line399">399: </a><font color="#B22222">   are the left singular vectors and x is the right singular vector, with</font>
+<a name="line400">400: </a><font color="#B22222">   sigma=c/s.</font>
+
+<a name="line402">402: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line404">404: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/sys/SVDErrorType.html#SVDErrorType">SVDErrorType</a>, <a href="../../../docs/manualpages/SVD/SVDSolve.html#SVDSolve">SVDSolve</a>()</font>
+<a name="line405">405: </a><font color="#B22222">@*/</font>
+<a name="line406">406: </a><strong><font color="#4169E1"><a name="SVDComputeError"></a>PetscErrorCode <a href="../../../docs/manualpages/SVD/SVDComputeError.html#SVDComputeError">SVDComputeError</a>(<a href="../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> svd,PetscInt i,<a href="../../../docs/manualpages/sys/SVDErrorType.html#SVDErrorType">SVDErrorType</a> type,PetscReal *error)</font></strong>
+<a name="line407">407: </a>{
+<a name="line408">408: </a>  PetscReal      sigma,norm1,norm2;
+<a name="line409">409: </a>  Vec            u=NULL,v=NULL,x=NULL,y=NULL;
+
+<a name="line415">415: </a>  SVDCheckSolved(svd,1);
+
+<a name="line417">417: </a>  <font color="#B22222">/* allocate work vectors */</font>
+<a name="line418">418: </a>  <font color="#4169E1">switch</font> (svd-&gt;problem_type) {
+<a name="line419">419: </a>    <font color="#4169E1">case</font> <a href="../../../docs/manualpages/sys/SVDProblemType.html#SVDProblemType">SVD_STANDARD</a>:
+<a name="line420">420: </a>      <a href="../../../docs/manualpages/SVD/SVDSetWorkVecs.html#SVDSetWorkVecs">SVDSetWorkVecs</a>(svd,2,2);
+<a name="line421">421: </a>      u = svd-&gt;workl[0];
+<a name="line422">422: </a>      v = svd-&gt;workr[0];
+<a name="line423">423: </a>      x = svd-&gt;workl[1];
+<a name="line424">424: </a>      y = svd-&gt;workr[1];
+<a name="line425">425: </a>      <font color="#4169E1">break</font>;
+<a name="line426">426: </a>    <font color="#4169E1">case</font> <a href="../../../docs/manualpages/sys/SVDProblemType.html#SVDProblemType">SVD_GENERALIZED</a>:
+<a name="line428">428: </a>      <a href="../../../docs/manualpages/SVD/SVDSetWorkVecs.html#SVDSetWorkVecs">SVDSetWorkVecs</a>(svd,1,3);
+<a name="line429">429: </a>      u = svd-&gt;workl[0];
+<a name="line430">430: </a>      v = svd-&gt;workr[0];
+<a name="line431">431: </a>      x = svd-&gt;workr[1];
+<a name="line432">432: </a>      y = svd-&gt;workr[2];
+<a name="line433">433: </a>      <font color="#4169E1">break</font>;
+<a name="line434">434: </a>  }
+
+<a name="line436">436: </a>  <font color="#B22222">/* compute residual norm and error */</font>
+<a name="line437">437: </a>  <a href="../../../docs/manualpages/SVD/SVDGetSingularTriplet.html#SVDGetSingularTriplet">SVDGetSingularTriplet</a>(svd,i,&amp;sigma,u,v);
+<a name="line438">438: </a>  <font color="#4169E1">switch</font> (svd-&gt;problem_type) {
+<a name="line439">439: </a>    <font color="#4169E1">case</font> <a href="../../../docs/manualpages/sys/SVDProblemType.html#SVDProblemType">SVD_STANDARD</a>:
+<a name="line440">440: </a>      SVDComputeResidualNorms_Standard(svd,sigma,u,v,x,y,&amp;norm1,&amp;norm2);
+<a name="line441">441: </a>      <font color="#4169E1">break</font>;
+<a name="line442">442: </a>    <font color="#4169E1">case</font> <a href="../../../docs/manualpages/sys/SVDProblemType.html#SVDProblemType">SVD_GENERALIZED</a>:
+<a name="line443">443: </a>      SVDComputeResidualNorms_Generalized(svd,sigma,u,v,x,y,&amp;norm1,&amp;norm2);
+<a name="line444">444: </a>      <font color="#4169E1">break</font>;
+<a name="line445">445: </a>  }
+<a name="line446">446: </a>  *error = PetscSqrtReal(norm1*norm1+norm2*norm2);
+<a name="line447">447: </a>  <font color="#4169E1">switch</font> (type) {
+<a name="line448">448: </a>    <font color="#4169E1">case</font> <a href="../../../docs/manualpages/sys/SVDErrorType.html#SVDErrorType">SVD_ERROR_ABSOLUTE</a>:
+<a name="line449">449: </a>      <font color="#4169E1">break</font>;
+<a name="line450">450: </a>    <font color="#4169E1">case</font> <a href="../../../docs/manualpages/sys/SVDErrorType.html#SVDErrorType">SVD_ERROR_RELATIVE</a>:
+<a name="line451">451: </a>      *error /= sigma;
+<a name="line452">452: </a>      <font color="#4169E1">break</font>;
+<a name="line453">453: </a>    <font color="#4169E1">case</font> <a href="../../../docs/manualpages/sys/SVDErrorType.html#SVDErrorType">SVD_ERROR_NORM</a>:
+<a name="line454">454: </a>      <font color="#4169E1">if</font> (!svd-&gt;nrma) MatNorm(svd-&gt;OP,NORM_INFINITY,&amp;svd-&gt;nrma);
+<a name="line455">455: </a>      <font color="#4169E1">if</font> (svd-&gt;isgeneralized &amp;&amp; !svd-&gt;nrmb) MatNorm(svd-&gt;OPb,NORM_INFINITY,&amp;svd-&gt;nrmb);
+<a name="line456">456: </a>      *error /= PetscMax(svd-&gt;nrma,svd-&gt;nrmb);
+<a name="line457">457: </a>      <font color="#4169E1">break</font>;
+<a name="line458">458: </a><strong><font color="#FF0000">    default:</font></strong>
+<a name="line459">459: </a>      SETERRQ(PetscObjectComm((PetscObject)svd),PETSC_ERR_ARG_OUTOFRANGE,<font color="#666666">"Invalid error type"</font>);
+<a name="line460">460: </a>  }
+<a name="line461">461: </a>  PetscFunctionReturn(0);
+<a name="line462">462: </a>}
+</pre>
+</body>
+
+</html>

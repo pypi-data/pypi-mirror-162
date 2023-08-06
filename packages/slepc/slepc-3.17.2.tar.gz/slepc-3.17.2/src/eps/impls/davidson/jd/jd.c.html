@@ -1,0 +1,598 @@
+<center><a href="jd.c">Actual source code: jd.c</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="https://slepc.upv.es/documentation/current/src/eps/impls/davidson/jd/jd.c.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2022-08-09T09:05:35+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>slepc-3.17.2 2022-08-09</b></div>
+   <div id="bugreport" align=right><a href="mailto:slepc-maint@upv.es?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: slepc-3.17.2 v3.17.2 src/eps/impls/davidson/jd/jd.c.html "><small>Report Typos and Errors</small></a></div>
+<pre width="80">
+<a name="line1">  1: </a><font color="#B22222">/*</font>
+<a name="line2">  2: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line3">  3: </a><font color="#B22222">   SLEPc - Scalable Library for Eigenvalue Problem Computations</font>
+<a name="line4">  4: </a><font color="#B22222">   Copyright (c) 2002-, Universitat Politecnica de Valencia, Spain</font>
+
+<a name="line6">  6: </a><font color="#B22222">   This file is part of SLEPc.</font>
+<a name="line7">  7: </a><font color="#B22222">   SLEPc is distributed under a 2-clause BSD license (see LICENSE).</font>
+<a name="line8">  8: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line9">  9: </a><font color="#B22222">*/</font>
+<a name="line10"> 10: </a><font color="#B22222">/*</font>
+<a name="line11"> 11: </a><font color="#B22222">   SLEPc eigensolver: "jd"</font>
+
+<a name="line13"> 13: </a><font color="#B22222">   Method: Jacobi-Davidson</font>
+
+<a name="line15"> 15: </a><font color="#B22222">   Algorithm:</font>
+
+<a name="line17"> 17: </a><font color="#B22222">       Jacobi-Davidson with various subspace extraction and</font>
+<a name="line18"> 18: </a><font color="#B22222">       restart techniques.</font>
+
+<a name="line20"> 20: </a><font color="#B22222">   References:</font>
+
+<a name="line22"> 22: </a><font color="#B22222">       [1] G.L.G. Sleijpen and H.A. van der Vorst, "A Jacobi-Davidson</font>
+<a name="line23"> 23: </a><font color="#B22222">           iteration method for linear eigenvalue problems", SIAM J.</font>
+<a name="line24"> 24: </a><font color="#B22222">           Matrix Anal. Appl. 17(2):401-425, 1996.</font>
+
+<a name="line26"> 26: </a><font color="#B22222">       [2] E. Romero and J.E. Roman, "A parallel implementation of</font>
+<a name="line27"> 27: </a><font color="#B22222">           Davidson methods for large-scale eigenvalue problems in</font>
+<a name="line28"> 28: </a><font color="#B22222">           SLEPc", ACM Trans. Math. Software 40(2), Article 13, 2014.</font>
+<a name="line29"> 29: </a><font color="#B22222">*/</font>
+
+<a name="line31"> 31: </a>#include <A href="../../../../../include/slepc/private/epsimpl.h.html">&lt;slepc/private/epsimpl.h&gt;</A>
+<a name="line32"> 32: </a>#include <A href="../davidson.h.html">&lt;../src/eps/impls/davidson/davidson.h&gt;</A>
+
+<a name="line34"> 34: </a><strong><font color="#4169E1"><a name="EPSSetFromOptions_JD"></a>PetscErrorCode EPSSetFromOptions_JD(PetscOptionItems *PetscOptionsObject,<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps)</font></strong>
+<a name="line35"> 35: </a>{
+<a name="line36"> 36: </a>  PetscBool      flg,flg2,op,orth;
+<a name="line37"> 37: </a>  PetscInt       opi,opi0;
+<a name="line38"> 38: </a>  PetscReal      opf;
+
+<a name="line40"> 40: </a>  PetscOptionsHead(PetscOptionsObject,<font color="#666666">"<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> Jacobi-Davidson (JD) Options"</font>);
+
+<a name="line42"> 42: </a>    <a href="../../../../../docs/manualpages/EPS/EPSJDGetKrylovStart.html#EPSJDGetKrylovStart">EPSJDGetKrylovStart</a>(eps,&amp;op);
+<a name="line43"> 43: </a>    PetscOptionsBool(<font color="#666666">"-eps_jd_krylov_start"</font>,<font color="#666666">"Start the search subspace with a Krylov basis"</font>,<font color="#666666">"<a href="../../../../../docs/manualpages/EPS/EPSJDSetKrylovStart.html#EPSJDSetKrylovStart">EPSJDSetKrylovStart</a>"</font>,op,&amp;op,&amp;flg);
+<a name="line44"> 44: </a>    <font color="#4169E1">if</font> (flg) <a href="../../../../../docs/manualpages/EPS/EPSJDSetKrylovStart.html#EPSJDSetKrylovStart">EPSJDSetKrylovStart</a>(eps,op);
+
+<a name="line46"> 46: </a>    <a href="../../../../../docs/manualpages/EPS/EPSJDGetBOrth.html#EPSJDGetBOrth">EPSJDGetBOrth</a>(eps,&amp;orth);
+<a name="line47"> 47: </a>    PetscOptionsBool(<font color="#666666">"-eps_jd_borth"</font>,<font color="#666666">"Use B-orthogonalization in the search subspace"</font>,<font color="#666666">"<a href="../../../../../docs/manualpages/EPS/EPSJDSetBOrth.html#EPSJDSetBOrth">EPSJDSetBOrth</a>"</font>,op,&amp;op,&amp;flg);
+<a name="line48"> 48: </a>    <font color="#4169E1">if</font> (flg) <a href="../../../../../docs/manualpages/EPS/EPSJDSetBOrth.html#EPSJDSetBOrth">EPSJDSetBOrth</a>(eps,op);
+
+<a name="line50"> 50: </a>    <a href="../../../../../docs/manualpages/EPS/EPSJDGetBlockSize.html#EPSJDGetBlockSize">EPSJDGetBlockSize</a>(eps,&amp;opi);
+<a name="line51"> 51: </a>    PetscOptionsInt(<font color="#666666">"-eps_jd_blocksize"</font>,<font color="#666666">"Number of vectors to add to the search subspace"</font>,<font color="#666666">"<a href="../../../../../docs/manualpages/EPS/EPSJDSetBlockSize.html#EPSJDSetBlockSize">EPSJDSetBlockSize</a>"</font>,opi,&amp;opi,&amp;flg);
+<a name="line52"> 52: </a>    <font color="#4169E1">if</font> (flg) <a href="../../../../../docs/manualpages/EPS/EPSJDSetBlockSize.html#EPSJDSetBlockSize">EPSJDSetBlockSize</a>(eps,opi);
+
+<a name="line54"> 54: </a>    <a href="../../../../../docs/manualpages/EPS/EPSJDGetRestart.html#EPSJDGetRestart">EPSJDGetRestart</a>(eps,&amp;opi,&amp;opi0);
+<a name="line55"> 55: </a>    PetscOptionsInt(<font color="#666666">"-eps_jd_minv"</font>,<font color="#666666">"Size of the search subspace after restarting"</font>,<font color="#666666">"<a href="../../../../../docs/manualpages/EPS/EPSJDSetRestart.html#EPSJDSetRestart">EPSJDSetRestart</a>"</font>,opi,&amp;opi,&amp;flg);
+<a name="line56"> 56: </a>    PetscOptionsInt(<font color="#666666">"-eps_jd_plusk"</font>,<font color="#666666">"Number of eigenvectors saved from the previous iteration when restarting"</font>,<font color="#666666">"<a href="../../../../../docs/manualpages/EPS/EPSJDSetRestart.html#EPSJDSetRestart">EPSJDSetRestart</a>"</font>,opi0,&amp;opi0,&amp;flg2);
+<a name="line57"> 57: </a>    <font color="#4169E1">if</font> (flg || flg2) <a href="../../../../../docs/manualpages/EPS/EPSJDSetRestart.html#EPSJDSetRestart">EPSJDSetRestart</a>(eps,opi,opi0);
+
+<a name="line59"> 59: </a>    <a href="../../../../../docs/manualpages/EPS/EPSJDGetInitialSize.html#EPSJDGetInitialSize">EPSJDGetInitialSize</a>(eps,&amp;opi);
+<a name="line60"> 60: </a>    PetscOptionsInt(<font color="#666666">"-eps_jd_initial_size"</font>,<font color="#666666">"Initial size of the search subspace"</font>,<font color="#666666">"<a href="../../../../../docs/manualpages/EPS/EPSJDSetInitialSize.html#EPSJDSetInitialSize">EPSJDSetInitialSize</a>"</font>,opi,&amp;opi,&amp;flg);
+<a name="line61"> 61: </a>    <font color="#4169E1">if</font> (flg) <a href="../../../../../docs/manualpages/EPS/EPSJDSetInitialSize.html#EPSJDSetInitialSize">EPSJDSetInitialSize</a>(eps,opi);
+
+<a name="line63"> 63: </a>    <a href="../../../../../docs/manualpages/EPS/EPSJDGetFix.html#EPSJDGetFix">EPSJDGetFix</a>(eps,&amp;opf);
+<a name="line64"> 64: </a>    PetscOptionsReal(<font color="#666666">"-eps_jd_fix"</font>,<font color="#666666">"Tolerance for changing the target in the correction equation"</font>,<font color="#666666">"<a href="../../../../../docs/manualpages/EPS/EPSJDSetFix.html#EPSJDSetFix">EPSJDSetFix</a>"</font>,opf,&amp;opf,&amp;flg);
+<a name="line65"> 65: </a>    <font color="#4169E1">if</font> (flg) <a href="../../../../../docs/manualpages/EPS/EPSJDSetFix.html#EPSJDSetFix">EPSJDSetFix</a>(eps,opf);
+
+<a name="line67"> 67: </a>    <a href="../../../../../docs/manualpages/EPS/EPSJDGetConstCorrectionTol.html#EPSJDGetConstCorrectionTol">EPSJDGetConstCorrectionTol</a>(eps,&amp;op);
+<a name="line68"> 68: </a>    PetscOptionsBool(<font color="#666666">"-eps_jd_const_correction_tol"</font>,<font color="#666666">"Disable the dynamic stopping criterion when solving the correction equation"</font>,<font color="#666666">"<a href="../../../../../docs/manualpages/EPS/EPSJDSetConstCorrectionTol.html#EPSJDSetConstCorrectionTol">EPSJDSetConstCorrectionTol</a>"</font>,op,&amp;op,&amp;flg);
+<a name="line69"> 69: </a>    <font color="#4169E1">if</font> (flg) <a href="../../../../../docs/manualpages/EPS/EPSJDSetConstCorrectionTol.html#EPSJDSetConstCorrectionTol">EPSJDSetConstCorrectionTol</a>(eps,op);
+
+<a name="line71"> 71: </a>  PetscOptionsTail();
+<a name="line72"> 72: </a>  PetscFunctionReturn(0);
+<a name="line73"> 73: </a>}
+
+<a name="line75"> 75: </a><strong><font color="#4169E1"><a name="EPSSetDefaultST_JD"></a>PetscErrorCode EPSSetDefaultST_JD(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps)</font></strong>
+<a name="line76"> 76: </a>{
+<a name="line77"> 77: </a>  KSP            ksp;
+
+<a name="line79"> 79: </a>  <font color="#4169E1">if</font> (!((PetscObject)eps-&gt;st)-&gt;type_name) {
+<a name="line80"> 80: </a>    <a href="../../../../../docs/manualpages/ST/STSetType.html#STSetType">STSetType</a>(eps-&gt;st,STPRECOND);
+<a name="line81"> 81: </a>    <a href="../../../../../docs/manualpages/ST/STPrecondSetKSPHasMat.html#STPrecondSetKSPHasMat">STPrecondSetKSPHasMat</a>(eps-&gt;st,PETSC_TRUE);
+<a name="line82"> 82: </a>  }
+<a name="line83"> 83: </a>  <a href="../../../../../docs/manualpages/ST/STGetKSP.html#STGetKSP">STGetKSP</a>(eps-&gt;st,&amp;ksp);
+<a name="line84"> 84: </a>  <font color="#4169E1">if</font> (!((PetscObject)ksp)-&gt;type_name) {
+<a name="line85"> 85: </a>    KSPSetType(ksp,KSPBCGSL);
+<a name="line86"> 86: </a>    KSPSetTolerances(ksp,1e-4,PETSC_DEFAULT,PETSC_DEFAULT,90);
+<a name="line87"> 87: </a>  }
+<a name="line88"> 88: </a>  PetscFunctionReturn(0);
+<a name="line89"> 89: </a>}
+
+<a name="line91"> 91: </a><strong><font color="#4169E1"><a name="EPSSetUp_JD"></a>PetscErrorCode EPSSetUp_JD(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps)</font></strong>
+<a name="line92"> 92: </a>{
+<a name="line93"> 93: </a>  PetscBool      t;
+<a name="line94"> 94: </a>  KSP            ksp;
+
+<a name="line96"> 96: </a>  <font color="#B22222">/* Setup common for all davidson solvers */</font>
+<a name="line97"> 97: </a>  EPSSetUp_XD(eps);
+
+<a name="line99"> 99: </a>  <font color="#B22222">/* Check some constraints */</font>
+<a name="line100">100: </a>  <a href="../../../../../docs/manualpages/ST/STGetKSP.html#STGetKSP">STGetKSP</a>(eps-&gt;st,&amp;ksp);
+<a name="line101">101: </a>  PetscObjectTypeCompare((PetscObject)ksp,KSPPREONLY,&amp;t);
+<a name="line103">103: </a>  PetscFunctionReturn(0);
+<a name="line104">104: </a>}
+
+<a name="line106">106: </a><strong><font color="#4169E1"><a name="EPSView_JD"></a>PetscErrorCode EPSView_JD(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps,PetscViewer viewer)</font></strong>
+<a name="line107">107: </a>{
+<a name="line108">108: </a>  PetscBool      isascii,opb;
+<a name="line109">109: </a>  PetscReal      opf;
+<a name="line110">110: </a>  PetscInt       opi,opi0;
+
+<a name="line112">112: </a>  PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&amp;isascii);
+<a name="line113">113: </a>  <font color="#4169E1">if</font> (isascii) {
+<a name="line114">114: </a>    EPSXDGetBOrth_XD(eps,&amp;opb);
+<a name="line115">115: </a>    <font color="#4169E1">if</font> (opb) PetscViewerASCIIPrintf(viewer,<font color="#666666">"  search subspace is B-orthogonalized\n"</font>);
+<a name="line116">116: </a>    <font color="#4169E1">else</font> PetscViewerASCIIPrintf(viewer,<font color="#666666">"  search subspace is orthogonalized\n"</font>);
+<a name="line117">117: </a>    EPSXDGetBlockSize_XD(eps,&amp;opi);
+<a name="line118">118: </a>    PetscViewerASCIIPrintf(viewer,<font color="#666666">"  block size=%"</font> PetscInt_FMT <font color="#666666">"\n"</font>,opi);
+<a name="line119">119: </a>    EPSXDGetKrylovStart_XD(eps,&amp;opb);
+<a name="line120">120: </a>    <font color="#4169E1">if</font> (!opb) PetscViewerASCIIPrintf(viewer,<font color="#666666">"  type of the initial subspace: non-Krylov\n"</font>);
+<a name="line121">121: </a>    <font color="#4169E1">else</font> PetscViewerASCIIPrintf(viewer,<font color="#666666">"  type of the initial subspace: Krylov\n"</font>);
+<a name="line122">122: </a>    EPSXDGetRestart_XD(eps,&amp;opi,&amp;opi0);
+<a name="line123">123: </a>    PetscViewerASCIIPrintf(viewer,<font color="#666666">"  size of the subspace after restarting: %"</font> PetscInt_FMT <font color="#666666">"\n"</font>,opi);
+<a name="line124">124: </a>    PetscViewerASCIIPrintf(viewer,<font color="#666666">"  number of vectors after restarting from the previous iteration: %"</font> PetscInt_FMT <font color="#666666">"\n"</font>,opi0);
+
+<a name="line126">126: </a>    EPSJDGetFix_JD(eps,&amp;opf);
+<a name="line127">127: </a>    PetscViewerASCIIPrintf(viewer,<font color="#666666">"  threshold for changing the target in the correction equation (fix): %g\n"</font>,(double)opf);
+
+<a name="line129">129: </a>    EPSJDGetConstCorrectionTol_JD(eps,&amp;opb);
+<a name="line130">130: </a>    <font color="#4169E1">if</font> (!opb) PetscViewerASCIIPrintf(viewer,<font color="#666666">"  using dynamic tolerance for the correction equation\n"</font>);
+<a name="line131">131: </a>  }
+<a name="line132">132: </a>  PetscFunctionReturn(0);
+<a name="line133">133: </a>}
+
+<a name="line135">135: </a><strong><font color="#4169E1"><a name="EPSDestroy_JD"></a>PetscErrorCode EPSDestroy_JD(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps)</font></strong>
+<a name="line136">136: </a>{
+<a name="line137">137: </a>  PetscFree(eps-&gt;data);
+<a name="line138">138: </a>  PetscObjectComposeFunction((PetscObject)eps,<font color="#666666">"EPSJDSetKrylovStart_C"</font>,NULL);
+<a name="line139">139: </a>  PetscObjectComposeFunction((PetscObject)eps,<font color="#666666">"EPSJDGetKrylovStart_C"</font>,NULL);
+<a name="line140">140: </a>  PetscObjectComposeFunction((PetscObject)eps,<font color="#666666">"EPSJDSetBlockSize_C"</font>,NULL);
+<a name="line141">141: </a>  PetscObjectComposeFunction((PetscObject)eps,<font color="#666666">"EPSJDGetBlockSize_C"</font>,NULL);
+<a name="line142">142: </a>  PetscObjectComposeFunction((PetscObject)eps,<font color="#666666">"EPSJDSetRestart_C"</font>,NULL);
+<a name="line143">143: </a>  PetscObjectComposeFunction((PetscObject)eps,<font color="#666666">"EPSJDGetRestart_C"</font>,NULL);
+<a name="line144">144: </a>  PetscObjectComposeFunction((PetscObject)eps,<font color="#666666">"EPSJDSetInitialSize_C"</font>,NULL);
+<a name="line145">145: </a>  PetscObjectComposeFunction((PetscObject)eps,<font color="#666666">"EPSJDGetInitialSize_C"</font>,NULL);
+<a name="line146">146: </a>  PetscObjectComposeFunction((PetscObject)eps,<font color="#666666">"EPSJDSetFix_C"</font>,NULL);
+<a name="line147">147: </a>  PetscObjectComposeFunction((PetscObject)eps,<font color="#666666">"EPSJDGetFix_C"</font>,NULL);
+<a name="line148">148: </a>  PetscObjectComposeFunction((PetscObject)eps,<font color="#666666">"EPSJDSetConstCorrectionTol_C"</font>,NULL);
+<a name="line149">149: </a>  PetscObjectComposeFunction((PetscObject)eps,<font color="#666666">"EPSJDGetConstCorrectionTol_C"</font>,NULL);
+<a name="line150">150: </a>  PetscObjectComposeFunction((PetscObject)eps,<font color="#666666">"EPSJDSetBOrth_C"</font>,NULL);
+<a name="line151">151: </a>  PetscObjectComposeFunction((PetscObject)eps,<font color="#666666">"EPSJDGetBOrth_C"</font>,NULL);
+<a name="line152">152: </a>  PetscFunctionReturn(0);
+<a name="line153">153: </a>}
+
+<a name="line155">155: </a><font color="#B22222">/*@</font>
+<a name="line156">156: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/EPS/EPSJDSetKrylovStart.html#EPSJDSetKrylovStart">EPSJDSetKrylovStart</a> - Activates or deactivates starting the searching</font>
+<a name="line157">157: </a><font color="#B22222">   subspace with a Krylov basis.</font>
+
+<a name="line159">159: </a><font color="#B22222">   Logically Collective on eps</font>
+
+<a name="line161">161: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line162">162: </a><font color="#B22222">+  eps - the eigenproblem solver context</font>
+<a name="line163">163: </a><font color="#B22222">-  krylovstart - boolean flag</font>
+
+<a name="line165">165: </a><font color="#B22222">   Options Database Key:</font>
+<a name="line166">166: </a><font color="#B22222">.  -eps_jd_krylov_start - Activates starting the searching subspace with a</font>
+<a name="line167">167: </a><font color="#B22222">    Krylov basis</font>
+
+<a name="line169">169: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line171">171: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/EPS/EPSJDGetKrylovStart.html#EPSJDGetKrylovStart">EPSJDGetKrylovStart</a>()</font>
+<a name="line172">172: </a><font color="#B22222">@*/</font>
+<a name="line173">173: </a><strong><font color="#4169E1"><a name="EPSJDSetKrylovStart"></a>PetscErrorCode <a href="../../../../../docs/manualpages/EPS/EPSJDSetKrylovStart.html#EPSJDSetKrylovStart">EPSJDSetKrylovStart</a>(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps,PetscBool krylovstart)</font></strong>
+<a name="line174">174: </a>{
+<a name="line177">177: </a>  PetscTryMethod(eps,<font color="#666666">"EPSJDSetKrylovStart_C"</font>,(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a>,PetscBool),(eps,krylovstart));
+<a name="line178">178: </a>  PetscFunctionReturn(0);
+<a name="line179">179: </a>}
+
+<a name="line181">181: </a><font color="#B22222">/*@</font>
+<a name="line182">182: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/EPS/EPSJDGetKrylovStart.html#EPSJDGetKrylovStart">EPSJDGetKrylovStart</a> - Returns a flag indicating if the searching subspace is started with a</font>
+<a name="line183">183: </a><font color="#B22222">   Krylov basis.</font>
+
+<a name="line185">185: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line187">187: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line188">188: </a><font color="#B22222">.  eps - the eigenproblem solver context</font>
+
+<a name="line190">190: </a><font color="#B22222">   Output Parameters:</font>
+<a name="line191">191: </a><font color="#B22222">.  krylovstart - boolean flag indicating if the searching subspace is started</font>
+<a name="line192">192: </a><font color="#B22222">   with a Krylov basis</font>
+
+<a name="line194">194: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line196">196: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/EPS/EPSJDSetKrylovStart.html#EPSJDSetKrylovStart">EPSJDSetKrylovStart</a>()</font>
+<a name="line197">197: </a><font color="#B22222">@*/</font>
+<a name="line198">198: </a><strong><font color="#4169E1"><a name="EPSJDGetKrylovStart"></a>PetscErrorCode <a href="../../../../../docs/manualpages/EPS/EPSJDGetKrylovStart.html#EPSJDGetKrylovStart">EPSJDGetKrylovStart</a>(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps,PetscBool *krylovstart)</font></strong>
+<a name="line199">199: </a>{
+<a name="line202">202: </a>  PetscUseMethod(eps,<font color="#666666">"EPSJDGetKrylovStart_C"</font>,(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a>,PetscBool*),(eps,krylovstart));
+<a name="line203">203: </a>  PetscFunctionReturn(0);
+<a name="line204">204: </a>}
+
+<a name="line206">206: </a><font color="#B22222">/*@</font>
+<a name="line207">207: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/EPS/EPSJDSetBlockSize.html#EPSJDSetBlockSize">EPSJDSetBlockSize</a> - Sets the number of vectors to be added to the searching space</font>
+<a name="line208">208: </a><font color="#B22222">   in every iteration.</font>
+
+<a name="line210">210: </a><font color="#B22222">   Logically Collective on eps</font>
+
+<a name="line212">212: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line213">213: </a><font color="#B22222">+  eps - the eigenproblem solver context</font>
+<a name="line214">214: </a><font color="#B22222">-  blocksize - number of vectors added to the search space in every iteration</font>
+
+<a name="line216">216: </a><font color="#B22222">   Options Database Key:</font>
+<a name="line217">217: </a><font color="#B22222">.  -eps_jd_blocksize - number of vectors added to the searching space every iteration</font>
+
+<a name="line219">219: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line221">221: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/EPS/EPSJDSetKrylovStart.html#EPSJDSetKrylovStart">EPSJDSetKrylovStart</a>()</font>
+<a name="line222">222: </a><font color="#B22222">@*/</font>
+<a name="line223">223: </a><strong><font color="#4169E1"><a name="EPSJDSetBlockSize"></a>PetscErrorCode <a href="../../../../../docs/manualpages/EPS/EPSJDSetBlockSize.html#EPSJDSetBlockSize">EPSJDSetBlockSize</a>(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps,PetscInt blocksize)</font></strong>
+<a name="line224">224: </a>{
+<a name="line227">227: </a>  PetscTryMethod(eps,<font color="#666666">"EPSJDSetBlockSize_C"</font>,(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a>,PetscInt),(eps,blocksize));
+<a name="line228">228: </a>  PetscFunctionReturn(0);
+<a name="line229">229: </a>}
+
+<a name="line231">231: </a><font color="#B22222">/*@</font>
+<a name="line232">232: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/EPS/EPSJDGetBlockSize.html#EPSJDGetBlockSize">EPSJDGetBlockSize</a> - Returns the number of vectors to be added to the searching space</font>
+<a name="line233">233: </a><font color="#B22222">   in every iteration.</font>
+
+<a name="line235">235: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line237">237: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line238">238: </a><font color="#B22222">.  eps - the eigenproblem solver context</font>
+
+<a name="line240">240: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line241">241: </a><font color="#B22222">.  blocksize - number of vectors added to the search space in every iteration</font>
+
+<a name="line243">243: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line245">245: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/EPS/EPSJDSetBlockSize.html#EPSJDSetBlockSize">EPSJDSetBlockSize</a>()</font>
+<a name="line246">246: </a><font color="#B22222">@*/</font>
+<a name="line247">247: </a><strong><font color="#4169E1"><a name="EPSJDGetBlockSize"></a>PetscErrorCode <a href="../../../../../docs/manualpages/EPS/EPSJDGetBlockSize.html#EPSJDGetBlockSize">EPSJDGetBlockSize</a>(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps,PetscInt *blocksize)</font></strong>
+<a name="line248">248: </a>{
+<a name="line251">251: </a>  PetscUseMethod(eps,<font color="#666666">"EPSJDGetBlockSize_C"</font>,(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a>,PetscInt*),(eps,blocksize));
+<a name="line252">252: </a>  PetscFunctionReturn(0);
+<a name="line253">253: </a>}
+
+<a name="line255">255: </a><font color="#B22222">/*@</font>
+<a name="line256">256: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/EPS/EPSJDSetRestart.html#EPSJDSetRestart">EPSJDSetRestart</a> - Sets the number of vectors of the searching space after</font>
+<a name="line257">257: </a><font color="#B22222">   restarting and the number of vectors saved from the previous iteration.</font>
+
+<a name="line259">259: </a><font color="#B22222">   Logically Collective on eps</font>
+
+<a name="line261">261: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line262">262: </a><font color="#B22222">+  eps - the eigenproblem solver context</font>
+<a name="line263">263: </a><font color="#B22222">.  minv - number of vectors of the searching subspace after restarting</font>
+<a name="line264">264: </a><font color="#B22222">-  plusk - number of vectors saved from the previous iteration</font>
+
+<a name="line266">266: </a><font color="#B22222">   Options Database Keys:</font>
+<a name="line267">267: </a><font color="#B22222">+  -eps_jd_minv - number of vectors of the searching subspace after restarting</font>
+<a name="line268">268: </a><font color="#B22222">-  -eps_jd_plusk - number of vectors saved from the previous iteration</font>
+
+<a name="line270">270: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line272">272: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/EPS/EPSJDGetRestart.html#EPSJDGetRestart">EPSJDGetRestart</a>()</font>
+<a name="line273">273: </a><font color="#B22222">@*/</font>
+<a name="line274">274: </a><strong><font color="#4169E1"><a name="EPSJDSetRestart"></a>PetscErrorCode <a href="../../../../../docs/manualpages/EPS/EPSJDSetRestart.html#EPSJDSetRestart">EPSJDSetRestart</a>(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps,PetscInt minv,PetscInt plusk)</font></strong>
+<a name="line275">275: </a>{
+<a name="line279">279: </a>  PetscTryMethod(eps,<font color="#666666">"EPSJDSetRestart_C"</font>,(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a>,PetscInt,PetscInt),(eps,minv,plusk));
+<a name="line280">280: </a>  PetscFunctionReturn(0);
+<a name="line281">281: </a>}
+
+<a name="line283">283: </a><font color="#B22222">/*@</font>
+<a name="line284">284: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/EPS/EPSJDGetRestart.html#EPSJDGetRestart">EPSJDGetRestart</a> - Gets the number of vectors of the searching space after</font>
+<a name="line285">285: </a><font color="#B22222">   restarting and the number of vectors saved from the previous iteration.</font>
+
+<a name="line287">287: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line289">289: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line290">290: </a><font color="#B22222">.  eps - the eigenproblem solver context</font>
+
+<a name="line292">292: </a><font color="#B22222">   Output Parameters:</font>
+<a name="line293">293: </a><font color="#B22222">+  minv - number of vectors of the searching subspace after restarting</font>
+<a name="line294">294: </a><font color="#B22222">-  plusk - number of vectors saved from the previous iteration</font>
+
+<a name="line296">296: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line298">298: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/EPS/EPSJDSetRestart.html#EPSJDSetRestart">EPSJDSetRestart</a>()</font>
+<a name="line299">299: </a><font color="#B22222">@*/</font>
+<a name="line300">300: </a><strong><font color="#4169E1"><a name="EPSJDGetRestart"></a>PetscErrorCode <a href="../../../../../docs/manualpages/EPS/EPSJDGetRestart.html#EPSJDGetRestart">EPSJDGetRestart</a>(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps,PetscInt *minv,PetscInt *plusk)</font></strong>
+<a name="line301">301: </a>{
+<a name="line303">303: </a>  PetscUseMethod(eps,<font color="#666666">"EPSJDGetRestart_C"</font>,(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a>,PetscInt*,PetscInt*),(eps,minv,plusk));
+<a name="line304">304: </a>  PetscFunctionReturn(0);
+<a name="line305">305: </a>}
+
+<a name="line307">307: </a><font color="#B22222">/*@</font>
+<a name="line308">308: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/EPS/EPSJDSetInitialSize.html#EPSJDSetInitialSize">EPSJDSetInitialSize</a> - Sets the initial size of the searching space.</font>
+
+<a name="line310">310: </a><font color="#B22222">   Logically Collective on eps</font>
+
+<a name="line312">312: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line313">313: </a><font color="#B22222">+  eps - the eigenproblem solver context</font>
+<a name="line314">314: </a><font color="#B22222">-  initialsize - number of vectors of the initial searching subspace</font>
+
+<a name="line316">316: </a><font color="#B22222">   Options Database Key:</font>
+<a name="line317">317: </a><font color="#B22222">.  -eps_jd_initial_size - number of vectors of the initial searching subspace</font>
+
+<a name="line319">319: </a><font color="#B22222">   Notes:</font>
+<a name="line320">320: </a><font color="#B22222">   If <a href="../../../../../docs/manualpages/EPS/EPSJDGetKrylovStart.html#EPSJDGetKrylovStart">EPSJDGetKrylovStart</a>() is PETSC_FALSE and the user provides vectors with</font>
+<a name="line321">321: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/EPS/EPSSetInitialSpace.html#EPSSetInitialSpace">EPSSetInitialSpace</a>(), up to initialsize vectors will be used; and if the</font>
+<a name="line322">322: </a><font color="#B22222">   provided vectors are not enough, the solver completes the subspace with</font>
+<a name="line323">323: </a><font color="#B22222">   random vectors. In the case of <a href="../../../../../docs/manualpages/EPS/EPSJDGetKrylovStart.html#EPSJDGetKrylovStart">EPSJDGetKrylovStart</a>() being PETSC_TRUE, the solver</font>
+<a name="line324">324: </a><font color="#B22222">   gets the first vector provided by the user or, if not available, a random vector,</font>
+<a name="line325">325: </a><font color="#B22222">   and expands the Krylov basis up to initialsize vectors.</font>
+
+<a name="line327">327: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line329">329: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/EPS/EPSJDGetInitialSize.html#EPSJDGetInitialSize">EPSJDGetInitialSize</a>(), <a href="../../../../../docs/manualpages/EPS/EPSJDGetKrylovStart.html#EPSJDGetKrylovStart">EPSJDGetKrylovStart</a>()</font>
+<a name="line330">330: </a><font color="#B22222">@*/</font>
+<a name="line331">331: </a><strong><font color="#4169E1"><a name="EPSJDSetInitialSize"></a>PetscErrorCode <a href="../../../../../docs/manualpages/EPS/EPSJDSetInitialSize.html#EPSJDSetInitialSize">EPSJDSetInitialSize</a>(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps,PetscInt initialsize)</font></strong>
+<a name="line332">332: </a>{
+<a name="line335">335: </a>  PetscTryMethod(eps,<font color="#666666">"EPSJDSetInitialSize_C"</font>,(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a>,PetscInt),(eps,initialsize));
+<a name="line336">336: </a>  PetscFunctionReturn(0);
+<a name="line337">337: </a>}
+
+<a name="line339">339: </a><font color="#B22222">/*@</font>
+<a name="line340">340: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/EPS/EPSJDGetInitialSize.html#EPSJDGetInitialSize">EPSJDGetInitialSize</a> - Returns the initial size of the searching space.</font>
+
+<a name="line342">342: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line344">344: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line345">345: </a><font color="#B22222">.  eps - the eigenproblem solver context</font>
+
+<a name="line347">347: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line348">348: </a><font color="#B22222">.  initialsize - number of vectors of the initial searching subspace</font>
+
+<a name="line350">350: </a><font color="#B22222">   Notes:</font>
+<a name="line351">351: </a><font color="#B22222">   If <a href="../../../../../docs/manualpages/EPS/EPSJDGetKrylovStart.html#EPSJDGetKrylovStart">EPSJDGetKrylovStart</a>() is PETSC_FALSE and the user provides vectors with</font>
+<a name="line352">352: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/EPS/EPSSetInitialSpace.html#EPSSetInitialSpace">EPSSetInitialSpace</a>(), up to initialsize vectors will be used; and if the</font>
+<a name="line353">353: </a><font color="#B22222">   provided vectors are not enough, the solver completes the subspace with</font>
+<a name="line354">354: </a><font color="#B22222">   random vectors. In the case of <a href="../../../../../docs/manualpages/EPS/EPSJDGetKrylovStart.html#EPSJDGetKrylovStart">EPSJDGetKrylovStart</a>() being PETSC_TRUE, the solver</font>
+<a name="line355">355: </a><font color="#B22222">   gets the first vector provided by the user or, if not available, a random vector,</font>
+<a name="line356">356: </a><font color="#B22222">   and expands the Krylov basis up to initialsize vectors.</font>
+
+<a name="line358">358: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line360">360: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/EPS/EPSJDSetInitialSize.html#EPSJDSetInitialSize">EPSJDSetInitialSize</a>(), <a href="../../../../../docs/manualpages/EPS/EPSJDGetKrylovStart.html#EPSJDGetKrylovStart">EPSJDGetKrylovStart</a>()</font>
+<a name="line361">361: </a><font color="#B22222">@*/</font>
+<a name="line362">362: </a><strong><font color="#4169E1"><a name="EPSJDGetInitialSize"></a>PetscErrorCode <a href="../../../../../docs/manualpages/EPS/EPSJDGetInitialSize.html#EPSJDGetInitialSize">EPSJDGetInitialSize</a>(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps,PetscInt *initialsize)</font></strong>
+<a name="line363">363: </a>{
+<a name="line366">366: </a>  PetscUseMethod(eps,<font color="#666666">"EPSJDGetInitialSize_C"</font>,(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a>,PetscInt*),(eps,initialsize));
+<a name="line367">367: </a>  PetscFunctionReturn(0);
+<a name="line368">368: </a>}
+
+<a name="line370">370: </a><strong><font color="#4169E1"><a name="EPSJDSetFix_JD"></a>PetscErrorCode EPSJDSetFix_JD(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps,PetscReal fix)</font></strong>
+<a name="line371">371: </a>{
+<a name="line372">372: </a>  EPS_DAVIDSON *data = (EPS_DAVIDSON*)eps-&gt;data;
+
+<a name="line374">374: </a>  <font color="#4169E1">if</font> (fix == PETSC_DEFAULT || fix == PETSC_DECIDE) fix = 0.01;
+<a name="line376">376: </a>  data-&gt;fix = fix;
+<a name="line377">377: </a>  PetscFunctionReturn(0);
+<a name="line378">378: </a>}
+
+<a name="line380">380: </a><font color="#B22222">/*@</font>
+<a name="line381">381: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/EPS/EPSJDSetFix.html#EPSJDSetFix">EPSJDSetFix</a> - Sets the threshold for changing the target in the correction</font>
+<a name="line382">382: </a><font color="#B22222">   equation.</font>
+
+<a name="line384">384: </a><font color="#B22222">   Logically Collective on eps</font>
+
+<a name="line386">386: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line387">387: </a><font color="#B22222">+  eps - the eigenproblem solver context</font>
+<a name="line388">388: </a><font color="#B22222">-  fix - threshold for changing the target</font>
+
+<a name="line390">390: </a><font color="#B22222">   Options Database Key:</font>
+<a name="line391">391: </a><font color="#B22222">.  -eps_jd_fix - the fix value</font>
+
+<a name="line393">393: </a><font color="#B22222">   Note:</font>
+<a name="line394">394: </a><font color="#B22222">   The target in the correction equation is fixed at the first iterations.</font>
+<a name="line395">395: </a><font color="#B22222">   When the norm of the residual vector is lower than the fix value,</font>
+<a name="line396">396: </a><font color="#B22222">   the target is set to the corresponding eigenvalue.</font>
+
+<a name="line398">398: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line400">400: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/EPS/EPSJDGetFix.html#EPSJDGetFix">EPSJDGetFix</a>()</font>
+<a name="line401">401: </a><font color="#B22222">@*/</font>
+<a name="line402">402: </a><strong><font color="#4169E1"><a name="EPSJDSetFix"></a>PetscErrorCode <a href="../../../../../docs/manualpages/EPS/EPSJDSetFix.html#EPSJDSetFix">EPSJDSetFix</a>(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps,PetscReal fix)</font></strong>
+<a name="line403">403: </a>{
+<a name="line406">406: </a>  PetscTryMethod(eps,<font color="#666666">"EPSJDSetFix_C"</font>,(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a>,PetscReal),(eps,fix));
+<a name="line407">407: </a>  PetscFunctionReturn(0);
+<a name="line408">408: </a>}
+
+<a name="line410">410: </a><strong><font color="#4169E1"><a name="EPSJDGetFix_JD"></a>PetscErrorCode EPSJDGetFix_JD(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps,PetscReal *fix)</font></strong>
+<a name="line411">411: </a>{
+<a name="line412">412: </a>  EPS_DAVIDSON *data = (EPS_DAVIDSON*)eps-&gt;data;
+
+<a name="line414">414: </a>  *fix = data-&gt;fix;
+<a name="line415">415: </a>  PetscFunctionReturn(0);
+<a name="line416">416: </a>}
+
+<a name="line418">418: </a><font color="#B22222">/*@</font>
+<a name="line419">419: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/EPS/EPSJDGetFix.html#EPSJDGetFix">EPSJDGetFix</a> - Returns the threshold for changing the target in the correction</font>
+<a name="line420">420: </a><font color="#B22222">   equation.</font>
+
+<a name="line422">422: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line424">424: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line425">425: </a><font color="#B22222">.  eps - the eigenproblem solver context</font>
+
+<a name="line427">427: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line428">428: </a><font color="#B22222">.  fix - threshold for changing the target</font>
+
+<a name="line430">430: </a><font color="#B22222">   Note:</font>
+<a name="line431">431: </a><font color="#B22222">   The target in the correction equation is fixed at the first iterations.</font>
+<a name="line432">432: </a><font color="#B22222">   When the norm of the residual vector is lower than the fix value,</font>
+<a name="line433">433: </a><font color="#B22222">   the target is set to the corresponding eigenvalue.</font>
+
+<a name="line435">435: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line437">437: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/EPS/EPSJDSetFix.html#EPSJDSetFix">EPSJDSetFix</a>()</font>
+<a name="line438">438: </a><font color="#B22222">@*/</font>
+<a name="line439">439: </a><strong><font color="#4169E1"><a name="EPSJDGetFix"></a>PetscErrorCode <a href="../../../../../docs/manualpages/EPS/EPSJDGetFix.html#EPSJDGetFix">EPSJDGetFix</a>(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps,PetscReal *fix)</font></strong>
+<a name="line440">440: </a>{
+<a name="line443">443: </a>  PetscUseMethod(eps,<font color="#666666">"EPSJDGetFix_C"</font>,(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a>,PetscReal*),(eps,fix));
+<a name="line444">444: </a>  PetscFunctionReturn(0);
+<a name="line445">445: </a>}
+
+<a name="line447">447: </a><strong><font color="#4169E1"><a name="EPSJDSetConstCorrectionTol_JD"></a>PetscErrorCode EPSJDSetConstCorrectionTol_JD(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps,PetscBool constant)</font></strong>
+<a name="line448">448: </a>{
+<a name="line449">449: </a>  EPS_DAVIDSON *data = (EPS_DAVIDSON*)eps-&gt;data;
+
+<a name="line451">451: </a>  data-&gt;dynamic = PetscNot(constant);
+<a name="line452">452: </a>  PetscFunctionReturn(0);
+<a name="line453">453: </a>}
+
+<a name="line455">455: </a><font color="#B22222">/*@</font>
+<a name="line456">456: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/EPS/EPSJDSetConstCorrectionTol.html#EPSJDSetConstCorrectionTol">EPSJDSetConstCorrectionTol</a> - If true, deactivates the dynamic stopping criterion</font>
+<a name="line457">457: </a><font color="#B22222">   (also called Newton) that sets the KSP relative tolerance</font>
+<a name="line458">458: </a><font color="#B22222">   to 0.5**i, where i is the number of <a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> iterations from the last converged value.</font>
+
+<a name="line460">460: </a><font color="#B22222">   Logically Collective on eps</font>
+
+<a name="line462">462: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line463">463: </a><font color="#B22222">+  eps - the eigenproblem solver context</font>
+<a name="line464">464: </a><font color="#B22222">-  constant - if false, the KSP relative tolerance is set to 0.5**i.</font>
+
+<a name="line466">466: </a><font color="#B22222">   Options Database Key:</font>
+<a name="line467">467: </a><font color="#B22222">.  -eps_jd_const_correction_tol - Deactivates the dynamic stopping criterion.</font>
+
+<a name="line469">469: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line471">471: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/EPS/EPSJDGetConstCorrectionTol.html#EPSJDGetConstCorrectionTol">EPSJDGetConstCorrectionTol</a>()</font>
+<a name="line472">472: </a><font color="#B22222">@*/</font>
+<a name="line473">473: </a><strong><font color="#4169E1"><a name="EPSJDSetConstCorrectionTol"></a>PetscErrorCode <a href="../../../../../docs/manualpages/EPS/EPSJDSetConstCorrectionTol.html#EPSJDSetConstCorrectionTol">EPSJDSetConstCorrectionTol</a>(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps,PetscBool constant)</font></strong>
+<a name="line474">474: </a>{
+<a name="line477">477: </a>  PetscTryMethod(eps,<font color="#666666">"EPSJDSetConstCorrectionTol_C"</font>,(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a>,PetscBool),(eps,constant));
+<a name="line478">478: </a>  PetscFunctionReturn(0);
+<a name="line479">479: </a>}
+
+<a name="line481">481: </a><strong><font color="#4169E1"><a name="EPSJDGetConstCorrectionTol_JD"></a>PetscErrorCode EPSJDGetConstCorrectionTol_JD(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps,PetscBool *constant)</font></strong>
+<a name="line482">482: </a>{
+<a name="line483">483: </a>  EPS_DAVIDSON *data = (EPS_DAVIDSON*)eps-&gt;data;
+
+<a name="line485">485: </a>  *constant = PetscNot(data-&gt;dynamic);
+<a name="line486">486: </a>  PetscFunctionReturn(0);
+<a name="line487">487: </a>}
+
+<a name="line489">489: </a><font color="#B22222">/*@</font>
+<a name="line490">490: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/EPS/EPSJDGetConstCorrectionTol.html#EPSJDGetConstCorrectionTol">EPSJDGetConstCorrectionTol</a> - Returns a flag indicating if the dynamic stopping is being used for</font>
+<a name="line491">491: </a><font color="#B22222">   solving the correction equation.</font>
+
+<a name="line493">493: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line495">495: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line496">496: </a><font color="#B22222">.  eps - the eigenproblem solver context</font>
+
+<a name="line498">498: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line499">499: </a><font color="#B22222">.  constant - boolean flag indicating if the dynamic stopping criterion is not being used.</font>
+
+<a name="line501">501: </a><font color="#B22222">   Notes:</font>
+<a name="line502">502: </a><font color="#B22222">   If the flag is false the KSP relative tolerance is set to 0.5**i, where i is the number</font>
+<a name="line503">503: </a><font color="#B22222">   of <a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> iterations from the last converged value.</font>
+
+<a name="line505">505: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line507">507: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/EPS/EPSJDSetConstCorrectionTol.html#EPSJDSetConstCorrectionTol">EPSJDSetConstCorrectionTol</a>()</font>
+<a name="line508">508: </a><font color="#B22222">@*/</font>
+<a name="line509">509: </a><strong><font color="#4169E1"><a name="EPSJDGetConstCorrectionTol"></a>PetscErrorCode <a href="../../../../../docs/manualpages/EPS/EPSJDGetConstCorrectionTol.html#EPSJDGetConstCorrectionTol">EPSJDGetConstCorrectionTol</a>(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps,PetscBool *constant)</font></strong>
+<a name="line510">510: </a>{
+<a name="line513">513: </a>  PetscUseMethod(eps,<font color="#666666">"EPSJDGetConstCorrectionTol_C"</font>,(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a>,PetscBool*),(eps,constant));
+<a name="line514">514: </a>  PetscFunctionReturn(0);
+<a name="line515">515: </a>}
+
+<a name="line517">517: </a><font color="#B22222">/*@</font>
+<a name="line518">518: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/EPS/EPSJDSetBOrth.html#EPSJDSetBOrth">EPSJDSetBOrth</a> - Selects the orthogonalization that will be used in the search</font>
+<a name="line519">519: </a><font color="#B22222">   subspace in case of generalized Hermitian problems.</font>
+
+<a name="line521">521: </a><font color="#B22222">   Logically Collective on eps</font>
+
+<a name="line523">523: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line524">524: </a><font color="#B22222">+  eps   - the eigenproblem solver context</font>
+<a name="line525">525: </a><font color="#B22222">-  borth - whether to B-orthogonalize the search subspace</font>
+
+<a name="line527">527: </a><font color="#B22222">   Options Database Key:</font>
+<a name="line528">528: </a><font color="#B22222">.  -eps_jd_borth - Set the orthogonalization used in the search subspace</font>
+
+<a name="line530">530: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line532">532: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/EPS/EPSJDGetBOrth.html#EPSJDGetBOrth">EPSJDGetBOrth</a>()</font>
+<a name="line533">533: </a><font color="#B22222">@*/</font>
+<a name="line534">534: </a><strong><font color="#4169E1"><a name="EPSJDSetBOrth"></a>PetscErrorCode <a href="../../../../../docs/manualpages/EPS/EPSJDSetBOrth.html#EPSJDSetBOrth">EPSJDSetBOrth</a>(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps,PetscBool borth)</font></strong>
+<a name="line535">535: </a>{
+<a name="line538">538: </a>  PetscTryMethod(eps,<font color="#666666">"EPSJDSetBOrth_C"</font>,(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a>,PetscBool),(eps,borth));
+<a name="line539">539: </a>  PetscFunctionReturn(0);
+<a name="line540">540: </a>}
+
+<a name="line542">542: </a><font color="#B22222">/*@</font>
+<a name="line543">543: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/EPS/EPSJDGetBOrth.html#EPSJDGetBOrth">EPSJDGetBOrth</a> - Returns the orthogonalization used in the search</font>
+<a name="line544">544: </a><font color="#B22222">   subspace in case of generalized Hermitian problems.</font>
+
+<a name="line546">546: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line548">548: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line549">549: </a><font color="#B22222">.  eps - the eigenproblem solver context</font>
+
+<a name="line551">551: </a><font color="#B22222">   Output Parameters:</font>
+<a name="line552">552: </a><font color="#B22222">.  borth - whether to B-orthogonalize the search subspace</font>
+
+<a name="line554">554: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line556">556: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/EPS/EPSJDSetBOrth.html#EPSJDSetBOrth">EPSJDSetBOrth</a>()</font>
+<a name="line557">557: </a><font color="#B22222">@*/</font>
+<a name="line558">558: </a><strong><font color="#4169E1"><a name="EPSJDGetBOrth"></a>PetscErrorCode <a href="../../../../../docs/manualpages/EPS/EPSJDGetBOrth.html#EPSJDGetBOrth">EPSJDGetBOrth</a>(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps,PetscBool *borth)</font></strong>
+<a name="line559">559: </a>{
+<a name="line562">562: </a>  PetscUseMethod(eps,<font color="#666666">"EPSJDGetBOrth_C"</font>,(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a>,PetscBool*),(eps,borth));
+<a name="line563">563: </a>  PetscFunctionReturn(0);
+<a name="line564">564: </a>}
+
+<a name="line566">566: </a><strong><font color="#4169E1"><a name="EPSCreate_JD"></a>SLEPC_EXTERN PetscErrorCode EPSCreate_JD(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps)</font></strong>
+<a name="line567">567: </a>{
+<a name="line568">568: </a>  EPS_DAVIDSON   *data;
+
+<a name="line570">570: </a>  PetscNewLog(eps,&amp;data);
+<a name="line571">571: </a>  eps-&gt;data = (void*)data;
+
+<a name="line573">573: </a>  data-&gt;blocksize   = 1;
+<a name="line574">574: </a>  data-&gt;initialsize = 0;
+<a name="line575">575: </a>  data-&gt;minv        = 0;
+<a name="line576">576: </a>  data-&gt;plusk       = PETSC_DEFAULT;
+<a name="line577">577: </a>  data-&gt;ipB         = PETSC_TRUE;
+<a name="line578">578: </a>  data-&gt;fix         = 0.01;
+<a name="line579">579: </a>  data-&gt;krylovstart = PETSC_FALSE;
+<a name="line580">580: </a>  data-&gt;dynamic     = PETSC_FALSE;
+
+<a name="line582">582: </a>  eps-&gt;useds = PETSC_TRUE;
+<a name="line583">583: </a>  eps-&gt;categ = EPS_CATEGORY_PRECOND;
+
+<a name="line585">585: </a>  eps-&gt;ops-&gt;solve          = EPSSolve_XD;
+<a name="line586">586: </a>  eps-&gt;ops-&gt;setup          = EPSSetUp_JD;
+<a name="line587">587: </a>  eps-&gt;ops-&gt;setupsort      = EPSSetUpSort_Default;
+<a name="line588">588: </a>  eps-&gt;ops-&gt;setfromoptions = EPSSetFromOptions_JD;
+<a name="line589">589: </a>  eps-&gt;ops-&gt;destroy        = EPSDestroy_JD;
+<a name="line590">590: </a>  eps-&gt;ops-&gt;reset          = EPSReset_XD;
+<a name="line591">591: </a>  eps-&gt;ops-&gt;view           = EPSView_JD;
+<a name="line592">592: </a>  eps-&gt;ops-&gt;backtransform  = EPSBackTransform_Default;
+<a name="line593">593: </a>  eps-&gt;ops-&gt;computevectors = EPSComputeVectors_XD;
+<a name="line594">594: </a>  eps-&gt;ops-&gt;setdefaultst   = EPSSetDefaultST_JD;
+
+<a name="line596">596: </a>  PetscObjectComposeFunction((PetscObject)eps,<font color="#666666">"EPSJDSetKrylovStart_C"</font>,EPSXDSetKrylovStart_XD);
+<a name="line597">597: </a>  PetscObjectComposeFunction((PetscObject)eps,<font color="#666666">"EPSJDGetKrylovStart_C"</font>,EPSXDGetKrylovStart_XD);
+<a name="line598">598: </a>  PetscObjectComposeFunction((PetscObject)eps,<font color="#666666">"EPSJDSetBlockSize_C"</font>,EPSXDSetBlockSize_XD);
+<a name="line599">599: </a>  PetscObjectComposeFunction((PetscObject)eps,<font color="#666666">"EPSJDGetBlockSize_C"</font>,EPSXDGetBlockSize_XD);
+<a name="line600">600: </a>  PetscObjectComposeFunction((PetscObject)eps,<font color="#666666">"EPSJDSetRestart_C"</font>,EPSXDSetRestart_XD);
+<a name="line601">601: </a>  PetscObjectComposeFunction((PetscObject)eps,<font color="#666666">"EPSJDGetRestart_C"</font>,EPSXDGetRestart_XD);
+<a name="line602">602: </a>  PetscObjectComposeFunction((PetscObject)eps,<font color="#666666">"EPSJDSetInitialSize_C"</font>,EPSXDSetInitialSize_XD);
+<a name="line603">603: </a>  PetscObjectComposeFunction((PetscObject)eps,<font color="#666666">"EPSJDGetInitialSize_C"</font>,EPSXDGetInitialSize_XD);
+<a name="line604">604: </a>  PetscObjectComposeFunction((PetscObject)eps,<font color="#666666">"EPSJDSetFix_C"</font>,EPSJDSetFix_JD);
+<a name="line605">605: </a>  PetscObjectComposeFunction((PetscObject)eps,<font color="#666666">"EPSJDGetFix_C"</font>,EPSJDGetFix_JD);
+<a name="line606">606: </a>  PetscObjectComposeFunction((PetscObject)eps,<font color="#666666">"EPSJDSetConstCorrectionTol_C"</font>,EPSJDSetConstCorrectionTol_JD);
+<a name="line607">607: </a>  PetscObjectComposeFunction((PetscObject)eps,<font color="#666666">"EPSJDGetConstCorrectionTol_C"</font>,EPSJDGetConstCorrectionTol_JD);
+<a name="line608">608: </a>  PetscObjectComposeFunction((PetscObject)eps,<font color="#666666">"EPSJDSetBOrth_C"</font>,EPSXDSetBOrth_XD);
+<a name="line609">609: </a>  PetscObjectComposeFunction((PetscObject)eps,<font color="#666666">"EPSJDGetBOrth_C"</font>,EPSXDGetBOrth_XD);
+<a name="line610">610: </a>  PetscFunctionReturn(0);
+<a name="line611">611: </a>}
+</pre>
+</body>
+
+</html>

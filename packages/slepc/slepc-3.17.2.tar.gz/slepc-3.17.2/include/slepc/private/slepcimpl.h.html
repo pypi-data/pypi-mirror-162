@@ -1,0 +1,134 @@
+<center><a href="slepcimpl.h">Actual source code: slepcimpl.h</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="https://slepc.upv.es/documentation/current/include/slepc/private/slepcimpl.h.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2022-08-09T09:06:03+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>slepc-3.17.2 2022-08-09</b></div>
+   <div id="bugreport" align=right><a href="mailto:slepc-maint@upv.es?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: slepc-3.17.2 v3.17.2 include/slepc/private/slepcimpl.h.html "><small>Report Typos and Errors</small></a></div>
+<pre width="80">
+<a name="line1">  1: </a><font color="#B22222">/*</font>
+<a name="line2">  2: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line3">  3: </a><font color="#B22222">   SLEPc - Scalable Library for Eigenvalue Problem Computations</font>
+<a name="line4">  4: </a><font color="#B22222">   Copyright (c) 2002-, Universitat Politecnica de Valencia, Spain</font>
+
+<a name="line6">  6: </a><font color="#B22222">   This file is part of SLEPc.</font>
+<a name="line7">  7: </a><font color="#B22222">   SLEPc is distributed under a 2-clause BSD license (see LICENSE).</font>
+<a name="line8">  8: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line9">  9: </a><font color="#B22222">*/</font>
+
+<a name="line11"> 11: </a><font color="#A020F0">#if !defined(SLEPCIMPL_H)</font>
+<a name="line12"> 12: </a><strong><font color="#228B22">#define SLEPCIMPL_H</font></strong>
+
+<a name="line14"> 14: </a>#include <A href="../../slepcsys.h.html">&lt;slepcsys.h&gt;</A>
+<a name="line15"> 15: </a><font color="#A020F0">#include &lt;petsc/private/petscimpl.h&gt;</font>
+
+<a name="line17"> 17: </a>SLEPC_INTERN PetscBool SlepcBeganPetsc;
+
+<a name="line19"> 19: </a><font color="#B22222">/*@C</font>
+<a name="line20"> 20: </a><font color="#B22222">    SlepcHeaderCreate - Creates a SLEPc object</font>
+
+<a name="line22"> 22: </a><font color="#B22222">    Input Parameters:</font>
+<a name="line23"> 23: </a><font color="#B22222">+   classid - the classid associated with this object</font>
+<a name="line24"> 24: </a><font color="#B22222">.   class_name - string name of class; should be static</font>
+<a name="line25"> 25: </a><font color="#B22222">.   descr - string containing short description; should be static</font>
+<a name="line26"> 26: </a><font color="#B22222">.   mansec - string indicating section in manual pages; should be static</font>
+<a name="line27"> 27: </a><font color="#B22222">.   comm - the MPI Communicator</font>
+<a name="line28"> 28: </a><font color="#B22222">.   destroy - the destroy routine for this object</font>
+<a name="line29"> 29: </a><font color="#B22222">-   view - the view routine for this object</font>
+
+<a name="line31"> 31: </a><font color="#B22222">    Output Parameter:</font>
+<a name="line32"> 32: </a><font color="#B22222">.   h - the newly created object</font>
+
+<a name="line34"> 34: </a><font color="#B22222">    Note:</font>
+<a name="line35"> 35: </a><font color="#B22222">    This is equivalent to PetscHeaderCreate but makes sure that <a href="../../../docs/manualpages/sys/SlepcInitialize.html#SlepcInitialize">SlepcInitialize</a></font>
+<a name="line36"> 36: </a><font color="#B22222">    has been called.</font>
+
+<a name="line38"> 38: </a><font color="#B22222">    Level: developer</font>
+<a name="line39"> 39: </a><font color="#B22222">@*/</font>
+<a name="line40"> 40: </a><strong><font color="#228B22">#define SlepcHeaderCreate(h,classid,class_name,descr,mansec,comm,destroy,view) \</font></strong>
+<a name="line41"> 41: </a><strong><font color="#228B22">    ((!SlepcInitializeCalled &amp;&amp; \</font></strong>
+<a name="line42"> 42: </a><strong><font color="#228B22">    PetscError(comm,__LINE__,PETSC_FUNCTION_NAME,__FILE__,1,PETSC_ERROR_INITIAL, \</font></strong>
+<a name="line43"> 43: </a><strong><font color="#228B22">    </font><font color="#666666">"Must call <a href="../../../docs/manualpages/sys/SlepcInitialize.html#SlepcInitialize">SlepcInitialize</a> instead of PetscInitialize to use SLEPc classes"</font><font color="#228B22">)) ||  \</font></strong>
+<a name="line44"> 44: </a><strong><font color="#228B22">    PetscHeaderCreate(h,classid,class_name,descr,mansec,comm,destroy,view))</font></strong>
+
+<a name="line46"> 46: </a><font color="#B22222">/* context for monitors of type XXXMonitorConverged */</font>
+<a name="line47"> 47: </a><font color="#4169E1"><a name="_n_SlepcConvMon"></a>struct _n_SlepcConvMon </font>{
+<a name="line48"> 48: </a>  void     *ctx;
+<a name="line49"> 49: </a>  PetscInt oldnconv;  <font color="#B22222">/* previous value of nconv */</font>
+<a name="line50"> 50: </a>};
+
+<a name="line52"> 52: </a><font color="#B22222">/*</font>
+<a name="line53"> 53: </a><font color="#B22222">  SlepcPrintEigenvalueASCII - Print an eigenvalue on an ASCII viewer.</font>
+<a name="line54"> 54: </a><font color="#B22222">*/</font>
+<a name="line55"> 55: </a><strong><font color="#4169E1"><a name="SlepcPrintEigenvalueASCII"></a>static inline PetscErrorCode SlepcPrintEigenvalueASCII(PetscViewer viewer,PetscScalar eigr,PetscScalar eigi)</font></strong>
+<a name="line56"> 56: </a>{
+<a name="line57"> 57: </a>  PetscReal      re,im;
+
+<a name="line59"> 59: </a><font color="#A020F0">#if defined(PETSC_USE_COMPLEX)</font>
+<a name="line60"> 60: </a>  re = PetscRealPart(eigr);
+<a name="line61"> 61: </a>  im = PetscImaginaryPart(eigr);
+<a name="line62"> 62: </a><font color="#A020F0">#else</font>
+<a name="line63"> 63: </a>  re = eigr;
+<a name="line64"> 64: </a>  im = eigi;
+<a name="line65"> 65: </a><font color="#A020F0">#endif</font>
+<a name="line66"> 66: </a>  <font color="#B22222">/* print zero instead of tiny value */</font>
+<a name="line67"> 67: </a>  <font color="#4169E1">if</font> (PetscAbs(im) &amp;&amp; PetscAbs(re)/PetscAbs(im)&lt;PETSC_SMALL) re = 0.0;
+<a name="line68"> 68: </a>  <font color="#4169E1">if</font> (PetscAbs(re) &amp;&amp; PetscAbs(im)/PetscAbs(re)&lt;PETSC_SMALL) im = 0.0;
+<a name="line69"> 69: </a>  <font color="#B22222">/* print as real if imaginary part is zero */</font>
+<a name="line70"> 70: </a>  <font color="#4169E1">if</font> (im!=0.0) PetscViewerASCIIPrintf(viewer,<font color="#666666">"%.5f%+.5fi"</font>,(double)re,(double)im);
+<a name="line71"> 71: </a>  <font color="#4169E1">else</font> PetscViewerASCIIPrintf(viewer,<font color="#666666">"%.5f"</font>,(double)re);
+<a name="line72"> 72: </a>  PetscFunctionReturn(0);
+<a name="line73"> 73: </a>}
+
+<a name="line75"> 75: </a><font color="#B22222">/*</font>
+<a name="line76"> 76: </a><font color="#B22222">  SlepcViewEigenvector - Outputs an eigenvector xr,xi to a viewer.</font>
+<a name="line77"> 77: </a><font color="#B22222">  In complex scalars only xr is written.</font>
+<a name="line78"> 78: </a><font color="#B22222">  The name of xr,xi is set before writing, based on the label, the index, and the name of obj.</font>
+<a name="line79"> 79: </a><font color="#B22222">*/</font>
+<a name="line80"> 80: </a><strong><font color="#4169E1"><a name="SlepcViewEigenvector"></a>static inline PetscErrorCode SlepcViewEigenvector(PetscViewer viewer,Vec xr,Vec xi,const char *label,PetscInt index,PetscObject obj)</font></strong>
+<a name="line81"> 81: </a>{
+<a name="line82"> 82: </a>  size_t         count;
+<a name="line83"> 83: </a>  char           vname[30];
+<a name="line84"> 84: </a>  const char     *pname;
+
+<a name="line86"> 86: </a>  PetscObjectGetName(obj,&amp;pname);
+<a name="line87"> 87: </a>  PetscSNPrintfCount(vname,<font color="#4169E1">sizeof</font>(vname),<font color="#666666">"%s%s"</font>,&amp;count,label,PetscDefined(USE_COMPLEX)?<font color="#666666">""</font>:<font color="#666666">"r"</font>);
+<a name="line88"> 88: </a>  count--;
+<a name="line89"> 89: </a>  PetscSNPrintf(vname+count,<font color="#4169E1">sizeof</font>(vname)-count,<font color="#666666">"%"</font> PetscInt_FMT <font color="#666666">"_%s"</font>,index,pname);
+<a name="line90"> 90: </a>  PetscObjectSetName((PetscObject)xr,vname);
+<a name="line91"> 91: </a>  VecView(xr,viewer);
+<a name="line92"> 92: </a><font color="#A020F0">#if !defined(PETSC_USE_COMPLEX)</font>
+<a name="line93"> 93: </a>  vname[count-1] = 'i';
+<a name="line94"> 94: </a>  PetscObjectSetName((PetscObject)xi,vname);
+<a name="line95"> 95: </a>  VecView(xi,viewer);
+<a name="line96"> 96: </a><font color="#A020F0">#endif</font>
+<a name="line97"> 97: </a>  PetscFunctionReturn(0);
+<a name="line98"> 98: </a>}
+
+<a name="line100">100: </a><font color="#B22222">/* Macros for strings with different value in real and complex */</font>
+<a name="line101">101: </a><font color="#A020F0">#if defined(PETSC_USE_COMPLEX)</font>
+<a name="line102">102: </a><strong><font color="#228B22">#define SLEPC_STRING_HERMITIAN </font><font color="#666666">"hermitian"</font><font color="#228B22"></font></strong>
+<a name="line103">103: </a><font color="#A020F0">#else</font>
+<a name="line104">104: </a><strong><font color="#228B22">#define SLEPC_STRING_HERMITIAN </font><font color="#666666">"symmetric"</font><font color="#228B22"></font></strong>
+<a name="line105">105: </a><font color="#A020F0">#endif</font>
+
+<a name="line107">107: </a><font color="#B22222">/* Private functions that are shared by several classes */</font>
+<a name="line108">108: </a><strong><font color="#4169E1">SLEPC_EXTERN PetscErrorCode SlepcBasisReference_Private(PetscInt,Vec*,PetscInt*,Vec**)</font></strong>;
+<a name="line109">109: </a><strong><font color="#4169E1">SLEPC_EXTERN PetscErrorCode SlepcBasisDestroy_Private(PetscInt*,Vec**)</font></strong>;
+<a name="line110">110: </a><strong><font color="#4169E1">SLEPC_EXTERN PetscErrorCode SlepcMonitorMakeKey_Internal(const char[],PetscViewerType,PetscViewerFormat,char[])</font></strong>;
+<a name="line111">111: </a><strong><font color="#4169E1">SLEPC_EXTERN PetscErrorCode PetscViewerAndFormatCreate_Internal(PetscViewer,PetscViewerFormat,void*,PetscViewerAndFormat**)</font></strong>;
+
+<a name="line113">113: </a><strong><font color="#4169E1">SLEPC_INTERN PetscErrorCode SlepcCitationsInitialize(void)</font></strong>;
+<a name="line114">114: </a><strong><font color="#4169E1">SLEPC_INTERN PetscErrorCode SlepcInitialize_DynamicLibraries(void)</font></strong>;
+<a name="line115">115: </a><strong><font color="#4169E1">SLEPC_INTERN PetscErrorCode SlepcInitialize_Packages(void)</font></strong>;
+
+<a name="line117">117: </a><font color="#A020F0">#endif</font>
+</pre>
+</body>
+
+</html>

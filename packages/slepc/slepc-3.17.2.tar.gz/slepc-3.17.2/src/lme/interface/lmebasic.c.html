@@ -1,0 +1,505 @@
+<center><a href="lmebasic.c">Actual source code: lmebasic.c</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="https://slepc.upv.es/documentation/current/src/lme/interface/lmebasic.c.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2022-08-09T09:05:59+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>slepc-3.17.2 2022-08-09</b></div>
+   <div id="bugreport" align=right><a href="mailto:slepc-maint@upv.es?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: slepc-3.17.2 v3.17.2 src/lme/interface/lmebasic.c.html "><small>Report Typos and Errors</small></a></div>
+<pre width="80">
+<a name="line1">  1: </a><font color="#B22222">/*</font>
+<a name="line2">  2: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line3">  3: </a><font color="#B22222">   SLEPc - Scalable Library for Eigenvalue Problem Computations</font>
+<a name="line4">  4: </a><font color="#B22222">   Copyright (c) 2002-, Universitat Politecnica de Valencia, Spain</font>
+
+<a name="line6">  6: </a><font color="#B22222">   This file is part of SLEPc.</font>
+<a name="line7">  7: </a><font color="#B22222">   SLEPc is distributed under a 2-clause BSD license (see LICENSE).</font>
+<a name="line8">  8: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line9">  9: </a><font color="#B22222">*/</font>
+<a name="line10"> 10: </a><font color="#B22222">/*</font>
+<a name="line11"> 11: </a><font color="#B22222">   Basic <a href="../../../docs/manualpages/sys/LME.html#LME">LME</a> routines</font>
+<a name="line12"> 12: </a><font color="#B22222">*/</font>
+
+<a name="line14"> 14: </a>#include <A href="../../../include/slepc/private/lmeimpl.h.html">&lt;slepc/private/lmeimpl.h&gt;</A>
+
+<a name="line16"> 16: </a><font color="#B22222">/* Logging support */</font>
+<a name="line17"> 17: </a>PetscClassId      LME_CLASSID = 0;
+<a name="line18"> 18: </a>PetscLogEvent     LME_SetUp = 0,LME_Solve = 0,LME_ComputeError = 0;
+
+<a name="line20"> 20: </a><font color="#B22222">/* List of registered <a href="../../../docs/manualpages/sys/LME.html#LME">LME</a> routines */</font>
+<a name="line21"> 21: </a>PetscFunctionList LMEList = 0;
+<a name="line22"> 22: </a>PetscBool         LMERegisterAllCalled = PETSC_FALSE;
+
+<a name="line24"> 24: </a><font color="#B22222">/* List of registered <a href="../../../docs/manualpages/sys/LME.html#LME">LME</a> monitors */</font>
+<a name="line25"> 25: </a>PetscFunctionList LMEMonitorList              = NULL;
+<a name="line26"> 26: </a>PetscFunctionList LMEMonitorCreateList        = NULL;
+<a name="line27"> 27: </a>PetscFunctionList LMEMonitorDestroyList       = NULL;
+<a name="line28"> 28: </a>PetscBool         LMEMonitorRegisterAllCalled = PETSC_FALSE;
+
+<a name="line30"> 30: </a><font color="#B22222">/*@C</font>
+<a name="line31"> 31: </a><font color="#B22222">   <a href="../../../docs/manualpages/LME/LMEView.html#LMEView">LMEView</a> - Prints the <a href="../../../docs/manualpages/sys/LME.html#LME">LME</a> data structure.</font>
+
+<a name="line33"> 33: </a><font color="#B22222">   Collective on lme</font>
+
+<a name="line35"> 35: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line36"> 36: </a><font color="#B22222">+  lme - the linear matrix equation solver context</font>
+<a name="line37"> 37: </a><font color="#B22222">-  viewer - optional visualization context</font>
+
+<a name="line39"> 39: </a><font color="#B22222">   Options Database Key:</font>
+<a name="line40"> 40: </a><font color="#B22222">.  -lme_view -  Calls <a href="../../../docs/manualpages/LME/LMEView.html#LMEView">LMEView</a>() at end of <a href="../../../docs/manualpages/LME/LMESolve.html#LMESolve">LMESolve</a>()</font>
+
+<a name="line42"> 42: </a><font color="#B22222">   Note:</font>
+<a name="line43"> 43: </a><font color="#B22222">   The available visualization contexts include</font>
+<a name="line44"> 44: </a><font color="#B22222">+     PETSC_VIEWER_STDOUT_SELF - standard output (default)</font>
+<a name="line45"> 45: </a><font color="#B22222">-     PETSC_VIEWER_STDOUT_WORLD - synchronized standard</font>
+<a name="line46"> 46: </a><font color="#B22222">         output where only the first processor opens</font>
+<a name="line47"> 47: </a><font color="#B22222">         the file.  All other processors send their</font>
+<a name="line48"> 48: </a><font color="#B22222">         data to the first processor to print.</font>
+
+<a name="line50"> 50: </a><font color="#B22222">   The user can open an alternative visualization context with</font>
+<a name="line51"> 51: </a><font color="#B22222">   PetscViewerASCIIOpen() - output to a specified file.</font>
+
+<a name="line53"> 53: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line55"> 55: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/LME/LMECreate.html#LMECreate">LMECreate</a>()</font>
+<a name="line56"> 56: </a><font color="#B22222">@*/</font>
+<a name="line57"> 57: </a><strong><font color="#4169E1"><a name="LMEView"></a>PetscErrorCode <a href="../../../docs/manualpages/LME/LMEView.html#LMEView">LMEView</a>(<a href="../../../docs/manualpages/sys/LME.html#LME">LME</a> lme,PetscViewer viewer)</font></strong>
+<a name="line58"> 58: </a>{
+<a name="line59"> 59: </a>  PetscBool      isascii;
+<a name="line60"> 60: </a>  const char     *eqname[] = {
+<a name="line61"> 61: </a>                   <font color="#666666">"continuous-time Lyapunov"</font>,
+<a name="line62"> 62: </a>                   <font color="#666666">"continuous-time Sylvester"</font>,
+<a name="line63"> 63: </a>                   <font color="#666666">"generalized Lyapunov"</font>,
+<a name="line64"> 64: </a>                   <font color="#666666">"generalized Sylvester"</font>,
+<a name="line65"> 65: </a>                   <font color="#666666">"Stein"</font>,
+<a name="line66"> 66: </a>                   <font color="#666666">"discrete-time Lyapunov"</font>
+<a name="line67"> 67: </a>  };
+
+<a name="line70"> 70: </a>  <font color="#4169E1">if</font> (!viewer) PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)lme),&amp;viewer);
+
+<a name="line74"> 74: </a>  PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&amp;isascii);
+<a name="line75"> 75: </a>  <font color="#4169E1">if</font> (isascii) {
+<a name="line76"> 76: </a>    PetscObjectPrintClassNamePrefixType((PetscObject)lme,viewer);
+<a name="line77"> 77: </a>    <font color="#4169E1">if</font> (lme-&gt;ops-&gt;view) {
+<a name="line78"> 78: </a>      PetscViewerASCIIPushTab(viewer);
+<a name="line79"> 79: </a>      (*lme-&gt;ops-&gt;view)(lme,viewer);
+<a name="line80"> 80: </a>      PetscViewerASCIIPopTab(viewer);
+<a name="line81"> 81: </a>    }
+<a name="line82"> 82: </a>    PetscViewerASCIIPrintf(viewer,<font color="#666666">"  equation type: %s\n"</font>,eqname[lme-&gt;problem_type]);
+<a name="line83"> 83: </a>    PetscViewerASCIIPrintf(viewer,<font color="#666666">"  number of column vectors (ncv): %"</font> PetscInt_FMT <font color="#666666">"\n"</font>,lme-&gt;ncv);
+<a name="line84"> 84: </a>    PetscViewerASCIIPrintf(viewer,<font color="#666666">"  maximum number of iterations: %"</font> PetscInt_FMT <font color="#666666">"\n"</font>,lme-&gt;max_it);
+<a name="line85"> 85: </a>    PetscViewerASCIIPrintf(viewer,<font color="#666666">"  tolerance: %g\n"</font>,(double)lme-&gt;tol);
+<a name="line86"> 86: </a>  } <font color="#4169E1">else</font> {
+<a name="line87"> 87: </a>    <font color="#4169E1">if</font> (lme-&gt;ops-&gt;view) (*lme-&gt;ops-&gt;view)(lme,viewer);
+<a name="line88"> 88: </a>  }
+<a name="line89"> 89: </a>  PetscViewerPushFormat(viewer,PETSC_VIEWER_ASCII_INFO);
+<a name="line90"> 90: </a>  <font color="#4169E1">if</font> (!lme-&gt;V) <a href="../../../docs/manualpages/LME/LMEGetBV.html#LMEGetBV">LMEGetBV</a>(lme,&amp;lme-&gt;V);
+<a name="line91"> 91: </a>  <a href="../../../docs/manualpages/BV/BVView.html#BVView">BVView</a>(lme-&gt;V,viewer);
+<a name="line92"> 92: </a>  PetscViewerPopFormat(viewer);
+<a name="line93"> 93: </a>  PetscFunctionReturn(0);
+<a name="line94"> 94: </a>}
+
+<a name="line96"> 96: </a><font color="#B22222">/*@C</font>
+<a name="line97"> 97: </a><font color="#B22222">   <a href="../../../docs/manualpages/LME/LMEViewFromOptions.html#LMEViewFromOptions">LMEViewFromOptions</a> - View from options</font>
+
+<a name="line99"> 99: </a><font color="#B22222">   Collective on <a href="../../../docs/manualpages/sys/LME.html#LME">LME</a></font>
+
+<a name="line101">101: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line102">102: </a><font color="#B22222">+  lme  - the linear matrix equation context</font>
+<a name="line103">103: </a><font color="#B22222">.  obj  - optional object</font>
+<a name="line104">104: </a><font color="#B22222">-  name - command line option</font>
+
+<a name="line106">106: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line108">108: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/LME/LMEView.html#LMEView">LMEView</a>(), <a href="../../../docs/manualpages/LME/LMECreate.html#LMECreate">LMECreate</a>()</font>
+<a name="line109">109: </a><font color="#B22222">@*/</font>
+<a name="line110">110: </a><strong><font color="#4169E1"><a name="LMEViewFromOptions"></a>PetscErrorCode <a href="../../../docs/manualpages/LME/LMEViewFromOptions.html#LMEViewFromOptions">LMEViewFromOptions</a>(<a href="../../../docs/manualpages/sys/LME.html#LME">LME</a> lme,PetscObject obj,const char name[])</font></strong>
+<a name="line111">111: </a>{
+<a name="line113">113: </a>  PetscObjectViewFromOptions((PetscObject)lme,obj,name);
+<a name="line114">114: </a>  PetscFunctionReturn(0);
+<a name="line115">115: </a>}
+<a name="line116">116: </a><font color="#B22222">/*@C</font>
+<a name="line117">117: </a><font color="#B22222">   <a href="../../../docs/manualpages/LME/LMEConvergedReasonView.html#LMEConvergedReasonView">LMEConvergedReasonView</a> - Displays the reason an <a href="../../../docs/manualpages/sys/LME.html#LME">LME</a> solve converged or diverged.</font>
+
+<a name="line119">119: </a><font color="#B22222">   Collective on lme</font>
+
+<a name="line121">121: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line122">122: </a><font color="#B22222">+  lme - the linear matrix equation context</font>
+<a name="line123">123: </a><font color="#B22222">-  viewer - the viewer to display the reason</font>
+
+<a name="line125">125: </a><font color="#B22222">   Options Database Keys:</font>
+<a name="line126">126: </a><font color="#B22222">.  -lme_converged_reason - print reason for convergence, and number of iterations</font>
+
+<a name="line128">128: </a><font color="#B22222">   Note:</font>
+<a name="line129">129: </a><font color="#B22222">   To change the format of the output call PetscViewerPushFormat(viewer,format) before</font>
+<a name="line130">130: </a><font color="#B22222">   this call. Use PETSC_VIEWER_DEFAULT for the default, use PETSC_VIEWER_FAILED to only</font>
+<a name="line131">131: </a><font color="#B22222">   display a reason if it fails. The latter can be set in the command line with</font>
+<a name="line132">132: </a><font color="#B22222">   -lme_converged_reason ::failed</font>
+
+<a name="line134">134: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line136">136: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/LME/LMESetTolerances.html#LMESetTolerances">LMESetTolerances</a>(), <a href="../../../docs/manualpages/LME/LMEGetIterationNumber.html#LMEGetIterationNumber">LMEGetIterationNumber</a>(), <a href="../../../docs/manualpages/LME/LMEConvergedReasonViewFromOptions.html#LMEConvergedReasonViewFromOptions">LMEConvergedReasonViewFromOptions</a>()</font>
+<a name="line137">137: </a><font color="#B22222">@*/</font>
+<a name="line138">138: </a><strong><font color="#4169E1"><a name="LMEConvergedReasonView"></a>PetscErrorCode <a href="../../../docs/manualpages/LME/LMEConvergedReasonView.html#LMEConvergedReasonView">LMEConvergedReasonView</a>(<a href="../../../docs/manualpages/sys/LME.html#LME">LME</a> lme,PetscViewer viewer)</font></strong>
+<a name="line139">139: </a>{
+<a name="line140">140: </a>  PetscBool         isAscii;
+<a name="line141">141: </a>  PetscViewerFormat format;
+
+<a name="line143">143: </a>  <font color="#4169E1">if</font> (!viewer) viewer = PETSC_VIEWER_STDOUT_(PetscObjectComm((PetscObject)lme));
+<a name="line144">144: </a>  PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&amp;isAscii);
+<a name="line145">145: </a>  <font color="#4169E1">if</font> (isAscii) {
+<a name="line146">146: </a>    PetscViewerGetFormat(viewer,&amp;format);
+<a name="line147">147: </a>    PetscViewerASCIIAddTab(viewer,((PetscObject)lme)-&gt;tablevel);
+<a name="line148">148: </a>    <font color="#4169E1">if</font> (lme-&gt;reason &gt; 0 &amp;&amp; format != PETSC_VIEWER_FAILED) PetscViewerASCIIPrintf(viewer,<font color="#666666">"%s Linear matrix equation solve converged due to %s; iterations %"</font> PetscInt_FMT <font color="#666666">"\n"</font>,((PetscObject)lme)-&gt;prefix?((PetscObject)lme)-&gt;prefix:<font color="#666666">""</font>,LMEConvergedReasons[lme-&gt;reason],lme-&gt;its);
+<a name="line149">149: </a>    <font color="#4169E1">else</font> <font color="#4169E1">if</font> (lme-&gt;reason &lt;= 0) PetscViewerASCIIPrintf(viewer,<font color="#666666">"%s Linear matrix equation solve did not converge due to %s; iterations %"</font> PetscInt_FMT <font color="#666666">"\n"</font>,((PetscObject)lme)-&gt;prefix?((PetscObject)lme)-&gt;prefix:<font color="#666666">""</font>,LMEConvergedReasons[lme-&gt;reason],lme-&gt;its);
+<a name="line150">150: </a>    PetscViewerASCIISubtractTab(viewer,((PetscObject)lme)-&gt;tablevel);
+<a name="line151">151: </a>  }
+<a name="line152">152: </a>  PetscFunctionReturn(0);
+<a name="line153">153: </a>}
+
+<a name="line155">155: </a><font color="#B22222">/*@</font>
+<a name="line156">156: </a><font color="#B22222">   <a href="../../../docs/manualpages/LME/LMEConvergedReasonViewFromOptions.html#LMEConvergedReasonViewFromOptions">LMEConvergedReasonViewFromOptions</a> - Processes command line options to determine if/how</font>
+<a name="line157">157: </a><font color="#B22222">   the <a href="../../../docs/manualpages/sys/LME.html#LME">LME</a> converged reason is to be viewed.</font>
+
+<a name="line159">159: </a><font color="#B22222">   Collective on lme</font>
+
+<a name="line161">161: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line162">162: </a><font color="#B22222">.  lme - the linear matrix equation context</font>
+
+<a name="line164">164: </a><font color="#B22222">   Level: developer</font>
+
+<a name="line166">166: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/LME/LMEConvergedReasonView.html#LMEConvergedReasonView">LMEConvergedReasonView</a>()</font>
+<a name="line167">167: </a><font color="#B22222">@*/</font>
+<a name="line168">168: </a><strong><font color="#4169E1"><a name="LMEConvergedReasonViewFromOptions"></a>PetscErrorCode <a href="../../../docs/manualpages/LME/LMEConvergedReasonViewFromOptions.html#LMEConvergedReasonViewFromOptions">LMEConvergedReasonViewFromOptions</a>(<a href="../../../docs/manualpages/sys/LME.html#LME">LME</a> lme)</font></strong>
+<a name="line169">169: </a>{
+<a name="line170">170: </a>  PetscViewer       viewer;
+<a name="line171">171: </a>  PetscBool         flg;
+<a name="line172">172: </a>  static PetscBool  incall = PETSC_FALSE;
+<a name="line173">173: </a>  PetscViewerFormat format;
+
+<a name="line175">175: </a>  <font color="#4169E1">if</font> (incall) PetscFunctionReturn(0);
+<a name="line176">176: </a>  incall = PETSC_TRUE;
+<a name="line177">177: </a>  PetscOptionsGetViewer(PetscObjectComm((PetscObject)lme),((PetscObject)lme)-&gt;options,((PetscObject)lme)-&gt;prefix,<font color="#666666">"-lme_converged_reason"</font>,&amp;viewer,&amp;format,&amp;flg);
+<a name="line178">178: </a>  <font color="#4169E1">if</font> (flg) {
+<a name="line179">179: </a>    PetscViewerPushFormat(viewer,format);
+<a name="line180">180: </a>    <a href="../../../docs/manualpages/LME/LMEConvergedReasonView.html#LMEConvergedReasonView">LMEConvergedReasonView</a>(lme,viewer);
+<a name="line181">181: </a>    PetscViewerPopFormat(viewer);
+<a name="line182">182: </a>    PetscViewerDestroy(&amp;viewer);
+<a name="line183">183: </a>  }
+<a name="line184">184: </a>  incall = PETSC_FALSE;
+<a name="line185">185: </a>  PetscFunctionReturn(0);
+<a name="line186">186: </a>}
+
+<a name="line188">188: </a><font color="#B22222">/*@</font>
+<a name="line189">189: </a><font color="#B22222">   <a href="../../../docs/manualpages/LME/LMECreate.html#LMECreate">LMECreate</a> - Creates the default <a href="../../../docs/manualpages/sys/LME.html#LME">LME</a> context.</font>
+
+<a name="line191">191: </a><font color="#B22222">   Collective</font>
+
+<a name="line193">193: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line194">194: </a><font color="#B22222">.  comm - MPI communicator</font>
+
+<a name="line196">196: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line197">197: </a><font color="#B22222">.  outlme - location to put the <a href="../../../docs/manualpages/sys/LME.html#LME">LME</a> context</font>
+
+<a name="line199">199: </a><font color="#B22222">   Note:</font>
+<a name="line200">200: </a><font color="#B22222">   The default <a href="../../../docs/manualpages/sys/LME.html#LME">LME</a> type is LMEKRYLOV</font>
+
+<a name="line202">202: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line204">204: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/LME/LMESetUp.html#LMESetUp">LMESetUp</a>(), <a href="../../../docs/manualpages/LME/LMESolve.html#LMESolve">LMESolve</a>(), <a href="../../../docs/manualpages/LME/LMEDestroy.html#LMEDestroy">LMEDestroy</a>(), <a href="../../../docs/manualpages/sys/LME.html#LME">LME</a></font>
+<a name="line205">205: </a><font color="#B22222">@*/</font>
+<a name="line206">206: </a><strong><font color="#4169E1"><a name="LMECreate"></a>PetscErrorCode <a href="../../../docs/manualpages/LME/LMECreate.html#LMECreate">LMECreate</a>(MPI_Comm comm,<a href="../../../docs/manualpages/sys/LME.html#LME">LME</a> *outlme)</font></strong>
+<a name="line207">207: </a>{
+<a name="line208">208: </a>  <a href="../../../docs/manualpages/sys/LME.html#LME">LME</a>            lme;
+
+<a name="line211">211: </a>  *outlme = 0;
+<a name="line212">212: </a>  <a href="../../../docs/manualpages/LME/LMEInitializePackage.html#LMEInitializePackage">LMEInitializePackage</a>();
+<a name="line213">213: </a>  SlepcHeaderCreate(lme,LME_CLASSID,<font color="#666666">"<a href="../../../docs/manualpages/sys/LME.html#LME">LME</a>"</font>,<font color="#666666">"Linear Matrix Equation"</font>,<font color="#666666">"<a href="../../../docs/manualpages/sys/LME.html#LME">LME</a>"</font>,comm,<a href="../../../docs/manualpages/LME/LMEDestroy.html#LMEDestroy">LMEDestroy</a>,<a href="../../../docs/manualpages/LME/LMEView.html#LMEView">LMEView</a>);
+
+<a name="line215">215: </a>  lme-&gt;A               = NULL;
+<a name="line216">216: </a>  lme-&gt;B               = NULL;
+<a name="line217">217: </a>  lme-&gt;D               = NULL;
+<a name="line218">218: </a>  lme-&gt;E               = NULL;
+<a name="line219">219: </a>  lme-&gt;C               = NULL;
+<a name="line220">220: </a>  lme-&gt;X               = NULL;
+<a name="line221">221: </a>  lme-&gt;problem_type    = <a href="../../../docs/manualpages/sys/LMEProblemType.html#LMEProblemType">LME_LYAPUNOV</a>;
+<a name="line222">222: </a>  lme-&gt;max_it          = PETSC_DEFAULT;
+<a name="line223">223: </a>  lme-&gt;ncv             = PETSC_DEFAULT;
+<a name="line224">224: </a>  lme-&gt;tol             = PETSC_DEFAULT;
+<a name="line225">225: </a>  lme-&gt;errorifnotconverged = PETSC_FALSE;
+
+<a name="line227">227: </a>  lme-&gt;numbermonitors  = 0;
+
+<a name="line229">229: </a>  lme-&gt;V               = NULL;
+<a name="line230">230: </a>  lme-&gt;nwork           = 0;
+<a name="line231">231: </a>  lme-&gt;work            = NULL;
+<a name="line232">232: </a>  lme-&gt;data            = NULL;
+
+<a name="line234">234: </a>  lme-&gt;its             = 0;
+<a name="line235">235: </a>  lme-&gt;errest          = 0;
+<a name="line236">236: </a>  lme-&gt;setupcalled     = 0;
+<a name="line237">237: </a>  lme-&gt;reason          = <a href="../../../docs/manualpages/sys/LMEConvergedReason.html#LMEConvergedReason">LME_CONVERGED_ITERATING</a>;
+
+<a name="line239">239: </a>  *outlme = lme;
+<a name="line240">240: </a>  PetscFunctionReturn(0);
+<a name="line241">241: </a>}
+
+<a name="line243">243: </a><font color="#B22222">/*@C</font>
+<a name="line244">244: </a><font color="#B22222">   <a href="../../../docs/manualpages/LME/LMESetType.html#LMESetType">LMESetType</a> - Selects the particular solver to be used in the <a href="../../../docs/manualpages/sys/LME.html#LME">LME</a> object.</font>
+
+<a name="line246">246: </a><font color="#B22222">   Logically Collective on lme</font>
+
+<a name="line248">248: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line249">249: </a><font color="#B22222">+  lme  - the linear matrix equation context</font>
+<a name="line250">250: </a><font color="#B22222">-  type - a known method</font>
+
+<a name="line252">252: </a><font color="#B22222">   Options Database Key:</font>
+<a name="line253">253: </a><font color="#B22222">.  -lme_type &lt;method&gt; - Sets the method; use -help for a list</font>
+<a name="line254">254: </a><font color="#B22222">    of available methods</font>
+
+<a name="line256">256: </a><font color="#B22222">   Notes:</font>
+<a name="line257">257: </a><font color="#B22222">   See "slepc/include/slepclme.h" for available methods. The default</font>
+<a name="line258">258: </a><font color="#B22222">   is LMEKRYLOV</font>
+
+<a name="line260">260: </a><font color="#B22222">   Normally, it is best to use the <a href="../../../docs/manualpages/LME/LMESetFromOptions.html#LMESetFromOptions">LMESetFromOptions</a>() command and</font>
+<a name="line261">261: </a><font color="#B22222">   then set the <a href="../../../docs/manualpages/sys/LME.html#LME">LME</a> type from the options database rather than by using</font>
+<a name="line262">262: </a><font color="#B22222">   this routine.  Using the options database provides the user with</font>
+<a name="line263">263: </a><font color="#B22222">   maximum flexibility in evaluating the different available methods.</font>
+<a name="line264">264: </a><font color="#B22222">   The <a href="../../../docs/manualpages/LME/LMESetType.html#LMESetType">LMESetType</a>() routine is provided for those situations where it</font>
+<a name="line265">265: </a><font color="#B22222">   is necessary to set the iterative solver independently of the command</font>
+<a name="line266">266: </a><font color="#B22222">   line or options database.</font>
+
+<a name="line268">268: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line270">270: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/sys/LMEType.html#LMEType">LMEType</a></font>
+<a name="line271">271: </a><font color="#B22222">@*/</font>
+<a name="line272">272: </a><strong><font color="#4169E1"><a name="LMESetType"></a>PetscErrorCode <a href="../../../docs/manualpages/LME/LMESetType.html#LMESetType">LMESetType</a>(<a href="../../../docs/manualpages/sys/LME.html#LME">LME</a> lme,<a href="../../../docs/manualpages/sys/LMEType.html#LMEType">LMEType</a> type)</font></strong>
+<a name="line273">273: </a>{
+<a name="line274">274: </a>  PetscErrorCode (*r)(<a href="../../../docs/manualpages/sys/LME.html#LME">LME</a>);
+<a name="line275">275: </a>  PetscBool      match;
+
+
+<a name="line280">280: </a>  PetscObjectTypeCompare((PetscObject)lme,type,&amp;match);
+<a name="line281">281: </a>  <font color="#4169E1">if</font> (match) PetscFunctionReturn(0);
+
+<a name="line283">283: </a>  PetscFunctionListFind(LMEList,type,&amp;r);
+
+<a name="line286">286: </a>  <font color="#4169E1">if</font> (lme-&gt;ops-&gt;destroy) (*lme-&gt;ops-&gt;destroy)(lme);
+<a name="line287">287: </a>  PetscMemzero(lme-&gt;ops,<font color="#4169E1">sizeof</font>(<font color="#4169E1">struct _LMEOps</font>));
+
+<a name="line289">289: </a>  lme-&gt;setupcalled = 0;
+<a name="line290">290: </a>  PetscObjectChangeTypeName((PetscObject)lme,type);
+<a name="line291">291: </a>  (*r)(lme);
+<a name="line292">292: </a>  PetscFunctionReturn(0);
+<a name="line293">293: </a>}
+
+<a name="line295">295: </a><font color="#B22222">/*@C</font>
+<a name="line296">296: </a><font color="#B22222">   <a href="../../../docs/manualpages/LME/LMEGetType.html#LMEGetType">LMEGetType</a> - Gets the <a href="../../../docs/manualpages/sys/LME.html#LME">LME</a> type as a string from the <a href="../../../docs/manualpages/sys/LME.html#LME">LME</a> object.</font>
+
+<a name="line298">298: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line300">300: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line301">301: </a><font color="#B22222">.  lme - the linear matrix equation context</font>
+
+<a name="line303">303: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line304">304: </a><font color="#B22222">.  type - name of <a href="../../../docs/manualpages/sys/LME.html#LME">LME</a> method</font>
+
+<a name="line306">306: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line308">308: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/LME/LMESetType.html#LMESetType">LMESetType</a>()</font>
+<a name="line309">309: </a><font color="#B22222">@*/</font>
+<a name="line310">310: </a><strong><font color="#4169E1"><a name="LMEGetType"></a>PetscErrorCode <a href="../../../docs/manualpages/LME/LMEGetType.html#LMEGetType">LMEGetType</a>(<a href="../../../docs/manualpages/sys/LME.html#LME">LME</a> lme,<a href="../../../docs/manualpages/sys/LMEType.html#LMEType">LMEType</a> *type)</font></strong>
+<a name="line311">311: </a>{
+<a name="line314">314: </a>  *type = ((PetscObject)lme)-&gt;type_name;
+<a name="line315">315: </a>  PetscFunctionReturn(0);
+<a name="line316">316: </a>}
+
+<a name="line318">318: </a><font color="#B22222">/*@C</font>
+<a name="line319">319: </a><font color="#B22222">   <a href="../../../docs/manualpages/LME/LMERegister.html#LMERegister">LMERegister</a> - Adds a method to the linear matrix equation solver package.</font>
+
+<a name="line321">321: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line323">323: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line324">324: </a><font color="#B22222">+  name - name of a new user-defined solver</font>
+<a name="line325">325: </a><font color="#B22222">-  function - routine to create the solver context</font>
+
+<a name="line327">327: </a><font color="#B22222">   Notes:</font>
+<a name="line328">328: </a><font color="#B22222">   <a href="../../../docs/manualpages/LME/LMERegister.html#LMERegister">LMERegister</a>() may be called multiple times to add several user-defined solvers.</font>
+
+<a name="line330">330: </a><font color="#B22222">   Sample usage:</font>
+<a name="line331">331: </a><font color="#B22222">.vb</font>
+<a name="line332">332: </a><font color="#B22222">    <a href="../../../docs/manualpages/LME/LMERegister.html#LMERegister">LMERegister</a>("my_solver",MySolverCreate);</font>
+<a name="line333">333: </a><font color="#B22222">.ve</font>
+
+<a name="line335">335: </a><font color="#B22222">   Then, your solver can be chosen with the procedural interface via</font>
+<a name="line336">336: </a><font color="#B22222">$     <a href="../../../docs/manualpages/LME/LMESetType.html#LMESetType">LMESetType</a>(lme,"my_solver")</font>
+<a name="line337">337: </a><font color="#B22222">   or at runtime via the option</font>
+<a name="line338">338: </a><font color="#B22222">$     -lme_type my_solver</font>
+
+<a name="line340">340: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line342">342: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/LME/LMERegisterAll.html#LMERegisterAll">LMERegisterAll</a>()</font>
+<a name="line343">343: </a><font color="#B22222">@*/</font>
+<a name="line344">344: </a><strong><font color="#4169E1"><a name="LMERegister"></a>PetscErrorCode <a href="../../../docs/manualpages/LME/LMERegister.html#LMERegister">LMERegister</a>(const char *name,PetscErrorCode (*function)(<a href="../../../docs/manualpages/sys/LME.html#LME">LME</a>))</font></strong>
+<a name="line345">345: </a>{
+<a name="line346">346: </a>  <a href="../../../docs/manualpages/LME/LMEInitializePackage.html#LMEInitializePackage">LMEInitializePackage</a>();
+<a name="line347">347: </a>  PetscFunctionListAdd(&amp;LMEList,name,function);
+<a name="line348">348: </a>  PetscFunctionReturn(0);
+<a name="line349">349: </a>}
+
+<a name="line351">351: </a><font color="#B22222">/*@C</font>
+<a name="line352">352: </a><font color="#B22222">   <a href="../../../docs/manualpages/LME/LMEMonitorRegister.html#LMEMonitorRegister">LMEMonitorRegister</a> - Adds <a href="../../../docs/manualpages/sys/LME.html#LME">LME</a> monitor routine.</font>
+
+<a name="line354">354: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line356">356: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line357">357: </a><font color="#B22222">+  name    - name of a new monitor routine</font>
+<a name="line358">358: </a><font color="#B22222">.  vtype   - a PetscViewerType for the output</font>
+<a name="line359">359: </a><font color="#B22222">.  format  - a PetscViewerFormat for the output</font>
+<a name="line360">360: </a><font color="#B22222">.  monitor - monitor routine</font>
+<a name="line361">361: </a><font color="#B22222">.  create  - creation routine, or NULL</font>
+<a name="line362">362: </a><font color="#B22222">-  destroy - destruction routine, or NULL</font>
+
+<a name="line364">364: </a><font color="#B22222">   Notes:</font>
+<a name="line365">365: </a><font color="#B22222">   <a href="../../../docs/manualpages/LME/LMEMonitorRegister.html#LMEMonitorRegister">LMEMonitorRegister</a>() may be called multiple times to add several user-defined monitors.</font>
+
+<a name="line367">367: </a><font color="#B22222">   Sample usage:</font>
+<a name="line368">368: </a><font color="#B22222">.vb</font>
+<a name="line369">369: </a><font color="#B22222">   <a href="../../../docs/manualpages/LME/LMEMonitorRegister.html#LMEMonitorRegister">LMEMonitorRegister</a>("my_monitor",PETSCVIEWERASCII,PETSC_VIEWER_ASCII_INFO_DETAIL,MyMonitor,NULL,NULL);</font>
+<a name="line370">370: </a><font color="#B22222">.ve</font>
+
+<a name="line372">372: </a><font color="#B22222">   Then, your monitor can be chosen with the procedural interface via</font>
+<a name="line373">373: </a><font color="#B22222">$      <a href="../../../docs/manualpages/LME/LMEMonitorSetFromOptions.html#LMEMonitorSetFromOptions">LMEMonitorSetFromOptions</a>(lme,"-lme_monitor_my_monitor","my_monitor",NULL)</font>
+<a name="line374">374: </a><font color="#B22222">   or at runtime via the option</font>
+<a name="line375">375: </a><font color="#B22222">$      -lme_monitor_my_monitor</font>
+
+<a name="line377">377: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line379">379: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/LME/LMEMonitorRegisterAll.html#LMEMonitorRegisterAll">LMEMonitorRegisterAll</a>()</font>
+<a name="line380">380: </a><font color="#B22222">@*/</font>
+<a name="line381">381: </a><strong><font color="#4169E1"><a name="LMEMonitorRegister"></a>PetscErrorCode <a href="../../../docs/manualpages/LME/LMEMonitorRegister.html#LMEMonitorRegister">LMEMonitorRegister</a>(const char name[],PetscViewerType vtype,PetscViewerFormat format,PetscErrorCode (*monitor)(<a href="../../../docs/manualpages/sys/LME.html#LME">LME</a>,PetscInt,PetscReal,PetscViewerAndFormat*),PetscErrorCode (*create)(PetscViewer,PetscViewerFormat,void*,PetscViewerAndFormat**),PetscErrorCode (*destroy)(PetscViewerAndFormat**))</font></strong>
+<a name="line382">382: </a>{
+<a name="line383">383: </a>  char           key[PETSC_MAX_PATH_LEN];
+
+<a name="line385">385: </a>  <a href="../../../docs/manualpages/LME/LMEInitializePackage.html#LMEInitializePackage">LMEInitializePackage</a>();
+<a name="line386">386: </a>  SlepcMonitorMakeKey_Internal(name,vtype,format,key);
+<a name="line387">387: </a>  PetscFunctionListAdd(&amp;LMEMonitorList,key,monitor);
+<a name="line388">388: </a>  <font color="#4169E1">if</font> (create)  PetscFunctionListAdd(&amp;LMEMonitorCreateList,key,create);
+<a name="line389">389: </a>  <font color="#4169E1">if</font> (destroy) PetscFunctionListAdd(&amp;LMEMonitorDestroyList,key,destroy);
+<a name="line390">390: </a>  PetscFunctionReturn(0);
+<a name="line391">391: </a>}
+
+<a name="line393">393: </a><font color="#B22222">/*@</font>
+<a name="line394">394: </a><font color="#B22222">   <a href="../../../docs/manualpages/LME/LMEReset.html#LMEReset">LMEReset</a> - Resets the <a href="../../../docs/manualpages/sys/LME.html#LME">LME</a> context to the initial state (prior to setup)</font>
+<a name="line395">395: </a><font color="#B22222">   and destroys any allocated Vecs and Mats.</font>
+
+<a name="line397">397: </a><font color="#B22222">   Collective on lme</font>
+
+<a name="line399">399: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line400">400: </a><font color="#B22222">.  lme - linear matrix equation context obtained from <a href="../../../docs/manualpages/LME/LMECreate.html#LMECreate">LMECreate</a>()</font>
+
+<a name="line402">402: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line404">404: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/LME/LMEDestroy.html#LMEDestroy">LMEDestroy</a>()</font>
+<a name="line405">405: </a><font color="#B22222">@*/</font>
+<a name="line406">406: </a><strong><font color="#4169E1"><a name="LMEReset"></a>PetscErrorCode <a href="../../../docs/manualpages/LME/LMEReset.html#LMEReset">LMEReset</a>(<a href="../../../docs/manualpages/sys/LME.html#LME">LME</a> lme)</font></strong>
+<a name="line407">407: </a>{
+<a name="line409">409: </a>  <font color="#4169E1">if</font> (!lme) PetscFunctionReturn(0);
+<a name="line410">410: </a>  <font color="#4169E1">if</font> (lme-&gt;ops-&gt;reset) (lme-&gt;ops-&gt;reset)(lme);
+<a name="line411">411: </a>  MatDestroy(&amp;lme-&gt;A);
+<a name="line412">412: </a>  MatDestroy(&amp;lme-&gt;B);
+<a name="line413">413: </a>  MatDestroy(&amp;lme-&gt;D);
+<a name="line414">414: </a>  MatDestroy(&amp;lme-&gt;E);
+<a name="line415">415: </a>  MatDestroy(&amp;lme-&gt;C);
+<a name="line416">416: </a>  MatDestroy(&amp;lme-&gt;X);
+<a name="line417">417: </a>  <a href="../../../docs/manualpages/BV/BVDestroy.html#BVDestroy">BVDestroy</a>(&amp;lme-&gt;V);
+<a name="line418">418: </a>  VecDestroyVecs(lme-&gt;nwork,&amp;lme-&gt;work);
+<a name="line419">419: </a>  lme-&gt;nwork = 0;
+<a name="line420">420: </a>  lme-&gt;setupcalled = 0;
+<a name="line421">421: </a>  PetscFunctionReturn(0);
+<a name="line422">422: </a>}
+
+<a name="line424">424: </a><font color="#B22222">/*@C</font>
+<a name="line425">425: </a><font color="#B22222">   <a href="../../../docs/manualpages/LME/LMEDestroy.html#LMEDestroy">LMEDestroy</a> - Destroys the <a href="../../../docs/manualpages/sys/LME.html#LME">LME</a> context.</font>
+
+<a name="line427">427: </a><font color="#B22222">   Collective on lme</font>
+
+<a name="line429">429: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line430">430: </a><font color="#B22222">.  lme - linear matrix equation context obtained from <a href="../../../docs/manualpages/LME/LMECreate.html#LMECreate">LMECreate</a>()</font>
+
+<a name="line432">432: </a><font color="#B22222">   Level: beginner</font>
+
+<a name="line434">434: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/LME/LMECreate.html#LMECreate">LMECreate</a>(), <a href="../../../docs/manualpages/LME/LMESetUp.html#LMESetUp">LMESetUp</a>(), <a href="../../../docs/manualpages/LME/LMESolve.html#LMESolve">LMESolve</a>()</font>
+<a name="line435">435: </a><font color="#B22222">@*/</font>
+<a name="line436">436: </a><strong><font color="#4169E1"><a name="LMEDestroy"></a>PetscErrorCode <a href="../../../docs/manualpages/LME/LMEDestroy.html#LMEDestroy">LMEDestroy</a>(<a href="../../../docs/manualpages/sys/LME.html#LME">LME</a> *lme)</font></strong>
+<a name="line437">437: </a>{
+<a name="line438">438: </a>  <font color="#4169E1">if</font> (!*lme) PetscFunctionReturn(0);
+<a name="line440">440: </a>  <font color="#4169E1">if</font> (--((PetscObject)(*lme))-&gt;refct &gt; 0) { *lme = 0; PetscFunctionReturn(0); }
+<a name="line441">441: </a>  <a href="../../../docs/manualpages/LME/LMEReset.html#LMEReset">LMEReset</a>(*lme);
+<a name="line442">442: </a>  <font color="#4169E1">if</font> ((*lme)-&gt;ops-&gt;destroy) (*(*lme)-&gt;ops-&gt;destroy)(*lme);
+<a name="line443">443: </a>  <a href="../../../docs/manualpages/LME/LMEMonitorCancel.html#LMEMonitorCancel">LMEMonitorCancel</a>(*lme);
+<a name="line444">444: </a>  PetscHeaderDestroy(lme);
+<a name="line445">445: </a>  PetscFunctionReturn(0);
+<a name="line446">446: </a>}
+
+<a name="line448">448: </a><font color="#B22222">/*@</font>
+<a name="line449">449: </a><font color="#B22222">   <a href="../../../docs/manualpages/LME/LMESetBV.html#LMESetBV">LMESetBV</a> - Associates a basis vectors object to the linear matrix equation solver.</font>
+
+<a name="line451">451: </a><font color="#B22222">   Collective on lme</font>
+
+<a name="line453">453: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line454">454: </a><font color="#B22222">+  lme - linear matrix equation context obtained from <a href="../../../docs/manualpages/LME/LMECreate.html#LMECreate">LMECreate</a>()</font>
+<a name="line455">455: </a><font color="#B22222">-  bv  - the basis vectors object</font>
+
+<a name="line457">457: </a><font color="#B22222">   Note:</font>
+<a name="line458">458: </a><font color="#B22222">   Use <a href="../../../docs/manualpages/LME/LMEGetBV.html#LMEGetBV">LMEGetBV</a>() to retrieve the basis vectors context (for example,</font>
+<a name="line459">459: </a><font color="#B22222">   to free it at the end of the computations).</font>
+
+<a name="line461">461: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line463">463: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/LME/LMEGetBV.html#LMEGetBV">LMEGetBV</a>()</font>
+<a name="line464">464: </a><font color="#B22222">@*/</font>
+<a name="line465">465: </a><strong><font color="#4169E1"><a name="LMESetBV"></a>PetscErrorCode <a href="../../../docs/manualpages/LME/LMESetBV.html#LMESetBV">LMESetBV</a>(<a href="../../../docs/manualpages/sys/LME.html#LME">LME</a> lme,<a href="../../../docs/manualpages/sys/BV.html#BV">BV</a> bv)</font></strong>
+<a name="line466">466: </a>{
+<a name="line470">470: </a>  PetscObjectReference((PetscObject)bv);
+<a name="line471">471: </a>  <a href="../../../docs/manualpages/BV/BVDestroy.html#BVDestroy">BVDestroy</a>(&amp;lme-&gt;V);
+<a name="line472">472: </a>  lme-&gt;V = bv;
+<a name="line473">473: </a>  PetscLogObjectParent((PetscObject)lme,(PetscObject)lme-&gt;V);
+<a name="line474">474: </a>  PetscFunctionReturn(0);
+<a name="line475">475: </a>}
+
+<a name="line477">477: </a><font color="#B22222">/*@</font>
+<a name="line478">478: </a><font color="#B22222">   <a href="../../../docs/manualpages/LME/LMEGetBV.html#LMEGetBV">LMEGetBV</a> - Obtain the basis vectors object associated to the matrix</font>
+<a name="line479">479: </a><font color="#B22222">   function solver.</font>
+
+<a name="line481">481: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line483">483: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line484">484: </a><font color="#B22222">.  lme - linear matrix equation context obtained from <a href="../../../docs/manualpages/LME/LMECreate.html#LMECreate">LMECreate</a>()</font>
+
+<a name="line486">486: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line487">487: </a><font color="#B22222">.  bv - basis vectors context</font>
+
+<a name="line489">489: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line491">491: </a><font color="#B22222">.seealso: <a href="../../../docs/manualpages/LME/LMESetBV.html#LMESetBV">LMESetBV</a>()</font>
+<a name="line492">492: </a><font color="#B22222">@*/</font>
+<a name="line493">493: </a><strong><font color="#4169E1"><a name="LMEGetBV"></a>PetscErrorCode <a href="../../../docs/manualpages/LME/LMEGetBV.html#LMEGetBV">LMEGetBV</a>(<a href="../../../docs/manualpages/sys/LME.html#LME">LME</a> lme,<a href="../../../docs/manualpages/sys/BV.html#BV">BV</a> *bv)</font></strong>
+<a name="line494">494: </a>{
+<a name="line497">497: </a>  <font color="#4169E1">if</font> (!lme-&gt;V) {
+<a name="line498">498: </a>    <a href="../../../docs/manualpages/BV/BVCreate.html#BVCreate">BVCreate</a>(PetscObjectComm((PetscObject)lme),&amp;lme-&gt;V);
+<a name="line499">499: </a>    PetscObjectIncrementTabLevel((PetscObject)lme-&gt;V,(PetscObject)lme,0);
+<a name="line500">500: </a>    PetscLogObjectParent((PetscObject)lme,(PetscObject)lme-&gt;V);
+<a name="line501">501: </a>    PetscObjectSetOptions((PetscObject)lme-&gt;V,((PetscObject)lme)-&gt;options);
+<a name="line502">502: </a>  }
+<a name="line503">503: </a>  *bv = lme-&gt;V;
+<a name="line504">504: </a>  PetscFunctionReturn(0);
+<a name="line505">505: </a>}
+</pre>
+</body>
+
+</html>

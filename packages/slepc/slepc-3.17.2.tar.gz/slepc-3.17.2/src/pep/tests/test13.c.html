@@ -1,0 +1,153 @@
+<center><a href="test13.c">Actual source code: test13.c</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="https://slepc.upv.es/documentation/current/src/pep/tests/test13.c.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2022-08-09T09:05:50+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>slepc-3.17.2 2022-08-09</b></div>
+   <div id="bugreport" align=right><a href="mailto:slepc-maint@upv.es?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: slepc-3.17.2 v3.17.2 src/pep/tests/test13.c.html "><small>Report Typos and Errors</small></a></div>
+<pre width="80">
+<a name="line1">  1: </a><font color="#B22222">/*</font>
+<a name="line2">  2: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line3">  3: </a><font color="#B22222">   SLEPc - Scalable Library for Eigenvalue Problem Computations</font>
+<a name="line4">  4: </a><font color="#B22222">   Copyright (c) 2002-, Universitat Politecnica de Valencia, Spain</font>
+
+<a name="line6">  6: </a><font color="#B22222">   This file is part of SLEPc.</font>
+<a name="line7">  7: </a><font color="#B22222">   SLEPc is distributed under a 2-clause BSD license (see LICENSE).</font>
+<a name="line8">  8: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line9">  9: </a><font color="#B22222">*/</font>
+
+<a name="line11"> 11: </a>static char help[] = <font color="#666666">"Solve a quadratic problem with CISS.\n\n"</font>
+<a name="line12"> 12: </a>  <font color="#666666">"The command line options are:\n"</font>
+<a name="line13"> 13: </a>  <font color="#666666">"  -n &lt;n&gt;, where &lt;n&gt; = number of grid subdivisions in x dimension.\n"</font>
+<a name="line14"> 14: </a>  <font color="#666666">"  -m &lt;m&gt;, where &lt;m&gt; = number of grid subdivisions in y dimension.\n\n"</font>;
+
+<a name="line16"> 16: </a>#include <A href="../../../include/slepcpep.h.html">&lt;slepcpep.h&gt;</A>
+
+<a name="line18"> 18: </a><strong><font color="#4169E1"><a name="main"></a>int main(int argc,char **argv)</font></strong>
+<a name="line19"> 19: </a>{
+<a name="line20"> 20: </a>  Mat               M,C,K,A[3];
+<a name="line21"> 21: </a>  <a href="../../../docs/manualpages/sys/PEP.html#PEP">PEP</a>               pep;
+<a name="line22"> 22: </a>  <a href="../../../docs/manualpages/sys/RG.html#RG">RG</a>                rg;
+<a name="line23"> 23: </a>  KSP               *ksp;
+<a name="line24"> 24: </a>  PC                pc;
+<a name="line25"> 25: </a>  <a href="../../../docs/manualpages/sys/PEPCISSExtraction.html#PEPCISSExtraction">PEPCISSExtraction</a> ext;
+<a name="line26"> 26: </a>  PetscInt          N,n=10,m,Istart,Iend,II,i,j,nsolve;
+<a name="line27"> 27: </a>  PetscBool         flg;
+
+<a name="line29"> 29: </a>  <a href="../../../docs/manualpages/sys/SlepcInitialize.html#SlepcInitialize">SlepcInitialize</a>(&amp;argc,&amp;argv,(char*)0,help);
+<a name="line30"> 30: </a>  PetscOptionsGetInt(NULL,NULL,<font color="#666666">"-n"</font>,&amp;n,NULL);
+<a name="line31"> 31: </a>  PetscOptionsGetInt(NULL,NULL,<font color="#666666">"-m"</font>,&amp;m,&amp;flg);
+<a name="line32"> 32: </a>  <font color="#4169E1">if</font> (!flg) m=n;
+<a name="line33"> 33: </a>  N = n*m;
+<a name="line34"> 34: </a>  PetscPrintf(PETSC_COMM_WORLD,<font color="#666666">"\nQuadratic Eigenproblem, N=%"</font> PetscInt_FMT <font color="#666666">" (%"</font> PetscInt_FMT <font color="#666666">"x%"</font> PetscInt_FMT <font color="#666666">" grid)\n\n"</font>,N,n,m);
+
+<a name="line36"> 36: </a>  <font color="#B22222">/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line37"> 37: </a><font color="#B22222">     Compute the matrices that define the eigensystem, (k^2*M+k*C+K)x=0</font>
+<a name="line38"> 38: </a><font color="#B22222">     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */</font>
+
+<a name="line40"> 40: </a>  <font color="#B22222">/* K is the 2-D Laplacian */</font>
+<a name="line41"> 41: </a>  MatCreate(PETSC_COMM_WORLD,&amp;K);
+<a name="line42"> 42: </a>  MatSetSizes(K,PETSC_DECIDE,PETSC_DECIDE,N,N);
+<a name="line43"> 43: </a>  MatSetFromOptions(K);
+<a name="line44"> 44: </a>  MatSetUp(K);
+<a name="line45"> 45: </a>  MatGetOwnershipRange(K,&amp;Istart,&amp;Iend);
+<a name="line46"> 46: </a>  <font color="#4169E1">for</font> (II=Istart;II&lt;Iend;II++) {
+<a name="line47"> 47: </a>    i = II/n; j = II-i*n;
+<a name="line48"> 48: </a>    <font color="#4169E1">if</font> (i&gt;0) MatSetValue(K,II,II-n,-1.0,INSERT_VALUES);
+<a name="line49"> 49: </a>    <font color="#4169E1">if</font> (i&lt;m-1) MatSetValue(K,II,II+n,-1.0,INSERT_VALUES);
+<a name="line50"> 50: </a>    <font color="#4169E1">if</font> (j&gt;0) MatSetValue(K,II,II-1,-1.0,INSERT_VALUES);
+<a name="line51"> 51: </a>    <font color="#4169E1">if</font> (j&lt;n-1) MatSetValue(K,II,II+1,-1.0,INSERT_VALUES);
+<a name="line52"> 52: </a>    MatSetValue(K,II,II,4.0,INSERT_VALUES);
+<a name="line53"> 53: </a>  }
+<a name="line54"> 54: </a>  MatAssemblyBegin(K,MAT_FINAL_ASSEMBLY);
+<a name="line55"> 55: </a>  MatAssemblyEnd(K,MAT_FINAL_ASSEMBLY);
+
+<a name="line57"> 57: </a>  <font color="#B22222">/* C is the 1-D Laplacian on horizontal lines */</font>
+<a name="line58"> 58: </a>  MatCreate(PETSC_COMM_WORLD,&amp;C);
+<a name="line59"> 59: </a>  MatSetSizes(C,PETSC_DECIDE,PETSC_DECIDE,N,N);
+<a name="line60"> 60: </a>  MatSetFromOptions(C);
+<a name="line61"> 61: </a>  MatSetUp(C);
+<a name="line62"> 62: </a>  MatGetOwnershipRange(C,&amp;Istart,&amp;Iend);
+<a name="line63"> 63: </a>  <font color="#4169E1">for</font> (II=Istart;II&lt;Iend;II++) {
+<a name="line64"> 64: </a>    i = II/n; j = II-i*n;
+<a name="line65"> 65: </a>    <font color="#4169E1">if</font> (j&gt;0) MatSetValue(C,II,II-1,-1.0,INSERT_VALUES);
+<a name="line66"> 66: </a>    <font color="#4169E1">if</font> (j&lt;n-1) MatSetValue(C,II,II+1,-1.0,INSERT_VALUES);
+<a name="line67"> 67: </a>    MatSetValue(C,II,II,2.0,INSERT_VALUES);
+<a name="line68"> 68: </a>  }
+<a name="line69"> 69: </a>  MatAssemblyBegin(C,MAT_FINAL_ASSEMBLY);
+<a name="line70"> 70: </a>  MatAssemblyEnd(C,MAT_FINAL_ASSEMBLY);
+
+<a name="line72"> 72: </a>  <font color="#B22222">/* M is a diagonal matrix */</font>
+<a name="line73"> 73: </a>  MatCreate(PETSC_COMM_WORLD,&amp;M);
+<a name="line74"> 74: </a>  MatSetSizes(M,PETSC_DECIDE,PETSC_DECIDE,N,N);
+<a name="line75"> 75: </a>  MatSetFromOptions(M);
+<a name="line76"> 76: </a>  MatSetUp(M);
+<a name="line77"> 77: </a>  MatGetOwnershipRange(M,&amp;Istart,&amp;Iend);
+<a name="line78"> 78: </a>  <font color="#4169E1">for</font> (II=Istart;II&lt;Iend;II++) MatSetValue(M,II,II,(PetscReal)(II+1),INSERT_VALUES);
+<a name="line79"> 79: </a>  MatAssemblyBegin(M,MAT_FINAL_ASSEMBLY);
+<a name="line80"> 80: </a>  MatAssemblyEnd(M,MAT_FINAL_ASSEMBLY);
+
+<a name="line82"> 82: </a>  <font color="#B22222">/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line83"> 83: </a><font color="#B22222">             Create the eigensolver and solve the eigensystem</font>
+<a name="line84"> 84: </a><font color="#B22222">     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */</font>
+
+<a name="line86"> 86: </a>  <a href="../../../docs/manualpages/PEP/PEPCreate.html#PEPCreate">PEPCreate</a>(PETSC_COMM_WORLD,&amp;pep);
+<a name="line87"> 87: </a>  A[0] = K; A[1] = C; A[2] = M;
+<a name="line88"> 88: </a>  <a href="../../../docs/manualpages/PEP/PEPSetOperators.html#PEPSetOperators">PEPSetOperators</a>(pep,3,A);
+<a name="line89"> 89: </a>  <a href="../../../docs/manualpages/PEP/PEPSetProblemType.html#PEPSetProblemType">PEPSetProblemType</a>(pep,<a href="../../../docs/manualpages/sys/PEPProblemType.html#PEPProblemType">PEP_GENERAL</a>);
+
+<a name="line91"> 91: </a>  <font color="#B22222">/* customize polynomial eigensolver; set runtime options */</font>
+<a name="line92"> 92: </a>  <a href="../../../docs/manualpages/PEP/PEPSetType.html#PEPSetType">PEPSetType</a>(pep,PEPCISS);
+<a name="line93"> 93: </a>  <a href="../../../docs/manualpages/PEP/PEPGetRG.html#PEPGetRG">PEPGetRG</a>(pep,&amp;rg);
+<a name="line94"> 94: </a>  <a href="../../../docs/manualpages/RG/RGSetType.html#RGSetType">RGSetType</a>(rg,RGELLIPSE);
+<a name="line95"> 95: </a>  <a href="../../../docs/manualpages/RG/RGEllipseSetParameters.html#RGEllipseSetParameters">RGEllipseSetParameters</a>(rg,PetscCMPLX(-0.1,0.3),0.1,0.25);
+<a name="line96"> 96: </a>  <a href="../../../docs/manualpages/PEP/PEPCISSSetSizes.html#PEPCISSSetSizes">PEPCISSSetSizes</a>(pep,24,PETSC_DEFAULT,PETSC_DEFAULT,1,PETSC_DEFAULT,PETSC_TRUE);
+<a name="line97"> 97: </a>  <a href="../../../docs/manualpages/PEP/PEPCISSGetKSPs.html#PEPCISSGetKSPs">PEPCISSGetKSPs</a>(pep,&amp;nsolve,&amp;ksp);
+<a name="line98"> 98: </a>  <font color="#4169E1">for</font> (i=0;i&lt;nsolve;i++) {
+<a name="line99"> 99: </a>    KSPSetTolerances(ksp[i],1e-12,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);
+<a name="line100">100: </a>    KSPSetType(ksp[i],KSPPREONLY);
+<a name="line101">101: </a>    KSPGetPC(ksp[i],&amp;pc);
+<a name="line102">102: </a>    PCSetType(pc,PCLU);
+<a name="line103">103: </a>  }
+<a name="line104">104: </a>  <a href="../../../docs/manualpages/PEP/PEPSetFromOptions.html#PEPSetFromOptions">PEPSetFromOptions</a>(pep);
+
+<a name="line106">106: </a>  <font color="#B22222">/* solve */</font>
+<a name="line107">107: </a>  PetscObjectTypeCompare((PetscObject)pep,PEPCISS,&amp;flg);
+<a name="line108">108: </a>  <font color="#4169E1">if</font> (flg) {
+<a name="line109">109: </a>    <a href="../../../docs/manualpages/PEP/PEPCISSGetExtraction.html#PEPCISSGetExtraction">PEPCISSGetExtraction</a>(pep,&amp;ext);
+<a name="line110">110: </a>    PetscPrintf(PETSC_COMM_WORLD,<font color="#666666">" Running CISS with %"</font> PetscInt_FMT <font color="#666666">" KSP solvers (%s extraction)\n"</font>,nsolve,PEPCISSExtractions[ext]);
+<a name="line111">111: </a>  }
+<a name="line112">112: </a>  <a href="../../../docs/manualpages/PEP/PEPSolve.html#PEPSolve">PEPSolve</a>(pep);
+
+<a name="line114">114: </a>  <font color="#B22222">/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line115">115: </a><font color="#B22222">                    Display solution and clean up</font>
+<a name="line116">116: </a><font color="#B22222">     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */</font>
+
+<a name="line118">118: </a>  <a href="../../../docs/manualpages/PEP/PEPErrorView.html#PEPErrorView">PEPErrorView</a>(pep,<a href="../../../docs/manualpages/sys/PEPErrorType.html#PEPErrorType">PEP_ERROR_BACKWARD</a>,NULL);
+<a name="line119">119: </a>  <a href="../../../docs/manualpages/PEP/PEPDestroy.html#PEPDestroy">PEPDestroy</a>(&amp;pep);
+<a name="line120">120: </a>  MatDestroy(&amp;M);
+<a name="line121">121: </a>  MatDestroy(&amp;C);
+<a name="line122">122: </a>  MatDestroy(&amp;K);
+<a name="line123">123: </a>  <a href="../../../docs/manualpages/sys/SlepcFinalize.html#SlepcFinalize">SlepcFinalize</a>();
+<a name="line124">124: </a>  <font color="#4169E1">return</font> 0;
+<a name="line125">125: </a>}
+
+<a name="line127">127: </a><font color="#B22222">/*TEST</font>
+
+<a name="line129">129: </a><font color="#B22222">   build:</font>
+<a name="line130">130: </a><font color="#B22222">      requires: complex</font>
+
+<a name="line132">132: </a><font color="#B22222">   test:</font>
+<a name="line133">133: </a><font color="#B22222">      suffix: 1</font>
+<a name="line134">134: </a><font color="#B22222">      requires: complex</font>
+
+<a name="line136">136: </a><font color="#B22222">TEST*/</font>
+</pre>
+</body>
+
+</html>

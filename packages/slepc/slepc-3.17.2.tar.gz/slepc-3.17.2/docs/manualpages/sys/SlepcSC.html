@@ -1,0 +1,69 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD> <link rel="canonical" href="https://slepc.upv.es/documentation/current/docs/manualpages/sys/SlepcSC.html" />
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<link rel="stylesheet" href="/slepc.css" type="text/css">
+<TITLE>SlepcSC</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+   <div id="version" align=right><b>slepc-3.17.2 2022-08-09</b></div>
+   <div id="bugreport" align=right><a href="mailto:slepc-maint@upv.es?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: slepc-3.17.2 v3.17.2 docs/manualpages/sys/SlepcSC.html "><small>Report Typos and Errors</small></a></div>
+<H1>SlepcSC</H1>
+Data structure (C struct) for storing information about the sorting criterion used by different eigensolver objects. 
+<H3><FONT COLOR="#883300">Synopsis</FONT></H3>
+<PRE>
+struct _n_SlepcSC {
+  /* map values before sorting, typically a call to <A HREF="../ST/STBackTransform.html#STBackTransform">STBackTransform</A> (mapctx=<A HREF="../sys/ST.html#ST">ST</A>) */
+  PetscErrorCode (*map)(PetscObject,PetscInt,PetscScalar*,PetscScalar*);
+  PetscObject    mapobj;
+  /* comparison function such as SlepcCompareLargestMagnitude */
+  PetscErrorCode (*comparison)(PetscScalar,PetscScalar,PetscScalar,PetscScalar,PetscInt*,void*);
+  void           *comparisonctx;
+  /* optional region for filtering */
+  <A HREF="../sys/RG.html#RG">RG</A>             rg;
+};
+</PRE>
+The <A HREF="../sys/SlepcSC.html#SlepcSC">SlepcSC</A> structure contains a mapping function and a comparison
+function (with associated contexts).
+The mapping function usually calls <A HREF="../sys/ST.html#ST">ST</A>'s backtransform.
+<H3><FONT COLOR="#883300">The comparison function must have the following calling sequence</FONT></H3>
+<P>
+<pre>
+ comparison(PetscScalar ar,PetscScalar ai,PetscScalar br,PetscScalar bi,PetscInt *res,void *ctx)
+</pre>
+<P>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>ar  </B></TD><TD>&nbsp;- real part of the 1st eigenvalue
+</TD></TR>
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>ai  </B></TD><TD>&nbsp;- imaginary part of the 1st eigenvalue
+</TD></TR>
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>br  </B></TD><TD>&nbsp;- real part of the 2nd eigenvalue
+</TD></TR>
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>bi  </B></TD><TD>&nbsp;- imaginary part of the 2nd eigenvalue
+</TD></TR>
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>res </B></TD><TD>&nbsp;- result of comparison
+</TD></TR>
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>ctx </B></TD><TD>&nbsp;- optional context, stored in comparisonctx
+</TD></TR></TABLE>
+<P>
+<H3><FONT COLOR="#883300">Note</FONT></H3>
+The returning parameter 'res' can be
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>negative </B></TD><TD>&nbsp;- if the 1st value is preferred to the 2st one
+</TD></TR>
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>zero     </B></TD><TD>&nbsp;- if both values are equally preferred
+</TD></TR>
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>positive </B></TD><TD>&nbsp;- if the 2st value is preferred to the 1st one
+</TD></TR></TABLE>
+<P>
+Fortran usage is not supported.
+<P>
+
+<P>
+<H3><FONT COLOR="#883300">See Also</FONT></H3>
+ <A HREF="../sys/SlepcSCCompare.html#SlepcSCCompare">SlepcSCCompare</A>()
+<BR><P><B><FONT COLOR="#883300">Location: </FONT></B><A HREF="../../../include/slepcsc.h.html#SlepcSC">include/slepcsc.h</A>
+<BR><A HREF="./index.html">Index of all sys routines</A>
+<BR><A HREF="../../../docs/manualpages/index.html">Table of Contents for all manual pages</A>
+<BR><A HREF="../singleindex.html">Index of all manual pages</A>
+</BODY></HTML>

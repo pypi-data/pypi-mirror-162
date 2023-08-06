@@ -1,0 +1,52 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD> <link rel="canonical" href="https://slepc.upv.es/documentation/current/docs/manualpages/DS/DSNHEPTS.html" />
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<link rel="stylesheet" href="/slepc.css" type="text/css">
+<TITLE>DSNHEPTS</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+   <div id="version" align=right><b>slepc-3.17.2 2022-08-09</b></div>
+   <div id="bugreport" align=right><a href="mailto:slepc-maint@upv.es?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: slepc-3.17.2 v3.17.2 docs/manualpages/DS/DSNHEPTS.html "><small>Report Typos and Errors</small></a></div>
+<H1>DSNHEPTS</H1>
+Dense Non-Hermitian Eigenvalue Problem (special variant intended for two-sided Krylov solvers). 
+<P>
+<H3><FONT COLOR="#883300">Notes</FONT></H3>
+Two related problems are solved, A*X = X*Lambda and B*Y = Y*Lambda', where A and
+B are supposed to come from the Arnoldi factorizations of a certain matrix and its
+(conjugate) transpose, respectively. Hence, in exact arithmetic the columns of Y
+are equal to the left eigenvectors of A. Lambda is a diagonal matrix whose diagonal
+elements are the arguments of <A HREF="../DS/DSSolve.html#DSSolve">DSSolve</A>(). After solve, A is overwritten with the
+upper quasi-triangular matrix T of the (real) Schur form, A*Q = Q*T, and similarly
+another (real) Schur relation is computed, B*Z = Z*S, overwriting B.
+<P>
+In the intermediate state A and B are reduced to upper Hessenberg form.
+<P>
+When left eigenvectors <A HREF="../sys/DSMatType.html#DSMatType">DS_MAT_Y</A> are requested, right eigenvectors of B are returned,
+while <A HREF="../sys/DSMatType.html#DSMatType">DS_MAT_X</A> contains right eigenvectors of A.
+<P>
+<H3><FONT COLOR="#883300">Used DS matrices</FONT></H3>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B><A HREF="../sys/DSMatType.html#DSMatType">DS_MAT_A</A> </B></TD><TD>&nbsp;- first problem matrix obtained from Arnoldi
+</TD></TR>
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B><A HREF="../sys/DSMatType.html#DSMatType">DS_MAT_B</A> </B></TD><TD>&nbsp;- second problem matrix obtained from Arnoldi on the transpose
+</TD></TR>
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B><A HREF="../sys/DSMatType.html#DSMatType">DS_MAT_Q</A> </B></TD><TD>&nbsp;- orthogonal/unitary transformation that reduces A to Hessenberg form
+(intermediate step) or matrix of orthogonal Schur vectors of A
+</TD></TR>
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B><A HREF="../sys/DSMatType.html#DSMatType">DS_MAT_Z</A> </B></TD><TD>&nbsp;- orthogonal/unitary transformation that reduces B to Hessenberg form
+(intermediate step) or matrix of orthogonal Schur vectors of B
+</TD></TR></TABLE>
+<P>
+<H3><FONT COLOR="#883300">Implemented methods</FONT></H3>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>0 </B></TD><TD>&nbsp;- Implicit QR (_hseqr)
+</TD></TR></TABLE>
+<P>
+<H3><FONT COLOR="#883300">See Also</FONT></H3>
+ <A HREF="../DS/DSCreate.html#DSCreate">DSCreate</A>(), <A HREF="../DS/DSSetType.html#DSSetType">DSSetType</A>(), <A HREF="../sys/DSType.html#DSType">DSType</A>
+<BR><P><B><FONT COLOR="#883300">Location: </FONT></B><A HREF="../../../src/sys/classes/ds/impls/nhepts/dsnhepts.c.html#DSNHEPTS">src/sys/classes/ds/impls/nhepts/dsnhepts.c</A>
+<BR><A HREF="./index.html">Index of all DS routines</A>
+<BR><A HREF="../../../docs/manualpages/index.html">Table of Contents for all manual pages</A>
+<BR><A HREF="../singleindex.html">Index of all manual pages</A>
+</BODY></HTML>

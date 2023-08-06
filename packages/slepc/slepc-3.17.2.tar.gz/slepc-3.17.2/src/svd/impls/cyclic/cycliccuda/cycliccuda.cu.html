@@ -1,0 +1,86 @@
+<center><a href="cycliccuda.cu">Actual source code: cycliccuda.cu</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="https://slepc.upv.es/documentation/current/src/svd/impls/cyclic/cycliccuda/cycliccuda.cu.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2022-08-09T09:05:44+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>slepc-3.17.2 2022-08-09</b></div>
+   <div id="bugreport" align=right><a href="mailto:slepc-maint@upv.es?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: slepc-3.17.2 v3.17.2 src/svd/impls/cyclic/cycliccuda/cycliccuda.cu.html "><small>Report Typos and Errors</small></a></div>
+<pre width="80">
+<a name="line1">  1: </a><font color="#B22222">/*</font>
+<a name="line2">  2: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line3">  3: </a><font color="#B22222">   SLEPc - Scalable Library for Eigenvalue Problem Computations</font>
+<a name="line4">  4: </a><font color="#B22222">   Copyright (c) 2002-, Universitat Politecnica de Valencia, Spain</font>
+
+<a name="line6">  6: </a><font color="#B22222">   This file is part of SLEPc.</font>
+<a name="line7">  7: </a><font color="#B22222">   SLEPc is distributed under a 2-clause BSD license (see LICENSE).</font>
+<a name="line8">  8: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line9">  9: </a><font color="#B22222">*/</font>
+<a name="line10"> 10: </a><font color="#B22222">/*</font>
+<a name="line11"> 11: </a><font color="#B22222">   SLEPc singular value solver: "cyclic" (CUDA implementation)</font>
+<a name="line12"> 12: </a><font color="#B22222">*/</font>
+<a name="line13"> 13: </a>#include <A href="../../../../../include/slepc/private/svdimpl.h.html">&lt;slepc/private/svdimpl.h&gt;</A>
+<a name="line14"> 14: </a><font color="#A020F0">#include </font><font color="#666666">"../src/svd/impls/cyclic/cyclic.h"</font><font color="#A020F0"></font>
+
+<a name="line16"> 16: </a><strong><font color="#4169E1"><a name="MatMult_Cyclic_CUDA"></a>PetscErrorCode MatMult_Cyclic_CUDA(Mat B,Vec x,Vec y)</font></strong>
+<a name="line17"> 17: </a>{
+<a name="line18"> 18: </a>  SVD_CYCLIC_SHELL  *ctx;
+<a name="line19"> 19: </a>  const PetscScalar *d_px;
+<a name="line20"> 20: </a>  PetscScalar       *d_py;
+<a name="line21"> 21: </a>  PetscInt          m;
+
+<a name="line23"> 23: </a>  MatShellGetContext(B,&amp;ctx);
+<a name="line24"> 24: </a>  MatGetLocalSize(ctx-&gt;A,&amp;m,NULL);
+<a name="line25"> 25: </a>  VecCUDAGetArrayRead(x,&amp;d_px);
+<a name="line26"> 26: </a>  VecCUDAGetArrayWrite(y,&amp;d_py);
+<a name="line27"> 27: </a>  VecCUDAPlaceArray(ctx-&gt;x1,d_px);
+<a name="line28"> 28: </a>  VecCUDAPlaceArray(ctx-&gt;x2,d_px+m);
+<a name="line29"> 29: </a>  VecCUDAPlaceArray(ctx-&gt;y1,d_py);
+<a name="line30"> 30: </a>  VecCUDAPlaceArray(ctx-&gt;y2,d_py+m);
+<a name="line31"> 31: </a>  MatMult(ctx-&gt;A,ctx-&gt;x2,ctx-&gt;y1);
+<a name="line32"> 32: </a>  MatMult(ctx-&gt;AT,ctx-&gt;x1,ctx-&gt;y2);
+<a name="line33"> 33: </a>  VecCUDAResetArray(ctx-&gt;x1);
+<a name="line34"> 34: </a>  VecCUDAResetArray(ctx-&gt;x2);
+<a name="line35"> 35: </a>  VecCUDAResetArray(ctx-&gt;y1);
+<a name="line36"> 36: </a>  VecCUDAResetArray(ctx-&gt;y2);
+<a name="line37"> 37: </a>  VecCUDARestoreArrayRead(x,&amp;d_px);
+<a name="line38"> 38: </a>  VecCUDARestoreArrayWrite(y,&amp;d_py);
+<a name="line39"> 39: </a>  PetscFunctionReturn(0);
+<a name="line40"> 40: </a>}
+
+<a name="line42"> 42: </a><strong><font color="#4169E1"><a name="MatMult_ECross_CUDA"></a>PetscErrorCode MatMult_ECross_CUDA(Mat B,Vec x,Vec y)</font></strong>
+<a name="line43"> 43: </a>{
+<a name="line44"> 44: </a>  SVD_CYCLIC_SHELL  *ctx;
+<a name="line45"> 45: </a>  const PetscScalar *d_px;
+<a name="line46"> 46: </a>  PetscScalar       *d_py;
+<a name="line47"> 47: </a>  PetscInt          mn,m,n;
+
+<a name="line49"> 49: </a>  MatShellGetContext(B,&amp;ctx);
+<a name="line50"> 50: </a>  MatGetLocalSize(ctx-&gt;A,NULL,&amp;n);
+<a name="line51"> 51: </a>  VecGetLocalSize(y,&amp;mn);
+<a name="line52"> 52: </a>  m = mn-n;
+<a name="line53"> 53: </a>  VecCUDAGetArrayRead(x,&amp;d_px);
+<a name="line54"> 54: </a>  VecCUDAGetArrayWrite(y,&amp;d_py);
+<a name="line55"> 55: </a>  VecCUDAPlaceArray(ctx-&gt;x1,d_px);
+<a name="line56"> 56: </a>  VecCUDAPlaceArray(ctx-&gt;x2,d_px+m);
+<a name="line57"> 57: </a>  VecCUDAPlaceArray(ctx-&gt;y1,d_py);
+<a name="line58"> 58: </a>  VecCUDAPlaceArray(ctx-&gt;y2,d_py+m);
+<a name="line59"> 59: </a>  VecCopy(ctx-&gt;x1,ctx-&gt;y1);
+<a name="line60"> 60: </a>  MatMult(ctx-&gt;A,ctx-&gt;x2,ctx-&gt;w);
+<a name="line61"> 61: </a>  MatMult(ctx-&gt;AT,ctx-&gt;w,ctx-&gt;y2);
+<a name="line62"> 62: </a>  VecCUDAResetArray(ctx-&gt;x1);
+<a name="line63"> 63: </a>  VecCUDAResetArray(ctx-&gt;x2);
+<a name="line64"> 64: </a>  VecCUDAResetArray(ctx-&gt;y1);
+<a name="line65"> 65: </a>  VecCUDAResetArray(ctx-&gt;y2);
+<a name="line66"> 66: </a>  VecCUDARestoreArrayRead(x,&amp;d_px);
+<a name="line67"> 67: </a>  VecCUDARestoreArrayWrite(y,&amp;d_py);
+<a name="line68"> 68: </a>  PetscFunctionReturn(0);
+<a name="line69"> 69: </a>}
+</pre>
+</body>
+
+</html>

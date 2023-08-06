@@ -1,0 +1,56 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD> <link rel="canonical" href="https://slepc.upv.es/documentation/current/docs/manualpages/NEP/NEPSetSplitPreconditioner.html" />
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<link rel="stylesheet" href="/slepc.css" type="text/css">
+<TITLE>NEPSetSplitPreconditioner</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+   <div id="version" align=right><b>slepc-3.17.2 2022-08-09</b></div>
+   <div id="bugreport" align=right><a href="mailto:slepc-maint@upv.es?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: slepc-3.17.2 v3.17.2 docs/manualpages/NEP/NEPSetSplitPreconditioner.html "><small>Report Typos and Errors</small></a></div>
+<H1>NEPSetSplitPreconditioner</H1>
+Sets an operator in split form from which to build the preconditioner to be used when solving the nonlinear eigenvalue problem in split form. 
+<H3><FONT COLOR="#883300">Synopsis</FONT></H3>
+<PRE>
+#include "slepcnep.h" 
+PetscErrorCode <A HREF="../NEP/NEPSetSplitPreconditioner.html#NEPSetSplitPreconditioner">NEPSetSplitPreconditioner</A>(<A HREF="../sys/NEP.html#NEP">NEP</A> nep,PetscInt ntp,Mat P[],MatStructure strp)
+</PRE>
+Collective on nep
+<P>
+<H3><FONT COLOR="#883300">Input Parameters</FONT></H3>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>nep  </B></TD><TD>&nbsp;- the nonlinear eigensolver context
+</TD></TR>
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>ntp  </B></TD><TD>&nbsp;- number of terms in the split preconditioner
+</TD></TR>
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>P    </B></TD><TD>&nbsp;- array of matrices
+</TD></TR>
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>strp </B></TD><TD>&nbsp;- structure flag for matrices
+</TD></TR></TABLE>
+<P>
+<H3><FONT COLOR="#883300">Notes</FONT></H3>
+The matrix for the preconditioner is expressed as P(lambda) =
+sum_i P_i*f_i(lambda), for i=1,...,n, where the f_i functions
+are the same as in <A HREF="../NEP/NEPSetSplitOperator.html#NEPSetSplitOperator">NEPSetSplitOperator</A>(). It is not necessary to call
+this function. If it is not invoked, then the preconditioner is
+built from T(lambda), i.e., both matrices and functions passed in
+<A HREF="../NEP/NEPSetSplitOperator.html#NEPSetSplitOperator">NEPSetSplitOperator</A>().
+<P>
+The structure flag provides information about P_i's nonzero pattern
+in the same way as in <A HREF="../NEP/NEPSetSplitOperator.html#NEPSetSplitOperator">NEPSetSplitOperator</A>().
+<P>
+If the functions defining the preconditioner operator were different
+from the ones given in <A HREF="../NEP/NEPSetSplitOperator.html#NEPSetSplitOperator">NEPSetSplitOperator</A>(), then the split form
+cannot be used. Use the callback interface instead.
+<P>
+Use ntp=0 to reset a previously set split preconditioner.
+<P>
+
+<P>
+<H3><FONT COLOR="#883300">See Also</FONT></H3>
+ <A HREF="../NEP/NEPGetSplitPreconditionerTerm.html#NEPGetSplitPreconditionerTerm">NEPGetSplitPreconditionerTerm</A>(), <A HREF="../NEP/NEPGetSplitPreconditionerInfo.html#NEPGetSplitPreconditionerInfo">NEPGetSplitPreconditionerInfo</A>(), <A HREF="../NEP/NEPSetSplitOperator.html#NEPSetSplitOperator">NEPSetSplitOperator</A>()
+<BR><P><B><FONT COLOR="#883300">Location: </FONT></B><A HREF="../../../src/nep/interface/nepbasic.c.html#NEPSetSplitPreconditioner">src/nep/interface/nepbasic.c</A>
+<BR><A HREF="./index.html">Index of all NEP routines</A>
+<BR><A HREF="../../../docs/manualpages/index.html">Table of Contents for all manual pages</A>
+<BR><A HREF="../singleindex.html">Index of all manual pages</A>
+</BODY></HTML>

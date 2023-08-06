@@ -1,0 +1,492 @@
+<center><a href="fnrational.c">Actual source code: fnrational.c</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="https://slepc.upv.es/documentation/current/src/sys/classes/fn/impls/rational/fnrational.c.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2022-08-09T09:05:18+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>slepc-3.17.2 2022-08-09</b></div>
+   <div id="bugreport" align=right><a href="mailto:slepc-maint@upv.es?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: slepc-3.17.2 v3.17.2 src/sys/classes/fn/impls/rational/fnrational.c.html "><small>Report Typos and Errors</small></a></div>
+<pre width="80">
+<a name="line1">  1: </a><font color="#B22222">/*</font>
+<a name="line2">  2: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line3">  3: </a><font color="#B22222">   SLEPc - Scalable Library for Eigenvalue Problem Computations</font>
+<a name="line4">  4: </a><font color="#B22222">   Copyright (c) 2002-, Universitat Politecnica de Valencia, Spain</font>
+
+<a name="line6">  6: </a><font color="#B22222">   This file is part of SLEPc.</font>
+<a name="line7">  7: </a><font color="#B22222">   SLEPc is distributed under a 2-clause BSD license (see LICENSE).</font>
+<a name="line8">  8: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line9">  9: </a><font color="#B22222">*/</font>
+<a name="line10"> 10: </a><font color="#B22222">/*</font>
+<a name="line11"> 11: </a><font color="#B22222">   Rational function  r(x) = p(x)/q(x), where p(x) and q(x) are polynomials</font>
+<a name="line12"> 12: </a><font color="#B22222">*/</font>
+
+<a name="line14"> 14: </a>#include <A href="../../../../../../include/slepc/private/fnimpl.h.html">&lt;slepc/private/fnimpl.h&gt;</A>
+<a name="line15"> 15: </a>#include <A href="../../../../../../include/slepcblaslapack.h.html">&lt;slepcblaslapack.h&gt;</A>
+
+<a name="line17"> 17: </a><font color="#4169E1">typedef</font> <font color="#4169E1">struct</font> {
+<a name="line18"> 18: </a>  PetscScalar *pcoeff;    <font color="#B22222">/* numerator coefficients */</font>
+<a name="line19"> 19: </a>  PetscInt    np;         <font color="#B22222">/* length of array pcoeff, p(x) has degree np-1 */</font>
+<a name="line20"> 20: </a>  PetscScalar *qcoeff;    <font color="#B22222">/* denominator coefficients */</font>
+<a name="line21"> 21: </a>  PetscInt    nq;         <font color="#B22222">/* length of array qcoeff, q(x) has degree nq-1 */</font>
+<a name="line22"> 22: </a>} FN_RATIONAL;
+
+<a name="line24"> 24: </a><strong><font color="#4169E1"><a name="FNEvaluateFunction_Rational"></a>PetscErrorCode FNEvaluateFunction_Rational(<a href="../../../../../../docs/manualpages/sys/FN.html#FN">FN</a> fn,PetscScalar x,PetscScalar *y)</font></strong>
+<a name="line25"> 25: </a>{
+<a name="line26"> 26: </a>  FN_RATIONAL *ctx = (FN_RATIONAL*)fn-&gt;data;
+<a name="line27"> 27: </a>  PetscInt    i;
+<a name="line28"> 28: </a>  PetscScalar p,q;
+
+<a name="line30"> 30: </a>  <font color="#4169E1">if</font> (!ctx-&gt;np) p = 1.0;
+<a name="line31"> 31: </a>  <font color="#4169E1">else</font> {
+<a name="line32"> 32: </a>    p = ctx-&gt;pcoeff[0];
+<a name="line33"> 33: </a>    <font color="#4169E1">for</font> (i=1;i&lt;ctx-&gt;np;i++)
+<a name="line34"> 34: </a>      p = ctx-&gt;pcoeff[i]+x*p;
+<a name="line35"> 35: </a>  }
+<a name="line36"> 36: </a>  <font color="#4169E1">if</font> (!ctx-&gt;nq) *y = p;
+<a name="line37"> 37: </a>  <font color="#4169E1">else</font> {
+<a name="line38"> 38: </a>    q = ctx-&gt;qcoeff[0];
+<a name="line39"> 39: </a>    <font color="#4169E1">for</font> (i=1;i&lt;ctx-&gt;nq;i++)
+<a name="line40"> 40: </a>      q = ctx-&gt;qcoeff[i]+x*q;
+<a name="line42"> 42: </a>    *y = p/q;
+<a name="line43"> 43: </a>  }
+<a name="line44"> 44: </a>  PetscFunctionReturn(0);
+<a name="line45"> 45: </a>}
+
+<a name="line47"> 47: </a><strong><font color="#4169E1"><a name="FNEvaluateFunctionMat_Rational_Private"></a>static PetscErrorCode FNEvaluateFunctionMat_Rational_Private(<a href="../../../../../../docs/manualpages/sys/FN.html#FN">FN</a> fn,const PetscScalar *Aa,PetscScalar *Ba,PetscInt m,PetscBool firstonly)</font></strong>
+<a name="line48"> 48: </a>{
+<a name="line49"> 49: </a>  FN_RATIONAL    *ctx = (FN_RATIONAL*)fn-&gt;data;
+<a name="line50"> 50: </a>  PetscBLASInt   n,k,ld,*ipiv,info;
+<a name="line51"> 51: </a>  PetscInt       i,j;
+<a name="line52"> 52: </a>  PetscScalar    *W,*P,*Q,one=1.0,zero=0.0;
+
+<a name="line54"> 54: </a>  PetscBLASIntCast(m,&amp;n);
+<a name="line55"> 55: </a>  ld = n;
+<a name="line56"> 56: </a>  k  = firstonly? 1: n;
+<a name="line57"> 57: </a>  <font color="#4169E1">if</font> (Aa==Ba) PetscMalloc4(m*m,&amp;P,m*m,&amp;Q,m*m,&amp;W,ld,&amp;ipiv);
+<a name="line58"> 58: </a>  <font color="#4169E1">else</font> {
+<a name="line59"> 59: </a>    P = Ba;
+<a name="line60"> 60: </a>    PetscMalloc3(m*m,&amp;Q,m*m,&amp;W,ld,&amp;ipiv);
+<a name="line61"> 61: </a>  }
+<a name="line62"> 62: </a>  PetscArrayzero(P,m*m);
+<a name="line63"> 63: </a>  <font color="#4169E1">if</font> (!ctx-&gt;np) {
+<a name="line64"> 64: </a>    <font color="#4169E1">for</font> (i=0;i&lt;m;i++) P[i+i*ld] = 1.0;
+<a name="line65"> 65: </a>  } <font color="#4169E1">else</font> {
+<a name="line66"> 66: </a>    <font color="#4169E1">for</font> (i=0;i&lt;m;i++) P[i+i*ld] = ctx-&gt;pcoeff[0];
+<a name="line67"> 67: </a>    <font color="#4169E1">for</font> (j=1;j&lt;ctx-&gt;np;j++) {
+<a name="line68"> 68: </a>      PetscStackCallBLAS(<font color="#666666">"BLASgemm"</font>,BLASgemm_(<font color="#666666">"N"</font>,<font color="#666666">"N"</font>,&amp;n,&amp;n,&amp;n,&amp;one,P,&amp;ld,Aa,&amp;ld,&amp;zero,W,&amp;ld));
+<a name="line69"> 69: </a>      PetscArraycpy(P,W,m*m);
+<a name="line70"> 70: </a>      <font color="#4169E1">for</font> (i=0;i&lt;m;i++) P[i+i*ld] += ctx-&gt;pcoeff[j];
+<a name="line71"> 71: </a>    }
+<a name="line72"> 72: </a>    PetscLogFlops(2.0*n*n*n*(ctx-&gt;np-1));
+<a name="line73"> 73: </a>  }
+<a name="line74"> 74: </a>  <font color="#4169E1">if</font> (ctx-&gt;nq) {
+<a name="line75"> 75: </a>    PetscArrayzero(Q,m*m);
+<a name="line76"> 76: </a>    <font color="#4169E1">for</font> (i=0;i&lt;m;i++) Q[i+i*ld] = ctx-&gt;qcoeff[0];
+<a name="line77"> 77: </a>    <font color="#4169E1">for</font> (j=1;j&lt;ctx-&gt;nq;j++) {
+<a name="line78"> 78: </a>      PetscStackCallBLAS(<font color="#666666">"BLASgemm"</font>,BLASgemm_(<font color="#666666">"N"</font>,<font color="#666666">"N"</font>,&amp;n,&amp;n,&amp;n,&amp;one,Q,&amp;ld,Aa,&amp;ld,&amp;zero,W,&amp;ld));
+<a name="line79"> 79: </a>      PetscArraycpy(Q,W,m*m);
+<a name="line80"> 80: </a>      <font color="#4169E1">for</font> (i=0;i&lt;m;i++) Q[i+i*ld] += ctx-&gt;qcoeff[j];
+<a name="line81"> 81: </a>    }
+<a name="line82"> 82: </a>    PetscStackCallBLAS(<font color="#666666">"LAPACKgesv"</font>,LAPACKgesv_(&amp;n,&amp;k,Q,&amp;ld,ipiv,P,&amp;ld,&amp;info));
+<a name="line83"> 83: </a>    SlepcCheckLapackInfo(<font color="#666666">"gesv"</font>,info);
+<a name="line84"> 84: </a>    PetscLogFlops(2.0*n*n*n*(ctx-&gt;nq-1)+2.0*n*n*n/3.0+2.0*n*n*k);
+<a name="line85"> 85: </a>  }
+<a name="line86"> 86: </a>  <font color="#4169E1">if</font> (Aa==Ba) {
+<a name="line87"> 87: </a>    PetscArraycpy(Ba,P,m*k);
+<a name="line88"> 88: </a>    PetscFree4(P,Q,W,ipiv);
+<a name="line89"> 89: </a>  } <font color="#4169E1">else</font> PetscFree3(Q,W,ipiv);
+<a name="line90"> 90: </a>  PetscFunctionReturn(0);
+<a name="line91"> 91: </a>}
+
+<a name="line93"> 93: </a><strong><font color="#4169E1"><a name="FNEvaluateFunctionMat_Rational"></a>PetscErrorCode FNEvaluateFunctionMat_Rational(<a href="../../../../../../docs/manualpages/sys/FN.html#FN">FN</a> fn,Mat A,Mat B)</font></strong>
+<a name="line94"> 94: </a>{
+<a name="line95"> 95: </a>  PetscInt          m;
+<a name="line96"> 96: </a>  const PetscScalar *Aa;
+<a name="line97"> 97: </a>  PetscScalar       *Ba;
+
+<a name="line99"> 99: </a>  MatDenseGetArrayRead(A,&amp;Aa);
+<a name="line100">100: </a>  MatDenseGetArray(B,&amp;Ba);
+<a name="line101">101: </a>  MatGetSize(A,&amp;m,NULL);
+<a name="line102">102: </a>  FNEvaluateFunctionMat_Rational_Private(fn,Aa,Ba,m,PETSC_FALSE);
+<a name="line103">103: </a>  MatDenseRestoreArrayRead(A,&amp;Aa);
+<a name="line104">104: </a>  MatDenseRestoreArray(B,&amp;Ba);
+<a name="line105">105: </a>  PetscFunctionReturn(0);
+<a name="line106">106: </a>}
+
+<a name="line108">108: </a><strong><font color="#4169E1"><a name="FNEvaluateFunctionMatVec_Rational"></a>PetscErrorCode FNEvaluateFunctionMatVec_Rational(<a href="../../../../../../docs/manualpages/sys/FN.html#FN">FN</a> fn,Mat A,Vec v)</font></strong>
+<a name="line109">109: </a>{
+<a name="line110">110: </a>  PetscInt          m;
+<a name="line111">111: </a>  const PetscScalar *Aa;
+<a name="line112">112: </a>  PetscScalar       *Ba;
+<a name="line113">113: </a>  Mat               B;
+
+<a name="line115">115: </a>  FN_AllocateWorkMat(fn,A,&amp;B);
+<a name="line116">116: </a>  MatDenseGetArrayRead(A,&amp;Aa);
+<a name="line117">117: </a>  MatDenseGetArray(B,&amp;Ba);
+<a name="line118">118: </a>  MatGetSize(A,&amp;m,NULL);
+<a name="line119">119: </a>  FNEvaluateFunctionMat_Rational_Private(fn,Aa,Ba,m,PETSC_TRUE);
+<a name="line120">120: </a>  MatDenseRestoreArrayRead(A,&amp;Aa);
+<a name="line121">121: </a>  MatDenseRestoreArray(B,&amp;Ba);
+<a name="line122">122: </a>  MatGetColumnVector(B,v,0);
+<a name="line123">123: </a>  FN_FreeWorkMat(fn,&amp;B);
+<a name="line124">124: </a>  PetscFunctionReturn(0);
+<a name="line125">125: </a>}
+
+<a name="line127">127: </a><strong><font color="#4169E1"><a name="FNEvaluateDerivative_Rational"></a>PetscErrorCode FNEvaluateDerivative_Rational(<a href="../../../../../../docs/manualpages/sys/FN.html#FN">FN</a> fn,PetscScalar x,PetscScalar *yp)</font></strong>
+<a name="line128">128: </a>{
+<a name="line129">129: </a>  FN_RATIONAL *ctx = (FN_RATIONAL*)fn-&gt;data;
+<a name="line130">130: </a>  PetscInt    i;
+<a name="line131">131: </a>  PetscScalar p,q,pp,qp;
+
+<a name="line133">133: </a>  <font color="#4169E1">if</font> (!ctx-&gt;np) {
+<a name="line134">134: </a>    p = 1.0;
+<a name="line135">135: </a>    pp = 0.0;
+<a name="line136">136: </a>  } <font color="#4169E1">else</font> {
+<a name="line137">137: </a>    p = ctx-&gt;pcoeff[0];
+<a name="line138">138: </a>    pp = 0.0;
+<a name="line139">139: </a>    <font color="#4169E1">for</font> (i=1;i&lt;ctx-&gt;np;i++) {
+<a name="line140">140: </a>      pp = p+x*pp;
+<a name="line141">141: </a>      p = ctx-&gt;pcoeff[i]+x*p;
+<a name="line142">142: </a>    }
+<a name="line143">143: </a>  }
+<a name="line144">144: </a>  <font color="#4169E1">if</font> (!ctx-&gt;nq) *yp = pp;
+<a name="line145">145: </a>  <font color="#4169E1">else</font> {
+<a name="line146">146: </a>    q = ctx-&gt;qcoeff[0];
+<a name="line147">147: </a>    qp = 0.0;
+<a name="line148">148: </a>    <font color="#4169E1">for</font> (i=1;i&lt;ctx-&gt;nq;i++) {
+<a name="line149">149: </a>      qp = q+x*qp;
+<a name="line150">150: </a>      q = ctx-&gt;qcoeff[i]+x*q;
+<a name="line151">151: </a>    }
+<a name="line153">153: </a>    *yp = (pp*q-p*qp)/(q*q);
+<a name="line154">154: </a>  }
+<a name="line155">155: </a>  PetscFunctionReturn(0);
+<a name="line156">156: </a>}
+
+<a name="line158">158: </a><strong><font color="#4169E1"><a name="FNView_Rational"></a>PetscErrorCode FNView_Rational(<a href="../../../../../../docs/manualpages/sys/FN.html#FN">FN</a> fn,PetscViewer viewer)</font></strong>
+<a name="line159">159: </a>{
+<a name="line160">160: </a>  FN_RATIONAL    *ctx = (FN_RATIONAL*)fn-&gt;data;
+<a name="line161">161: </a>  PetscBool      isascii;
+<a name="line162">162: </a>  PetscInt       i;
+<a name="line163">163: </a>  char           str[50];
+
+<a name="line165">165: </a>  PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&amp;isascii);
+<a name="line166">166: </a>  <font color="#4169E1">if</font> (isascii) {
+<a name="line167">167: </a>    <font color="#4169E1">if</font> (fn-&gt;alpha!=(PetscScalar)1.0 || fn-&gt;beta!=(PetscScalar)1.0) {
+<a name="line168">168: </a>      <a href="../../../../../../docs/manualpages/sys/SlepcSNPrintfScalar.html#SlepcSNPrintfScalar">SlepcSNPrintfScalar</a>(str,<font color="#4169E1">sizeof</font>(str),fn-&gt;alpha,PETSC_FALSE);
+<a name="line169">169: </a>      PetscViewerASCIIPrintf(viewer,<font color="#666666">"  Scale factors: alpha=%s,"</font>,str);
+<a name="line170">170: </a>      PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);
+<a name="line171">171: </a>      <a href="../../../../../../docs/manualpages/sys/SlepcSNPrintfScalar.html#SlepcSNPrintfScalar">SlepcSNPrintfScalar</a>(str,<font color="#4169E1">sizeof</font>(str),fn-&gt;beta,PETSC_FALSE);
+<a name="line172">172: </a>      PetscViewerASCIIPrintf(viewer,<font color="#666666">" beta=%s\n"</font>,str);
+<a name="line173">173: </a>      PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);
+<a name="line174">174: </a>    }
+<a name="line175">175: </a>    <font color="#4169E1">if</font> (!ctx-&gt;nq) {
+<a name="line176">176: </a>      <font color="#4169E1">if</font> (!ctx-&gt;np) PetscViewerASCIIPrintf(viewer,<font color="#666666">"  Constant: 1.0\n"</font>);
+<a name="line177">177: </a>      <font color="#4169E1">else</font> <font color="#4169E1">if</font> (ctx-&gt;np==1) {
+<a name="line178">178: </a>        <a href="../../../../../../docs/manualpages/sys/SlepcSNPrintfScalar.html#SlepcSNPrintfScalar">SlepcSNPrintfScalar</a>(str,<font color="#4169E1">sizeof</font>(str),ctx-&gt;pcoeff[0],PETSC_FALSE);
+<a name="line179">179: </a>        PetscViewerASCIIPrintf(viewer,<font color="#666666">"  Constant: %s\n"</font>,str);
+<a name="line180">180: </a>      } <font color="#4169E1">else</font> {
+<a name="line181">181: </a>        PetscViewerASCIIPrintf(viewer,<font color="#666666">"  Polynomial: "</font>);
+<a name="line182">182: </a>        PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);
+<a name="line183">183: </a>        <font color="#4169E1">for</font> (i=0;i&lt;ctx-&gt;np-1;i++) {
+<a name="line184">184: </a>          <a href="../../../../../../docs/manualpages/sys/SlepcSNPrintfScalar.html#SlepcSNPrintfScalar">SlepcSNPrintfScalar</a>(str,<font color="#4169E1">sizeof</font>(str),ctx-&gt;pcoeff[i],PETSC_TRUE);
+<a name="line185">185: </a>          PetscViewerASCIIPrintf(viewer,<font color="#666666">"%s*x^%1"</font> PetscInt_FMT,str,ctx-&gt;np-i-1);
+<a name="line186">186: </a>        }
+<a name="line187">187: </a>        <a href="../../../../../../docs/manualpages/sys/SlepcSNPrintfScalar.html#SlepcSNPrintfScalar">SlepcSNPrintfScalar</a>(str,<font color="#4169E1">sizeof</font>(str),ctx-&gt;pcoeff[ctx-&gt;np-1],PETSC_TRUE);
+<a name="line188">188: </a>        PetscViewerASCIIPrintf(viewer,<font color="#666666">"%s\n"</font>,str);
+<a name="line189">189: </a>        PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);
+<a name="line190">190: </a>      }
+<a name="line191">191: </a>    } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (!ctx-&gt;np) {
+<a name="line192">192: </a>      PetscViewerASCIIPrintf(viewer,<font color="#666666">"  Inverse polinomial: 1 / ("</font>);
+<a name="line193">193: </a>      PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);
+<a name="line194">194: </a>      <font color="#4169E1">for</font> (i=0;i&lt;ctx-&gt;nq-1;i++) {
+<a name="line195">195: </a>        <a href="../../../../../../docs/manualpages/sys/SlepcSNPrintfScalar.html#SlepcSNPrintfScalar">SlepcSNPrintfScalar</a>(str,<font color="#4169E1">sizeof</font>(str),ctx-&gt;qcoeff[i],PETSC_TRUE);
+<a name="line196">196: </a>        PetscViewerASCIIPrintf(viewer,<font color="#666666">"%s*x^%1"</font> PetscInt_FMT,str,ctx-&gt;nq-i-1);
+<a name="line197">197: </a>      }
+<a name="line198">198: </a>      <a href="../../../../../../docs/manualpages/sys/SlepcSNPrintfScalar.html#SlepcSNPrintfScalar">SlepcSNPrintfScalar</a>(str,<font color="#4169E1">sizeof</font>(str),ctx-&gt;qcoeff[ctx-&gt;nq-1],PETSC_TRUE);
+<a name="line199">199: </a>      PetscViewerASCIIPrintf(viewer,<font color="#666666">"%s)\n"</font>,str);
+<a name="line200">200: </a>      PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);
+<a name="line201">201: </a>    } <font color="#4169E1">else</font> {
+<a name="line202">202: </a>      PetscViewerASCIIPrintf(viewer,<font color="#666666">"  Rational function: ("</font>);
+<a name="line203">203: </a>      PetscViewerASCIIUseTabs(viewer,PETSC_FALSE);
+<a name="line204">204: </a>      <font color="#4169E1">for</font> (i=0;i&lt;ctx-&gt;np-1;i++) {
+<a name="line205">205: </a>        <a href="../../../../../../docs/manualpages/sys/SlepcSNPrintfScalar.html#SlepcSNPrintfScalar">SlepcSNPrintfScalar</a>(str,<font color="#4169E1">sizeof</font>(str),ctx-&gt;pcoeff[i],PETSC_TRUE);
+<a name="line206">206: </a>        PetscViewerASCIIPrintf(viewer,<font color="#666666">"%s*x^%1"</font> PetscInt_FMT,str,ctx-&gt;np-i-1);
+<a name="line207">207: </a>      }
+<a name="line208">208: </a>      <a href="../../../../../../docs/manualpages/sys/SlepcSNPrintfScalar.html#SlepcSNPrintfScalar">SlepcSNPrintfScalar</a>(str,<font color="#4169E1">sizeof</font>(str),ctx-&gt;pcoeff[ctx-&gt;np-1],PETSC_TRUE);
+<a name="line209">209: </a>      PetscViewerASCIIPrintf(viewer,<font color="#666666">"%s) / ("</font>,str);
+<a name="line210">210: </a>      <font color="#4169E1">for</font> (i=0;i&lt;ctx-&gt;nq-1;i++) {
+<a name="line211">211: </a>        <a href="../../../../../../docs/manualpages/sys/SlepcSNPrintfScalar.html#SlepcSNPrintfScalar">SlepcSNPrintfScalar</a>(str,<font color="#4169E1">sizeof</font>(str),ctx-&gt;qcoeff[i],PETSC_TRUE);
+<a name="line212">212: </a>        PetscViewerASCIIPrintf(viewer,<font color="#666666">"%s*x^%1"</font> PetscInt_FMT,str,ctx-&gt;nq-i-1);
+<a name="line213">213: </a>      }
+<a name="line214">214: </a>      <a href="../../../../../../docs/manualpages/sys/SlepcSNPrintfScalar.html#SlepcSNPrintfScalar">SlepcSNPrintfScalar</a>(str,<font color="#4169E1">sizeof</font>(str),ctx-&gt;qcoeff[ctx-&gt;nq-1],PETSC_TRUE);
+<a name="line215">215: </a>      PetscViewerASCIIPrintf(viewer,<font color="#666666">"%s)\n"</font>,str);
+<a name="line216">216: </a>      PetscViewerASCIIUseTabs(viewer,PETSC_TRUE);
+<a name="line217">217: </a>    }
+<a name="line218">218: </a>  }
+<a name="line219">219: </a>  PetscFunctionReturn(0);
+<a name="line220">220: </a>}
+
+<a name="line222">222: </a><strong><font color="#4169E1"><a name="FNRationalSetNumerator_Rational"></a>static PetscErrorCode FNRationalSetNumerator_Rational(<a href="../../../../../../docs/manualpages/sys/FN.html#FN">FN</a> fn,PetscInt np,PetscScalar *pcoeff)</font></strong>
+<a name="line223">223: </a>{
+<a name="line224">224: </a>  FN_RATIONAL    *ctx = (FN_RATIONAL*)fn-&gt;data;
+<a name="line225">225: </a>  PetscInt       i;
+
+<a name="line228">228: </a>  ctx-&gt;np = np;
+<a name="line229">229: </a>  PetscFree(ctx-&gt;pcoeff);
+<a name="line230">230: </a>  <font color="#4169E1">if</font> (np) {
+<a name="line231">231: </a>    PetscMalloc1(np,&amp;ctx-&gt;pcoeff);
+<a name="line232">232: </a>    PetscLogObjectMemory((PetscObject)fn,np*<font color="#4169E1">sizeof</font>(PetscScalar));
+<a name="line233">233: </a>    <font color="#4169E1">for</font> (i=0;i&lt;np;i++) ctx-&gt;pcoeff[i] = pcoeff[i];
+<a name="line234">234: </a>  }
+<a name="line235">235: </a>  PetscFunctionReturn(0);
+<a name="line236">236: </a>}
+
+<a name="line238">238: </a><font color="#B22222">/*@C</font>
+<a name="line239">239: </a><font color="#B22222">   <a href="../../../../../../docs/manualpages/FN/FNRationalSetNumerator.html#FNRationalSetNumerator">FNRationalSetNumerator</a> - Sets the parameters defining the numerator of the</font>
+<a name="line240">240: </a><font color="#B22222">   rational function.</font>
+
+<a name="line242">242: </a><font color="#B22222">   Logically Collective on fn</font>
+
+<a name="line244">244: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line245">245: </a><font color="#B22222">+  fn     - the math function context</font>
+<a name="line246">246: </a><font color="#B22222">.  np     - number of coefficients</font>
+<a name="line247">247: </a><font color="#B22222">-  pcoeff - coefficients (array of scalar values)</font>
+
+<a name="line249">249: </a><font color="#B22222">   Notes:</font>
+<a name="line250">250: </a><font color="#B22222">   Let the rational function r(x) = p(x)/q(x), where p(x) and q(x) are polynomials.</font>
+<a name="line251">251: </a><font color="#B22222">   This function provides the coefficients of the numerator p(x).</font>
+<a name="line252">252: </a><font color="#B22222">   Hence, p(x) is of degree np-1.</font>
+<a name="line253">253: </a><font color="#B22222">   If np is zero, then the numerator is assumed to be p(x)=1.</font>
+
+<a name="line255">255: </a><font color="#B22222">   In polynomials, high order coefficients are stored in the first positions</font>
+<a name="line256">256: </a><font color="#B22222">   of the array, e.g. to represent x^2-3 use {1,0,-3}.</font>
+
+<a name="line258">258: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line260">260: </a><font color="#B22222">.seealso: <a href="../../../../../../docs/manualpages/FN/FNRationalSetDenominator.html#FNRationalSetDenominator">FNRationalSetDenominator</a>(), <a href="../../../../../../docs/manualpages/FN/FNRationalGetNumerator.html#FNRationalGetNumerator">FNRationalGetNumerator</a>()</font>
+<a name="line261">261: </a><font color="#B22222">@*/</font>
+<a name="line262">262: </a><strong><font color="#4169E1"><a name="FNRationalSetNumerator"></a>PetscErrorCode <a href="../../../../../../docs/manualpages/FN/FNRationalSetNumerator.html#FNRationalSetNumerator">FNRationalSetNumerator</a>(<a href="../../../../../../docs/manualpages/sys/FN.html#FN">FN</a> fn,PetscInt np,PetscScalar *pcoeff)</font></strong>
+<a name="line263">263: </a>{
+<a name="line267">267: </a>  PetscTryMethod(fn,<font color="#666666">"FNRationalSetNumerator_C"</font>,(<a href="../../../../../../docs/manualpages/sys/FN.html#FN">FN</a>,PetscInt,PetscScalar*),(fn,np,pcoeff));
+<a name="line268">268: </a>  PetscFunctionReturn(0);
+<a name="line269">269: </a>}
+
+<a name="line271">271: </a><strong><font color="#4169E1"><a name="FNRationalGetNumerator_Rational"></a>static PetscErrorCode FNRationalGetNumerator_Rational(<a href="../../../../../../docs/manualpages/sys/FN.html#FN">FN</a> fn,PetscInt *np,PetscScalar *pcoeff[])</font></strong>
+<a name="line272">272: </a>{
+<a name="line273">273: </a>  FN_RATIONAL    *ctx = (FN_RATIONAL*)fn-&gt;data;
+<a name="line274">274: </a>  PetscInt       i;
+
+<a name="line276">276: </a>  <font color="#4169E1">if</font> (np) *np = ctx-&gt;np;
+<a name="line277">277: </a>  <font color="#4169E1">if</font> (pcoeff) {
+<a name="line278">278: </a>    <font color="#4169E1">if</font> (!ctx-&gt;np) *pcoeff = NULL;
+<a name="line279">279: </a>    <font color="#4169E1">else</font> {
+<a name="line280">280: </a>      PetscMalloc1(ctx-&gt;np,pcoeff);
+<a name="line281">281: </a>      <font color="#4169E1">for</font> (i=0;i&lt;ctx-&gt;np;i++) (*pcoeff)[i] = ctx-&gt;pcoeff[i];
+<a name="line282">282: </a>    }
+<a name="line283">283: </a>  }
+<a name="line284">284: </a>  PetscFunctionReturn(0);
+<a name="line285">285: </a>}
+
+<a name="line287">287: </a><font color="#B22222">/*@C</font>
+<a name="line288">288: </a><font color="#B22222">   <a href="../../../../../../docs/manualpages/FN/FNRationalGetNumerator.html#FNRationalGetNumerator">FNRationalGetNumerator</a> - Gets the parameters that define the numerator of the</font>
+<a name="line289">289: </a><font color="#B22222">   rational function.</font>
+
+<a name="line291">291: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line293">293: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line294">294: </a><font color="#B22222">.  fn     - the math function context</font>
+
+<a name="line296">296: </a><font color="#B22222">   Output Parameters:</font>
+<a name="line297">297: </a><font color="#B22222">+  np     - number of coefficients</font>
+<a name="line298">298: </a><font color="#B22222">-  pcoeff - coefficients (array of scalar values, length nq)</font>
+
+<a name="line300">300: </a><font color="#B22222">   Notes:</font>
+<a name="line301">301: </a><font color="#B22222">   The values passed by user with <a href="../../../../../../docs/manualpages/FN/FNRationalSetNumerator.html#FNRationalSetNumerator">FNRationalSetNumerator</a>() are returned (or null</font>
+<a name="line302">302: </a><font color="#B22222">   pointers otherwise).</font>
+<a name="line303">303: </a><font color="#B22222">   The pcoeff array should be freed by the user when no longer needed.</font>
+
+<a name="line305">305: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line307">307: </a><font color="#B22222">.seealso: <a href="../../../../../../docs/manualpages/FN/FNRationalSetNumerator.html#FNRationalSetNumerator">FNRationalSetNumerator</a>()</font>
+<a name="line308">308: </a><font color="#B22222">@*/</font>
+<a name="line309">309: </a><strong><font color="#4169E1"><a name="FNRationalGetNumerator"></a>PetscErrorCode <a href="../../../../../../docs/manualpages/FN/FNRationalGetNumerator.html#FNRationalGetNumerator">FNRationalGetNumerator</a>(<a href="../../../../../../docs/manualpages/sys/FN.html#FN">FN</a> fn,PetscInt *np,PetscScalar *pcoeff[])</font></strong>
+<a name="line310">310: </a>{
+<a name="line312">312: </a>  PetscUseMethod(fn,<font color="#666666">"FNRationalGetNumerator_C"</font>,(<a href="../../../../../../docs/manualpages/sys/FN.html#FN">FN</a>,PetscInt*,PetscScalar**),(fn,np,pcoeff));
+<a name="line313">313: </a>  PetscFunctionReturn(0);
+<a name="line314">314: </a>}
+
+<a name="line316">316: </a><strong><font color="#4169E1"><a name="FNRationalSetDenominator_Rational"></a>static PetscErrorCode FNRationalSetDenominator_Rational(<a href="../../../../../../docs/manualpages/sys/FN.html#FN">FN</a> fn,PetscInt nq,PetscScalar *qcoeff)</font></strong>
+<a name="line317">317: </a>{
+<a name="line318">318: </a>  FN_RATIONAL    *ctx = (FN_RATIONAL*)fn-&gt;data;
+<a name="line319">319: </a>  PetscInt       i;
+
+<a name="line322">322: </a>  ctx-&gt;nq = nq;
+<a name="line323">323: </a>  PetscFree(ctx-&gt;qcoeff);
+<a name="line324">324: </a>  <font color="#4169E1">if</font> (nq) {
+<a name="line325">325: </a>    PetscMalloc1(nq,&amp;ctx-&gt;qcoeff);
+<a name="line326">326: </a>    PetscLogObjectMemory((PetscObject)fn,nq*<font color="#4169E1">sizeof</font>(PetscScalar));
+<a name="line327">327: </a>    <font color="#4169E1">for</font> (i=0;i&lt;nq;i++) ctx-&gt;qcoeff[i] = qcoeff[i];
+<a name="line328">328: </a>  }
+<a name="line329">329: </a>  PetscFunctionReturn(0);
+<a name="line330">330: </a>}
+
+<a name="line332">332: </a><font color="#B22222">/*@C</font>
+<a name="line333">333: </a><font color="#B22222">   <a href="../../../../../../docs/manualpages/FN/FNRationalSetDenominator.html#FNRationalSetDenominator">FNRationalSetDenominator</a> - Sets the parameters defining the denominator of the</font>
+<a name="line334">334: </a><font color="#B22222">   rational function.</font>
+
+<a name="line336">336: </a><font color="#B22222">   Logically Collective on fn</font>
+
+<a name="line338">338: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line339">339: </a><font color="#B22222">+  fn     - the math function context</font>
+<a name="line340">340: </a><font color="#B22222">.  nq     - number of coefficients</font>
+<a name="line341">341: </a><font color="#B22222">-  qcoeff - coefficients (array of scalar values)</font>
+
+<a name="line343">343: </a><font color="#B22222">   Notes:</font>
+<a name="line344">344: </a><font color="#B22222">   Let the rational function r(x) = p(x)/q(x), where p(x) and q(x) are polynomials.</font>
+<a name="line345">345: </a><font color="#B22222">   This function provides the coefficients of the denominator q(x).</font>
+<a name="line346">346: </a><font color="#B22222">   Hence, q(x) is of degree nq-1.</font>
+<a name="line347">347: </a><font color="#B22222">   If nq is zero, then the function is assumed to be polynomial, r(x) = p(x).</font>
+
+<a name="line349">349: </a><font color="#B22222">   In polynomials, high order coefficients are stored in the first positions</font>
+<a name="line350">350: </a><font color="#B22222">   of the array, e.g. to represent x^2-3 use {1,0,-3}.</font>
+
+<a name="line352">352: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line354">354: </a><font color="#B22222">.seealso: <a href="../../../../../../docs/manualpages/FN/FNRationalSetNumerator.html#FNRationalSetNumerator">FNRationalSetNumerator</a>(), <a href="../../../../../../docs/manualpages/FN/FNRationalGetDenominator.html#FNRationalGetDenominator">FNRationalGetDenominator</a>()</font>
+<a name="line355">355: </a><font color="#B22222">@*/</font>
+<a name="line356">356: </a><strong><font color="#4169E1"><a name="FNRationalSetDenominator"></a>PetscErrorCode <a href="../../../../../../docs/manualpages/FN/FNRationalSetDenominator.html#FNRationalSetDenominator">FNRationalSetDenominator</a>(<a href="../../../../../../docs/manualpages/sys/FN.html#FN">FN</a> fn,PetscInt nq,PetscScalar *qcoeff)</font></strong>
+<a name="line357">357: </a>{
+<a name="line361">361: </a>  PetscTryMethod(fn,<font color="#666666">"FNRationalSetDenominator_C"</font>,(<a href="../../../../../../docs/manualpages/sys/FN.html#FN">FN</a>,PetscInt,PetscScalar*),(fn,nq,qcoeff));
+<a name="line362">362: </a>  PetscFunctionReturn(0);
+<a name="line363">363: </a>}
+
+<a name="line365">365: </a><strong><font color="#4169E1"><a name="FNRationalGetDenominator_Rational"></a>static PetscErrorCode FNRationalGetDenominator_Rational(<a href="../../../../../../docs/manualpages/sys/FN.html#FN">FN</a> fn,PetscInt *nq,PetscScalar *qcoeff[])</font></strong>
+<a name="line366">366: </a>{
+<a name="line367">367: </a>  FN_RATIONAL    *ctx = (FN_RATIONAL*)fn-&gt;data;
+<a name="line368">368: </a>  PetscInt       i;
+
+<a name="line370">370: </a>  <font color="#4169E1">if</font> (nq) *nq = ctx-&gt;nq;
+<a name="line371">371: </a>  <font color="#4169E1">if</font> (qcoeff) {
+<a name="line372">372: </a>    <font color="#4169E1">if</font> (!ctx-&gt;nq) *qcoeff = NULL;
+<a name="line373">373: </a>    <font color="#4169E1">else</font> {
+<a name="line374">374: </a>      PetscMalloc1(ctx-&gt;nq,qcoeff);
+<a name="line375">375: </a>      <font color="#4169E1">for</font> (i=0;i&lt;ctx-&gt;nq;i++) (*qcoeff)[i] = ctx-&gt;qcoeff[i];
+<a name="line376">376: </a>    }
+<a name="line377">377: </a>  }
+<a name="line378">378: </a>  PetscFunctionReturn(0);
+<a name="line379">379: </a>}
+
+<a name="line381">381: </a><font color="#B22222">/*@C</font>
+<a name="line382">382: </a><font color="#B22222">   <a href="../../../../../../docs/manualpages/FN/FNRationalGetDenominator.html#FNRationalGetDenominator">FNRationalGetDenominator</a> - Gets the parameters that define the denominator of the</font>
+<a name="line383">383: </a><font color="#B22222">   rational function.</font>
+
+<a name="line385">385: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line387">387: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line388">388: </a><font color="#B22222">.  fn     - the math function context</font>
+
+<a name="line390">390: </a><font color="#B22222">   Output Parameters:</font>
+<a name="line391">391: </a><font color="#B22222">+  nq     - number of coefficients</font>
+<a name="line392">392: </a><font color="#B22222">-  qcoeff - coefficients (array of scalar values, length nq)</font>
+
+<a name="line394">394: </a><font color="#B22222">   Notes:</font>
+<a name="line395">395: </a><font color="#B22222">   The values passed by user with <a href="../../../../../../docs/manualpages/FN/FNRationalSetDenominator.html#FNRationalSetDenominator">FNRationalSetDenominator</a>() are returned (or a null</font>
+<a name="line396">396: </a><font color="#B22222">   pointer otherwise).</font>
+<a name="line397">397: </a><font color="#B22222">   The qcoeff array should be freed by the user when no longer needed.</font>
+
+<a name="line399">399: </a><font color="#B22222">   Level: intermediate</font>
+
+<a name="line401">401: </a><font color="#B22222">.seealso: <a href="../../../../../../docs/manualpages/FN/FNRationalSetDenominator.html#FNRationalSetDenominator">FNRationalSetDenominator</a>()</font>
+<a name="line402">402: </a><font color="#B22222">@*/</font>
+<a name="line403">403: </a><strong><font color="#4169E1"><a name="FNRationalGetDenominator"></a>PetscErrorCode <a href="../../../../../../docs/manualpages/FN/FNRationalGetDenominator.html#FNRationalGetDenominator">FNRationalGetDenominator</a>(<a href="../../../../../../docs/manualpages/sys/FN.html#FN">FN</a> fn,PetscInt *nq,PetscScalar *qcoeff[])</font></strong>
+<a name="line404">404: </a>{
+<a name="line406">406: </a>  PetscUseMethod(fn,<font color="#666666">"FNRationalGetDenominator_C"</font>,(<a href="../../../../../../docs/manualpages/sys/FN.html#FN">FN</a>,PetscInt*,PetscScalar**),(fn,nq,qcoeff));
+<a name="line407">407: </a>  PetscFunctionReturn(0);
+<a name="line408">408: </a>}
+
+<a name="line410">410: </a><strong><font color="#4169E1"><a name="FNSetFromOptions_Rational"></a>PetscErrorCode FNSetFromOptions_Rational(PetscOptionItems *PetscOptionsObject,<a href="../../../../../../docs/manualpages/sys/FN.html#FN">FN</a> fn)</font></strong>
+<a name="line411">411: </a>{
+<a name="line412">412: </a><strong><font color="#228B22">#define PARMAX 10</font></strong>
+<a name="line413">413: </a>  PetscScalar    array[PARMAX];
+<a name="line414">414: </a>  PetscInt       i,k;
+<a name="line415">415: </a>  PetscBool      flg;
+
+<a name="line417">417: </a>  PetscOptionsHead(PetscOptionsObject,<font color="#666666">"<a href="../../../../../../docs/manualpages/sys/FN.html#FN">FN</a> Rational Options"</font>);
+
+<a name="line419">419: </a>    k = PARMAX;
+<a name="line420">420: </a>    <font color="#4169E1">for</font> (i=0;i&lt;k;i++) array[i] = 0;
+<a name="line421">421: </a>    PetscOptionsScalarArray(<font color="#666666">"-fn_rational_numerator"</font>,<font color="#666666">"Numerator coefficients (one or more scalar values separated with a comma without spaces)"</font>,<font color="#666666">"<a href="../../../../../../docs/manualpages/FN/FNRationalSetNumerator.html#FNRationalSetNumerator">FNRationalSetNumerator</a>"</font>,array,&amp;k,&amp;flg);
+<a name="line422">422: </a>    <font color="#4169E1">if</font> (flg) <a href="../../../../../../docs/manualpages/FN/FNRationalSetNumerator.html#FNRationalSetNumerator">FNRationalSetNumerator</a>(fn,k,array);
+
+<a name="line424">424: </a>    k = PARMAX;
+<a name="line425">425: </a>    <font color="#4169E1">for</font> (i=0;i&lt;k;i++) array[i] = 0;
+<a name="line426">426: </a>    PetscOptionsScalarArray(<font color="#666666">"-fn_rational_denominator"</font>,<font color="#666666">"Denominator coefficients (one or more scalar values separated with a comma without spaces)"</font>,<font color="#666666">"<a href="../../../../../../docs/manualpages/FN/FNRationalSetDenominator.html#FNRationalSetDenominator">FNRationalSetDenominator</a>"</font>,array,&amp;k,&amp;flg);
+<a name="line427">427: </a>    <font color="#4169E1">if</font> (flg) <a href="../../../../../../docs/manualpages/FN/FNRationalSetDenominator.html#FNRationalSetDenominator">FNRationalSetDenominator</a>(fn,k,array);
+
+<a name="line429">429: </a>  PetscOptionsTail();
+<a name="line430">430: </a>  PetscFunctionReturn(0);
+<a name="line431">431: </a>}
+
+<a name="line433">433: </a><strong><font color="#4169E1"><a name="FNDuplicate_Rational"></a>PetscErrorCode FNDuplicate_Rational(<a href="../../../../../../docs/manualpages/sys/FN.html#FN">FN</a> fn,MPI_Comm comm,<a href="../../../../../../docs/manualpages/sys/FN.html#FN">FN</a> *newfn)</font></strong>
+<a name="line434">434: </a>{
+<a name="line435">435: </a>  FN_RATIONAL    *ctx = (FN_RATIONAL*)fn-&gt;data,*ctx2 = (FN_RATIONAL*)(*newfn)-&gt;data;
+<a name="line436">436: </a>  PetscInt       i;
+
+<a name="line438">438: </a>  ctx2-&gt;np = ctx-&gt;np;
+<a name="line439">439: </a>  <font color="#4169E1">if</font> (ctx-&gt;np) {
+<a name="line440">440: </a>    PetscMalloc1(ctx-&gt;np,&amp;ctx2-&gt;pcoeff);
+<a name="line441">441: </a>    PetscLogObjectMemory((PetscObject)(*newfn),ctx-&gt;np*<font color="#4169E1">sizeof</font>(PetscScalar));
+<a name="line442">442: </a>    <font color="#4169E1">for</font> (i=0;i&lt;ctx-&gt;np;i++) ctx2-&gt;pcoeff[i] = ctx-&gt;pcoeff[i];
+<a name="line443">443: </a>  }
+<a name="line444">444: </a>  ctx2-&gt;nq = ctx-&gt;nq;
+<a name="line445">445: </a>  <font color="#4169E1">if</font> (ctx-&gt;nq) {
+<a name="line446">446: </a>    PetscMalloc1(ctx-&gt;nq,&amp;ctx2-&gt;qcoeff);
+<a name="line447">447: </a>    PetscLogObjectMemory((PetscObject)(*newfn),ctx-&gt;nq*<font color="#4169E1">sizeof</font>(PetscScalar));
+<a name="line448">448: </a>    <font color="#4169E1">for</font> (i=0;i&lt;ctx-&gt;nq;i++) ctx2-&gt;qcoeff[i] = ctx-&gt;qcoeff[i];
+<a name="line449">449: </a>  }
+<a name="line450">450: </a>  PetscFunctionReturn(0);
+<a name="line451">451: </a>}
+
+<a name="line453">453: </a><strong><font color="#4169E1"><a name="FNDestroy_Rational"></a>PetscErrorCode FNDestroy_Rational(<a href="../../../../../../docs/manualpages/sys/FN.html#FN">FN</a> fn)</font></strong>
+<a name="line454">454: </a>{
+<a name="line455">455: </a>  FN_RATIONAL    *ctx = (FN_RATIONAL*)fn-&gt;data;
+
+<a name="line457">457: </a>  PetscFree(ctx-&gt;pcoeff);
+<a name="line458">458: </a>  PetscFree(ctx-&gt;qcoeff);
+<a name="line459">459: </a>  PetscFree(fn-&gt;data);
+<a name="line460">460: </a>  PetscObjectComposeFunction((PetscObject)fn,<font color="#666666">"FNRationalSetNumerator_C"</font>,NULL);
+<a name="line461">461: </a>  PetscObjectComposeFunction((PetscObject)fn,<font color="#666666">"FNRationalGetNumerator_C"</font>,NULL);
+<a name="line462">462: </a>  PetscObjectComposeFunction((PetscObject)fn,<font color="#666666">"FNRationalSetDenominator_C"</font>,NULL);
+<a name="line463">463: </a>  PetscObjectComposeFunction((PetscObject)fn,<font color="#666666">"FNRationalGetDenominator_C"</font>,NULL);
+<a name="line464">464: </a>  PetscFunctionReturn(0);
+<a name="line465">465: </a>}
+
+<a name="line467">467: </a><strong><font color="#4169E1"><a name="FNCreate_Rational"></a>SLEPC_EXTERN PetscErrorCode FNCreate_Rational(<a href="../../../../../../docs/manualpages/sys/FN.html#FN">FN</a> fn)</font></strong>
+<a name="line468">468: </a>{
+<a name="line469">469: </a>  FN_RATIONAL    *ctx;
+
+<a name="line471">471: </a>  PetscNewLog(fn,&amp;ctx);
+<a name="line472">472: </a>  fn-&gt;data = (void*)ctx;
+
+<a name="line474">474: </a>  fn-&gt;ops-&gt;evaluatefunction          = FNEvaluateFunction_Rational;
+<a name="line475">475: </a>  fn-&gt;ops-&gt;evaluatederivative        = FNEvaluateDerivative_Rational;
+<a name="line476">476: </a>  fn-&gt;ops-&gt;evaluatefunctionmat[0]    = FNEvaluateFunctionMat_Rational;
+<a name="line477">477: </a>  fn-&gt;ops-&gt;evaluatefunctionmatvec[0] = FNEvaluateFunctionMatVec_Rational;
+<a name="line478">478: </a>  fn-&gt;ops-&gt;setfromoptions            = FNSetFromOptions_Rational;
+<a name="line479">479: </a>  fn-&gt;ops-&gt;view                      = FNView_Rational;
+<a name="line480">480: </a>  fn-&gt;ops-&gt;duplicate                 = FNDuplicate_Rational;
+<a name="line481">481: </a>  fn-&gt;ops-&gt;destroy                   = FNDestroy_Rational;
+<a name="line482">482: </a>  PetscObjectComposeFunction((PetscObject)fn,<font color="#666666">"FNRationalSetNumerator_C"</font>,FNRationalSetNumerator_Rational);
+<a name="line483">483: </a>  PetscObjectComposeFunction((PetscObject)fn,<font color="#666666">"FNRationalGetNumerator_C"</font>,FNRationalGetNumerator_Rational);
+<a name="line484">484: </a>  PetscObjectComposeFunction((PetscObject)fn,<font color="#666666">"FNRationalSetDenominator_C"</font>,FNRationalSetDenominator_Rational);
+<a name="line485">485: </a>  PetscObjectComposeFunction((PetscObject)fn,<font color="#666666">"FNRationalGetDenominator_C"</font>,FNRationalGetDenominator_Rational);
+<a name="line486">486: </a>  PetscFunctionReturn(0);
+<a name="line487">487: </a>}
+</pre>
+</body>
+
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD> <link rel="canonical" href="https://slepc.upv.es/documentation/current/docs/manualpages/DS/DSGNHEP.html" />
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<link rel="stylesheet" href="/slepc.css" type="text/css">
+<TITLE>DSGNHEP</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+   <div id="version" align=right><b>slepc-3.17.2 2022-08-09</b></div>
+   <div id="bugreport" align=right><a href="mailto:slepc-maint@upv.es?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: slepc-3.17.2 v3.17.2 docs/manualpages/DS/DSGNHEP.html "><small>Report Typos and Errors</small></a></div>
+<H1>DSGNHEP</H1>
+Dense Generalized Non-Hermitian Eigenvalue Problem. 
+<P>
+<H3><FONT COLOR="#883300">Notes</FONT></H3>
+The problem is expressed as A*X = B*X*Lambda, where (A,B) is the input
+matrix pencil. Lambda is a diagonal matrix whose diagonal elements are the
+arguments of <A HREF="../DS/DSSolve.html#DSSolve">DSSolve</A>(). After solve, (A,B) is overwritten with the
+generalized (real) Schur form (S,T) = (Z'*A*Q,Z'*B*Q), with the first
+matrix being upper quasi-triangular and the second one triangular.
+<P>
+<H3><FONT COLOR="#883300">Used DS matrices</FONT></H3>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B><A HREF="../sys/DSMatType.html#DSMatType">DS_MAT_A</A> </B></TD><TD>&nbsp;- first problem matrix
+</TD></TR>
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B><A HREF="../sys/DSMatType.html#DSMatType">DS_MAT_B</A> </B></TD><TD>&nbsp;- second problem matrix
+</TD></TR>
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B><A HREF="../sys/DSMatType.html#DSMatType">DS_MAT_Q</A> </B></TD><TD>&nbsp;- first orthogonal/unitary transformation that reduces to
+generalized (real) Schur form
+</TD></TR>
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B><A HREF="../sys/DSMatType.html#DSMatType">DS_MAT_Z</A> </B></TD><TD>&nbsp;- second orthogonal/unitary transformation that reduces to
+generalized (real) Schur form
+</TD></TR></TABLE>
+<P>
+<H3><FONT COLOR="#883300">Implemented methods</FONT></H3>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>0 </B></TD><TD>&nbsp;- QZ iteration (_gges)
+</TD></TR></TABLE>
+<P>
+<H3><FONT COLOR="#883300">See Also</FONT></H3>
+ <A HREF="../DS/DSCreate.html#DSCreate">DSCreate</A>(), <A HREF="../DS/DSSetType.html#DSSetType">DSSetType</A>(), <A HREF="../sys/DSType.html#DSType">DSType</A>
+<BR><P><B><FONT COLOR="#883300">Location: </FONT></B><A HREF="../../../src/sys/classes/ds/impls/gnhep/dsgnhep.c.html#DSGNHEP">src/sys/classes/ds/impls/gnhep/dsgnhep.c</A>
+<BR><A HREF="./index.html">Index of all DS routines</A>
+<BR><A HREF="../../../docs/manualpages/index.html">Table of Contents for all manual pages</A>
+<BR><A HREF="../singleindex.html">Index of all manual pages</A>
+</BODY></HTML>

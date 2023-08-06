@@ -1,0 +1,414 @@
+<center><a href="rqcg.c">Actual source code: rqcg.c</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="https://slepc.upv.es/documentation/current/src/eps/impls/cg/rqcg/rqcg.c.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2022-08-09T09:05:35+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>slepc-3.17.2 2022-08-09</b></div>
+   <div id="bugreport" align=right><a href="mailto:slepc-maint@upv.es?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: slepc-3.17.2 v3.17.2 src/eps/impls/cg/rqcg/rqcg.c.html "><small>Report Typos and Errors</small></a></div>
+<pre width="80">
+<a name="line1">  1: </a><font color="#B22222">/*</font>
+<a name="line2">  2: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line3">  3: </a><font color="#B22222">   SLEPc - Scalable Library for Eigenvalue Problem Computations</font>
+<a name="line4">  4: </a><font color="#B22222">   Copyright (c) 2002-, Universitat Politecnica de Valencia, Spain</font>
+
+<a name="line6">  6: </a><font color="#B22222">   This file is part of SLEPc.</font>
+<a name="line7">  7: </a><font color="#B22222">   SLEPc is distributed under a 2-clause BSD license (see LICENSE).</font>
+<a name="line8">  8: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line9">  9: </a><font color="#B22222">*/</font>
+<a name="line10"> 10: </a><font color="#B22222">/*</font>
+<a name="line11"> 11: </a><font color="#B22222">   SLEPc eigensolver: "rqcg"</font>
+
+<a name="line13"> 13: </a><font color="#B22222">   Method: Rayleigh Quotient Conjugate Gradient</font>
+
+<a name="line15"> 15: </a><font color="#B22222">   Algorithm:</font>
+
+<a name="line17"> 17: </a><font color="#B22222">       Conjugate Gradient minimization of the Rayleigh quotient with</font>
+<a name="line18"> 18: </a><font color="#B22222">       periodic Rayleigh-Ritz acceleration.</font>
+
+<a name="line20"> 20: </a><font color="#B22222">   References:</font>
+
+<a name="line22"> 22: </a><font color="#B22222">       [1] L. Bergamaschi et al., "Parallel preconditioned conjugate gradient</font>
+<a name="line23"> 23: </a><font color="#B22222">           optimization of the Rayleigh quotient for the solution of sparse</font>
+<a name="line24"> 24: </a><font color="#B22222">           eigenproblems", Appl. Math. Comput. 175(2):1694-1715, 2006.</font>
+<a name="line25"> 25: </a><font color="#B22222">*/</font>
+
+<a name="line27"> 27: </a>#include <A href="../../../../../include/slepc/private/epsimpl.h.html">&lt;slepc/private/epsimpl.h&gt;</A>
+
+<a name="line29"> 29: </a><strong><font color="#4169E1">PetscErrorCode EPSSolve_RQCG(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a>)</font></strong>;
+
+<a name="line31"> 31: </a><font color="#4169E1">typedef</font> <font color="#4169E1">struct</font> {
+<a name="line32"> 32: </a>  PetscInt nrest;         <font color="#B22222">/* user-provided reset parameter */</font>
+<a name="line33"> 33: </a>  PetscInt allocsize;     <font color="#B22222">/* number of columns of work <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a>'s allocated at setup */</font>
+<a name="line34"> 34: </a>  <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a>       AV,W,P,G;
+<a name="line35"> 35: </a>} EPS_RQCG;
+
+<a name="line37"> 37: </a><strong><font color="#4169E1"><a name="EPSSetUp_RQCG"></a>PetscErrorCode EPSSetUp_RQCG(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps)</font></strong>
+<a name="line38"> 38: </a>{
+<a name="line39"> 39: </a>  PetscInt       nmat;
+<a name="line40"> 40: </a>  EPS_RQCG       *ctx = (EPS_RQCG*)eps-&gt;data;
+
+<a name="line42"> 42: </a>  EPSCheckHermitianDefinite(eps);
+<a name="line43"> 43: </a>  EPSSetDimensions_Default(eps,eps-&gt;nev,&amp;eps-&gt;ncv,&amp;eps-&gt;mpd);
+<a name="line44"> 44: </a>  <font color="#4169E1">if</font> (eps-&gt;max_it==PETSC_DEFAULT) eps-&gt;max_it = PetscMax(100,2*eps-&gt;n/eps-&gt;ncv);
+<a name="line45"> 45: </a>  <font color="#4169E1">if</font> (!eps-&gt;which) eps-&gt;which = <a href="../../../../../docs/manualpages/sys/EPSWhich.html#EPSWhich">EPS_SMALLEST_REAL</a>;
+<a name="line47"> 47: </a>  EPSCheckUnsupported(eps,EPS_FEATURE_ARBITRARY | EPS_FEATURE_REGION | EPS_FEATURE_EXTRACTION);
+<a name="line48"> 48: </a>  EPSCheckIgnored(eps,EPS_FEATURE_BALANCE);
+
+<a name="line50"> 50: </a>  <font color="#4169E1">if</font> (!ctx-&gt;nrest) ctx-&gt;nrest = 20;
+
+<a name="line52"> 52: </a>  <a href="../../../../../docs/manualpages/EPS/EPSAllocateSolution.html#EPSAllocateSolution">EPSAllocateSolution</a>(eps,0);
+<a name="line53"> 53: </a>  EPS_SetInnerProduct(eps);
+
+<a name="line55"> 55: </a>  <a href="../../../../../docs/manualpages/ST/STGetNumMatrices.html#STGetNumMatrices">STGetNumMatrices</a>(eps-&gt;st,&amp;nmat);
+<a name="line56"> 56: </a>  <font color="#4169E1">if</font> (!ctx-&gt;allocsize) {
+<a name="line57"> 57: </a>    ctx-&gt;allocsize = eps-&gt;mpd;
+<a name="line58"> 58: </a>    <a href="../../../../../docs/manualpages/BV/BVDuplicateResize.html#BVDuplicateResize">BVDuplicateResize</a>(eps-&gt;V,eps-&gt;mpd,&amp;ctx-&gt;AV);
+<a name="line59"> 59: </a>    PetscLogObjectParent((PetscObject)eps,(PetscObject)ctx-&gt;AV);
+<a name="line60"> 60: </a>    <font color="#4169E1">if</font> (nmat&gt;1) {
+<a name="line61"> 61: </a>      <a href="../../../../../docs/manualpages/BV/BVDuplicate.html#BVDuplicate">BVDuplicate</a>(ctx-&gt;AV,&amp;ctx-&gt;W);
+<a name="line62"> 62: </a>      PetscLogObjectParent((PetscObject)eps,(PetscObject)ctx-&gt;W);
+<a name="line63"> 63: </a>    }
+<a name="line64"> 64: </a>    <a href="../../../../../docs/manualpages/BV/BVDuplicate.html#BVDuplicate">BVDuplicate</a>(ctx-&gt;AV,&amp;ctx-&gt;P);
+<a name="line65"> 65: </a>    PetscLogObjectParent((PetscObject)eps,(PetscObject)ctx-&gt;P);
+<a name="line66"> 66: </a>    <a href="../../../../../docs/manualpages/BV/BVDuplicate.html#BVDuplicate">BVDuplicate</a>(ctx-&gt;AV,&amp;ctx-&gt;G);
+<a name="line67"> 67: </a>    PetscLogObjectParent((PetscObject)eps,(PetscObject)ctx-&gt;G);
+<a name="line68"> 68: </a>  } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (ctx-&gt;allocsize!=eps-&gt;mpd) {
+<a name="line69"> 69: </a>    ctx-&gt;allocsize = eps-&gt;mpd;
+<a name="line70"> 70: </a>    <a href="../../../../../docs/manualpages/BV/BVResize.html#BVResize">BVResize</a>(ctx-&gt;AV,eps-&gt;mpd,PETSC_FALSE);
+<a name="line71"> 71: </a>    <font color="#4169E1">if</font> (nmat&gt;1) <a href="../../../../../docs/manualpages/BV/BVResize.html#BVResize">BVResize</a>(ctx-&gt;W,eps-&gt;mpd,PETSC_FALSE);
+<a name="line72"> 72: </a>    <a href="../../../../../docs/manualpages/BV/BVResize.html#BVResize">BVResize</a>(ctx-&gt;P,eps-&gt;mpd,PETSC_FALSE);
+<a name="line73"> 73: </a>    <a href="../../../../../docs/manualpages/BV/BVResize.html#BVResize">BVResize</a>(ctx-&gt;G,eps-&gt;mpd,PETSC_FALSE);
+<a name="line74"> 74: </a>  }
+<a name="line75"> 75: </a>  <a href="../../../../../docs/manualpages/DS/DSSetType.html#DSSetType">DSSetType</a>(eps-&gt;ds,<a href="../../../../../docs/manualpages/DS/DSHEP.html#DSHEP">DSHEP</a>);
+<a name="line76"> 76: </a>  <a href="../../../../../docs/manualpages/DS/DSAllocate.html#DSAllocate">DSAllocate</a>(eps-&gt;ds,eps-&gt;ncv);
+<a name="line77"> 77: </a>  <a href="../../../../../docs/manualpages/EPS/EPSSetWorkVecs.html#EPSSetWorkVecs">EPSSetWorkVecs</a>(eps,1);
+<a name="line78"> 78: </a>  PetscFunctionReturn(0);
+<a name="line79"> 79: </a>}
+
+<a name="line81"> 81: </a><font color="#B22222">/*</font>
+<a name="line82"> 82: </a><font color="#B22222">   ExtractSubmatrix - Returns B = A(k+1:end,k+1:end).</font>
+<a name="line83"> 83: </a><font color="#B22222">*/</font>
+<a name="line84"> 84: </a><strong><font color="#4169E1"><a name="ExtractSubmatrix"></a>static PetscErrorCode ExtractSubmatrix(Mat A,PetscInt k,Mat *B)</font></strong>
+<a name="line85"> 85: </a>{
+<a name="line86"> 86: </a>  PetscInt          j,m,n;
+<a name="line87"> 87: </a>  PetscScalar       *pB;
+<a name="line88"> 88: </a>  const PetscScalar *pA;
+
+<a name="line90"> 90: </a>  MatGetSize(A,&amp;m,&amp;n);
+<a name="line91"> 91: </a>  MatCreateSeqDense(PETSC_COMM_SELF,m-k,n-k,NULL,B);
+<a name="line92"> 92: </a>  MatDenseGetArrayRead(A,&amp;pA);
+<a name="line93"> 93: </a>  MatDenseGetArrayWrite(*B,&amp;pB);
+<a name="line94"> 94: </a>  <font color="#4169E1">for</font> (j=k;j&lt;n;j++) PetscArraycpy(pB+(j-k)*(m-k),pA+j*m+k,m-k);
+<a name="line95"> 95: </a>  MatDenseRestoreArrayRead(A,&amp;pA);
+<a name="line96"> 96: </a>  MatDenseRestoreArrayWrite(*B,&amp;pB);
+<a name="line97"> 97: </a>  PetscFunctionReturn(0);
+<a name="line98"> 98: </a>}
+
+<a name="line100">100: </a><strong><font color="#4169E1"><a name="EPSSolve_RQCG"></a>PetscErrorCode EPSSolve_RQCG(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps)</font></strong>
+<a name="line101">101: </a>{
+<a name="line102">102: </a>  EPS_RQCG       *ctx = (EPS_RQCG*)eps-&gt;data;
+<a name="line103">103: </a>  PetscInt       i,j,k,ld,nv,ncv = eps-&gt;ncv,kini,nmat;
+<a name="line104">104: </a>  PetscScalar    *C,*gamma,g,pap,pbp,pbx,pax,nu,mu,alpha,beta;
+<a name="line105">105: </a>  PetscReal      resnorm,a,b,c,d,disc,t;
+<a name="line106">106: </a>  PetscBool      reset;
+<a name="line107">107: </a>  Mat            A,B,Q,Q1;
+<a name="line108">108: </a>  Vec            v,av,bv,p,w=eps-&gt;work[0];
+
+<a name="line110">110: </a>  <a href="../../../../../docs/manualpages/DS/DSGetLeadingDimension.html#DSGetLeadingDimension">DSGetLeadingDimension</a>(eps-&gt;ds,&amp;ld);
+<a name="line111">111: </a>  <a href="../../../../../docs/manualpages/ST/STGetNumMatrices.html#STGetNumMatrices">STGetNumMatrices</a>(eps-&gt;st,&amp;nmat);
+<a name="line112">112: </a>  <a href="../../../../../docs/manualpages/ST/STGetMatrix.html#STGetMatrix">STGetMatrix</a>(eps-&gt;st,0,&amp;A);
+<a name="line113">113: </a>  <font color="#4169E1">if</font> (nmat&gt;1) <a href="../../../../../docs/manualpages/ST/STGetMatrix.html#STGetMatrix">STGetMatrix</a>(eps-&gt;st,1,&amp;B);
+<a name="line114">114: </a>  <font color="#4169E1">else</font> B = NULL;
+<a name="line115">115: </a>  PetscMalloc1(eps-&gt;mpd,&amp;gamma);
+
+<a name="line117">117: </a>  kini = eps-&gt;nini;
+<a name="line118">118: </a>  <font color="#4169E1">while</font> (eps-&gt;reason == <a href="../../../../../docs/manualpages/sys/EPSConvergedReason.html#EPSConvergedReason">EPS_CONVERGED_ITERATING</a>) {
+<a name="line119">119: </a>    eps-&gt;its++;
+<a name="line120">120: </a>    nv = PetscMin(eps-&gt;nconv+eps-&gt;mpd,ncv);
+<a name="line121">121: </a>    <a href="../../../../../docs/manualpages/DS/DSSetDimensions.html#DSSetDimensions">DSSetDimensions</a>(eps-&gt;ds,nv,eps-&gt;nconv,0);
+<a name="line122">122: </a>    <font color="#4169E1">for</font> (;kini&lt;nv;kini++) { <font color="#B22222">/* Generate more initial vectors if necessary */</font>
+<a name="line123">123: </a>      <a href="../../../../../docs/manualpages/BV/BVSetRandomColumn.html#BVSetRandomColumn">BVSetRandomColumn</a>(eps-&gt;V,kini);
+<a name="line124">124: </a>      <a href="../../../../../docs/manualpages/BV/BVOrthonormalizeColumn.html#BVOrthonormalizeColumn">BVOrthonormalizeColumn</a>(eps-&gt;V,kini,PETSC_TRUE,NULL,NULL);
+<a name="line125">125: </a>    }
+<a name="line126">126: </a>    reset = (eps-&gt;its&gt;1 &amp;&amp; (eps-&gt;its-1)%ctx-&gt;nrest==0)? PETSC_TRUE: PETSC_FALSE;
+
+<a name="line128">128: </a>    <font color="#4169E1">if</font> (reset) {
+<a name="line129">129: </a>      <font color="#B22222">/* Prevent <a href="../../../../../docs/manualpages/BV/BVDotVec.html#BVDotVec">BVDotVec</a> below to use B-product, restored at the end */</font>
+<a name="line130">130: </a>      <a href="../../../../../docs/manualpages/BV/BVSetMatrix.html#BVSetMatrix">BVSetMatrix</a>(eps-&gt;V,NULL,PETSC_FALSE);
+
+<a name="line132">132: </a>      <font color="#B22222">/* Compute Rayleigh quotient */</font>
+<a name="line133">133: </a>      <a href="../../../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(eps-&gt;V,eps-&gt;nconv,nv);
+<a name="line134">134: </a>      <a href="../../../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(ctx-&gt;AV,0,nv-eps-&gt;nconv);
+<a name="line135">135: </a>      <a href="../../../../../docs/manualpages/BV/BVMatMult.html#BVMatMult">BVMatMult</a>(eps-&gt;V,A,ctx-&gt;AV);
+<a name="line136">136: </a>      <a href="../../../../../docs/manualpages/DS/DSGetArray.html#DSGetArray">DSGetArray</a>(eps-&gt;ds,<a href="../../../../../docs/manualpages/sys/DSMatType.html#DSMatType">DS_MAT_A</a>,&amp;C);
+<a name="line137">137: </a>      <font color="#4169E1">for</font> (i=eps-&gt;nconv;i&lt;nv;i++) {
+<a name="line138">138: </a>        <a href="../../../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(eps-&gt;V,eps-&gt;nconv,i+1);
+<a name="line139">139: </a>        <a href="../../../../../docs/manualpages/BV/BVGetColumn.html#BVGetColumn">BVGetColumn</a>(ctx-&gt;AV,i-eps-&gt;nconv,&amp;av);
+<a name="line140">140: </a>        <a href="../../../../../docs/manualpages/BV/BVDotVec.html#BVDotVec">BVDotVec</a>(eps-&gt;V,av,C+eps-&gt;nconv+i*ld);
+<a name="line141">141: </a>        <a href="../../../../../docs/manualpages/BV/BVRestoreColumn.html#BVRestoreColumn">BVRestoreColumn</a>(ctx-&gt;AV,i-eps-&gt;nconv,&amp;av);
+<a name="line142">142: </a>        <font color="#4169E1">for</font> (j=eps-&gt;nconv;j&lt;i-1;j++) C[i+j*ld] = PetscConj(C[j+i*ld]);
+<a name="line143">143: </a>      }
+<a name="line144">144: </a>      <a href="../../../../../docs/manualpages/DS/DSRestoreArray.html#DSRestoreArray">DSRestoreArray</a>(eps-&gt;ds,<a href="../../../../../docs/manualpages/sys/DSMatType.html#DSMatType">DS_MAT_A</a>,&amp;C);
+<a name="line145">145: </a>      <a href="../../../../../docs/manualpages/DS/DSSetState.html#DSSetState">DSSetState</a>(eps-&gt;ds,<a href="../../../../../docs/manualpages/sys/DSStateType.html#DSStateType">DS_STATE_RAW</a>);
+
+<a name="line147">147: </a>      <font color="#B22222">/* Solve projected problem */</font>
+<a name="line148">148: </a>      <a href="../../../../../docs/manualpages/DS/DSSolve.html#DSSolve">DSSolve</a>(eps-&gt;ds,eps-&gt;eigr,eps-&gt;eigi);
+<a name="line149">149: </a>      <a href="../../../../../docs/manualpages/DS/DSSort.html#DSSort">DSSort</a>(eps-&gt;ds,eps-&gt;eigr,eps-&gt;eigi,NULL,NULL,NULL);
+<a name="line150">150: </a>      <a href="../../../../../docs/manualpages/DS/DSSynchronize.html#DSSynchronize">DSSynchronize</a>(eps-&gt;ds,eps-&gt;eigr,eps-&gt;eigi);
+
+<a name="line152">152: </a>      <font color="#B22222">/* Update vectors V(:,idx) = V * Y(:,idx) */</font>
+<a name="line153">153: </a>      <a href="../../../../../docs/manualpages/DS/DSGetMat.html#DSGetMat">DSGetMat</a>(eps-&gt;ds,<a href="../../../../../docs/manualpages/sys/DSMatType.html#DSMatType">DS_MAT_Q</a>,&amp;Q);
+<a name="line154">154: </a>      <a href="../../../../../docs/manualpages/BV/BVMultInPlace.html#BVMultInPlace">BVMultInPlace</a>(eps-&gt;V,Q,eps-&gt;nconv,nv);
+<a name="line155">155: </a>      ExtractSubmatrix(Q,eps-&gt;nconv,&amp;Q1);
+<a name="line156">156: </a>      <a href="../../../../../docs/manualpages/BV/BVMultInPlace.html#BVMultInPlace">BVMultInPlace</a>(ctx-&gt;AV,Q1,0,nv-eps-&gt;nconv);
+<a name="line157">157: </a>      MatDestroy(&amp;Q);
+<a name="line158">158: </a>      MatDestroy(&amp;Q1);
+<a name="line159">159: </a>      <font color="#4169E1">if</font> (B) <a href="../../../../../docs/manualpages/BV/BVSetMatrix.html#BVSetMatrix">BVSetMatrix</a>(eps-&gt;V,B,PETSC_FALSE);
+<a name="line160">160: </a>    } <font color="#4169E1">else</font> {
+<a name="line161">161: </a>      <font color="#B22222">/* No need to do Rayleigh-Ritz, just take diag(V'*A*V) */</font>
+<a name="line162">162: </a>      <font color="#4169E1">for</font> (i=eps-&gt;nconv;i&lt;nv;i++) {
+<a name="line163">163: </a>        <a href="../../../../../docs/manualpages/BV/BVGetColumn.html#BVGetColumn">BVGetColumn</a>(eps-&gt;V,i,&amp;v);
+<a name="line164">164: </a>        <a href="../../../../../docs/manualpages/BV/BVGetColumn.html#BVGetColumn">BVGetColumn</a>(ctx-&gt;AV,i-eps-&gt;nconv,&amp;av);
+<a name="line165">165: </a>        MatMult(A,v,av);
+<a name="line166">166: </a>        VecDot(av,v,eps-&gt;eigr+i);
+<a name="line167">167: </a>        <a href="../../../../../docs/manualpages/BV/BVRestoreColumn.html#BVRestoreColumn">BVRestoreColumn</a>(eps-&gt;V,i,&amp;v);
+<a name="line168">168: </a>        <a href="../../../../../docs/manualpages/BV/BVRestoreColumn.html#BVRestoreColumn">BVRestoreColumn</a>(ctx-&gt;AV,i-eps-&gt;nconv,&amp;av);
+<a name="line169">169: </a>      }
+<a name="line170">170: </a>    }
+
+<a name="line172">172: </a>    <font color="#B22222">/* Compute gradient and check convergence */</font>
+<a name="line173">173: </a>    k = -1;
+<a name="line174">174: </a>    <font color="#4169E1">for</font> (i=eps-&gt;nconv;i&lt;nv;i++) {
+<a name="line175">175: </a>      <a href="../../../../../docs/manualpages/BV/BVGetColumn.html#BVGetColumn">BVGetColumn</a>(eps-&gt;V,i,&amp;v);
+<a name="line176">176: </a>      <a href="../../../../../docs/manualpages/BV/BVGetColumn.html#BVGetColumn">BVGetColumn</a>(ctx-&gt;AV,i-eps-&gt;nconv,&amp;av);
+<a name="line177">177: </a>      <a href="../../../../../docs/manualpages/BV/BVGetColumn.html#BVGetColumn">BVGetColumn</a>(ctx-&gt;G,i-eps-&gt;nconv,&amp;p);
+<a name="line178">178: </a>      <font color="#4169E1">if</font> (B) {
+<a name="line179">179: </a>        <a href="../../../../../docs/manualpages/BV/BVGetColumn.html#BVGetColumn">BVGetColumn</a>(ctx-&gt;W,i-eps-&gt;nconv,&amp;bv);
+<a name="line180">180: </a>        MatMult(B,v,bv);
+<a name="line181">181: </a>        VecWAXPY(p,-eps-&gt;eigr[i],bv,av);
+<a name="line182">182: </a>        <a href="../../../../../docs/manualpages/BV/BVRestoreColumn.html#BVRestoreColumn">BVRestoreColumn</a>(ctx-&gt;W,i-eps-&gt;nconv,&amp;bv);
+<a name="line183">183: </a>      } <font color="#4169E1">else</font> VecWAXPY(p,-eps-&gt;eigr[i],v,av);
+<a name="line184">184: </a>      <a href="../../../../../docs/manualpages/BV/BVRestoreColumn.html#BVRestoreColumn">BVRestoreColumn</a>(eps-&gt;V,i,&amp;v);
+<a name="line185">185: </a>      <a href="../../../../../docs/manualpages/BV/BVRestoreColumn.html#BVRestoreColumn">BVRestoreColumn</a>(ctx-&gt;AV,i-eps-&gt;nconv,&amp;av);
+<a name="line186">186: </a>      VecNorm(p,NORM_2,&amp;resnorm);
+<a name="line187">187: </a>      <a href="../../../../../docs/manualpages/BV/BVRestoreColumn.html#BVRestoreColumn">BVRestoreColumn</a>(ctx-&gt;G,i-eps-&gt;nconv,&amp;p);
+<a name="line188">188: </a>      (*eps-&gt;converged)(eps,eps-&gt;eigr[i],0.0,resnorm,&amp;eps-&gt;errest[i],eps-&gt;convergedctx);
+<a name="line189">189: </a>      <font color="#4169E1">if</font> (k==-1 &amp;&amp; eps-&gt;errest[i] &gt;= eps-&gt;tol) k = i;
+<a name="line190">190: </a>    }
+<a name="line191">191: </a>    <font color="#4169E1">if</font> (k==-1) k = nv;
+<a name="line192">192: </a>    (*eps-&gt;stopping)(eps,eps-&gt;its,eps-&gt;max_it,k,eps-&gt;nev,&amp;eps-&gt;reason,eps-&gt;stoppingctx);
+
+<a name="line194">194: </a>    <font color="#B22222">/* The next lines are necessary to avoid <a href="../../../../../docs/manualpages/sys/DS.html#DS">DS</a> zeroing eigr */</font>
+<a name="line195">195: </a>    <a href="../../../../../docs/manualpages/DS/DSGetArray.html#DSGetArray">DSGetArray</a>(eps-&gt;ds,<a href="../../../../../docs/manualpages/sys/DSMatType.html#DSMatType">DS_MAT_A</a>,&amp;C);
+<a name="line196">196: </a>    <font color="#4169E1">for</font> (i=eps-&gt;nconv;i&lt;k;i++) C[i+i*ld] = eps-&gt;eigr[i];
+<a name="line197">197: </a>    <a href="../../../../../docs/manualpages/DS/DSRestoreArray.html#DSRestoreArray">DSRestoreArray</a>(eps-&gt;ds,<a href="../../../../../docs/manualpages/sys/DSMatType.html#DSMatType">DS_MAT_A</a>,&amp;C);
+
+<a name="line199">199: </a>    <font color="#4169E1">if</font> (eps-&gt;reason == <a href="../../../../../docs/manualpages/sys/EPSConvergedReason.html#EPSConvergedReason">EPS_CONVERGED_ITERATING</a>) {
+
+<a name="line201">201: </a>      <font color="#B22222">/* Search direction */</font>
+<a name="line202">202: </a>      <font color="#4169E1">for</font> (i=0;i&lt;nv-eps-&gt;nconv;i++) {
+<a name="line203">203: </a>        <a href="../../../../../docs/manualpages/BV/BVGetColumn.html#BVGetColumn">BVGetColumn</a>(ctx-&gt;G,i,&amp;v);
+<a name="line204">204: </a>        <a href="../../../../../docs/manualpages/ST/STApply.html#STApply">STApply</a>(eps-&gt;st,v,w);
+<a name="line205">205: </a>        VecDot(w,v,&amp;g);
+<a name="line206">206: </a>        <a href="../../../../../docs/manualpages/BV/BVRestoreColumn.html#BVRestoreColumn">BVRestoreColumn</a>(ctx-&gt;G,i,&amp;v);
+<a name="line207">207: </a>        beta = (!reset &amp;&amp; eps-&gt;its&gt;1)? g/gamma[i]: 0.0;
+<a name="line208">208: </a>        gamma[i] = g;
+<a name="line209">209: </a>        <a href="../../../../../docs/manualpages/BV/BVGetColumn.html#BVGetColumn">BVGetColumn</a>(ctx-&gt;P,i,&amp;v);
+<a name="line210">210: </a>        VecAXPBY(v,1.0,beta,w);
+<a name="line211">211: </a>        <font color="#4169E1">if</font> (i+eps-&gt;nconv&gt;0) {
+<a name="line212">212: </a>          <a href="../../../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(eps-&gt;V,0,i+eps-&gt;nconv);
+<a name="line213">213: </a>          <a href="../../../../../docs/manualpages/BV/BVOrthogonalizeVec.html#BVOrthogonalizeVec">BVOrthogonalizeVec</a>(eps-&gt;V,v,NULL,NULL,NULL);
+<a name="line214">214: </a>        }
+<a name="line215">215: </a>        <a href="../../../../../docs/manualpages/BV/BVRestoreColumn.html#BVRestoreColumn">BVRestoreColumn</a>(ctx-&gt;P,i,&amp;v);
+<a name="line216">216: </a>      }
+
+<a name="line218">218: </a>      <font color="#B22222">/* Minimization problem */</font>
+<a name="line219">219: </a>      <font color="#4169E1">for</font> (i=eps-&gt;nconv;i&lt;nv;i++) {
+<a name="line220">220: </a>        <a href="../../../../../docs/manualpages/BV/BVGetColumn.html#BVGetColumn">BVGetColumn</a>(eps-&gt;V,i,&amp;v);
+<a name="line221">221: </a>        <a href="../../../../../docs/manualpages/BV/BVGetColumn.html#BVGetColumn">BVGetColumn</a>(ctx-&gt;AV,i-eps-&gt;nconv,&amp;av);
+<a name="line222">222: </a>        <a href="../../../../../docs/manualpages/BV/BVGetColumn.html#BVGetColumn">BVGetColumn</a>(ctx-&gt;P,i-eps-&gt;nconv,&amp;p);
+<a name="line223">223: </a>        VecDot(av,v,&amp;nu);
+<a name="line224">224: </a>        VecDot(av,p,&amp;pax);
+<a name="line225">225: </a>        MatMult(A,p,w);
+<a name="line226">226: </a>        VecDot(w,p,&amp;pap);
+<a name="line227">227: </a>        <font color="#4169E1">if</font> (B) {
+<a name="line228">228: </a>          <a href="../../../../../docs/manualpages/BV/BVGetColumn.html#BVGetColumn">BVGetColumn</a>(ctx-&gt;W,i-eps-&gt;nconv,&amp;bv);
+<a name="line229">229: </a>          VecDot(bv,v,&amp;mu);
+<a name="line230">230: </a>          VecDot(bv,p,&amp;pbx);
+<a name="line231">231: </a>          <a href="../../../../../docs/manualpages/BV/BVRestoreColumn.html#BVRestoreColumn">BVRestoreColumn</a>(ctx-&gt;W,i-eps-&gt;nconv,&amp;bv);
+<a name="line232">232: </a>          MatMult(B,p,w);
+<a name="line233">233: </a>          VecDot(w,p,&amp;pbp);
+<a name="line234">234: </a>        } <font color="#4169E1">else</font> {
+<a name="line235">235: </a>          VecDot(v,v,&amp;mu);
+<a name="line236">236: </a>          VecDot(v,p,&amp;pbx);
+<a name="line237">237: </a>          VecDot(p,p,&amp;pbp);
+<a name="line238">238: </a>        }
+<a name="line239">239: </a>        <a href="../../../../../docs/manualpages/BV/BVRestoreColumn.html#BVRestoreColumn">BVRestoreColumn</a>(ctx-&gt;AV,i-eps-&gt;nconv,&amp;av);
+<a name="line240">240: </a>        a = PetscRealPart(pap*pbx-pax*pbp);
+<a name="line241">241: </a>        b = PetscRealPart(nu*pbp-mu*pap);
+<a name="line242">242: </a>        c = PetscRealPart(mu*pax-nu*pbx);
+<a name="line243">243: </a>        t = PetscMax(PetscMax(PetscAbsReal(a),PetscAbsReal(b)),PetscAbsReal(c));
+<a name="line244">244: </a>        <font color="#4169E1">if</font> (t!=0.0) { a /= t; b /= t; c /= t; }
+<a name="line245">245: </a>        disc = b*b-4.0*a*c;
+<a name="line246">246: </a>        d = PetscSqrtReal(PetscAbsReal(disc));
+<a name="line247">247: </a>        <font color="#4169E1">if</font> (b&gt;=0.0 &amp;&amp; a!=0.0) alpha = (b+d)/(2.0*a);
+<a name="line248">248: </a>        <font color="#4169E1">else</font> <font color="#4169E1">if</font> (b!=d) alpha = 2.0*c/(b-d);
+<a name="line249">249: </a>        <font color="#4169E1">else</font> alpha = 0;
+<a name="line250">250: </a>        <font color="#B22222">/* Next iterate */</font>
+<a name="line251">251: </a>        <font color="#4169E1">if</font> (alpha!=0.0) VecAXPY(v,alpha,p);
+<a name="line252">252: </a>        <a href="../../../../../docs/manualpages/BV/BVRestoreColumn.html#BVRestoreColumn">BVRestoreColumn</a>(eps-&gt;V,i,&amp;v);
+<a name="line253">253: </a>        <a href="../../../../../docs/manualpages/BV/BVRestoreColumn.html#BVRestoreColumn">BVRestoreColumn</a>(ctx-&gt;P,i-eps-&gt;nconv,&amp;p);
+<a name="line254">254: </a>        <a href="../../../../../docs/manualpages/BV/BVOrthonormalizeColumn.html#BVOrthonormalizeColumn">BVOrthonormalizeColumn</a>(eps-&gt;V,i,PETSC_TRUE,NULL,NULL);
+<a name="line255">255: </a>      }
+<a name="line256">256: </a>    }
+
+<a name="line258">258: </a>    EPSMonitor(eps,eps-&gt;its,k,eps-&gt;eigr,eps-&gt;eigi,eps-&gt;errest,nv);
+<a name="line259">259: </a>    eps-&gt;nconv = k;
+<a name="line260">260: </a>  }
+
+<a name="line262">262: </a>  PetscFree(gamma);
+<a name="line263">263: </a>  PetscFunctionReturn(0);
+<a name="line264">264: </a>}
+
+<a name="line266">266: </a><strong><font color="#4169E1"><a name="EPSRQCGSetReset_RQCG"></a>static PetscErrorCode EPSRQCGSetReset_RQCG(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps,PetscInt nrest)</font></strong>
+<a name="line267">267: </a>{
+<a name="line268">268: </a>  EPS_RQCG *ctx = (EPS_RQCG*)eps-&gt;data;
+
+<a name="line270">270: </a>  <font color="#4169E1">if</font> (nrest==PETSC_DEFAULT) {
+<a name="line271">271: </a>    ctx-&gt;nrest = 0;
+<a name="line272">272: </a>    eps-&gt;state = EPS_STATE_INITIAL;
+<a name="line273">273: </a>  } <font color="#4169E1">else</font> {
+<a name="line275">275: </a>    ctx-&gt;nrest = nrest;
+<a name="line276">276: </a>  }
+<a name="line277">277: </a>  PetscFunctionReturn(0);
+<a name="line278">278: </a>}
+
+<a name="line280">280: </a><font color="#B22222">/*@</font>
+<a name="line281">281: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/EPS/EPSRQCGSetReset.html#EPSRQCGSetReset">EPSRQCGSetReset</a> - Sets the reset parameter of the RQCG iteration. Every</font>
+<a name="line282">282: </a><font color="#B22222">   nrest iterations, the solver performs a Rayleigh-Ritz projection step.</font>
+
+<a name="line284">284: </a><font color="#B22222">   Logically Collective on eps</font>
+
+<a name="line286">286: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line287">287: </a><font color="#B22222">+  eps - the eigenproblem solver context</font>
+<a name="line288">288: </a><font color="#B22222">-  nrest - the number of iterations between resets</font>
+
+<a name="line290">290: </a><font color="#B22222">   Options Database Key:</font>
+<a name="line291">291: </a><font color="#B22222">.  -eps_rqcg_reset - Sets the reset parameter</font>
+
+<a name="line293">293: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line295">295: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/EPS/EPSRQCGGetReset.html#EPSRQCGGetReset">EPSRQCGGetReset</a>()</font>
+<a name="line296">296: </a><font color="#B22222">@*/</font>
+<a name="line297">297: </a><strong><font color="#4169E1"><a name="EPSRQCGSetReset"></a>PetscErrorCode <a href="../../../../../docs/manualpages/EPS/EPSRQCGSetReset.html#EPSRQCGSetReset">EPSRQCGSetReset</a>(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps,PetscInt nrest)</font></strong>
+<a name="line298">298: </a>{
+<a name="line301">301: </a>  PetscTryMethod(eps,<font color="#666666">"EPSRQCGSetReset_C"</font>,(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a>,PetscInt),(eps,nrest));
+<a name="line302">302: </a>  PetscFunctionReturn(0);
+<a name="line303">303: </a>}
+
+<a name="line305">305: </a><strong><font color="#4169E1"><a name="EPSRQCGGetReset_RQCG"></a>static PetscErrorCode EPSRQCGGetReset_RQCG(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps,PetscInt *nrest)</font></strong>
+<a name="line306">306: </a>{
+<a name="line307">307: </a>  EPS_RQCG *ctx = (EPS_RQCG*)eps-&gt;data;
+
+<a name="line309">309: </a>  *nrest = ctx-&gt;nrest;
+<a name="line310">310: </a>  PetscFunctionReturn(0);
+<a name="line311">311: </a>}
+
+<a name="line313">313: </a><font color="#B22222">/*@</font>
+<a name="line314">314: </a><font color="#B22222">   <a href="../../../../../docs/manualpages/EPS/EPSRQCGGetReset.html#EPSRQCGGetReset">EPSRQCGGetReset</a> - Gets the reset parameter used in the RQCG method.</font>
+
+<a name="line316">316: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line318">318: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line319">319: </a><font color="#B22222">.  eps - the eigenproblem solver context</font>
+
+<a name="line321">321: </a><font color="#B22222">   Output Parameter:</font>
+<a name="line322">322: </a><font color="#B22222">.  nrest - the reset parameter</font>
+
+<a name="line324">324: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line326">326: </a><font color="#B22222">.seealso: <a href="../../../../../docs/manualpages/EPS/EPSRQCGSetReset.html#EPSRQCGSetReset">EPSRQCGSetReset</a>()</font>
+<a name="line327">327: </a><font color="#B22222">@*/</font>
+<a name="line328">328: </a><strong><font color="#4169E1"><a name="EPSRQCGGetReset"></a>PetscErrorCode <a href="../../../../../docs/manualpages/EPS/EPSRQCGGetReset.html#EPSRQCGGetReset">EPSRQCGGetReset</a>(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps,PetscInt *nrest)</font></strong>
+<a name="line329">329: </a>{
+<a name="line332">332: </a>  PetscUseMethod(eps,<font color="#666666">"EPSRQCGGetReset_C"</font>,(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a>,PetscInt*),(eps,nrest));
+<a name="line333">333: </a>  PetscFunctionReturn(0);
+<a name="line334">334: </a>}
+
+<a name="line336">336: </a><strong><font color="#4169E1"><a name="EPSReset_RQCG"></a>PetscErrorCode EPSReset_RQCG(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps)</font></strong>
+<a name="line337">337: </a>{
+<a name="line338">338: </a>  EPS_RQCG       *ctx = (EPS_RQCG*)eps-&gt;data;
+
+<a name="line340">340: </a>  <a href="../../../../../docs/manualpages/BV/BVDestroy.html#BVDestroy">BVDestroy</a>(&amp;ctx-&gt;AV);
+<a name="line341">341: </a>  <a href="../../../../../docs/manualpages/BV/BVDestroy.html#BVDestroy">BVDestroy</a>(&amp;ctx-&gt;W);
+<a name="line342">342: </a>  <a href="../../../../../docs/manualpages/BV/BVDestroy.html#BVDestroy">BVDestroy</a>(&amp;ctx-&gt;P);
+<a name="line343">343: </a>  <a href="../../../../../docs/manualpages/BV/BVDestroy.html#BVDestroy">BVDestroy</a>(&amp;ctx-&gt;G);
+<a name="line344">344: </a>  ctx-&gt;allocsize = 0;
+<a name="line345">345: </a>  PetscFunctionReturn(0);
+<a name="line346">346: </a>}
+
+<a name="line348">348: </a><strong><font color="#4169E1"><a name="EPSSetFromOptions_RQCG"></a>PetscErrorCode EPSSetFromOptions_RQCG(PetscOptionItems *PetscOptionsObject,<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps)</font></strong>
+<a name="line349">349: </a>{
+<a name="line350">350: </a>  PetscBool      flg;
+<a name="line351">351: </a>  PetscInt       nrest;
+
+<a name="line353">353: </a>  PetscOptionsHead(PetscOptionsObject,<font color="#666666">"<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> RQCG Options"</font>);
+
+<a name="line355">355: </a>    PetscOptionsInt(<font color="#666666">"-eps_rqcg_reset"</font>,<font color="#666666">"Reset parameter"</font>,<font color="#666666">"<a href="../../../../../docs/manualpages/EPS/EPSRQCGSetReset.html#EPSRQCGSetReset">EPSRQCGSetReset</a>"</font>,20,&amp;nrest,&amp;flg);
+<a name="line356">356: </a>    <font color="#4169E1">if</font> (flg) <a href="../../../../../docs/manualpages/EPS/EPSRQCGSetReset.html#EPSRQCGSetReset">EPSRQCGSetReset</a>(eps,nrest);
+
+<a name="line358">358: </a>  PetscOptionsTail();
+<a name="line359">359: </a>  PetscFunctionReturn(0);
+<a name="line360">360: </a>}
+
+<a name="line362">362: </a><strong><font color="#4169E1"><a name="EPSDestroy_RQCG"></a>PetscErrorCode EPSDestroy_RQCG(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps)</font></strong>
+<a name="line363">363: </a>{
+<a name="line364">364: </a>  PetscFree(eps-&gt;data);
+<a name="line365">365: </a>  PetscObjectComposeFunction((PetscObject)eps,<font color="#666666">"EPSRQCGSetReset_C"</font>,NULL);
+<a name="line366">366: </a>  PetscObjectComposeFunction((PetscObject)eps,<font color="#666666">"EPSRQCGGetReset_C"</font>,NULL);
+<a name="line367">367: </a>  PetscFunctionReturn(0);
+<a name="line368">368: </a>}
+
+<a name="line370">370: </a><strong><font color="#4169E1"><a name="EPSView_RQCG"></a>PetscErrorCode EPSView_RQCG(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps,PetscViewer viewer)</font></strong>
+<a name="line371">371: </a>{
+<a name="line372">372: </a>  EPS_RQCG       *ctx = (EPS_RQCG*)eps-&gt;data;
+<a name="line373">373: </a>  PetscBool      isascii;
+
+<a name="line375">375: </a>  PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&amp;isascii);
+<a name="line376">376: </a>  <font color="#4169E1">if</font> (isascii) PetscViewerASCIIPrintf(viewer,<font color="#666666">"  reset every %"</font> PetscInt_FMT <font color="#666666">" iterations\n"</font>,ctx-&gt;nrest);
+<a name="line377">377: </a>  PetscFunctionReturn(0);
+<a name="line378">378: </a>}
+
+<a name="line380">380: </a><strong><font color="#4169E1"><a name="EPSCreate_RQCG"></a>SLEPC_EXTERN PetscErrorCode EPSCreate_RQCG(<a href="../../../../../docs/manualpages/sys/EPS.html#EPS">EPS</a> eps)</font></strong>
+<a name="line381">381: </a>{
+<a name="line382">382: </a>  EPS_RQCG       *rqcg;
+
+<a name="line384">384: </a>  PetscNewLog(eps,&amp;rqcg);
+<a name="line385">385: </a>  eps-&gt;data = (void*)rqcg;
+
+<a name="line387">387: </a>  eps-&gt;useds = PETSC_TRUE;
+<a name="line388">388: </a>  eps-&gt;categ = EPS_CATEGORY_PRECOND;
+
+<a name="line390">390: </a>  eps-&gt;ops-&gt;solve          = EPSSolve_RQCG;
+<a name="line391">391: </a>  eps-&gt;ops-&gt;setup          = EPSSetUp_RQCG;
+<a name="line392">392: </a>  eps-&gt;ops-&gt;setupsort      = EPSSetUpSort_Default;
+<a name="line393">393: </a>  eps-&gt;ops-&gt;setfromoptions = EPSSetFromOptions_RQCG;
+<a name="line394">394: </a>  eps-&gt;ops-&gt;destroy        = EPSDestroy_RQCG;
+<a name="line395">395: </a>  eps-&gt;ops-&gt;reset          = EPSReset_RQCG;
+<a name="line396">396: </a>  eps-&gt;ops-&gt;view           = EPSView_RQCG;
+<a name="line397">397: </a>  eps-&gt;ops-&gt;backtransform  = EPSBackTransform_Default;
+<a name="line398">398: </a>  eps-&gt;ops-&gt;setdefaultst   = EPSSetDefaultST_GMRES;
+
+<a name="line400">400: </a>  PetscObjectComposeFunction((PetscObject)eps,<font color="#666666">"EPSRQCGSetReset_C"</font>,EPSRQCGSetReset_RQCG);
+<a name="line401">401: </a>  PetscObjectComposeFunction((PetscObject)eps,<font color="#666666">"EPSRQCGGetReset_C"</font>,EPSRQCGGetReset_RQCG);
+<a name="line402">402: </a>  PetscFunctionReturn(0);
+<a name="line403">403: </a>}
+</pre>
+</body>
+
+</html>

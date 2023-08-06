@@ -1,0 +1,158 @@
+<center><a href="svdscalap.c">Actual source code: svdscalap.c</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="https://slepc.upv.es/documentation/current/src/svd/impls/external/scalapack/svdscalap.c.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2022-08-09T09:05:45+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>slepc-3.17.2 2022-08-09</b></div>
+   <div id="bugreport" align=right><a href="mailto:slepc-maint@upv.es?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: slepc-3.17.2 v3.17.2 src/svd/impls/external/scalapack/svdscalap.c.html "><small>Report Typos and Errors</small></a></div>
+<pre width="80">
+<a name="line1">  1: </a><font color="#B22222">/*</font>
+<a name="line2">  2: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line3">  3: </a><font color="#B22222">   SLEPc - Scalable Library for Eigenvalue Problem Computations</font>
+<a name="line4">  4: </a><font color="#B22222">   Copyright (c) 2002-, Universitat Politecnica de Valencia, Spain</font>
+
+<a name="line6">  6: </a><font color="#B22222">   This file is part of SLEPc.</font>
+<a name="line7">  7: </a><font color="#B22222">   SLEPc is distributed under a 2-clause BSD license (see LICENSE).</font>
+<a name="line8">  8: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line9">  9: </a><font color="#B22222">*/</font>
+<a name="line10"> 10: </a><font color="#B22222">/*</font>
+<a name="line11"> 11: </a><font color="#B22222">   This file implements a wrapper to the ScaLAPACK <a href="../../../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> solver</font>
+<a name="line12"> 12: </a><font color="#B22222">*/</font>
+
+<a name="line14"> 14: </a>#include <A href="../../../../../include/slepc/private/svdimpl.h.html">&lt;slepc/private/svdimpl.h&gt;</A>
+<a name="line15"> 15: </a>#include <A href="../../../../../include/slepc/private/slepcscalapack.h.html">&lt;slepc/private/slepcscalapack.h&gt;</A>
+
+<a name="line17"> 17: </a><font color="#4169E1">typedef</font> <font color="#4169E1">struct</font> {
+<a name="line18"> 18: </a>  Mat As;        <font color="#B22222">/* converted matrix */</font>
+<a name="line19"> 19: </a>} SVD_ScaLAPACK;
+
+<a name="line21"> 21: </a><strong><font color="#4169E1"><a name="SVDSetUp_ScaLAPACK"></a>PetscErrorCode SVDSetUp_ScaLAPACK(<a href="../../../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> svd)</font></strong>
+<a name="line22"> 22: </a>{
+<a name="line23"> 23: </a>  SVD_ScaLAPACK  *ctx = (SVD_ScaLAPACK*)svd-&gt;data;
+<a name="line24"> 24: </a>  PetscInt       M,N;
+
+<a name="line26"> 26: </a>  SVDCheckStandard(svd);
+<a name="line27"> 27: </a>  MatGetSize(svd-&gt;A,&amp;M,&amp;N);
+<a name="line28"> 28: </a>  svd-&gt;ncv = N;
+<a name="line29"> 29: </a>  <font color="#4169E1">if</font> (svd-&gt;mpd!=PETSC_DEFAULT) PetscInfo(svd,<font color="#666666">"Warning: parameter mpd ignored\n"</font>);
+<a name="line30"> 30: </a>  <font color="#4169E1">if</font> (svd-&gt;max_it==PETSC_DEFAULT) svd-&gt;max_it = 1;
+<a name="line31"> 31: </a>  svd-&gt;leftbasis = PETSC_TRUE;
+<a name="line32"> 32: </a>  SVDCheckUnsupported(svd,SVD_FEATURE_STOPPING);
+<a name="line33"> 33: </a>  <a href="../../../../../docs/manualpages/SVD/SVDAllocateSolution.html#SVDAllocateSolution">SVDAllocateSolution</a>(svd,0);
+
+<a name="line35"> 35: </a>  <font color="#B22222">/* convert matrix */</font>
+<a name="line36"> 36: </a>  MatDestroy(&amp;ctx-&gt;As);
+<a name="line37"> 37: </a>  MatConvert(svd-&gt;OP,MATSCALAPACK,MAT_INITIAL_MATRIX,&amp;ctx-&gt;As);
+<a name="line38"> 38: </a>  PetscFunctionReturn(0);
+<a name="line39"> 39: </a>}
+
+<a name="line41"> 41: </a><strong><font color="#4169E1"><a name="SVDSolve_ScaLAPACK"></a>PetscErrorCode SVDSolve_ScaLAPACK(<a href="../../../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> svd)</font></strong>
+<a name="line42"> 42: </a>{
+<a name="line43"> 43: </a>  SVD_ScaLAPACK  *ctx = (SVD_ScaLAPACK*)svd-&gt;data;
+<a name="line44"> 44: </a>  Mat            A = ctx-&gt;As,Z,Q,QT,U,V;
+<a name="line45"> 45: </a>  Mat_ScaLAPACK  *a = (Mat_ScaLAPACK*)A-&gt;data,*q,*z;
+<a name="line46"> 46: </a>  PetscScalar    *work,minlwork;
+<a name="line47"> 47: </a>  PetscBLASInt   info,lwork=-1,one=1;
+<a name="line48"> 48: </a>  PetscInt       M,N,m,n,mn;
+<a name="line49"> 49: </a><font color="#A020F0">#if defined(PETSC_USE_COMPLEX)</font>
+<a name="line50"> 50: </a>  PetscBLASInt   lrwork;
+<a name="line51"> 51: </a>  PetscReal      *rwork,dummy;
+<a name="line52"> 52: </a><font color="#A020F0">#endif</font>
+
+<a name="line54"> 54: </a>  MatGetSize(A,&amp;M,&amp;N);
+<a name="line55"> 55: </a>  MatGetLocalSize(A,&amp;m,&amp;n);
+<a name="line56"> 56: </a>  mn = (M&gt;=N)? n: m;
+<a name="line57"> 57: </a>  MatCreate(PetscObjectComm((PetscObject)A),&amp;Z);
+<a name="line58"> 58: </a>  MatSetSizes(Z,m,mn,PETSC_DECIDE,PETSC_DECIDE);
+<a name="line59"> 59: </a>  MatSetType(Z,MATSCALAPACK);
+<a name="line60"> 60: </a>  MatSetUp(Z);
+<a name="line61"> 61: </a>  MatAssemblyBegin(Z,MAT_FINAL_ASSEMBLY);
+<a name="line62"> 62: </a>  MatAssemblyEnd(Z,MAT_FINAL_ASSEMBLY);
+<a name="line63"> 63: </a>  z = (Mat_ScaLAPACK*)Z-&gt;data;
+<a name="line64"> 64: </a>  MatCreate(PetscObjectComm((PetscObject)A),&amp;QT);
+<a name="line65"> 65: </a>  MatSetSizes(QT,mn,n,PETSC_DECIDE,PETSC_DECIDE);
+<a name="line66"> 66: </a>  MatSetType(QT,MATSCALAPACK);
+<a name="line67"> 67: </a>  MatSetUp(QT);
+<a name="line68"> 68: </a>  MatAssemblyBegin(QT,MAT_FINAL_ASSEMBLY);
+<a name="line69"> 69: </a>  MatAssemblyEnd(QT,MAT_FINAL_ASSEMBLY);
+<a name="line70"> 70: </a>  q = (Mat_ScaLAPACK*)QT-&gt;data;
+
+<a name="line72"> 72: </a>  PetscFPTrapPush(PETSC_FP_TRAP_OFF);
+<a name="line73"> 73: </a><font color="#A020F0">#if !defined(PETSC_USE_COMPLEX)</font>
+<a name="line74"> 74: </a>  <font color="#B22222">/* allocate workspace */</font>
+<a name="line75"> 75: </a>  PetscStackCallBLAS(<font color="#666666">"SCALAPACKgesvd"</font>,SCALAPACKgesvd_(<font color="#666666">"V"</font>,<font color="#666666">"V"</font>,&amp;a-&gt;M,&amp;a-&gt;N,a-&gt;loc,&amp;one,&amp;one,a-&gt;desc,svd-&gt;sigma,z-&gt;loc,&amp;one,&amp;one,z-&gt;desc,q-&gt;loc,&amp;one,&amp;one,q-&gt;desc,&amp;minlwork,&amp;lwork,&amp;info));
+<a name="line77"> 77: </a>  PetscBLASIntCast((PetscInt)minlwork,&amp;lwork);
+<a name="line78"> 78: </a>  PetscMalloc1(lwork,&amp;work);
+<a name="line79"> 79: </a>  <font color="#B22222">/* call computational routine */</font>
+<a name="line80"> 80: </a>  PetscStackCallBLAS(<font color="#666666">"SCALAPACKgesvd"</font>,SCALAPACKgesvd_(<font color="#666666">"V"</font>,<font color="#666666">"V"</font>,&amp;a-&gt;M,&amp;a-&gt;N,a-&gt;loc,&amp;one,&amp;one,a-&gt;desc,svd-&gt;sigma,z-&gt;loc,&amp;one,&amp;one,z-&gt;desc,q-&gt;loc,&amp;one,&amp;one,q-&gt;desc,work,&amp;lwork,&amp;info));
+<a name="line82"> 82: </a>  PetscFree(work);
+<a name="line83"> 83: </a><font color="#A020F0">#else</font>
+<a name="line84"> 84: </a>  <font color="#B22222">/* allocate workspace */</font>
+<a name="line85"> 85: </a>  PetscStackCallBLAS(<font color="#666666">"SCALAPACKgesvd"</font>,SCALAPACKgesvd_(<font color="#666666">"V"</font>,<font color="#666666">"V"</font>,&amp;a-&gt;M,&amp;a-&gt;N,a-&gt;loc,&amp;one,&amp;one,a-&gt;desc,svd-&gt;sigma,z-&gt;loc,&amp;one,&amp;one,z-&gt;desc,q-&gt;loc,&amp;one,&amp;one,q-&gt;desc,&amp;minlwork,&amp;lwork,&amp;dummy,&amp;info));
+<a name="line87"> 87: </a>  PetscBLASIntCast((PetscInt)PetscRealPart(minlwork),&amp;lwork);
+<a name="line88"> 88: </a>  lrwork = 1+4*PetscMax(a-&gt;M,a-&gt;N);
+<a name="line89"> 89: </a>  PetscMalloc2(lwork,&amp;work,lrwork,&amp;rwork);
+<a name="line90"> 90: </a>  <font color="#B22222">/* call computational routine */</font>
+<a name="line91"> 91: </a>  PetscStackCallBLAS(<font color="#666666">"SCALAPACKgesvd"</font>,SCALAPACKgesvd_(<font color="#666666">"V"</font>,<font color="#666666">"V"</font>,&amp;a-&gt;M,&amp;a-&gt;N,a-&gt;loc,&amp;one,&amp;one,a-&gt;desc,svd-&gt;sigma,z-&gt;loc,&amp;one,&amp;one,z-&gt;desc,q-&gt;loc,&amp;one,&amp;one,q-&gt;desc,work,&amp;lwork,rwork,&amp;info));
+<a name="line93"> 93: </a>  PetscFree2(work,rwork);
+<a name="line94"> 94: </a><font color="#A020F0">#endif</font>
+<a name="line95"> 95: </a>  PetscFPTrapPop();
+
+<a name="line97"> 97: </a>  MatHermitianTranspose(QT,MAT_INITIAL_MATRIX,&amp;Q);
+<a name="line98"> 98: </a>  MatDestroy(&amp;QT);
+<a name="line99"> 99: </a>  <a href="../../../../../docs/manualpages/BV/BVGetMat.html#BVGetMat">BVGetMat</a>(svd-&gt;U,&amp;U);
+<a name="line100">100: </a>  <a href="../../../../../docs/manualpages/BV/BVGetMat.html#BVGetMat">BVGetMat</a>(svd-&gt;V,&amp;V);
+<a name="line101">101: </a>  <font color="#4169E1">if</font> (M&gt;=N) {
+<a name="line102">102: </a>    MatConvert(Z,MATDENSE,MAT_REUSE_MATRIX,&amp;U);
+<a name="line103">103: </a>    MatConvert(Q,MATDENSE,MAT_REUSE_MATRIX,&amp;V);
+<a name="line104">104: </a>  } <font color="#4169E1">else</font> {
+<a name="line105">105: </a>    MatConvert(Q,MATDENSE,MAT_REUSE_MATRIX,&amp;U);
+<a name="line106">106: </a>    MatConvert(Z,MATDENSE,MAT_REUSE_MATRIX,&amp;V);
+<a name="line107">107: </a>  }
+<a name="line108">108: </a>  <a href="../../../../../docs/manualpages/BV/BVRestoreMat.html#BVRestoreMat">BVRestoreMat</a>(svd-&gt;U,&amp;U);
+<a name="line109">109: </a>  <a href="../../../../../docs/manualpages/BV/BVRestoreMat.html#BVRestoreMat">BVRestoreMat</a>(svd-&gt;V,&amp;V);
+<a name="line110">110: </a>  MatDestroy(&amp;Z);
+<a name="line111">111: </a>  MatDestroy(&amp;Q);
+
+<a name="line113">113: </a>  svd-&gt;nconv  = svd-&gt;ncv;
+<a name="line114">114: </a>  svd-&gt;its    = 1;
+<a name="line115">115: </a>  svd-&gt;reason = <a href="../../../../../docs/manualpages/sys/SVDConvergedReason.html#SVDConvergedReason">SVD_CONVERGED_TOL</a>;
+<a name="line116">116: </a>  PetscFunctionReturn(0);
+<a name="line117">117: </a>}
+
+<a name="line119">119: </a><strong><font color="#4169E1"><a name="SVDDestroy_ScaLAPACK"></a>PetscErrorCode SVDDestroy_ScaLAPACK(<a href="../../../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> svd)</font></strong>
+<a name="line120">120: </a>{
+<a name="line121">121: </a>  PetscFree(svd-&gt;data);
+<a name="line122">122: </a>  PetscFunctionReturn(0);
+<a name="line123">123: </a>}
+
+<a name="line125">125: </a><strong><font color="#4169E1"><a name="SVDReset_ScaLAPACK"></a>PetscErrorCode SVDReset_ScaLAPACK(<a href="../../../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> svd)</font></strong>
+<a name="line126">126: </a>{
+<a name="line127">127: </a>  SVD_ScaLAPACK  *ctx = (SVD_ScaLAPACK*)svd-&gt;data;
+
+<a name="line129">129: </a>  MatDestroy(&amp;ctx-&gt;As);
+<a name="line130">130: </a>  PetscFunctionReturn(0);
+<a name="line131">131: </a>}
+
+<a name="line133">133: </a><strong><font color="#4169E1"><a name="SVDCreate_ScaLAPACK"></a>SLEPC_EXTERN PetscErrorCode SVDCreate_ScaLAPACK(<a href="../../../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> svd)</font></strong>
+<a name="line134">134: </a>{
+<a name="line135">135: </a>  SVD_ScaLAPACK  *ctx;
+
+<a name="line137">137: </a>  PetscNewLog(svd,&amp;ctx);
+<a name="line138">138: </a>  svd-&gt;data = (void*)ctx;
+
+<a name="line140">140: </a>  svd-&gt;ops-&gt;solve          = SVDSolve_ScaLAPACK;
+<a name="line141">141: </a>  svd-&gt;ops-&gt;setup          = SVDSetUp_ScaLAPACK;
+<a name="line142">142: </a>  svd-&gt;ops-&gt;destroy        = SVDDestroy_ScaLAPACK;
+<a name="line143">143: </a>  svd-&gt;ops-&gt;reset          = SVDReset_ScaLAPACK;
+<a name="line144">144: </a>  PetscFunctionReturn(0);
+<a name="line145">145: </a>}
+</pre>
+</body>
+
+</html>

@@ -1,0 +1,222 @@
+<center><a href="test9.c">Actual source code: test9.c</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="https://slepc.upv.es/documentation/current/src/sys/classes/bv/tests/test9.c.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2022-08-09T09:05:26+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>slepc-3.17.2 2022-08-09</b></div>
+   <div id="bugreport" align=right><a href="mailto:slepc-maint@upv.es?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: slepc-3.17.2 v3.17.2 src/sys/classes/bv/tests/test9.c.html "><small>Report Typos and Errors</small></a></div>
+<pre width="80">
+<a name="line1">  1: </a><font color="#B22222">/*</font>
+<a name="line2">  2: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line3">  3: </a><font color="#B22222">   SLEPc - Scalable Library for Eigenvalue Problem Computations</font>
+<a name="line4">  4: </a><font color="#B22222">   Copyright (c) 2002-, Universitat Politecnica de Valencia, Spain</font>
+
+<a name="line6">  6: </a><font color="#B22222">   This file is part of SLEPc.</font>
+<a name="line7">  7: </a><font color="#B22222">   SLEPc is distributed under a 2-clause BSD license (see LICENSE).</font>
+<a name="line8">  8: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line9">  9: </a><font color="#B22222">*/</font>
+
+<a name="line11"> 11: </a>static char help[] = <font color="#666666">"Test <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> matrix projection.\n\n"</font>;
+
+<a name="line13"> 13: </a>#include <A href="../../../../../include/slepcbv.h.html">&lt;slepcbv.h&gt;</A>
+
+<a name="line15"> 15: </a><strong><font color="#4169E1"><a name="main"></a>int main(int argc,char **argv)</font></strong>
+<a name="line16"> 16: </a>{
+<a name="line17"> 17: </a>  Vec            t,v;
+<a name="line18"> 18: </a>  Mat            B,G,H0,H1;
+<a name="line19"> 19: </a>  <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a>             X,Y,Z;
+<a name="line20"> 20: </a>  PetscInt       i,j,n=20,kx=6,lx=3,ky=5,ly=2,Istart,Iend,col[5];
+<a name="line21"> 21: </a>  PetscScalar    alpha,value[] = { -1, 1, 1, 1, 1 };
+<a name="line22"> 22: </a>  PetscViewer    view;
+<a name="line23"> 23: </a>  PetscReal      norm;
+<a name="line24"> 24: </a>  PetscBool      verbose;
+
+<a name="line26"> 26: </a>  <a href="../../../../../docs/manualpages/sys/SlepcInitialize.html#SlepcInitialize">SlepcInitialize</a>(&amp;argc,&amp;argv,(char*)0,help);
+<a name="line27"> 27: </a>  PetscOptionsGetInt(NULL,NULL,<font color="#666666">"-n"</font>,&amp;n,NULL);
+<a name="line28"> 28: </a>  PetscOptionsGetInt(NULL,NULL,<font color="#666666">"-kx"</font>,&amp;kx,NULL);
+<a name="line29"> 29: </a>  PetscOptionsGetInt(NULL,NULL,<font color="#666666">"-lx"</font>,&amp;lx,NULL);
+<a name="line30"> 30: </a>  PetscOptionsGetInt(NULL,NULL,<font color="#666666">"-ky"</font>,&amp;ky,NULL);
+<a name="line31"> 31: </a>  PetscOptionsGetInt(NULL,NULL,<font color="#666666">"-ly"</font>,&amp;ly,NULL);
+<a name="line32"> 32: </a>  PetscOptionsHasName(NULL,NULL,<font color="#666666">"-verbose"</font>,&amp;verbose);
+<a name="line33"> 33: </a>  PetscPrintf(PETSC_COMM_WORLD,<font color="#666666">"Test <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> projection (n=%"</font> PetscInt_FMT <font color="#666666">").\n"</font>,n);
+<a name="line34"> 34: </a>  PetscPrintf(PETSC_COMM_WORLD,<font color="#666666">"X has %"</font> PetscInt_FMT <font color="#666666">" active columns (%"</font> PetscInt_FMT <font color="#666666">" leading columns).\n"</font>,kx,lx);
+<a name="line35"> 35: </a>  PetscPrintf(PETSC_COMM_WORLD,<font color="#666666">"Y has %"</font> PetscInt_FMT <font color="#666666">" active columns (%"</font> PetscInt_FMT <font color="#666666">" leading columns).\n"</font>,ky,ly);
+
+<a name="line37"> 37: </a>  <font color="#B22222">/* Set up viewer */</font>
+<a name="line38"> 38: </a>  PetscViewerASCIIGetStdout(PETSC_COMM_WORLD,&amp;view);
+<a name="line39"> 39: </a>  <font color="#4169E1">if</font> (verbose) PetscViewerPushFormat(view,PETSC_VIEWER_ASCII_MATLAB);
+
+<a name="line41"> 41: </a>  <font color="#B22222">/* Create non-symmetric matrix G (Toeplitz) */</font>
+<a name="line42"> 42: </a>  MatCreate(PETSC_COMM_WORLD,&amp;G);
+<a name="line43"> 43: </a>  MatSetSizes(G,PETSC_DECIDE,PETSC_DECIDE,n,n);
+<a name="line44"> 44: </a>  MatSetFromOptions(G);
+<a name="line45"> 45: </a>  MatSetUp(G);
+<a name="line46"> 46: </a>  PetscObjectSetName((PetscObject)G,<font color="#666666">"G"</font>);
+
+<a name="line48"> 48: </a>  MatGetOwnershipRange(G,&amp;Istart,&amp;Iend);
+<a name="line49"> 49: </a>  <font color="#4169E1">for</font> (i=Istart;i&lt;Iend;i++) {
+<a name="line50"> 50: </a>    col[0]=i-1; col[1]=i; col[2]=i+1; col[3]=i+2; col[4]=i+3;
+<a name="line51"> 51: </a>    <font color="#4169E1">if</font> (i==0) MatSetValues(G,1,&amp;i,PetscMin(4,n-i),col+1,value+1,INSERT_VALUES);
+<a name="line52"> 52: </a>    <font color="#4169E1">else</font> MatSetValues(G,1,&amp;i,PetscMin(5,n-i+1),col,value,INSERT_VALUES);
+<a name="line53"> 53: </a>  }
+<a name="line54"> 54: </a>  MatAssemblyBegin(G,MAT_FINAL_ASSEMBLY);
+<a name="line55"> 55: </a>  MatAssemblyEnd(G,MAT_FINAL_ASSEMBLY);
+<a name="line56"> 56: </a>  <font color="#4169E1">if</font> (verbose) MatView(G,view);
+
+<a name="line58"> 58: </a>  <font color="#B22222">/* Create symmetric matrix B (1-D Laplacian) */</font>
+<a name="line59"> 59: </a>  MatCreate(PETSC_COMM_WORLD,&amp;B);
+<a name="line60"> 60: </a>  MatSetSizes(B,PETSC_DECIDE,PETSC_DECIDE,n,n);
+<a name="line61"> 61: </a>  MatSetFromOptions(B);
+<a name="line62"> 62: </a>  MatSetUp(B);
+<a name="line63"> 63: </a>  PetscObjectSetName((PetscObject)B,<font color="#666666">"B"</font>);
+
+<a name="line65"> 65: </a>  MatGetOwnershipRange(B,&amp;Istart,&amp;Iend);
+<a name="line66"> 66: </a>  <font color="#4169E1">for</font> (i=Istart;i&lt;Iend;i++) {
+<a name="line67"> 67: </a>    <font color="#4169E1">if</font> (i&gt;0) MatSetValue(B,i,i-1,-1.0,INSERT_VALUES);
+<a name="line68"> 68: </a>    <font color="#4169E1">if</font> (i&lt;n-1) MatSetValue(B,i,i+1,-1.0,INSERT_VALUES);
+<a name="line69"> 69: </a>    MatSetValue(B,i,i,2.0,INSERT_VALUES);
+<a name="line70"> 70: </a>  }
+<a name="line71"> 71: </a>  MatAssemblyBegin(B,MAT_FINAL_ASSEMBLY);
+<a name="line72"> 72: </a>  MatAssemblyEnd(B,MAT_FINAL_ASSEMBLY);
+<a name="line73"> 73: </a>  MatCreateVecs(B,&amp;t,NULL);
+<a name="line74"> 74: </a>  <font color="#4169E1">if</font> (verbose) MatView(B,view);
+
+<a name="line76"> 76: </a>  <font color="#B22222">/* Create <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> object X */</font>
+<a name="line77"> 77: </a>  <a href="../../../../../docs/manualpages/BV/BVCreate.html#BVCreate">BVCreate</a>(PETSC_COMM_WORLD,&amp;X);
+<a name="line78"> 78: </a>  PetscObjectSetName((PetscObject)X,<font color="#666666">"X"</font>);
+<a name="line79"> 79: </a>  <a href="../../../../../docs/manualpages/BV/BVSetSizesFromVec.html#BVSetSizesFromVec">BVSetSizesFromVec</a>(X,t,kx+2);  <font color="#B22222">/* two extra columns to test active columns */</font>
+<a name="line80"> 80: </a>  <a href="../../../../../docs/manualpages/BV/BVSetFromOptions.html#BVSetFromOptions">BVSetFromOptions</a>(X);
+
+<a name="line82"> 82: </a>  <font color="#B22222">/* Fill X entries */</font>
+<a name="line83"> 83: </a>  <font color="#4169E1">for</font> (j=0;j&lt;kx+2;j++) {
+<a name="line84"> 84: </a>    <a href="../../../../../docs/manualpages/BV/BVGetColumn.html#BVGetColumn">BVGetColumn</a>(X,j,&amp;v);
+<a name="line85"> 85: </a>    VecSet(v,0.0);
+<a name="line86"> 86: </a>    <font color="#4169E1">for</font> (i=0;i&lt;4;i++) {
+<a name="line87"> 87: </a>      <font color="#4169E1">if</font> (i+j&lt;n) {
+<a name="line88"> 88: </a><font color="#A020F0">#if defined(PETSC_USE_COMPLEX)</font>
+<a name="line89"> 89: </a>        alpha = PetscCMPLX((PetscReal)(3*i+j-2),(PetscReal)(2*i));
+<a name="line90"> 90: </a><font color="#A020F0">#else</font>
+<a name="line91"> 91: </a>        alpha = (PetscReal)(3*i+j-2);
+<a name="line92"> 92: </a><font color="#A020F0">#endif</font>
+<a name="line93"> 93: </a>        VecSetValue(v,i+j,alpha,INSERT_VALUES);
+<a name="line94"> 94: </a>      }
+<a name="line95"> 95: </a>    }
+<a name="line96"> 96: </a>    VecAssemblyBegin(v);
+<a name="line97"> 97: </a>    VecAssemblyEnd(v);
+<a name="line98"> 98: </a>    <a href="../../../../../docs/manualpages/BV/BVRestoreColumn.html#BVRestoreColumn">BVRestoreColumn</a>(X,j,&amp;v);
+<a name="line99"> 99: </a>  }
+<a name="line100">100: </a>  <font color="#4169E1">if</font> (verbose) <a href="../../../../../docs/manualpages/BV/BVView.html#BVView">BVView</a>(X,view);
+
+<a name="line102">102: </a>  <font color="#B22222">/* Duplicate <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> object and store Z=G*X */</font>
+<a name="line103">103: </a>  <a href="../../../../../docs/manualpages/BV/BVDuplicate.html#BVDuplicate">BVDuplicate</a>(X,&amp;Z);
+<a name="line104">104: </a>  PetscObjectSetName((PetscObject)Z,<font color="#666666">"Z"</font>);
+<a name="line105">105: </a>  <a href="../../../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(X,0,kx);
+<a name="line106">106: </a>  <a href="../../../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(Z,0,kx);
+<a name="line107">107: </a>  <a href="../../../../../docs/manualpages/BV/BVMatMult.html#BVMatMult">BVMatMult</a>(X,G,Z);
+<a name="line108">108: </a>  <a href="../../../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(X,lx,kx);
+<a name="line109">109: </a>  <a href="../../../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(Z,lx,kx);
+
+<a name="line111">111: </a>  <font color="#B22222">/* Create <a href="../../../../../docs/manualpages/sys/BV.html#BV">BV</a> object Y */</font>
+<a name="line112">112: </a>  <a href="../../../../../docs/manualpages/BV/BVCreate.html#BVCreate">BVCreate</a>(PETSC_COMM_WORLD,&amp;Y);
+<a name="line113">113: </a>  PetscObjectSetName((PetscObject)Y,<font color="#666666">"Y"</font>);
+<a name="line114">114: </a>  <a href="../../../../../docs/manualpages/BV/BVSetSizesFromVec.html#BVSetSizesFromVec">BVSetSizesFromVec</a>(Y,t,ky+1);
+<a name="line115">115: </a>  <a href="../../../../../docs/manualpages/BV/BVSetFromOptions.html#BVSetFromOptions">BVSetFromOptions</a>(Y);
+<a name="line116">116: </a>  <a href="../../../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(Y,ly,ky);
+
+<a name="line118">118: </a>  <font color="#B22222">/* Fill Y entries */</font>
+<a name="line119">119: </a>  <font color="#4169E1">for</font> (j=0;j&lt;ky+1;j++) {
+<a name="line120">120: </a>    <a href="../../../../../docs/manualpages/BV/BVGetColumn.html#BVGetColumn">BVGetColumn</a>(Y,j,&amp;v);
+<a name="line121">121: </a><font color="#A020F0">#if defined(PETSC_USE_COMPLEX)</font>
+<a name="line122">122: </a>    alpha = PetscCMPLX((PetscReal)(j+1)/4.0,-(PetscReal)j);
+<a name="line123">123: </a><font color="#A020F0">#else</font>
+<a name="line124">124: </a>    alpha = (PetscReal)(j+1)/4.0;
+<a name="line125">125: </a><font color="#A020F0">#endif</font>
+<a name="line126">126: </a>    VecSet(v,(PetscScalar)(j+1)/4.0);
+<a name="line127">127: </a>    <a href="../../../../../docs/manualpages/BV/BVRestoreColumn.html#BVRestoreColumn">BVRestoreColumn</a>(Y,j,&amp;v);
+<a name="line128">128: </a>  }
+<a name="line129">129: </a>  <font color="#4169E1">if</font> (verbose) <a href="../../../../../docs/manualpages/BV/BVView.html#BVView">BVView</a>(Y,view);
+
+<a name="line131">131: </a>  <font color="#B22222">/* Test <a href="../../../../../docs/manualpages/BV/BVMatProject.html#BVMatProject">BVMatProject</a> for non-symmetric matrix G */</font>
+<a name="line132">132: </a>  MatCreateSeqDense(PETSC_COMM_SELF,ky,kx,NULL,&amp;H0);
+<a name="line133">133: </a>  PetscObjectSetName((PetscObject)H0,<font color="#666666">"H0"</font>);
+<a name="line134">134: </a>  <a href="../../../../../docs/manualpages/BV/BVMatProject.html#BVMatProject">BVMatProject</a>(X,G,Y,H0);
+<a name="line135">135: </a>  <font color="#4169E1">if</font> (verbose) MatView(H0,view);
+
+<a name="line137">137: </a>  <font color="#B22222">/* Test <a href="../../../../../docs/manualpages/BV/BVMatProject.html#BVMatProject">BVMatProject</a> with previously stored G*X */</font>
+<a name="line138">138: </a>  MatCreateSeqDense(PETSC_COMM_SELF,ky,kx,NULL,&amp;H1);
+<a name="line139">139: </a>  PetscObjectSetName((PetscObject)H1,<font color="#666666">"H1"</font>);
+<a name="line140">140: </a>  <a href="../../../../../docs/manualpages/BV/BVMatProject.html#BVMatProject">BVMatProject</a>(Z,NULL,Y,H1);
+<a name="line141">141: </a>  <font color="#4169E1">if</font> (verbose) MatView(H1,view);
+
+<a name="line143">143: </a>  <font color="#B22222">/* Check that H0 and H1 are equal */</font>
+<a name="line144">144: </a>  MatAXPY(H0,-1.0,H1,SAME_NONZERO_PATTERN);
+<a name="line145">145: </a>  MatNorm(H0,NORM_1,&amp;norm);
+<a name="line146">146: </a>  <font color="#4169E1">if</font> (norm&lt;10*PETSC_MACHINE_EPSILON) PetscPrintf(PETSC_COMM_WORLD,<font color="#666666">"||H0-H1|| &lt; 10*eps\n"</font>);
+<a name="line147">147: </a>  <font color="#4169E1">else</font> PetscPrintf(PETSC_COMM_WORLD,<font color="#666666">"||H0-H1||=%g\n"</font>,(double)norm);
+<a name="line148">148: </a>  MatDestroy(&amp;H0);
+<a name="line149">149: </a>  MatDestroy(&amp;H1);
+
+<a name="line151">151: </a>  <font color="#B22222">/* Test <a href="../../../../../docs/manualpages/BV/BVMatProject.html#BVMatProject">BVMatProject</a> for symmetric matrix B with orthogonal projection */</font>
+<a name="line152">152: </a>  MatCreateSeqDense(PETSC_COMM_SELF,kx,kx,NULL,&amp;H0);
+<a name="line153">153: </a>  PetscObjectSetName((PetscObject)H0,<font color="#666666">"H0"</font>);
+<a name="line154">154: </a>  <a href="../../../../../docs/manualpages/BV/BVMatProject.html#BVMatProject">BVMatProject</a>(X,B,X,H0);
+<a name="line155">155: </a>  <font color="#4169E1">if</font> (verbose) MatView(H0,view);
+
+<a name="line157">157: </a>  <font color="#B22222">/* Repeat previous test with symmetry flag set */</font>
+<a name="line158">158: </a>  MatSetOption(B,MAT_HERMITIAN,PETSC_TRUE);
+<a name="line159">159: </a>  MatCreateSeqDense(PETSC_COMM_SELF,kx,kx,NULL,&amp;H1);
+<a name="line160">160: </a>  PetscObjectSetName((PetscObject)H1,<font color="#666666">"H1"</font>);
+<a name="line161">161: </a>  <a href="../../../../../docs/manualpages/BV/BVMatProject.html#BVMatProject">BVMatProject</a>(X,B,X,H1);
+<a name="line162">162: </a>  <font color="#4169E1">if</font> (verbose) MatView(H1,view);
+
+<a name="line164">164: </a>  <font color="#B22222">/* Check that H0 and H1 are equal */</font>
+<a name="line165">165: </a>  MatAXPY(H0,-1.0,H1,SAME_NONZERO_PATTERN);
+<a name="line166">166: </a>  MatNorm(H0,NORM_1,&amp;norm);
+<a name="line167">167: </a>  <font color="#4169E1">if</font> (norm&lt;10*PETSC_MACHINE_EPSILON) PetscPrintf(PETSC_COMM_WORLD,<font color="#666666">"||H0-H1|| &lt; 10*eps\n"</font>);
+<a name="line168">168: </a>  <font color="#4169E1">else</font> PetscPrintf(PETSC_COMM_WORLD,<font color="#666666">"||H0-H1||=%g\n"</font>,(double)norm);
+<a name="line169">169: </a>  MatDestroy(&amp;H0);
+<a name="line170">170: </a>  MatDestroy(&amp;H1);
+
+<a name="line172">172: </a>  <a href="../../../../../docs/manualpages/BV/BVDestroy.html#BVDestroy">BVDestroy</a>(&amp;X);
+<a name="line173">173: </a>  <a href="../../../../../docs/manualpages/BV/BVDestroy.html#BVDestroy">BVDestroy</a>(&amp;Y);
+<a name="line174">174: </a>  <a href="../../../../../docs/manualpages/BV/BVDestroy.html#BVDestroy">BVDestroy</a>(&amp;Z);
+<a name="line175">175: </a>  MatDestroy(&amp;B);
+<a name="line176">176: </a>  MatDestroy(&amp;G);
+<a name="line177">177: </a>  VecDestroy(&amp;t);
+<a name="line178">178: </a>  <a href="../../../../../docs/manualpages/sys/SlepcFinalize.html#SlepcFinalize">SlepcFinalize</a>();
+<a name="line179">179: </a>  <font color="#4169E1">return</font> 0;
+<a name="line180">180: </a>}
+
+<a name="line182">182: </a><font color="#B22222">/*TEST</font>
+
+<a name="line184">184: </a><font color="#B22222">   testset:</font>
+<a name="line185">185: </a><font color="#B22222">      output_file: output/test9_1.out</font>
+<a name="line186">186: </a><font color="#B22222">      test:</font>
+<a name="line187">187: </a><font color="#B22222">         suffix: 1</font>
+<a name="line188">188: </a><font color="#B22222">         args: -bv_type {{vecs contiguous svec mat}shared output}</font>
+<a name="line189">189: </a><font color="#B22222">      test:</font>
+<a name="line190">190: </a><font color="#B22222">         suffix: 1_svec_vecs</font>
+<a name="line191">191: </a><font color="#B22222">         args: -bv_type svec -bv_matmult vecs</font>
+<a name="line192">192: </a><font color="#B22222">      test:</font>
+<a name="line193">193: </a><font color="#B22222">         suffix: 1_cuda</font>
+<a name="line194">194: </a><font color="#B22222">         args: -bv_type svec -mat_type aijcusparse</font>
+<a name="line195">195: </a><font color="#B22222">         requires: cuda</font>
+<a name="line196">196: </a><font color="#B22222">      test:</font>
+<a name="line197">197: </a><font color="#B22222">         suffix: 2</font>
+<a name="line198">198: </a><font color="#B22222">         nsize: 2</font>
+<a name="line199">199: </a><font color="#B22222">         args: -bv_type {{vecs contiguous svec mat}shared output}</font>
+<a name="line200">200: </a><font color="#B22222">      test:</font>
+<a name="line201">201: </a><font color="#B22222">         suffix: 2_svec_vecs</font>
+<a name="line202">202: </a><font color="#B22222">         nsize: 2</font>
+<a name="line203">203: </a><font color="#B22222">         args: -bv_type svec -bv_matmult vecs</font>
+
+<a name="line205">205: </a><font color="#B22222">TEST*/</font>
+</pre>
+</body>
+
+</html>

@@ -1,0 +1,1068 @@
+<center><a href="nciss.c">Actual source code: nciss.c</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="https://slepc.upv.es/documentation/current/src/nep/impls/ciss/nciss.c.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2022-08-09T09:05:54+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>slepc-3.17.2 2022-08-09</b></div>
+   <div id="bugreport" align=right><a href="mailto:slepc-maint@upv.es?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: slepc-3.17.2 v3.17.2 src/nep/impls/ciss/nciss.c.html "><small>Report Typos and Errors</small></a></div>
+<pre width="80">
+<a name="line1">  1: </a><font color="#B22222">/*</font>
+<a name="line2">  2: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line3">  3: </a><font color="#B22222">   SLEPc - Scalable Library for Eigenvalue Problem Computations</font>
+<a name="line4">  4: </a><font color="#B22222">   Copyright (c) 2002-, Universitat Politecnica de Valencia, Spain</font>
+
+<a name="line6">  6: </a><font color="#B22222">   This file is part of SLEPc.</font>
+<a name="line7">  7: </a><font color="#B22222">   SLEPc is distributed under a 2-clause BSD license (see LICENSE).</font>
+<a name="line8">  8: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line9">  9: </a><font color="#B22222">*/</font>
+<a name="line10"> 10: </a><font color="#B22222">/*</font>
+<a name="line11"> 11: </a><font color="#B22222">   SLEPc eigensolver: "ciss"</font>
+
+<a name="line13"> 13: </a><font color="#B22222">   Method: Contour Integral Spectral Slicing</font>
+
+<a name="line15"> 15: </a><font color="#B22222">   Algorithm:</font>
+
+<a name="line17"> 17: </a><font color="#B22222">       Contour integral based on Sakurai-Sugiura method to construct a</font>
+<a name="line18"> 18: </a><font color="#B22222">       subspace, with various eigenpair extractions (Rayleigh-Ritz,</font>
+<a name="line19"> 19: </a><font color="#B22222">       explicit moment).</font>
+
+<a name="line21"> 21: </a><font color="#B22222">   Based on code contributed by Y. Maeda, T. Sakurai.</font>
+
+<a name="line23"> 23: </a><font color="#B22222">   References:</font>
+
+<a name="line25"> 25: </a><font color="#B22222">       [1] J. Asakura, T. Sakurai, H. Tadano, T. Ikegami, K. Kimura, "A</font>
+<a name="line26"> 26: </a><font color="#B22222">           numerical method for nonlinear eigenvalue problems using contour</font>
+<a name="line27"> 27: </a><font color="#B22222">           integrals", JSIAM Lett. 1:52-55, 2009.</font>
+
+<a name="line29"> 29: </a><font color="#B22222">       [2] S. Yokota and T. Sakurai, "A projection method for nonlinear</font>
+<a name="line30"> 30: </a><font color="#B22222">           eigenvalue problems using contour integrals", JSIAM Lett.</font>
+<a name="line31"> 31: </a><font color="#B22222">           5:41-44, 2013.</font>
+<a name="line32"> 32: </a><font color="#B22222">*/</font>
+
+<a name="line34"> 34: </a>#include <A href="../../../../include/slepc/private/nepimpl.h.html">&lt;slepc/private/nepimpl.h&gt;</A>
+<a name="line35"> 35: </a>#include <A href="../../../../include/slepc/private/slepccontour.h.html">&lt;slepc/private/slepccontour.h&gt;</A>
+
+<a name="line37"> 37: </a><font color="#4169E1">typedef struct _n_nep_ciss_project *NEP_CISS_PROJECT;</font>
+<a name="line38"> 38: </a><font color="#4169E1">typedef</font> <font color="#4169E1">struct</font> {
+<a name="line39"> 39: </a>  <font color="#B22222">/* parameters */</font>
+<a name="line40"> 40: </a>  PetscInt          N;             <font color="#B22222">/* number of integration points (32) */</font>
+<a name="line41"> 41: </a>  PetscInt          L;             <font color="#B22222">/* block size (16) */</font>
+<a name="line42"> 42: </a>  PetscInt          M;             <font color="#B22222">/* moment degree (N/4 = 4) */</font>
+<a name="line43"> 43: </a>  PetscReal         delta;         <font color="#B22222">/* threshold of singular value (1e-12) */</font>
+<a name="line44"> 44: </a>  PetscInt          L_max;         <font color="#B22222">/* maximum number of columns of the source matrix V */</font>
+<a name="line45"> 45: </a>  PetscReal         spurious_threshold; <font color="#B22222">/* discard spurious eigenpairs */</font>
+<a name="line46"> 46: </a>  PetscBool         isreal;        <font color="#B22222">/* T(z) is real for real z */</font>
+<a name="line47"> 47: </a>  PetscInt          npart;         <font color="#B22222">/* number of partitions */</font>
+<a name="line48"> 48: </a>  PetscInt          refine_inner;
+<a name="line49"> 49: </a>  PetscInt          refine_blocksize;
+<a name="line50"> 50: </a>  <a href="../../../../docs/manualpages/sys/NEPCISSExtraction.html#NEPCISSExtraction">NEPCISSExtraction</a> extraction;
+<a name="line51"> 51: </a>  <font color="#B22222">/* private data */</font>
+<a name="line52"> 52: </a>  SlepcContourData  contour;
+<a name="line53"> 53: </a>  PetscReal         *sigma;        <font color="#B22222">/* threshold for numerical rank */</font>
+<a name="line54"> 54: </a>  PetscScalar       *weight;
+<a name="line55"> 55: </a>  PetscScalar       *omega;
+<a name="line56"> 56: </a>  PetscScalar       *pp;
+<a name="line57"> 57: </a>  <a href="../../../../docs/manualpages/sys/BV.html#BV">BV</a>                V;
+<a name="line58"> 58: </a>  <a href="../../../../docs/manualpages/sys/BV.html#BV">BV</a>                S;
+<a name="line59"> 59: </a>  <a href="../../../../docs/manualpages/sys/BV.html#BV">BV</a>                Y;
+<a name="line60"> 60: </a>  PetscBool         useconj;
+<a name="line61"> 61: </a>  Mat               J;             <font color="#B22222">/* auxiliary matrix when using subcomm */</font>
+<a name="line62"> 62: </a>  <a href="../../../../docs/manualpages/sys/BV.html#BV">BV</a>                pV;
+<a name="line63"> 63: </a>  NEP_CISS_PROJECT  dsctxf;
+<a name="line64"> 64: </a>  PetscObjectId     rgid;
+<a name="line65"> 65: </a>  PetscObjectState  rgstate;
+<a name="line66"> 66: </a>} NEP_CISS;
+
+<a name="line68"> 68: </a><font color="#4169E1"><a name="_n_nep_ciss_project"></a>struct _n_nep_ciss_project </font>{
+<a name="line69"> 69: </a>  <a href="../../../../docs/manualpages/sys/NEP.html#NEP">NEP</a>  nep;
+<a name="line70"> 70: </a>  <a href="../../../../docs/manualpages/sys/BV.html#BV">BV</a>   Q;
+<a name="line71"> 71: </a>};
+
+<a name="line73"> 73: </a><strong><font color="#4169E1"><a name="NEPContourDSComputeMatrix"></a>static PetscErrorCode NEPContourDSComputeMatrix(<a href="../../../../docs/manualpages/sys/DS.html#DS">DS</a> ds,PetscScalar lambda,PetscBool deriv,<a href="../../../../docs/manualpages/sys/DSMatType.html#DSMatType">DSMatType</a> mat,void *ctx)</font></strong>
+<a name="line74"> 74: </a>{
+<a name="line75"> 75: </a>  NEP_CISS_PROJECT proj = (NEP_CISS_PROJECT)ctx;
+<a name="line76"> 76: </a>  Mat              M,fun;
+
+<a name="line78"> 78: </a>  <font color="#4169E1">if</font> (!deriv) {
+<a name="line79"> 79: </a>    <a href="../../../../docs/manualpages/NEP/NEPComputeFunction.html#NEPComputeFunction">NEPComputeFunction</a>(proj-&gt;nep,lambda,proj-&gt;nep-&gt;function,proj-&gt;nep-&gt;function);
+<a name="line80"> 80: </a>    fun = proj-&gt;nep-&gt;function;
+<a name="line81"> 81: </a>  } <font color="#4169E1">else</font> {
+<a name="line82"> 82: </a>    <a href="../../../../docs/manualpages/NEP/NEPComputeJacobian.html#NEPComputeJacobian">NEPComputeJacobian</a>(proj-&gt;nep,lambda,proj-&gt;nep-&gt;jacobian);
+<a name="line83"> 83: </a>    fun = proj-&gt;nep-&gt;jacobian;
+<a name="line84"> 84: </a>  }
+<a name="line85"> 85: </a>  <a href="../../../../docs/manualpages/DS/DSGetMat.html#DSGetMat">DSGetMat</a>(ds,mat,&amp;M);
+<a name="line86"> 86: </a>  <a href="../../../../docs/manualpages/BV/BVMatProject.html#BVMatProject">BVMatProject</a>(proj-&gt;Q,fun,proj-&gt;Q,M);
+<a name="line87"> 87: </a>  <a href="../../../../docs/manualpages/DS/DSRestoreMat.html#DSRestoreMat">DSRestoreMat</a>(ds,mat,&amp;M);
+<a name="line88"> 88: </a>  PetscFunctionReturn(0);
+<a name="line89"> 89: </a>}
+
+<a name="line91"> 91: </a><strong><font color="#4169E1"><a name="NEPComputeFunctionSubcomm"></a>static PetscErrorCode NEPComputeFunctionSubcomm(<a href="../../../../docs/manualpages/sys/NEP.html#NEP">NEP</a> nep,PetscScalar lambda,Mat T,Mat P,PetscBool deriv)</font></strong>
+<a name="line92"> 92: </a>{
+<a name="line93"> 93: </a>  PetscInt       i;
+<a name="line94"> 94: </a>  PetscScalar    alpha;
+<a name="line95"> 95: </a>  NEP_CISS       *ctx = (NEP_CISS*)nep-&gt;data;
+
+<a name="line97"> 97: </a>  PetscAssert(nep-&gt;fui!=NEP_USER_INTERFACE_CALLBACK,PetscObjectComm((PetscObject)nep),PETSC_ERR_ARG_WRONGSTATE,<font color="#666666">"Should not arrive here with callbacks"</font>);
+<a name="line98"> 98: </a>  MatZeroEntries(T);
+<a name="line99"> 99: </a>  <font color="#4169E1">if</font> (!deriv &amp;&amp; T != P) MatZeroEntries(P);
+<a name="line100">100: </a>  <font color="#4169E1">for</font> (i=0;i&lt;nep-&gt;nt;i++) {
+<a name="line101">101: </a>    <font color="#4169E1">if</font> (!deriv) <a href="../../../../docs/manualpages/FN/FNEvaluateFunction.html#FNEvaluateFunction">FNEvaluateFunction</a>(nep-&gt;f[i],lambda,&amp;alpha);
+<a name="line102">102: </a>    <font color="#4169E1">else</font> <a href="../../../../docs/manualpages/FN/FNEvaluateDerivative.html#FNEvaluateDerivative">FNEvaluateDerivative</a>(nep-&gt;f[i],lambda,&amp;alpha);
+<a name="line103">103: </a>    MatAXPY(T,alpha,ctx-&gt;contour-&gt;pA[i],nep-&gt;mstr);
+<a name="line104">104: </a>    <font color="#4169E1">if</font> (!deriv &amp;&amp; T != P) MatAXPY(P,alpha,ctx-&gt;contour-&gt;pP[i],nep-&gt;mstrp);
+<a name="line105">105: </a>  }
+<a name="line106">106: </a>  PetscFunctionReturn(0);
+<a name="line107">107: </a>}
+
+<a name="line109">109: </a><font color="#B22222">/*</font>
+<a name="line110">110: </a><font color="#B22222">  Set up KSP solvers for every integration point</font>
+<a name="line111">111: </a><font color="#B22222">*/</font>
+<a name="line112">112: </a><strong><font color="#4169E1"><a name="NEPCISSSetUp"></a>static PetscErrorCode NEPCISSSetUp(<a href="../../../../docs/manualpages/sys/NEP.html#NEP">NEP</a> nep,Mat T,Mat P)</font></strong>
+<a name="line113">113: </a>{
+<a name="line114">114: </a>  NEP_CISS         *ctx = (NEP_CISS*)nep-&gt;data;
+<a name="line115">115: </a>  SlepcContourData contour;
+<a name="line116">116: </a>  PetscInt         i,p_id;
+<a name="line117">117: </a>  Mat              Amat,Pmat;
+
+<a name="line119">119: </a>  <font color="#4169E1">if</font> (!ctx-&gt;contour || !ctx-&gt;contour-&gt;ksp) <a href="../../../../docs/manualpages/NEP/NEPCISSGetKSPs.html#NEPCISSGetKSPs">NEPCISSGetKSPs</a>(nep,NULL,NULL);
+<a name="line120">120: </a>  contour = ctx-&gt;contour;
+<a name="line121">121: </a>  <font color="#4169E1">for</font> (i=0;i&lt;contour-&gt;npoints;i++) {
+<a name="line122">122: </a>    p_id = i*contour-&gt;subcomm-&gt;n + contour-&gt;subcomm-&gt;color;
+<a name="line123">123: </a>    MatDuplicate(T,MAT_DO_NOT_COPY_VALUES,&amp;Amat);
+<a name="line124">124: </a>    <font color="#4169E1">if</font> (T != P) MatDuplicate(P,MAT_DO_NOT_COPY_VALUES,&amp;Pmat); <font color="#4169E1">else</font> Pmat = Amat;
+<a name="line125">125: </a>    <font color="#4169E1">if</font> (contour-&gt;subcomm-&gt;n == 1 || nep-&gt;fui==NEP_USER_INTERFACE_CALLBACK) <a href="../../../../docs/manualpages/NEP/NEPComputeFunction.html#NEPComputeFunction">NEPComputeFunction</a>(nep,ctx-&gt;omega[p_id],Amat,Pmat);
+<a name="line126">126: </a>    <font color="#4169E1">else</font> NEPComputeFunctionSubcomm(nep,ctx-&gt;omega[p_id],Amat,Pmat,PETSC_FALSE);
+<a name="line127">127: </a>    NEP_KSPSetOperators(contour-&gt;ksp[i],Amat,Pmat);
+<a name="line128">128: </a>    MatDestroy(&amp;Amat);
+<a name="line129">129: </a>    <font color="#4169E1">if</font> (T != P) MatDestroy(&amp;Pmat);
+<a name="line130">130: </a>  }
+<a name="line131">131: </a>  PetscFunctionReturn(0);
+<a name="line132">132: </a>}
+
+<a name="line134">134: </a><font color="#B22222">/*</font>
+<a name="line135">135: </a><font color="#B22222">  Y_i = F(z_i)^{-1}Fp(z_i)V for every integration point, Y=[Y_i] is in the context</font>
+<a name="line136">136: </a><font color="#B22222">*/</font>
+<a name="line137">137: </a><strong><font color="#4169E1"><a name="NEPCISSSolve"></a>static PetscErrorCode NEPCISSSolve(<a href="../../../../docs/manualpages/sys/NEP.html#NEP">NEP</a> nep,Mat dT,<a href="../../../../docs/manualpages/sys/BV.html#BV">BV</a> V,PetscInt L_start,PetscInt L_end)</font></strong>
+<a name="line138">138: </a>{
+<a name="line139">139: </a>  NEP_CISS         *ctx = (NEP_CISS*)nep-&gt;data;
+<a name="line140">140: </a>  SlepcContourData contour = ctx-&gt;contour;
+<a name="line141">141: </a>  PetscInt         i,p_id;
+<a name="line142">142: </a>  Mat              MV,BMV=NULL,MC;
+
+<a name="line144">144: </a>  <a href="../../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(V,L_start,L_end);
+<a name="line145">145: </a>  <a href="../../../../docs/manualpages/BV/BVGetMat.html#BVGetMat">BVGetMat</a>(V,&amp;MV);
+<a name="line146">146: </a>  <font color="#4169E1">for</font> (i=0;i&lt;contour-&gt;npoints;i++) {
+<a name="line147">147: </a>    p_id = i*contour-&gt;subcomm-&gt;n + contour-&gt;subcomm-&gt;color;
+<a name="line148">148: </a>    <font color="#4169E1">if</font> (contour-&gt;subcomm-&gt;n==1 || nep-&gt;fui==NEP_USER_INTERFACE_CALLBACK) <a href="../../../../docs/manualpages/NEP/NEPComputeJacobian.html#NEPComputeJacobian">NEPComputeJacobian</a>(nep,ctx-&gt;omega[p_id],dT);
+<a name="line149">149: </a>    <font color="#4169E1">else</font> NEPComputeFunctionSubcomm(nep,ctx-&gt;omega[p_id],dT,NULL,PETSC_TRUE);
+<a name="line150">150: </a>    <a href="../../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(ctx-&gt;Y,i*ctx-&gt;L+L_start,i*ctx-&gt;L+L_end);
+<a name="line151">151: </a>    <a href="../../../../docs/manualpages/BV/BVGetMat.html#BVGetMat">BVGetMat</a>(ctx-&gt;Y,&amp;MC);
+<a name="line152">152: </a>    <font color="#4169E1">if</font> (!i) {
+<a name="line153">153: </a>      MatProductCreate(dT,MV,NULL,&amp;BMV);
+<a name="line154">154: </a>      MatProductSetType(BMV,MATPRODUCT_AB);
+<a name="line155">155: </a>      MatProductSetFromOptions(BMV);
+<a name="line156">156: </a>      MatProductSymbolic(BMV);
+<a name="line157">157: </a>    }
+<a name="line158">158: </a>    MatProductNumeric(BMV);
+<a name="line159">159: </a>    KSPMatSolve(contour-&gt;ksp[i],BMV,MC);
+<a name="line160">160: </a>    <a href="../../../../docs/manualpages/BV/BVRestoreMat.html#BVRestoreMat">BVRestoreMat</a>(ctx-&gt;Y,&amp;MC);
+<a name="line161">161: </a>  }
+<a name="line162">162: </a>  MatDestroy(&amp;BMV);
+<a name="line163">163: </a>  <a href="../../../../docs/manualpages/BV/BVRestoreMat.html#BVRestoreMat">BVRestoreMat</a>(V,&amp;MV);
+<a name="line164">164: </a>  PetscFunctionReturn(0);
+<a name="line165">165: </a>}
+
+<a name="line167">167: </a><strong><font color="#4169E1"><a name="NEPSetUp_CISS"></a>PetscErrorCode NEPSetUp_CISS(<a href="../../../../docs/manualpages/sys/NEP.html#NEP">NEP</a> nep)</font></strong>
+<a name="line168">168: </a>{
+<a name="line169">169: </a>  NEP_CISS         *ctx = (NEP_CISS*)nep-&gt;data;
+<a name="line170">170: </a>  SlepcContourData contour;
+<a name="line171">171: </a>  PetscInt         nwork;
+<a name="line172">172: </a>  PetscBool        istrivial,isellipse,flg;
+<a name="line173">173: </a>  NEP_CISS_PROJECT dsctxf;
+<a name="line174">174: </a>  PetscObjectId    id;
+<a name="line175">175: </a>  PetscObjectState state;
+<a name="line176">176: </a>  Vec              v0;
+
+<a name="line178">178: </a>  <font color="#4169E1">if</font> (nep-&gt;ncv==PETSC_DEFAULT) nep-&gt;ncv = ctx-&gt;L_max*ctx-&gt;M;
+<a name="line179">179: </a>  <font color="#4169E1">else</font> {
+<a name="line180">180: </a>    ctx-&gt;L_max = nep-&gt;ncv/ctx-&gt;M;
+<a name="line181">181: </a>    <font color="#4169E1">if</font> (!ctx-&gt;L_max) {
+<a name="line182">182: </a>      ctx-&gt;L_max = 1;
+<a name="line183">183: </a>      nep-&gt;ncv = ctx-&gt;L_max*ctx-&gt;M;
+<a name="line184">184: </a>    }
+<a name="line185">185: </a>  }
+<a name="line186">186: </a>  ctx-&gt;L = PetscMin(ctx-&gt;L,ctx-&gt;L_max);
+<a name="line187">187: </a>  <font color="#4169E1">if</font> (nep-&gt;max_it==PETSC_DEFAULT) nep-&gt;max_it = 5;
+<a name="line188">188: </a>  <font color="#4169E1">if</font> (nep-&gt;mpd==PETSC_DEFAULT) nep-&gt;mpd = nep-&gt;ncv;
+<a name="line189">189: </a>  <font color="#4169E1">if</font> (!nep-&gt;which) nep-&gt;which = <a href="../../../../docs/manualpages/sys/NEPWhich.html#NEPWhich">NEP_ALL</a>;
+<a name="line191">191: </a>  NEPCheckUnsupported(nep,NEP_FEATURE_STOPPING | NEP_FEATURE_TWOSIDED);
+
+<a name="line193">193: </a>  <font color="#B22222">/* check region */</font>
+<a name="line194">194: </a>  <a href="../../../../docs/manualpages/RG/RGIsTrivial.html#RGIsTrivial">RGIsTrivial</a>(nep-&gt;rg,&amp;istrivial);
+<a name="line196">196: </a>  <a href="../../../../docs/manualpages/RG/RGGetComplement.html#RGGetComplement">RGGetComplement</a>(nep-&gt;rg,&amp;flg);
+<a name="line198">198: </a>  PetscObjectTypeCompare((PetscObject)nep-&gt;rg,RGELLIPSE,&amp;isellipse);
+
+<a name="line201">201: </a>  <font color="#B22222">/* if the region has changed, then reset contour data */</font>
+<a name="line202">202: </a>  PetscObjectGetId((PetscObject)nep-&gt;rg,&amp;id);
+<a name="line203">203: </a>  PetscObjectStateGet((PetscObject)nep-&gt;rg,&amp;state);
+<a name="line204">204: </a>  <font color="#4169E1">if</font> (ctx-&gt;rgid &amp;&amp; (id != ctx-&gt;rgid || state != ctx-&gt;rgstate)) {
+<a name="line205">205: </a>    SlepcContourDataDestroy(&amp;ctx-&gt;contour);
+<a name="line206">206: </a>    PetscInfo(nep,<font color="#666666">"Resetting the contour data structure due to a change of region\n"</font>);
+<a name="line207">207: </a>    ctx-&gt;rgid = id; ctx-&gt;rgstate = state;
+<a name="line208">208: </a>  }
+
+<a name="line210">210: </a>  <font color="#B22222">/* create contour data structure */</font>
+<a name="line211">211: </a>  <font color="#4169E1">if</font> (!ctx-&gt;contour) {
+<a name="line212">212: </a>    <a href="../../../../docs/manualpages/RG/RGCanUseConjugates.html#RGCanUseConjugates">RGCanUseConjugates</a>(nep-&gt;rg,ctx-&gt;isreal,&amp;ctx-&gt;useconj);
+<a name="line213">213: </a>    SlepcContourDataCreate(ctx-&gt;useconj?ctx-&gt;N/2:ctx-&gt;N,ctx-&gt;npart,(PetscObject)nep,&amp;ctx-&gt;contour);
+<a name="line214">214: </a>  }
+
+<a name="line216">216: </a>  <a href="../../../../docs/manualpages/NEP/NEPAllocateSolution.html#NEPAllocateSolution">NEPAllocateSolution</a>(nep,0);
+<a name="line217">217: </a>  <font color="#4169E1">if</font> (ctx-&gt;weight) PetscFree4(ctx-&gt;weight,ctx-&gt;omega,ctx-&gt;pp,ctx-&gt;sigma);
+<a name="line218">218: </a>  PetscMalloc4(ctx-&gt;N,&amp;ctx-&gt;weight,ctx-&gt;N,&amp;ctx-&gt;omega,ctx-&gt;N,&amp;ctx-&gt;pp,ctx-&gt;L_max*ctx-&gt;M,&amp;ctx-&gt;sigma);
+<a name="line219">219: </a>  PetscLogObjectMemory((PetscObject)nep,3*ctx-&gt;N*<font color="#4169E1">sizeof</font>(PetscScalar)+ctx-&gt;L_max*ctx-&gt;N*<font color="#4169E1">sizeof</font>(PetscReal));
+
+<a name="line221">221: </a>  <font color="#B22222">/* allocate basis vectors */</font>
+<a name="line222">222: </a>  <a href="../../../../docs/manualpages/BV/BVDestroy.html#BVDestroy">BVDestroy</a>(&amp;ctx-&gt;S);
+<a name="line223">223: </a>  <a href="../../../../docs/manualpages/BV/BVDuplicateResize.html#BVDuplicateResize">BVDuplicateResize</a>(nep-&gt;V,ctx-&gt;L*ctx-&gt;M,&amp;ctx-&gt;S);
+<a name="line224">224: </a>  PetscLogObjectParent((PetscObject)nep,(PetscObject)ctx-&gt;S);
+<a name="line225">225: </a>  <a href="../../../../docs/manualpages/BV/BVDestroy.html#BVDestroy">BVDestroy</a>(&amp;ctx-&gt;V);
+<a name="line226">226: </a>  <a href="../../../../docs/manualpages/BV/BVDuplicateResize.html#BVDuplicateResize">BVDuplicateResize</a>(nep-&gt;V,ctx-&gt;L,&amp;ctx-&gt;V);
+<a name="line227">227: </a>  PetscLogObjectParent((PetscObject)nep,(PetscObject)ctx-&gt;V);
+
+<a name="line229">229: </a>  contour = ctx-&gt;contour;
+<a name="line230">230: </a>  <font color="#4169E1">if</font> (contour-&gt;subcomm &amp;&amp; contour-&gt;subcomm-&gt;n != 1 &amp;&amp; nep-&gt;fui==NEP_USER_INTERFACE_CALLBACK) {
+<a name="line231">231: </a>    <a href="../../../../docs/manualpages/NEP/NEPComputeFunction.html#NEPComputeFunction">NEPComputeFunction</a>(nep,0,nep-&gt;function,nep-&gt;function_pre);
+<a name="line232">232: </a>    SlepcContourRedundantMat(contour,1,&amp;nep-&gt;function,(nep-&gt;function!=nep-&gt;function_pre)?&amp;nep-&gt;function_pre:NULL);
+<a name="line233">233: </a>  } <font color="#4169E1">else</font> SlepcContourRedundantMat(contour,nep-&gt;nt,nep-&gt;A,nep-&gt;P);
+<a name="line234">234: </a>  <font color="#4169E1">if</font> (contour-&gt;pA) {
+<a name="line235">235: </a>    <font color="#4169E1">if</font> (!ctx-&gt;J) {
+<a name="line236">236: </a>      MatDuplicate(contour-&gt;pA[0],MAT_DO_NOT_COPY_VALUES,&amp;ctx-&gt;J);
+<a name="line237">237: </a>      PetscLogObjectParent((PetscObject)nep,(PetscObject)ctx-&gt;J);
+<a name="line238">238: </a>    }
+<a name="line239">239: </a>    <a href="../../../../docs/manualpages/BV/BVGetColumn.html#BVGetColumn">BVGetColumn</a>(ctx-&gt;V,0,&amp;v0);
+<a name="line240">240: </a>    SlepcContourScatterCreate(contour,v0);
+<a name="line241">241: </a>    <a href="../../../../docs/manualpages/BV/BVRestoreColumn.html#BVRestoreColumn">BVRestoreColumn</a>(ctx-&gt;V,0,&amp;v0);
+<a name="line242">242: </a>    <a href="../../../../docs/manualpages/BV/BVDestroy.html#BVDestroy">BVDestroy</a>(&amp;ctx-&gt;pV);
+<a name="line243">243: </a>    <a href="../../../../docs/manualpages/BV/BVCreate.html#BVCreate">BVCreate</a>(PetscObjectComm((PetscObject)contour-&gt;xsub),&amp;ctx-&gt;pV);
+<a name="line244">244: </a>    <a href="../../../../docs/manualpages/BV/BVSetSizesFromVec.html#BVSetSizesFromVec">BVSetSizesFromVec</a>(ctx-&gt;pV,contour-&gt;xsub,nep-&gt;n);
+<a name="line245">245: </a>    <a href="../../../../docs/manualpages/BV/BVSetFromOptions.html#BVSetFromOptions">BVSetFromOptions</a>(ctx-&gt;pV);
+<a name="line246">246: </a>    <a href="../../../../docs/manualpages/BV/BVResize.html#BVResize">BVResize</a>(ctx-&gt;pV,ctx-&gt;L,PETSC_FALSE);
+<a name="line247">247: </a>    PetscLogObjectParent((PetscObject)nep,(PetscObject)ctx-&gt;pV);
+<a name="line248">248: </a>  }
+
+<a name="line250">250: </a>  <a href="../../../../docs/manualpages/BV/BVDestroy.html#BVDestroy">BVDestroy</a>(&amp;ctx-&gt;Y);
+<a name="line251">251: </a>  <font color="#4169E1">if</font> (contour-&gt;pA) {
+<a name="line252">252: </a>    <a href="../../../../docs/manualpages/BV/BVCreate.html#BVCreate">BVCreate</a>(PetscObjectComm((PetscObject)contour-&gt;xsub),&amp;ctx-&gt;Y);
+<a name="line253">253: </a>    <a href="../../../../docs/manualpages/BV/BVSetSizesFromVec.html#BVSetSizesFromVec">BVSetSizesFromVec</a>(ctx-&gt;Y,contour-&gt;xsub,nep-&gt;n);
+<a name="line254">254: </a>    <a href="../../../../docs/manualpages/BV/BVSetFromOptions.html#BVSetFromOptions">BVSetFromOptions</a>(ctx-&gt;Y);
+<a name="line255">255: </a>    <a href="../../../../docs/manualpages/BV/BVResize.html#BVResize">BVResize</a>(ctx-&gt;Y,contour-&gt;npoints*ctx-&gt;L,PETSC_FALSE);
+<a name="line256">256: </a>  } <font color="#4169E1">else</font> <a href="../../../../docs/manualpages/BV/BVDuplicateResize.html#BVDuplicateResize">BVDuplicateResize</a>(nep-&gt;V,contour-&gt;npoints*ctx-&gt;L,&amp;ctx-&gt;Y);
+
+<a name="line258">258: </a>  <font color="#4169E1">if</font> (ctx-&gt;extraction == <a href="../../../../docs/manualpages/sys/NEPCISSExtraction.html#NEPCISSExtraction">NEP_CISS_EXTRACTION_HANKEL</a>) <a href="../../../../docs/manualpages/DS/DSSetType.html#DSSetType">DSSetType</a>(nep-&gt;ds,<a href="../../../../docs/manualpages/DS/DSGNHEP.html#DSGNHEP">DSGNHEP</a>);
+<a name="line259">259: </a>  <font color="#4169E1">else</font> <font color="#4169E1">if</font> (ctx-&gt;extraction == <a href="../../../../docs/manualpages/sys/NEPCISSExtraction.html#NEPCISSExtraction">NEP_CISS_EXTRACTION_CAA</a>) <a href="../../../../docs/manualpages/DS/DSSetType.html#DSSetType">DSSetType</a>(nep-&gt;ds,<a href="../../../../docs/manualpages/DS/DSNHEP.html#DSNHEP">DSNHEP</a>);
+<a name="line260">260: </a>  <font color="#4169E1">else</font> {
+<a name="line261">261: </a>    <a href="../../../../docs/manualpages/DS/DSSetType.html#DSSetType">DSSetType</a>(nep-&gt;ds,<a href="../../../../docs/manualpages/DS/DSNEP.html#DSNEP">DSNEP</a>);
+<a name="line262">262: </a>    <a href="../../../../docs/manualpages/DS/DSSetMethod.html#DSSetMethod">DSSetMethod</a>(nep-&gt;ds,1);
+<a name="line263">263: </a>    <a href="../../../../docs/manualpages/DS/DSNEPSetRG.html#DSNEPSetRG">DSNEPSetRG</a>(nep-&gt;ds,nep-&gt;rg);
+<a name="line264">264: </a>    <font color="#4169E1">if</font> (nep-&gt;fui==NEP_USER_INTERFACE_SPLIT) <a href="../../../../docs/manualpages/DS/DSNEPSetFN.html#DSNEPSetFN">DSNEPSetFN</a>(nep-&gt;ds,nep-&gt;nt,nep-&gt;f);
+<a name="line265">265: </a>    <font color="#4169E1">else</font> {
+<a name="line266">266: </a>      PetscNew(&amp;dsctxf);
+<a name="line267">267: </a>      <a href="../../../../docs/manualpages/DS/DSNEPSetComputeMatrixFunction.html#DSNEPSetComputeMatrixFunction">DSNEPSetComputeMatrixFunction</a>(nep-&gt;ds,NEPContourDSComputeMatrix,dsctxf);
+<a name="line268">268: </a>      dsctxf-&gt;nep = nep;
+<a name="line269">269: </a>      ctx-&gt;dsctxf = dsctxf;
+<a name="line270">270: </a>    }
+<a name="line271">271: </a>  }
+<a name="line272">272: </a>  <a href="../../../../docs/manualpages/DS/DSAllocate.html#DSAllocate">DSAllocate</a>(nep-&gt;ds,nep-&gt;ncv);
+<a name="line273">273: </a>  nwork = (nep-&gt;fui==NEP_USER_INTERFACE_SPLIT)? 2: 1;
+<a name="line274">274: </a>  <a href="../../../../docs/manualpages/NEP/NEPSetWorkVecs.html#NEPSetWorkVecs">NEPSetWorkVecs</a>(nep,nwork);
+<a name="line275">275: </a>  PetscFunctionReturn(0);
+<a name="line276">276: </a>}
+
+<a name="line278">278: </a><strong><font color="#4169E1"><a name="NEPSolve_CISS"></a>PetscErrorCode NEPSolve_CISS(<a href="../../../../docs/manualpages/sys/NEP.html#NEP">NEP</a> nep)</font></strong>
+<a name="line279">279: </a>{
+<a name="line280">280: </a>  NEP_CISS         *ctx = (NEP_CISS*)nep-&gt;data;
+<a name="line281">281: </a>  SlepcContourData contour = ctx-&gt;contour;
+<a name="line282">282: </a>  Mat              X,M,E,T,P,J;
+<a name="line283">283: </a>  <a href="../../../../docs/manualpages/sys/BV.html#BV">BV</a>               V;
+<a name="line284">284: </a>  PetscInt         i,j,ld,L_add=0,nv=0,L_base=ctx-&gt;L,inner,*inside;
+<a name="line285">285: </a>  PetscScalar      *Mu,*H0,*H1,*rr,*temp,center;
+<a name="line286">286: </a>  PetscReal        error,max_error,radius,rgscale,est_eig,eta;
+<a name="line287">287: </a>  PetscBool        isellipse,*fl1;
+<a name="line288">288: </a>  Vec              si;
+<a name="line289">289: </a>  <a href="../../../../docs/manualpages/sys/SlepcSC.html#SlepcSC">SlepcSC</a>          sc;
+<a name="line290">290: </a>  PetscRandom      rand;
+
+<a name="line292">292: </a>  <a href="../../../../docs/manualpages/DS/DSSetFromOptions.html#DSSetFromOptions">DSSetFromOptions</a>(nep-&gt;ds);
+<a name="line293">293: </a>  <a href="../../../../docs/manualpages/DS/DSGetSlepcSC.html#DSGetSlepcSC">DSGetSlepcSC</a>(nep-&gt;ds,&amp;sc);
+<a name="line294">294: </a>  sc-&gt;comparison    = SlepcCompareLargestMagnitude;
+<a name="line295">295: </a>  sc-&gt;comparisonctx = NULL;
+<a name="line296">296: </a>  sc-&gt;map           = NULL;
+<a name="line297">297: </a>  sc-&gt;mapobj        = NULL;
+<a name="line298">298: </a>  <a href="../../../../docs/manualpages/DS/DSGetLeadingDimension.html#DSGetLeadingDimension">DSGetLeadingDimension</a>(nep-&gt;ds,&amp;ld);
+<a name="line299">299: </a>  <a href="../../../../docs/manualpages/RG/RGComputeQuadrature.html#RGComputeQuadrature">RGComputeQuadrature</a>(nep-&gt;rg,<a href="../../../../docs/manualpages/sys/RGQuadRule.html#RGQuadRule">RG_QUADRULE_TRAPEZOIDAL</a>,ctx-&gt;N,ctx-&gt;omega,ctx-&gt;pp,ctx-&gt;weight);
+<a name="line300">300: </a>  <font color="#4169E1">if</font> (contour-&gt;pA) {
+<a name="line301">301: </a>    T = contour-&gt;pA[0];
+<a name="line302">302: </a>    P = ((nep-&gt;fui==NEP_USER_INTERFACE_SPLIT &amp;&amp; nep-&gt;P) || (nep-&gt;fui==NEP_USER_INTERFACE_CALLBACK &amp;&amp; contour-&gt;pP))? contour-&gt;pP[0]: T;
+<a name="line303">303: </a>  } <font color="#4169E1">else</font> {
+<a name="line304">304: </a>    T = nep-&gt;function;
+<a name="line305">305: </a>    P = nep-&gt;function_pre? nep-&gt;function_pre: nep-&gt;function;
+<a name="line306">306: </a>  }
+<a name="line307">307: </a>  NEPCISSSetUp(nep,T,P);
+<a name="line308">308: </a>  <a href="../../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(ctx-&gt;V,0,ctx-&gt;L);
+<a name="line309">309: </a>  <a href="../../../../docs/manualpages/BV/BVSetRandomSign.html#BVSetRandomSign">BVSetRandomSign</a>(ctx-&gt;V);
+<a name="line310">310: </a>  <a href="../../../../docs/manualpages/BV/BVGetRandomContext.html#BVGetRandomContext">BVGetRandomContext</a>(ctx-&gt;V,&amp;rand);
+<a name="line311">311: </a>  <font color="#4169E1">if</font> (contour-&gt;pA) {
+<a name="line312">312: </a>    J = ctx-&gt;J;
+<a name="line313">313: </a>    V = ctx-&gt;pV;
+<a name="line314">314: </a>    <a href="../../../../docs/manualpages/BV/BVScatter.html#BVScatter">BVScatter</a>(ctx-&gt;V,ctx-&gt;pV,contour-&gt;scatterin,contour-&gt;xdup);
+<a name="line315">315: </a>  } <font color="#4169E1">else</font> {
+<a name="line316">316: </a>    J = nep-&gt;jacobian;
+<a name="line317">317: </a>    V = ctx-&gt;V;
+<a name="line318">318: </a>  }
+<a name="line319">319: </a>  NEPCISSSolve(nep,J,V,0,ctx-&gt;L);
+<a name="line320">320: </a>  PetscObjectTypeCompare((PetscObject)nep-&gt;rg,RGELLIPSE,&amp;isellipse);
+<a name="line321">321: </a>  <font color="#4169E1">if</font> (isellipse) {
+<a name="line322">322: </a>    <a href="../../../../docs/manualpages/BV/BVTraceQuadrature.html#BVTraceQuadrature">BVTraceQuadrature</a>(ctx-&gt;Y,ctx-&gt;V,ctx-&gt;L,ctx-&gt;L,ctx-&gt;weight,contour-&gt;scatterin,contour-&gt;subcomm,contour-&gt;npoints,ctx-&gt;useconj,&amp;est_eig);
+<a name="line323">323: </a>    PetscInfo(nep,<font color="#666666">"Estimated eigenvalue count: %f\n"</font>,(double)est_eig);
+<a name="line324">324: </a>    eta = PetscPowReal(10.0,-PetscLog10Real(nep-&gt;tol)/ctx-&gt;N);
+<a name="line325">325: </a>    L_add = PetscMax(0,(PetscInt)PetscCeilReal((est_eig*eta)/ctx-&gt;M)-ctx-&gt;L);
+<a name="line326">326: </a>    <font color="#4169E1">if</font> (L_add&gt;ctx-&gt;L_max-ctx-&gt;L) {
+<a name="line327">327: </a>      PetscInfo(nep,<font color="#666666">"Number of eigenvalues inside the contour path may be too large\n"</font>);
+<a name="line328">328: </a>      L_add = ctx-&gt;L_max-ctx-&gt;L;
+<a name="line329">329: </a>    }
+<a name="line330">330: </a>  }
+<a name="line331">331: </a>  <font color="#B22222">/* Updates L after estimate the number of eigenvalue */</font>
+<a name="line332">332: </a>  <font color="#4169E1">if</font> (L_add&gt;0) {
+<a name="line333">333: </a>    PetscInfo(nep,<font color="#666666">"Changing L %"</font> PetscInt_FMT <font color="#666666">" -&gt; %"</font> PetscInt_FMT <font color="#666666">" by Estimate #Eig\n"</font>,ctx-&gt;L,ctx-&gt;L+L_add);
+<a name="line334">334: </a>    <a href="../../../../docs/manualpages/BV/BVCISSResizeBases.html#BVCISSResizeBases">BVCISSResizeBases</a>(ctx-&gt;S,contour-&gt;pA?ctx-&gt;pV:ctx-&gt;V,ctx-&gt;Y,ctx-&gt;L,ctx-&gt;L+L_add,ctx-&gt;M,contour-&gt;npoints);
+<a name="line335">335: </a>    <a href="../../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(ctx-&gt;V,ctx-&gt;L,ctx-&gt;L+L_add);
+<a name="line336">336: </a>    <a href="../../../../docs/manualpages/BV/BVSetRandomSign.html#BVSetRandomSign">BVSetRandomSign</a>(ctx-&gt;V);
+<a name="line337">337: </a>    <font color="#4169E1">if</font> (contour-&gt;pA) <a href="../../../../docs/manualpages/BV/BVScatter.html#BVScatter">BVScatter</a>(ctx-&gt;V,ctx-&gt;pV,contour-&gt;scatterin,contour-&gt;xdup);
+<a name="line338">338: </a>    ctx-&gt;L += L_add;
+<a name="line339">339: </a>    NEPCISSSolve(nep,J,V,ctx-&gt;L-L_add,ctx-&gt;L);
+<a name="line340">340: </a>  }
+
+<a name="line342">342: </a>  PetscMalloc2(ctx-&gt;L*ctx-&gt;L*ctx-&gt;M*2,&amp;Mu,ctx-&gt;L*ctx-&gt;M*ctx-&gt;L*ctx-&gt;M,&amp;H0);
+<a name="line343">343: </a>  <font color="#4169E1">for</font> (i=0;i&lt;ctx-&gt;refine_blocksize;i++) {
+<a name="line344">344: </a>    <a href="../../../../docs/manualpages/BV/BVDotQuadrature.html#BVDotQuadrature">BVDotQuadrature</a>(ctx-&gt;Y,V,Mu,ctx-&gt;M,ctx-&gt;L,ctx-&gt;L,ctx-&gt;weight,ctx-&gt;pp,contour-&gt;subcomm,contour-&gt;npoints,ctx-&gt;useconj);
+<a name="line345">345: </a>    CISS_BlockHankel(Mu,0,ctx-&gt;L,ctx-&gt;M,H0);
+<a name="line346">346: </a>    PetscLogEventBegin(NEP_CISS_SVD,nep,0,0,0);
+<a name="line347">347: </a>    SlepcCISS_BH_SVD(H0,ctx-&gt;L*ctx-&gt;M,ctx-&gt;delta,ctx-&gt;sigma,&amp;nv);
+<a name="line348">348: </a>    PetscLogEventEnd(NEP_CISS_SVD,nep,0,0,0);
+<a name="line349">349: </a>    <font color="#4169E1">if</font> (ctx-&gt;sigma[0]&lt;=ctx-&gt;delta || nv &lt; ctx-&gt;L*ctx-&gt;M || ctx-&gt;L == ctx-&gt;L_max) <font color="#4169E1">break</font>;
+<a name="line350">350: </a>    L_add = L_base;
+<a name="line351">351: </a>    <font color="#4169E1">if</font> (ctx-&gt;L+L_add&gt;ctx-&gt;L_max) L_add = ctx-&gt;L_max-ctx-&gt;L;
+<a name="line352">352: </a>    PetscInfo(nep,<font color="#666666">"Changing L %"</font> PetscInt_FMT <font color="#666666">" -&gt; %"</font> PetscInt_FMT <font color="#666666">" by <a href="../../../../docs/manualpages/sys/SVD.html#SVD">SVD</a>(H0)\n"</font>,ctx-&gt;L,ctx-&gt;L+L_add);
+<a name="line353">353: </a>    <a href="../../../../docs/manualpages/BV/BVCISSResizeBases.html#BVCISSResizeBases">BVCISSResizeBases</a>(ctx-&gt;S,contour-&gt;pA?ctx-&gt;pV:ctx-&gt;V,ctx-&gt;Y,ctx-&gt;L,ctx-&gt;L+L_add,ctx-&gt;M,contour-&gt;npoints);
+<a name="line354">354: </a>    <a href="../../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(ctx-&gt;V,ctx-&gt;L,ctx-&gt;L+L_add);
+<a name="line355">355: </a>    <a href="../../../../docs/manualpages/BV/BVSetRandomSign.html#BVSetRandomSign">BVSetRandomSign</a>(ctx-&gt;V);
+<a name="line356">356: </a>    <font color="#4169E1">if</font> (contour-&gt;pA) <a href="../../../../docs/manualpages/BV/BVScatter.html#BVScatter">BVScatter</a>(ctx-&gt;V,ctx-&gt;pV,contour-&gt;scatterin,contour-&gt;xdup);
+<a name="line357">357: </a>    ctx-&gt;L += L_add;
+<a name="line358">358: </a>    NEPCISSSolve(nep,J,V,ctx-&gt;L-L_add,ctx-&gt;L);
+<a name="line359">359: </a>    <font color="#4169E1">if</font> (L_add) {
+<a name="line360">360: </a>      PetscFree2(Mu,H0);
+<a name="line361">361: </a>      PetscMalloc2(ctx-&gt;L*ctx-&gt;L*ctx-&gt;M*2,&amp;Mu,ctx-&gt;L*ctx-&gt;M*ctx-&gt;L*ctx-&gt;M,&amp;H0);
+<a name="line362">362: </a>    }
+<a name="line363">363: </a>  }
+
+<a name="line365">365: </a>  <a href="../../../../docs/manualpages/RG/RGGetScale.html#RGGetScale">RGGetScale</a>(nep-&gt;rg,&amp;rgscale);
+<a name="line366">366: </a>  <a href="../../../../docs/manualpages/RG/RGEllipseGetParameters.html#RGEllipseGetParameters">RGEllipseGetParameters</a>(nep-&gt;rg,&amp;center,&amp;radius,NULL);
+
+<a name="line368">368: </a>  <font color="#4169E1">if</font> (ctx-&gt;extraction == <a href="../../../../docs/manualpages/sys/NEPCISSExtraction.html#NEPCISSExtraction">NEP_CISS_EXTRACTION_HANKEL</a>) PetscMalloc1(ctx-&gt;L*ctx-&gt;M*ctx-&gt;L*ctx-&gt;M,&amp;H1);
+
+<a name="line370">370: </a>  <font color="#4169E1">while</font> (nep-&gt;reason == <a href="../../../../docs/manualpages/sys/NEPConvergedReason.html#NEPConvergedReason">NEP_CONVERGED_ITERATING</a>) {
+<a name="line371">371: </a>    nep-&gt;its++;
+<a name="line372">372: </a>    <font color="#4169E1">for</font> (inner=0;inner&lt;=ctx-&gt;refine_inner;inner++) {
+<a name="line373">373: </a>      <font color="#4169E1">if</font> (ctx-&gt;extraction == <a href="../../../../docs/manualpages/sys/NEPCISSExtraction.html#NEPCISSExtraction">NEP_CISS_EXTRACTION_HANKEL</a>) {
+<a name="line374">374: </a>        <a href="../../../../docs/manualpages/BV/BVDotQuadrature.html#BVDotQuadrature">BVDotQuadrature</a>(ctx-&gt;Y,V,Mu,ctx-&gt;M,ctx-&gt;L,ctx-&gt;L,ctx-&gt;weight,ctx-&gt;pp,contour-&gt;subcomm,contour-&gt;npoints,ctx-&gt;useconj);
+<a name="line375">375: </a>        CISS_BlockHankel(Mu,0,ctx-&gt;L,ctx-&gt;M,H0);
+<a name="line376">376: </a>        PetscLogEventBegin(NEP_CISS_SVD,nep,0,0,0);
+<a name="line377">377: </a>        SlepcCISS_BH_SVD(H0,ctx-&gt;L*ctx-&gt;M,ctx-&gt;delta,ctx-&gt;sigma,&amp;nv);
+<a name="line378">378: </a>        PetscLogEventEnd(NEP_CISS_SVD,nep,0,0,0);
+<a name="line379">379: </a>      } <font color="#4169E1">else</font> {
+<a name="line380">380: </a>        <a href="../../../../docs/manualpages/BV/BVSumQuadrature.html#BVSumQuadrature">BVSumQuadrature</a>(ctx-&gt;S,ctx-&gt;Y,ctx-&gt;M,ctx-&gt;L,ctx-&gt;L,ctx-&gt;weight,ctx-&gt;pp,contour-&gt;scatterin,contour-&gt;subcomm,contour-&gt;npoints,ctx-&gt;useconj);
+<a name="line381">381: </a>        <font color="#B22222">/* compute <a href="../../../../docs/manualpages/sys/SVD.html#SVD">SVD</a> of S */</font>
+<a name="line382">382: </a>        <a href="../../../../docs/manualpages/BV/BVSVDAndRank.html#BVSVDAndRank">BVSVDAndRank</a>(ctx-&gt;S,ctx-&gt;M,ctx-&gt;L,ctx-&gt;delta,(ctx-&gt;extraction==<a href="../../../../docs/manualpages/sys/NEPCISSExtraction.html#NEPCISSExtraction">NEP_CISS_EXTRACTION_CAA</a>)?<a href="../../../../docs/manualpages/sys/BVSVDMethod.html#BVSVDMethod">BV_SVD_METHOD_QR_CAA</a>:<a href="../../../../docs/manualpages/sys/BVSVDMethod.html#BVSVDMethod">BV_SVD_METHOD_QR</a>,H0,ctx-&gt;sigma,&amp;nv);
+<a name="line383">383: </a>      }
+<a name="line384">384: </a>      PetscInfo(nep,<font color="#666666">"Estimated rank: nv = %"</font> PetscInt_FMT <font color="#666666">"\n"</font>,nv);
+<a name="line385">385: </a>      <font color="#4169E1">if</font> (ctx-&gt;sigma[0]&gt;ctx-&gt;delta &amp;&amp; nv==ctx-&gt;L*ctx-&gt;M &amp;&amp; inner!=ctx-&gt;refine_inner) {
+<a name="line386">386: </a>        <a href="../../../../docs/manualpages/BV/BVSumQuadrature.html#BVSumQuadrature">BVSumQuadrature</a>(ctx-&gt;S,ctx-&gt;Y,ctx-&gt;M,ctx-&gt;L,ctx-&gt;L,ctx-&gt;weight,ctx-&gt;pp,contour-&gt;scatterin,contour-&gt;subcomm,contour-&gt;npoints,ctx-&gt;useconj);
+<a name="line387">387: </a>        <a href="../../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(ctx-&gt;S,0,ctx-&gt;L);
+<a name="line388">388: </a>        <a href="../../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(ctx-&gt;V,0,ctx-&gt;L);
+<a name="line389">389: </a>        <a href="../../../../docs/manualpages/BV/BVCopy.html#BVCopy">BVCopy</a>(ctx-&gt;S,ctx-&gt;V);
+<a name="line390">390: </a>        <font color="#4169E1">if</font> (contour-&gt;pA) <a href="../../../../docs/manualpages/BV/BVScatter.html#BVScatter">BVScatter</a>(ctx-&gt;V,ctx-&gt;pV,contour-&gt;scatterin,contour-&gt;xdup);
+<a name="line391">391: </a>        NEPCISSSolve(nep,J,V,0,ctx-&gt;L);
+<a name="line392">392: </a>      } <font color="#4169E1">else</font> <font color="#4169E1">break</font>;
+<a name="line393">393: </a>    }
+<a name="line394">394: </a>    nep-&gt;nconv = 0;
+<a name="line395">395: </a>    <font color="#4169E1">if</font> (nv == 0) { nep-&gt;reason = <a href="../../../../docs/manualpages/sys/NEPConvergedReason.html#NEPConvergedReason">NEP_CONVERGED_TOL</a>; <font color="#4169E1">break</font>; }
+<a name="line396">396: </a>    <font color="#4169E1">else</font> {
+<a name="line397">397: </a>      <font color="#B22222">/* Extracting eigenpairs */</font>
+<a name="line398">398: </a>      <a href="../../../../docs/manualpages/DS/DSSetDimensions.html#DSSetDimensions">DSSetDimensions</a>(nep-&gt;ds,nv,0,0);
+<a name="line399">399: </a>      <a href="../../../../docs/manualpages/DS/DSSetState.html#DSSetState">DSSetState</a>(nep-&gt;ds,<a href="../../../../docs/manualpages/sys/DSStateType.html#DSStateType">DS_STATE_RAW</a>);
+<a name="line400">400: </a>      <font color="#4169E1">if</font> (ctx-&gt;extraction == <a href="../../../../docs/manualpages/sys/NEPCISSExtraction.html#NEPCISSExtraction">NEP_CISS_EXTRACTION_HANKEL</a>) {
+<a name="line401">401: </a>        CISS_BlockHankel(Mu,0,ctx-&gt;L,ctx-&gt;M,H0);
+<a name="line402">402: </a>        CISS_BlockHankel(Mu,1,ctx-&gt;L,ctx-&gt;M,H1);
+<a name="line403">403: </a>        <a href="../../../../docs/manualpages/DS/DSGetArray.html#DSGetArray">DSGetArray</a>(nep-&gt;ds,<a href="../../../../docs/manualpages/sys/DSMatType.html#DSMatType">DS_MAT_A</a>,&amp;temp);
+<a name="line404">404: </a>        <font color="#4169E1">for</font> (j=0;j&lt;nv;j++)
+<a name="line405">405: </a>          <font color="#4169E1">for</font> (i=0;i&lt;nv;i++)
+<a name="line406">406: </a>            temp[i+j*ld] = H1[i+j*ctx-&gt;L*ctx-&gt;M];
+<a name="line407">407: </a>        <a href="../../../../docs/manualpages/DS/DSRestoreArray.html#DSRestoreArray">DSRestoreArray</a>(nep-&gt;ds,<a href="../../../../docs/manualpages/sys/DSMatType.html#DSMatType">DS_MAT_A</a>,&amp;temp);
+<a name="line408">408: </a>        <a href="../../../../docs/manualpages/DS/DSGetArray.html#DSGetArray">DSGetArray</a>(nep-&gt;ds,<a href="../../../../docs/manualpages/sys/DSMatType.html#DSMatType">DS_MAT_B</a>,&amp;temp);
+<a name="line409">409: </a>        <font color="#4169E1">for</font> (j=0;j&lt;nv;j++)
+<a name="line410">410: </a>          <font color="#4169E1">for</font> (i=0;i&lt;nv;i++)
+<a name="line411">411: </a>            temp[i+j*ld] = H0[i+j*ctx-&gt;L*ctx-&gt;M];
+<a name="line412">412: </a>        <a href="../../../../docs/manualpages/DS/DSRestoreArray.html#DSRestoreArray">DSRestoreArray</a>(nep-&gt;ds,<a href="../../../../docs/manualpages/sys/DSMatType.html#DSMatType">DS_MAT_B</a>,&amp;temp);
+<a name="line413">413: </a>      } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (ctx-&gt;extraction == <a href="../../../../docs/manualpages/sys/NEPCISSExtraction.html#NEPCISSExtraction">NEP_CISS_EXTRACTION_CAA</a>) {
+<a name="line414">414: </a>        <a href="../../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(ctx-&gt;S,0,nv);
+<a name="line415">415: </a>        <a href="../../../../docs/manualpages/DS/DSGetArray.html#DSGetArray">DSGetArray</a>(nep-&gt;ds,<a href="../../../../docs/manualpages/sys/DSMatType.html#DSMatType">DS_MAT_A</a>,&amp;temp);
+<a name="line416">416: </a>        <font color="#4169E1">for</font> (i=0;i&lt;nv;i++) PetscArraycpy(temp+i*ld,H0+i*nv,nv);
+<a name="line417">417: </a>        <a href="../../../../docs/manualpages/DS/DSRestoreArray.html#DSRestoreArray">DSRestoreArray</a>(nep-&gt;ds,<a href="../../../../docs/manualpages/sys/DSMatType.html#DSMatType">DS_MAT_A</a>,&amp;temp);
+<a name="line418">418: </a>      } <font color="#4169E1">else</font> {
+<a name="line419">419: </a>        <a href="../../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(ctx-&gt;S,0,nv);
+<a name="line420">420: </a>        <font color="#4169E1">if</font> (nep-&gt;fui==NEP_USER_INTERFACE_SPLIT) {
+<a name="line421">421: </a>          <font color="#4169E1">for</font> (i=0;i&lt;nep-&gt;nt;i++) {
+<a name="line422">422: </a>            <a href="../../../../docs/manualpages/DS/DSGetMat.html#DSGetMat">DSGetMat</a>(nep-&gt;ds,DSMatExtra[i],&amp;E);
+<a name="line423">423: </a>            <a href="../../../../docs/manualpages/BV/BVMatProject.html#BVMatProject">BVMatProject</a>(ctx-&gt;S,nep-&gt;A[i],ctx-&gt;S,E);
+<a name="line424">424: </a>            <a href="../../../../docs/manualpages/DS/DSRestoreMat.html#DSRestoreMat">DSRestoreMat</a>(nep-&gt;ds,DSMatExtra[i],&amp;E);
+<a name="line425">425: </a>          }
+<a name="line426">426: </a>        } <font color="#4169E1">else</font> { ctx-&gt;dsctxf-&gt;Q = ctx-&gt;S; }
+<a name="line427">427: </a>      }
+<a name="line428">428: </a>      <a href="../../../../docs/manualpages/DS/DSSolve.html#DSSolve">DSSolve</a>(nep-&gt;ds,nep-&gt;eigr,nep-&gt;eigi);
+<a name="line429">429: </a>      <a href="../../../../docs/manualpages/DS/DSSynchronize.html#DSSynchronize">DSSynchronize</a>(nep-&gt;ds,nep-&gt;eigr,nep-&gt;eigi);
+<a name="line430">430: </a>      <a href="../../../../docs/manualpages/DS/DSGetDimensions.html#DSGetDimensions">DSGetDimensions</a>(nep-&gt;ds,NULL,NULL,NULL,&amp;nv);
+<a name="line431">431: </a>      <font color="#4169E1">if</font> (ctx-&gt;extraction == <a href="../../../../docs/manualpages/sys/NEPCISSExtraction.html#NEPCISSExtraction">NEP_CISS_EXTRACTION_CAA</a> || ctx-&gt;extraction == <a href="../../../../docs/manualpages/sys/NEPCISSExtraction.html#NEPCISSExtraction">NEP_CISS_EXTRACTION_HANKEL</a>) {
+<a name="line432">432: </a>        <font color="#4169E1">for</font> (i=0;i&lt;nv;i++) {
+<a name="line433">433: </a>          nep-&gt;eigr[i] = (nep-&gt;eigr[i]*radius+center)*rgscale;
+<a name="line434">434: </a>        }
+<a name="line435">435: </a>      }
+<a name="line436">436: </a>      PetscMalloc3(nv,&amp;fl1,nv,&amp;inside,nv,&amp;rr);
+<a name="line437">437: </a>      <a href="../../../../docs/manualpages/DS/DSVectors.html#DSVectors">DSVectors</a>(nep-&gt;ds,<a href="../../../../docs/manualpages/sys/DSMatType.html#DSMatType">DS_MAT_X</a>,NULL,NULL);
+<a name="line438">438: </a>      <a href="../../../../docs/manualpages/DS/DSGetMat.html#DSGetMat">DSGetMat</a>(nep-&gt;ds,<a href="../../../../docs/manualpages/sys/DSMatType.html#DSMatType">DS_MAT_X</a>,&amp;X);
+<a name="line439">439: </a>      SlepcCISS_isGhost(X,nv,ctx-&gt;sigma,ctx-&gt;spurious_threshold,fl1);
+<a name="line440">440: </a>      MatDestroy(&amp;X);
+<a name="line441">441: </a>      <a href="../../../../docs/manualpages/RG/RGCheckInside.html#RGCheckInside">RGCheckInside</a>(nep-&gt;rg,nv,nep-&gt;eigr,nep-&gt;eigi,inside);
+<a name="line442">442: </a>      <font color="#4169E1">for</font> (i=0;i&lt;nv;i++) {
+<a name="line443">443: </a>        <font color="#4169E1">if</font> (fl1[i] &amp;&amp; inside[i]&gt;=0) {
+<a name="line444">444: </a>          rr[i] = 1.0;
+<a name="line445">445: </a>          nep-&gt;nconv++;
+<a name="line446">446: </a>        } <font color="#4169E1">else</font> rr[i] = 0.0;
+<a name="line447">447: </a>      }
+<a name="line448">448: </a>      <a href="../../../../docs/manualpages/DS/DSSort.html#DSSort">DSSort</a>(nep-&gt;ds,nep-&gt;eigr,nep-&gt;eigi,rr,NULL,&amp;nep-&gt;nconv);
+<a name="line449">449: </a>      <a href="../../../../docs/manualpages/DS/DSSynchronize.html#DSSynchronize">DSSynchronize</a>(nep-&gt;ds,nep-&gt;eigr,nep-&gt;eigi);
+<a name="line450">450: </a>      <font color="#4169E1">if</font> (ctx-&gt;extraction == <a href="../../../../docs/manualpages/sys/NEPCISSExtraction.html#NEPCISSExtraction">NEP_CISS_EXTRACTION_CAA</a> || ctx-&gt;extraction == <a href="../../../../docs/manualpages/sys/NEPCISSExtraction.html#NEPCISSExtraction">NEP_CISS_EXTRACTION_HANKEL</a>) {
+<a name="line451">451: </a>        <font color="#4169E1">for</font> (i=0;i&lt;nv;i++) nep-&gt;eigr[i] = (nep-&gt;eigr[i]*radius+center)*rgscale;
+<a name="line452">452: </a>      }
+<a name="line453">453: </a>      PetscFree3(fl1,inside,rr);
+<a name="line454">454: </a>      <a href="../../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(nep-&gt;V,0,nv);
+<a name="line455">455: </a>      <a href="../../../../docs/manualpages/DS/DSVectors.html#DSVectors">DSVectors</a>(nep-&gt;ds,<a href="../../../../docs/manualpages/sys/DSMatType.html#DSMatType">DS_MAT_X</a>,NULL,NULL);
+<a name="line456">456: </a>      <font color="#4169E1">if</font> (ctx-&gt;extraction == <a href="../../../../docs/manualpages/sys/NEPCISSExtraction.html#NEPCISSExtraction">NEP_CISS_EXTRACTION_HANKEL</a>) {
+<a name="line457">457: </a>        <a href="../../../../docs/manualpages/BV/BVSumQuadrature.html#BVSumQuadrature">BVSumQuadrature</a>(ctx-&gt;S,ctx-&gt;Y,ctx-&gt;M,ctx-&gt;L,ctx-&gt;L,ctx-&gt;weight,ctx-&gt;pp,contour-&gt;scatterin,contour-&gt;subcomm,contour-&gt;npoints,ctx-&gt;useconj);
+<a name="line458">458: </a>        <a href="../../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(ctx-&gt;S,0,nv);
+<a name="line459">459: </a>        <a href="../../../../docs/manualpages/BV/BVCopy.html#BVCopy">BVCopy</a>(ctx-&gt;S,nep-&gt;V);
+<a name="line460">460: </a>        <a href="../../../../docs/manualpages/DS/DSGetMat.html#DSGetMat">DSGetMat</a>(nep-&gt;ds,<a href="../../../../docs/manualpages/sys/DSMatType.html#DSMatType">DS_MAT_X</a>,&amp;X);
+<a name="line461">461: </a>        <a href="../../../../docs/manualpages/BV/BVMultInPlace.html#BVMultInPlace">BVMultInPlace</a>(ctx-&gt;S,X,0,nep-&gt;nconv);
+<a name="line462">462: </a>        <a href="../../../../docs/manualpages/BV/BVMultInPlace.html#BVMultInPlace">BVMultInPlace</a>(nep-&gt;V,X,0,nep-&gt;nconv);
+<a name="line463">463: </a>        MatDestroy(&amp;X);
+<a name="line464">464: </a>      } <font color="#4169E1">else</font> {
+<a name="line465">465: </a>        <a href="../../../../docs/manualpages/DS/DSGetMat.html#DSGetMat">DSGetMat</a>(nep-&gt;ds,<a href="../../../../docs/manualpages/sys/DSMatType.html#DSMatType">DS_MAT_X</a>,&amp;X);
+<a name="line466">466: </a>        <a href="../../../../docs/manualpages/BV/BVMultInPlace.html#BVMultInPlace">BVMultInPlace</a>(ctx-&gt;S,X,0,nep-&gt;nconv);
+<a name="line467">467: </a>        MatDestroy(&amp;X);
+<a name="line468">468: </a>        <a href="../../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(ctx-&gt;S,0,nep-&gt;nconv);
+<a name="line469">469: </a>        <a href="../../../../docs/manualpages/BV/BVCopy.html#BVCopy">BVCopy</a>(ctx-&gt;S,nep-&gt;V);
+<a name="line470">470: </a>      }
+<a name="line471">471: </a>      max_error = 0.0;
+<a name="line472">472: </a>      <font color="#4169E1">for</font> (i=0;i&lt;nep-&gt;nconv;i++) {
+<a name="line473">473: </a>        <a href="../../../../docs/manualpages/BV/BVGetColumn.html#BVGetColumn">BVGetColumn</a>(nep-&gt;V,i,&amp;si);
+<a name="line474">474: </a>        VecNormalize(si,NULL);
+<a name="line475">475: </a>        NEPComputeResidualNorm_Private(nep,PETSC_FALSE,nep-&gt;eigr[i],si,nep-&gt;work,&amp;error);
+<a name="line476">476: </a>        (*nep-&gt;converged)(nep,nep-&gt;eigr[i],0,error,&amp;error,nep-&gt;convergedctx);
+<a name="line477">477: </a>        <a href="../../../../docs/manualpages/BV/BVRestoreColumn.html#BVRestoreColumn">BVRestoreColumn</a>(nep-&gt;V,i,&amp;si);
+<a name="line478">478: </a>        max_error = PetscMax(max_error,error);
+<a name="line479">479: </a>      }
+<a name="line480">480: </a>      <font color="#4169E1">if</font> (max_error &lt;= nep-&gt;tol) nep-&gt;reason = <a href="../../../../docs/manualpages/sys/NEPConvergedReason.html#NEPConvergedReason">NEP_CONVERGED_TOL</a>;
+<a name="line481">481: </a>      <font color="#4169E1">else</font> <font color="#4169E1">if</font> (nep-&gt;its &gt; nep-&gt;max_it) nep-&gt;reason = <a href="../../../../docs/manualpages/sys/NEPConvergedReason.html#NEPConvergedReason">NEP_DIVERGED_ITS</a>;
+<a name="line482">482: </a>      <font color="#4169E1">else</font> {
+<a name="line483">483: </a>        <font color="#4169E1">if</font> (nep-&gt;nconv &gt; ctx-&gt;L) nv = nep-&gt;nconv;
+<a name="line484">484: </a>        <font color="#4169E1">else</font> <font color="#4169E1">if</font> (ctx-&gt;L &gt; nv) nv = ctx-&gt;L;
+<a name="line485">485: </a>        nv = PetscMin(nv,ctx-&gt;L*ctx-&gt;M);
+<a name="line486">486: </a>        MatCreateSeqDense(PETSC_COMM_SELF,nv,ctx-&gt;L,NULL,&amp;M);
+<a name="line487">487: </a>        MatSetRandom(M,rand);
+<a name="line488">488: </a>        <a href="../../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(ctx-&gt;S,0,nv);
+<a name="line489">489: </a>        <a href="../../../../docs/manualpages/BV/BVMultInPlace.html#BVMultInPlace">BVMultInPlace</a>(ctx-&gt;S,M,0,ctx-&gt;L);
+<a name="line490">490: </a>        MatDestroy(&amp;M);
+<a name="line491">491: </a>        <a href="../../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(ctx-&gt;S,0,ctx-&gt;L);
+<a name="line492">492: </a>        <a href="../../../../docs/manualpages/BV/BVSetActiveColumns.html#BVSetActiveColumns">BVSetActiveColumns</a>(ctx-&gt;V,0,ctx-&gt;L);
+<a name="line493">493: </a>        <a href="../../../../docs/manualpages/BV/BVCopy.html#BVCopy">BVCopy</a>(ctx-&gt;S,ctx-&gt;V);
+<a name="line494">494: </a>        <font color="#4169E1">if</font> (contour-&gt;pA) <a href="../../../../docs/manualpages/BV/BVScatter.html#BVScatter">BVScatter</a>(ctx-&gt;V,ctx-&gt;pV,contour-&gt;scatterin,contour-&gt;xdup);
+<a name="line495">495: </a>        NEPCISSSolve(nep,J,V,0,ctx-&gt;L);
+<a name="line496">496: </a>      }
+<a name="line497">497: </a>    }
+<a name="line498">498: </a>  }
+<a name="line499">499: </a>  PetscFree2(Mu,H0);
+<a name="line500">500: </a>  <font color="#4169E1">if</font> (ctx-&gt;extraction == <a href="../../../../docs/manualpages/sys/NEPCISSExtraction.html#NEPCISSExtraction">NEP_CISS_EXTRACTION_HANKEL</a>) PetscFree(H1);
+<a name="line501">501: </a>  PetscFunctionReturn(0);
+<a name="line502">502: </a>}
+
+<a name="line504">504: </a><strong><font color="#4169E1"><a name="NEPCISSSetSizes_CISS"></a>static PetscErrorCode NEPCISSSetSizes_CISS(<a href="../../../../docs/manualpages/sys/NEP.html#NEP">NEP</a> nep,PetscInt ip,PetscInt bs,PetscInt ms,PetscInt npart,PetscInt bsmax,PetscBool realmats)</font></strong>
+<a name="line505">505: </a>{
+<a name="line506">506: </a>  NEP_CISS       *ctx = (NEP_CISS*)nep-&gt;data;
+<a name="line507">507: </a>  PetscInt       oN,oL,oM,oLmax,onpart;
+<a name="line508">508: </a>  PetscMPIInt    size;
+
+<a name="line510">510: </a>  oN = ctx-&gt;N;
+<a name="line511">511: </a>  <font color="#4169E1">if</font> (ip == PETSC_DECIDE || ip == PETSC_DEFAULT) {
+<a name="line512">512: </a>    <font color="#4169E1">if</font> (ctx-&gt;N!=32) { ctx-&gt;N =32; ctx-&gt;M = ctx-&gt;N/4; }
+<a name="line513">513: </a>  } <font color="#4169E1">else</font> {
+<a name="line516">516: </a>    <font color="#4169E1">if</font> (ctx-&gt;N!=ip) { ctx-&gt;N = ip; ctx-&gt;M = ctx-&gt;N/4; }
+<a name="line517">517: </a>  }
+<a name="line518">518: </a>  oL = ctx-&gt;L;
+<a name="line519">519: </a>  <font color="#4169E1">if</font> (bs == PETSC_DECIDE || bs == PETSC_DEFAULT) {
+<a name="line520">520: </a>    ctx-&gt;L = 16;
+<a name="line521">521: </a>  } <font color="#4169E1">else</font> {
+<a name="line523">523: </a>    ctx-&gt;L = bs;
+<a name="line524">524: </a>  }
+<a name="line525">525: </a>  oM = ctx-&gt;M;
+<a name="line526">526: </a>  <font color="#4169E1">if</font> (ms == PETSC_DECIDE || ms == PETSC_DEFAULT) {
+<a name="line527">527: </a>    ctx-&gt;M = ctx-&gt;N/4;
+<a name="line528">528: </a>  } <font color="#4169E1">else</font> {
+<a name="line531">531: </a>    ctx-&gt;M = PetscMax(ms,2);
+<a name="line532">532: </a>  }
+<a name="line533">533: </a>  onpart = ctx-&gt;npart;
+<a name="line534">534: </a>  <font color="#4169E1">if</font> (npart == PETSC_DECIDE || npart == PETSC_DEFAULT) {
+<a name="line535">535: </a>    ctx-&gt;npart = 1;
+<a name="line536">536: </a>  } <font color="#4169E1">else</font> {
+<a name="line537">537: </a>    <a href="http://www.mpich.org/static/docs/latest/www3/MPI_Comm_size.html#MPI_Comm_size">MPI_Comm_size</a>(PetscObjectComm((PetscObject)nep),&amp;size);
+<a name="line539">539: </a>    ctx-&gt;npart = npart;
+<a name="line540">540: </a>  }
+<a name="line541">541: </a>  oLmax = ctx-&gt;L_max;
+<a name="line542">542: </a>  <font color="#4169E1">if</font> (bsmax == PETSC_DECIDE || bsmax == PETSC_DEFAULT) {
+<a name="line543">543: </a>    ctx-&gt;L_max = 64;
+<a name="line544">544: </a>  } <font color="#4169E1">else</font> {
+<a name="line546">546: </a>    ctx-&gt;L_max = PetscMax(bsmax,ctx-&gt;L);
+<a name="line547">547: </a>  }
+<a name="line548">548: </a>  <font color="#4169E1">if</font> (onpart != ctx-&gt;npart || oN != ctx-&gt;N || realmats != ctx-&gt;isreal) {
+<a name="line549">549: </a>    SlepcContourDataDestroy(&amp;ctx-&gt;contour);
+<a name="line550">550: </a>    PetscInfo(nep,<font color="#666666">"Resetting the contour data structure due to a change of parameters\n"</font>);
+<a name="line551">551: </a>    nep-&gt;state = NEP_STATE_INITIAL;
+<a name="line552">552: </a>  }
+<a name="line553">553: </a>  ctx-&gt;isreal = realmats;
+<a name="line554">554: </a>  <font color="#4169E1">if</font> (oL != ctx-&gt;L || oM != ctx-&gt;M || oLmax != ctx-&gt;L_max) nep-&gt;state = NEP_STATE_INITIAL;
+<a name="line555">555: </a>  PetscFunctionReturn(0);
+<a name="line556">556: </a>}
+
+<a name="line558">558: </a><font color="#B22222">/*@</font>
+<a name="line559">559: </a><font color="#B22222">   <a href="../../../../docs/manualpages/NEP/NEPCISSSetSizes.html#NEPCISSSetSizes">NEPCISSSetSizes</a> - Sets the values of various size parameters in the CISS solver.</font>
+
+<a name="line561">561: </a><font color="#B22222">   Logically Collective on nep</font>
+
+<a name="line563">563: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line564">564: </a><font color="#B22222">+  nep   - the nonlinear eigensolver context</font>
+<a name="line565">565: </a><font color="#B22222">.  ip    - number of integration points</font>
+<a name="line566">566: </a><font color="#B22222">.  bs    - block size</font>
+<a name="line567">567: </a><font color="#B22222">.  ms    - moment size</font>
+<a name="line568">568: </a><font color="#B22222">.  npart - number of partitions when splitting the communicator</font>
+<a name="line569">569: </a><font color="#B22222">.  bsmax - max block size</font>
+<a name="line570">570: </a><font color="#B22222">-  realmats - T(z) is real for real z</font>
+
+<a name="line572">572: </a><font color="#B22222">   Options Database Keys:</font>
+<a name="line573">573: </a><font color="#B22222">+  -nep_ciss_integration_points - Sets the number of integration points</font>
+<a name="line574">574: </a><font color="#B22222">.  -nep_ciss_blocksize - Sets the block size</font>
+<a name="line575">575: </a><font color="#B22222">.  -nep_ciss_moments - Sets the moment size</font>
+<a name="line576">576: </a><font color="#B22222">.  -nep_ciss_partitions - Sets the number of partitions</font>
+<a name="line577">577: </a><font color="#B22222">.  -nep_ciss_maxblocksize - Sets the maximum block size</font>
+<a name="line578">578: </a><font color="#B22222">-  -nep_ciss_realmats - T(z) is real for real z</font>
+
+<a name="line580">580: </a><font color="#B22222">   Notes:</font>
+<a name="line581">581: </a><font color="#B22222">   The default number of partitions is 1. This means the internal KSP object is shared</font>
+<a name="line582">582: </a><font color="#B22222">   among all processes of the <a href="../../../../docs/manualpages/sys/NEP.html#NEP">NEP</a> communicator. Otherwise, the communicator is split</font>
+<a name="line583">583: </a><font color="#B22222">   into npart communicators, so that npart KSP solves proceed simultaneously.</font>
+
+<a name="line585">585: </a><font color="#B22222">   The realmats flag can be set to true when T(.) is guaranteed to be real</font>
+<a name="line586">586: </a><font color="#B22222">   when the argument is a real value, for example, when all matrices in</font>
+<a name="line587">587: </a><font color="#B22222">   the split form are real. When set to true, the solver avoids some computations.</font>
+
+<a name="line589">589: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line591">591: </a><font color="#B22222">.seealso: <a href="../../../../docs/manualpages/NEP/NEPCISSGetSizes.html#NEPCISSGetSizes">NEPCISSGetSizes</a>()</font>
+<a name="line592">592: </a><font color="#B22222">@*/</font>
+<a name="line593">593: </a><strong><font color="#4169E1"><a name="NEPCISSSetSizes"></a>PetscErrorCode <a href="../../../../docs/manualpages/NEP/NEPCISSSetSizes.html#NEPCISSSetSizes">NEPCISSSetSizes</a>(<a href="../../../../docs/manualpages/sys/NEP.html#NEP">NEP</a> nep,PetscInt ip,PetscInt bs,PetscInt ms,PetscInt npart,PetscInt bsmax,PetscBool realmats)</font></strong>
+<a name="line594">594: </a>{
+<a name="line602">602: </a>  PetscTryMethod(nep,<font color="#666666">"NEPCISSSetSizes_C"</font>,(<a href="../../../../docs/manualpages/sys/NEP.html#NEP">NEP</a>,PetscInt,PetscInt,PetscInt,PetscInt,PetscInt,PetscBool),(nep,ip,bs,ms,npart,bsmax,realmats));
+<a name="line603">603: </a>  PetscFunctionReturn(0);
+<a name="line604">604: </a>}
+
+<a name="line606">606: </a><strong><font color="#4169E1"><a name="NEPCISSGetSizes_CISS"></a>static PetscErrorCode NEPCISSGetSizes_CISS(<a href="../../../../docs/manualpages/sys/NEP.html#NEP">NEP</a> nep,PetscInt *ip,PetscInt *bs,PetscInt *ms,PetscInt *npart,PetscInt *bsmax,PetscBool *realmats)</font></strong>
+<a name="line607">607: </a>{
+<a name="line608">608: </a>  NEP_CISS *ctx = (NEP_CISS*)nep-&gt;data;
+
+<a name="line610">610: </a>  <font color="#4169E1">if</font> (ip) *ip = ctx-&gt;N;
+<a name="line611">611: </a>  <font color="#4169E1">if</font> (bs) *bs = ctx-&gt;L;
+<a name="line612">612: </a>  <font color="#4169E1">if</font> (ms) *ms = ctx-&gt;M;
+<a name="line613">613: </a>  <font color="#4169E1">if</font> (npart) *npart = ctx-&gt;npart;
+<a name="line614">614: </a>  <font color="#4169E1">if</font> (bsmax) *bsmax = ctx-&gt;L_max;
+<a name="line615">615: </a>  <font color="#4169E1">if</font> (realmats) *realmats = ctx-&gt;isreal;
+<a name="line616">616: </a>  PetscFunctionReturn(0);
+<a name="line617">617: </a>}
+
+<a name="line619">619: </a><font color="#B22222">/*@</font>
+<a name="line620">620: </a><font color="#B22222">   <a href="../../../../docs/manualpages/NEP/NEPCISSGetSizes.html#NEPCISSGetSizes">NEPCISSGetSizes</a> - Gets the values of various size parameters in the CISS solver.</font>
+
+<a name="line622">622: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line624">624: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line625">625: </a><font color="#B22222">.  nep - the nonlinear eigensolver context</font>
+
+<a name="line627">627: </a><font color="#B22222">   Output Parameters:</font>
+<a name="line628">628: </a><font color="#B22222">+  ip    - number of integration points</font>
+<a name="line629">629: </a><font color="#B22222">.  bs    - block size</font>
+<a name="line630">630: </a><font color="#B22222">.  ms    - moment size</font>
+<a name="line631">631: </a><font color="#B22222">.  npart - number of partitions when splitting the communicator</font>
+<a name="line632">632: </a><font color="#B22222">.  bsmax - max block size</font>
+<a name="line633">633: </a><font color="#B22222">-  realmats - T(z) is real for real z</font>
+
+<a name="line635">635: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line637">637: </a><font color="#B22222">.seealso: <a href="../../../../docs/manualpages/NEP/NEPCISSSetSizes.html#NEPCISSSetSizes">NEPCISSSetSizes</a>()</font>
+<a name="line638">638: </a><font color="#B22222">@*/</font>
+<a name="line639">639: </a><strong><font color="#4169E1"><a name="NEPCISSGetSizes"></a>PetscErrorCode <a href="../../../../docs/manualpages/NEP/NEPCISSGetSizes.html#NEPCISSGetSizes">NEPCISSGetSizes</a>(<a href="../../../../docs/manualpages/sys/NEP.html#NEP">NEP</a> nep,PetscInt *ip,PetscInt *bs,PetscInt *ms,PetscInt *npart,PetscInt *bsmax,PetscBool *realmats)</font></strong>
+<a name="line640">640: </a>{
+<a name="line642">642: </a>  PetscUseMethod(nep,<font color="#666666">"NEPCISSGetSizes_C"</font>,(<a href="../../../../docs/manualpages/sys/NEP.html#NEP">NEP</a>,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscInt*,PetscBool*),(nep,ip,bs,ms,npart,bsmax,realmats));
+<a name="line643">643: </a>  PetscFunctionReturn(0);
+<a name="line644">644: </a>}
+
+<a name="line646">646: </a><strong><font color="#4169E1"><a name="NEPCISSSetThreshold_CISS"></a>static PetscErrorCode NEPCISSSetThreshold_CISS(<a href="../../../../docs/manualpages/sys/NEP.html#NEP">NEP</a> nep,PetscReal delta,PetscReal spur)</font></strong>
+<a name="line647">647: </a>{
+<a name="line648">648: </a>  NEP_CISS *ctx = (NEP_CISS*)nep-&gt;data;
+
+<a name="line650">650: </a>  <font color="#4169E1">if</font> (delta == PETSC_DEFAULT) {
+<a name="line651">651: </a>    ctx-&gt;delta = SLEPC_DEFAULT_TOL*1e-4;
+<a name="line652">652: </a>  } <font color="#4169E1">else</font> {
+<a name="line654">654: </a>    ctx-&gt;delta = delta;
+<a name="line655">655: </a>  }
+<a name="line656">656: </a>  <font color="#4169E1">if</font> (spur == PETSC_DEFAULT) {
+<a name="line657">657: </a>    ctx-&gt;spurious_threshold = PetscSqrtReal(SLEPC_DEFAULT_TOL);
+<a name="line658">658: </a>  } <font color="#4169E1">else</font> {
+<a name="line660">660: </a>    ctx-&gt;spurious_threshold = spur;
+<a name="line661">661: </a>  }
+<a name="line662">662: </a>  PetscFunctionReturn(0);
+<a name="line663">663: </a>}
+
+<a name="line665">665: </a><font color="#B22222">/*@</font>
+<a name="line666">666: </a><font color="#B22222">   <a href="../../../../docs/manualpages/NEP/NEPCISSSetThreshold.html#NEPCISSSetThreshold">NEPCISSSetThreshold</a> - Sets the values of various threshold parameters in</font>
+<a name="line667">667: </a><font color="#B22222">   the CISS solver.</font>
+
+<a name="line669">669: </a><font color="#B22222">   Logically Collective on nep</font>
+
+<a name="line671">671: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line672">672: </a><font color="#B22222">+  nep   - the nonlinear eigensolver context</font>
+<a name="line673">673: </a><font color="#B22222">.  delta - threshold for numerical rank</font>
+<a name="line674">674: </a><font color="#B22222">-  spur  - spurious threshold (to discard spurious eigenpairs)</font>
+
+<a name="line676">676: </a><font color="#B22222">   Options Database Keys:</font>
+<a name="line677">677: </a><font color="#B22222">+  -nep_ciss_delta - Sets the delta</font>
+<a name="line678">678: </a><font color="#B22222">-  -nep_ciss_spurious_threshold - Sets the spurious threshold</font>
+
+<a name="line680">680: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line682">682: </a><font color="#B22222">.seealso: <a href="../../../../docs/manualpages/NEP/NEPCISSGetThreshold.html#NEPCISSGetThreshold">NEPCISSGetThreshold</a>()</font>
+<a name="line683">683: </a><font color="#B22222">@*/</font>
+<a name="line684">684: </a><strong><font color="#4169E1"><a name="NEPCISSSetThreshold"></a>PetscErrorCode <a href="../../../../docs/manualpages/NEP/NEPCISSSetThreshold.html#NEPCISSSetThreshold">NEPCISSSetThreshold</a>(<a href="../../../../docs/manualpages/sys/NEP.html#NEP">NEP</a> nep,PetscReal delta,PetscReal spur)</font></strong>
+<a name="line685">685: </a>{
+<a name="line689">689: </a>  PetscTryMethod(nep,<font color="#666666">"NEPCISSSetThreshold_C"</font>,(<a href="../../../../docs/manualpages/sys/NEP.html#NEP">NEP</a>,PetscReal,PetscReal),(nep,delta,spur));
+<a name="line690">690: </a>  PetscFunctionReturn(0);
+<a name="line691">691: </a>}
+
+<a name="line693">693: </a><strong><font color="#4169E1"><a name="NEPCISSGetThreshold_CISS"></a>static PetscErrorCode NEPCISSGetThreshold_CISS(<a href="../../../../docs/manualpages/sys/NEP.html#NEP">NEP</a> nep,PetscReal *delta,PetscReal *spur)</font></strong>
+<a name="line694">694: </a>{
+<a name="line695">695: </a>  NEP_CISS *ctx = (NEP_CISS*)nep-&gt;data;
+
+<a name="line697">697: </a>  <font color="#4169E1">if</font> (delta) *delta = ctx-&gt;delta;
+<a name="line698">698: </a>  <font color="#4169E1">if</font> (spur)  *spur = ctx-&gt;spurious_threshold;
+<a name="line699">699: </a>  PetscFunctionReturn(0);
+<a name="line700">700: </a>}
+
+<a name="line702">702: </a><font color="#B22222">/*@</font>
+<a name="line703">703: </a><font color="#B22222">   <a href="../../../../docs/manualpages/NEP/NEPCISSGetThreshold.html#NEPCISSGetThreshold">NEPCISSGetThreshold</a> - Gets the values of various threshold parameters in</font>
+<a name="line704">704: </a><font color="#B22222">   the CISS solver.</font>
+
+<a name="line706">706: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line708">708: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line709">709: </a><font color="#B22222">.  nep - the nonlinear eigensolver context</font>
+
+<a name="line711">711: </a><font color="#B22222">   Output Parameters:</font>
+<a name="line712">712: </a><font color="#B22222">+  delta - threshold for numerical rank</font>
+<a name="line713">713: </a><font color="#B22222">-  spur  - spurious threshold (to discard spurious eigenpairs)</font>
+
+<a name="line715">715: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line717">717: </a><font color="#B22222">.seealso: <a href="../../../../docs/manualpages/NEP/NEPCISSSetThreshold.html#NEPCISSSetThreshold">NEPCISSSetThreshold</a>()</font>
+<a name="line718">718: </a><font color="#B22222">@*/</font>
+<a name="line719">719: </a><strong><font color="#4169E1"><a name="NEPCISSGetThreshold"></a>PetscErrorCode <a href="../../../../docs/manualpages/NEP/NEPCISSGetThreshold.html#NEPCISSGetThreshold">NEPCISSGetThreshold</a>(<a href="../../../../docs/manualpages/sys/NEP.html#NEP">NEP</a> nep,PetscReal *delta,PetscReal *spur)</font></strong>
+<a name="line720">720: </a>{
+<a name="line722">722: </a>  PetscUseMethod(nep,<font color="#666666">"NEPCISSGetThreshold_C"</font>,(<a href="../../../../docs/manualpages/sys/NEP.html#NEP">NEP</a>,PetscReal*,PetscReal*),(nep,delta,spur));
+<a name="line723">723: </a>  PetscFunctionReturn(0);
+<a name="line724">724: </a>}
+
+<a name="line726">726: </a><strong><font color="#4169E1"><a name="NEPCISSSetRefinement_CISS"></a>static PetscErrorCode NEPCISSSetRefinement_CISS(<a href="../../../../docs/manualpages/sys/NEP.html#NEP">NEP</a> nep,PetscInt inner,PetscInt blsize)</font></strong>
+<a name="line727">727: </a>{
+<a name="line728">728: </a>  NEP_CISS *ctx = (NEP_CISS*)nep-&gt;data;
+
+<a name="line730">730: </a>  <font color="#4169E1">if</font> (inner == PETSC_DEFAULT) {
+<a name="line731">731: </a>    ctx-&gt;refine_inner = 0;
+<a name="line732">732: </a>  } <font color="#4169E1">else</font> {
+<a name="line734">734: </a>    ctx-&gt;refine_inner = inner;
+<a name="line735">735: </a>  }
+<a name="line736">736: </a>  <font color="#4169E1">if</font> (blsize == PETSC_DEFAULT) {
+<a name="line737">737: </a>    ctx-&gt;refine_blocksize = 0;
+<a name="line738">738: </a>  } <font color="#4169E1">else</font> {
+<a name="line740">740: </a>    ctx-&gt;refine_blocksize = blsize;
+<a name="line741">741: </a>  }
+<a name="line742">742: </a>  PetscFunctionReturn(0);
+<a name="line743">743: </a>}
+
+<a name="line745">745: </a><font color="#B22222">/*@</font>
+<a name="line746">746: </a><font color="#B22222">   <a href="../../../../docs/manualpages/NEP/NEPCISSSetRefinement.html#NEPCISSSetRefinement">NEPCISSSetRefinement</a> - Sets the values of various refinement parameters</font>
+<a name="line747">747: </a><font color="#B22222">   in the CISS solver.</font>
+
+<a name="line749">749: </a><font color="#B22222">   Logically Collective on nep</font>
+
+<a name="line751">751: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line752">752: </a><font color="#B22222">+  nep    - the nonlinear eigensolver context</font>
+<a name="line753">753: </a><font color="#B22222">.  inner  - number of iterative refinement iterations (inner loop)</font>
+<a name="line754">754: </a><font color="#B22222">-  blsize - number of iterative refinement iterations (blocksize loop)</font>
+
+<a name="line756">756: </a><font color="#B22222">   Options Database Keys:</font>
+<a name="line757">757: </a><font color="#B22222">+  -nep_ciss_refine_inner - Sets number of inner iterations</font>
+<a name="line758">758: </a><font color="#B22222">-  -nep_ciss_refine_blocksize - Sets number of blocksize iterations</font>
+
+<a name="line760">760: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line762">762: </a><font color="#B22222">.seealso: <a href="../../../../docs/manualpages/NEP/NEPCISSGetRefinement.html#NEPCISSGetRefinement">NEPCISSGetRefinement</a>()</font>
+<a name="line763">763: </a><font color="#B22222">@*/</font>
+<a name="line764">764: </a><strong><font color="#4169E1"><a name="NEPCISSSetRefinement"></a>PetscErrorCode <a href="../../../../docs/manualpages/NEP/NEPCISSSetRefinement.html#NEPCISSSetRefinement">NEPCISSSetRefinement</a>(<a href="../../../../docs/manualpages/sys/NEP.html#NEP">NEP</a> nep,PetscInt inner,PetscInt blsize)</font></strong>
+<a name="line765">765: </a>{
+<a name="line769">769: </a>  PetscTryMethod(nep,<font color="#666666">"NEPCISSSetRefinement_C"</font>,(<a href="../../../../docs/manualpages/sys/NEP.html#NEP">NEP</a>,PetscInt,PetscInt),(nep,inner,blsize));
+<a name="line770">770: </a>  PetscFunctionReturn(0);
+<a name="line771">771: </a>}
+
+<a name="line773">773: </a><strong><font color="#4169E1"><a name="NEPCISSGetRefinement_CISS"></a>static PetscErrorCode NEPCISSGetRefinement_CISS(<a href="../../../../docs/manualpages/sys/NEP.html#NEP">NEP</a> nep,PetscInt *inner,PetscInt *blsize)</font></strong>
+<a name="line774">774: </a>{
+<a name="line775">775: </a>  NEP_CISS *ctx = (NEP_CISS*)nep-&gt;data;
+
+<a name="line777">777: </a>  <font color="#4169E1">if</font> (inner)  *inner = ctx-&gt;refine_inner;
+<a name="line778">778: </a>  <font color="#4169E1">if</font> (blsize) *blsize = ctx-&gt;refine_blocksize;
+<a name="line779">779: </a>  PetscFunctionReturn(0);
+<a name="line780">780: </a>}
+
+<a name="line782">782: </a><font color="#B22222">/*@</font>
+<a name="line783">783: </a><font color="#B22222">   <a href="../../../../docs/manualpages/NEP/NEPCISSGetRefinement.html#NEPCISSGetRefinement">NEPCISSGetRefinement</a> - Gets the values of various refinement parameters</font>
+<a name="line784">784: </a><font color="#B22222">   in the CISS solver.</font>
+
+<a name="line786">786: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line788">788: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line789">789: </a><font color="#B22222">.  nep - the nonlinear eigensolver context</font>
+
+<a name="line791">791: </a><font color="#B22222">   Output Parameters:</font>
+<a name="line792">792: </a><font color="#B22222">+  inner  - number of iterative refinement iterations (inner loop)</font>
+<a name="line793">793: </a><font color="#B22222">-  blsize - number of iterative refinement iterations (blocksize loop)</font>
+
+<a name="line795">795: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line797">797: </a><font color="#B22222">.seealso: <a href="../../../../docs/manualpages/NEP/NEPCISSSetRefinement.html#NEPCISSSetRefinement">NEPCISSSetRefinement</a>()</font>
+<a name="line798">798: </a><font color="#B22222">@*/</font>
+<a name="line799">799: </a><strong><font color="#4169E1"><a name="NEPCISSGetRefinement"></a>PetscErrorCode <a href="../../../../docs/manualpages/NEP/NEPCISSGetRefinement.html#NEPCISSGetRefinement">NEPCISSGetRefinement</a>(<a href="../../../../docs/manualpages/sys/NEP.html#NEP">NEP</a> nep, PetscInt *inner, PetscInt *blsize)</font></strong>
+<a name="line800">800: </a>{
+<a name="line802">802: </a>  PetscUseMethod(nep,<font color="#666666">"NEPCISSGetRefinement_C"</font>,(<a href="../../../../docs/manualpages/sys/NEP.html#NEP">NEP</a>,PetscInt*,PetscInt*),(nep,inner,blsize));
+<a name="line803">803: </a>  PetscFunctionReturn(0);
+<a name="line804">804: </a>}
+
+<a name="line806">806: </a><strong><font color="#4169E1"><a name="NEPCISSSetExtraction_CISS"></a>static PetscErrorCode NEPCISSSetExtraction_CISS(<a href="../../../../docs/manualpages/sys/NEP.html#NEP">NEP</a> nep,<a href="../../../../docs/manualpages/sys/NEPCISSExtraction.html#NEPCISSExtraction">NEPCISSExtraction</a> extraction)</font></strong>
+<a name="line807">807: </a>{
+<a name="line808">808: </a>  NEP_CISS *ctx = (NEP_CISS*)nep-&gt;data;
+
+<a name="line810">810: </a>  <font color="#4169E1">if</font> (ctx-&gt;extraction != extraction) {
+<a name="line811">811: </a>    ctx-&gt;extraction = extraction;
+<a name="line812">812: </a>    nep-&gt;state      = NEP_STATE_INITIAL;
+<a name="line813">813: </a>  }
+<a name="line814">814: </a>  PetscFunctionReturn(0);
+<a name="line815">815: </a>}
+
+<a name="line817">817: </a><font color="#B22222">/*@</font>
+<a name="line818">818: </a><font color="#B22222">   <a href="../../../../docs/manualpages/NEP/NEPCISSSetExtraction.html#NEPCISSSetExtraction">NEPCISSSetExtraction</a> - Sets the extraction technique used in the CISS solver.</font>
+
+<a name="line820">820: </a><font color="#B22222">   Logically Collective on nep</font>
+
+<a name="line822">822: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line823">823: </a><font color="#B22222">+  nep        - the nonlinear eigensolver context</font>
+<a name="line824">824: </a><font color="#B22222">-  extraction - the extraction technique</font>
+
+<a name="line826">826: </a><font color="#B22222">   Options Database Key:</font>
+<a name="line827">827: </a><font color="#B22222">.  -nep_ciss_extraction - Sets the extraction technique (either 'ritz', 'hankel' or 'caa')</font>
+
+<a name="line829">829: </a><font color="#B22222">   Notes:</font>
+<a name="line830">830: </a><font color="#B22222">   By default, the Rayleigh-Ritz extraction is used (<a href="../../../../docs/manualpages/sys/NEPCISSExtraction.html#NEPCISSExtraction">NEP_CISS_EXTRACTION_RITZ</a>).</font>
+
+<a name="line832">832: </a><font color="#B22222">   If the 'hankel' or the 'caa' option is specified (<a href="../../../../docs/manualpages/sys/NEPCISSExtraction.html#NEPCISSExtraction">NEP_CISS_EXTRACTION_HANKEL</a> or</font>
+<a name="line833">833: </a><font color="#B22222">   <a href="../../../../docs/manualpages/sys/NEPCISSExtraction.html#NEPCISSExtraction">NEP_CISS_EXTRACTION_CAA</a>), then the Block Hankel method, or the Communication-avoiding</font>
+<a name="line834">834: </a><font color="#B22222">   Arnoldi method, respectively, is used for extracting eigenpairs.</font>
+
+<a name="line836">836: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line838">838: </a><font color="#B22222">.seealso: <a href="../../../../docs/manualpages/NEP/NEPCISSGetExtraction.html#NEPCISSGetExtraction">NEPCISSGetExtraction</a>(), <a href="../../../../docs/manualpages/sys/NEPCISSExtraction.html#NEPCISSExtraction">NEPCISSExtraction</a></font>
+<a name="line839">839: </a><font color="#B22222">@*/</font>
+<a name="line840">840: </a><strong><font color="#4169E1"><a name="NEPCISSSetExtraction"></a>PetscErrorCode <a href="../../../../docs/manualpages/NEP/NEPCISSSetExtraction.html#NEPCISSSetExtraction">NEPCISSSetExtraction</a>(<a href="../../../../docs/manualpages/sys/NEP.html#NEP">NEP</a> nep,<a href="../../../../docs/manualpages/sys/NEPCISSExtraction.html#NEPCISSExtraction">NEPCISSExtraction</a> extraction)</font></strong>
+<a name="line841">841: </a>{
+<a name="line844">844: </a>  PetscTryMethod(nep,<font color="#666666">"NEPCISSSetExtraction_C"</font>,(<a href="../../../../docs/manualpages/sys/NEP.html#NEP">NEP</a>,<a href="../../../../docs/manualpages/sys/NEPCISSExtraction.html#NEPCISSExtraction">NEPCISSExtraction</a>),(nep,extraction));
+<a name="line845">845: </a>  PetscFunctionReturn(0);
+<a name="line846">846: </a>}
+
+<a name="line848">848: </a><strong><font color="#4169E1"><a name="NEPCISSGetExtraction_CISS"></a>static PetscErrorCode NEPCISSGetExtraction_CISS(<a href="../../../../docs/manualpages/sys/NEP.html#NEP">NEP</a> nep,<a href="../../../../docs/manualpages/sys/NEPCISSExtraction.html#NEPCISSExtraction">NEPCISSExtraction</a> *extraction)</font></strong>
+<a name="line849">849: </a>{
+<a name="line850">850: </a>  NEP_CISS *ctx = (NEP_CISS*)nep-&gt;data;
+
+<a name="line852">852: </a>  *extraction = ctx-&gt;extraction;
+<a name="line853">853: </a>  PetscFunctionReturn(0);
+<a name="line854">854: </a>}
+
+<a name="line856">856: </a><font color="#B22222">/*@</font>
+<a name="line857">857: </a><font color="#B22222">   <a href="../../../../docs/manualpages/NEP/NEPCISSGetExtraction.html#NEPCISSGetExtraction">NEPCISSGetExtraction</a> - Gets the extraction technique used in the CISS solver.</font>
+
+<a name="line859">859: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line861">861: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line862">862: </a><font color="#B22222">.  nep - the nonlinear eigensolver context</font>
+
+<a name="line864">864: </a><font color="#B22222">   Output Parameters:</font>
+<a name="line865">865: </a><font color="#B22222">.  extraction - extraction technique</font>
+
+<a name="line867">867: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line869">869: </a><font color="#B22222">.seealso: <a href="../../../../docs/manualpages/NEP/NEPCISSSetExtraction.html#NEPCISSSetExtraction">NEPCISSSetExtraction</a>() <a href="../../../../docs/manualpages/sys/NEPCISSExtraction.html#NEPCISSExtraction">NEPCISSExtraction</a></font>
+<a name="line870">870: </a><font color="#B22222">@*/</font>
+<a name="line871">871: </a><strong><font color="#4169E1"><a name="NEPCISSGetExtraction"></a>PetscErrorCode <a href="../../../../docs/manualpages/NEP/NEPCISSGetExtraction.html#NEPCISSGetExtraction">NEPCISSGetExtraction</a>(<a href="../../../../docs/manualpages/sys/NEP.html#NEP">NEP</a> nep,<a href="../../../../docs/manualpages/sys/NEPCISSExtraction.html#NEPCISSExtraction">NEPCISSExtraction</a> *extraction)</font></strong>
+<a name="line872">872: </a>{
+<a name="line875">875: </a>  PetscUseMethod(nep,<font color="#666666">"NEPCISSGetExtraction_C"</font>,(<a href="../../../../docs/manualpages/sys/NEP.html#NEP">NEP</a>,<a href="../../../../docs/manualpages/sys/NEPCISSExtraction.html#NEPCISSExtraction">NEPCISSExtraction</a>*),(nep,extraction));
+<a name="line876">876: </a>  PetscFunctionReturn(0);
+<a name="line877">877: </a>}
+
+<a name="line879">879: </a><strong><font color="#4169E1"><a name="NEPCISSGetKSPs_CISS"></a>static PetscErrorCode NEPCISSGetKSPs_CISS(<a href="../../../../docs/manualpages/sys/NEP.html#NEP">NEP</a> nep,PetscInt *nsolve,KSP **ksp)</font></strong>
+<a name="line880">880: </a>{
+<a name="line881">881: </a>  NEP_CISS         *ctx = (NEP_CISS*)nep-&gt;data;
+<a name="line882">882: </a>  SlepcContourData contour;
+<a name="line883">883: </a>  PetscInt         i;
+<a name="line884">884: </a>  PC               pc;
+<a name="line885">885: </a>  MPI_Comm         child;
+
+<a name="line887">887: </a>  <font color="#4169E1">if</font> (!ctx-&gt;contour) {  <font color="#B22222">/* initialize contour data structure first */</font>
+<a name="line888">888: </a>    <a href="../../../../docs/manualpages/RG/RGCanUseConjugates.html#RGCanUseConjugates">RGCanUseConjugates</a>(nep-&gt;rg,ctx-&gt;isreal,&amp;ctx-&gt;useconj);
+<a name="line889">889: </a>    SlepcContourDataCreate(ctx-&gt;useconj?ctx-&gt;N/2:ctx-&gt;N,ctx-&gt;npart,(PetscObject)nep,&amp;ctx-&gt;contour);
+<a name="line890">890: </a>  }
+<a name="line891">891: </a>  contour = ctx-&gt;contour;
+<a name="line892">892: </a>  <font color="#4169E1">if</font> (!contour-&gt;ksp) {
+<a name="line893">893: </a>    PetscMalloc1(contour-&gt;npoints,&amp;contour-&gt;ksp);
+<a name="line894">894: </a>    PetscSubcommGetChild(contour-&gt;subcomm,&amp;child);
+<a name="line895">895: </a>    <font color="#4169E1">for</font> (i=0;i&lt;contour-&gt;npoints;i++) {
+<a name="line896">896: </a>      KSPCreate(child,&amp;contour-&gt;ksp[i]);
+<a name="line897">897: </a>      PetscObjectIncrementTabLevel((PetscObject)contour-&gt;ksp[i],(PetscObject)nep,1);
+<a name="line898">898: </a>      KSPSetOptionsPrefix(contour-&gt;ksp[i],((PetscObject)nep)-&gt;prefix);
+<a name="line899">899: </a>      KSPAppendOptionsPrefix(contour-&gt;ksp[i],<font color="#666666">"nep_ciss_"</font>);
+<a name="line900">900: </a>      PetscLogObjectParent((PetscObject)nep,(PetscObject)contour-&gt;ksp[i]);
+<a name="line901">901: </a>      PetscObjectSetOptions((PetscObject)contour-&gt;ksp[i],((PetscObject)nep)-&gt;options);
+<a name="line902">902: </a>      KSPSetErrorIfNotConverged(contour-&gt;ksp[i],PETSC_TRUE);
+<a name="line903">903: </a>      KSPSetTolerances(contour-&gt;ksp[i],SlepcDefaultTol(nep-&gt;tol),PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);
+<a name="line904">904: </a>      KSPGetPC(contour-&gt;ksp[i],&amp;pc);
+<a name="line905">905: </a>      <font color="#4169E1">if</font> ((nep-&gt;fui==NEP_USER_INTERFACE_SPLIT &amp;&amp; nep-&gt;P) || (nep-&gt;fui==NEP_USER_INTERFACE_CALLBACK &amp;&amp; nep-&gt;function_pre!=nep-&gt;function)) {
+<a name="line906">906: </a>        KSPSetType(contour-&gt;ksp[i],KSPBCGS);
+<a name="line907">907: </a>        PCSetType(pc,PCBJACOBI);
+<a name="line908">908: </a>      } <font color="#4169E1">else</font> {
+<a name="line909">909: </a>        KSPSetType(contour-&gt;ksp[i],KSPPREONLY);
+<a name="line910">910: </a>        PCSetType(pc,PCLU);
+<a name="line911">911: </a>      }
+<a name="line912">912: </a>    }
+<a name="line913">913: </a>  }
+<a name="line914">914: </a>  <font color="#4169E1">if</font> (nsolve) *nsolve = contour-&gt;npoints;
+<a name="line915">915: </a>  <font color="#4169E1">if</font> (ksp)    *ksp    = contour-&gt;ksp;
+<a name="line916">916: </a>  PetscFunctionReturn(0);
+<a name="line917">917: </a>}
+
+<a name="line919">919: </a><font color="#B22222">/*@C</font>
+<a name="line920">920: </a><font color="#B22222">   <a href="../../../../docs/manualpages/NEP/NEPCISSGetKSPs.html#NEPCISSGetKSPs">NEPCISSGetKSPs</a> - Retrieve the array of linear solver objects associated with</font>
+<a name="line921">921: </a><font color="#B22222">   the CISS solver.</font>
+
+<a name="line923">923: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line925">925: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line926">926: </a><font color="#B22222">.  nep - nonlinear eigenvalue solver</font>
+
+<a name="line928">928: </a><font color="#B22222">   Output Parameters:</font>
+<a name="line929">929: </a><font color="#B22222">+  nsolve - number of solver objects</font>
+<a name="line930">930: </a><font color="#B22222">-  ksp - array of linear solver object</font>
+
+<a name="line932">932: </a><font color="#B22222">   Notes:</font>
+<a name="line933">933: </a><font color="#B22222">   The number of KSP solvers is equal to the number of integration points divided by</font>
+<a name="line934">934: </a><font color="#B22222">   the number of partitions. This value is halved in the case of real matrices with</font>
+<a name="line935">935: </a><font color="#B22222">   a region centered at the real axis.</font>
+
+<a name="line937">937: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line939">939: </a><font color="#B22222">.seealso: <a href="../../../../docs/manualpages/NEP/NEPCISSSetSizes.html#NEPCISSSetSizes">NEPCISSSetSizes</a>()</font>
+<a name="line940">940: </a><font color="#B22222">@*/</font>
+<a name="line941">941: </a><strong><font color="#4169E1"><a name="NEPCISSGetKSPs"></a>PetscErrorCode <a href="../../../../docs/manualpages/NEP/NEPCISSGetKSPs.html#NEPCISSGetKSPs">NEPCISSGetKSPs</a>(<a href="../../../../docs/manualpages/sys/NEP.html#NEP">NEP</a> nep,PetscInt *nsolve,KSP **ksp)</font></strong>
+<a name="line942">942: </a>{
+<a name="line944">944: </a>  PetscUseMethod(nep,<font color="#666666">"NEPCISSGetKSPs_C"</font>,(<a href="../../../../docs/manualpages/sys/NEP.html#NEP">NEP</a>,PetscInt*,KSP**),(nep,nsolve,ksp));
+<a name="line945">945: </a>  PetscFunctionReturn(0);
+<a name="line946">946: </a>}
+
+<a name="line948">948: </a><strong><font color="#4169E1"><a name="NEPReset_CISS"></a>PetscErrorCode NEPReset_CISS(<a href="../../../../docs/manualpages/sys/NEP.html#NEP">NEP</a> nep)</font></strong>
+<a name="line949">949: </a>{
+<a name="line950">950: </a>  NEP_CISS       *ctx = (NEP_CISS*)nep-&gt;data;
+
+<a name="line952">952: </a>  <a href="../../../../docs/manualpages/BV/BVDestroy.html#BVDestroy">BVDestroy</a>(&amp;ctx-&gt;S);
+<a name="line953">953: </a>  <a href="../../../../docs/manualpages/BV/BVDestroy.html#BVDestroy">BVDestroy</a>(&amp;ctx-&gt;V);
+<a name="line954">954: </a>  <a href="../../../../docs/manualpages/BV/BVDestroy.html#BVDestroy">BVDestroy</a>(&amp;ctx-&gt;Y);
+<a name="line955">955: </a>  SlepcContourDataReset(ctx-&gt;contour);
+<a name="line956">956: </a>  MatDestroy(&amp;ctx-&gt;J);
+<a name="line957">957: </a>  <a href="../../../../docs/manualpages/BV/BVDestroy.html#BVDestroy">BVDestroy</a>(&amp;ctx-&gt;pV);
+<a name="line958">958: </a>  <font color="#4169E1">if</font> (ctx-&gt;extraction == <a href="../../../../docs/manualpages/sys/NEPCISSExtraction.html#NEPCISSExtraction">NEP_CISS_EXTRACTION_RITZ</a> &amp;&amp; nep-&gt;fui==NEP_USER_INTERFACE_CALLBACK) PetscFree(ctx-&gt;dsctxf);
+<a name="line959">959: </a>  PetscFunctionReturn(0);
+<a name="line960">960: </a>}
+
+<a name="line962">962: </a><strong><font color="#4169E1"><a name="NEPSetFromOptions_CISS"></a>PetscErrorCode NEPSetFromOptions_CISS(PetscOptionItems *PetscOptionsObject,<a href="../../../../docs/manualpages/sys/NEP.html#NEP">NEP</a> nep)</font></strong>
+<a name="line963">963: </a>{
+<a name="line964">964: </a>  NEP_CISS          *ctx = (NEP_CISS*)nep-&gt;data;
+<a name="line965">965: </a>  PetscReal         r1,r2;
+<a name="line966">966: </a>  PetscInt          i,i1,i2,i3,i4,i5,i6,i7;
+<a name="line967">967: </a>  PetscBool         b1,flg,flg2,flg3,flg4,flg5,flg6;
+<a name="line968">968: </a>  <a href="../../../../docs/manualpages/sys/NEPCISSExtraction.html#NEPCISSExtraction">NEPCISSExtraction</a> extraction;
+
+<a name="line970">970: </a>  PetscOptionsHead(PetscOptionsObject,<font color="#666666">"<a href="../../../../docs/manualpages/sys/NEP.html#NEP">NEP</a> CISS Options"</font>);
+
+<a name="line972">972: </a>    <a href="../../../../docs/manualpages/NEP/NEPCISSGetSizes.html#NEPCISSGetSizes">NEPCISSGetSizes</a>(nep,&amp;i1,&amp;i2,&amp;i3,&amp;i4,&amp;i5,&amp;b1);
+<a name="line973">973: </a>    PetscOptionsInt(<font color="#666666">"-nep_ciss_integration_points"</font>,<font color="#666666">"Number of integration points"</font>,<font color="#666666">"<a href="../../../../docs/manualpages/NEP/NEPCISSSetSizes.html#NEPCISSSetSizes">NEPCISSSetSizes</a>"</font>,i1,&amp;i1,&amp;flg);
+<a name="line974">974: </a>    PetscOptionsInt(<font color="#666666">"-nep_ciss_blocksize"</font>,<font color="#666666">"Block size"</font>,<font color="#666666">"<a href="../../../../docs/manualpages/NEP/NEPCISSSetSizes.html#NEPCISSSetSizes">NEPCISSSetSizes</a>"</font>,i2,&amp;i2,&amp;flg2);
+<a name="line975">975: </a>    PetscOptionsInt(<font color="#666666">"-nep_ciss_moments"</font>,<font color="#666666">"Moment size"</font>,<font color="#666666">"<a href="../../../../docs/manualpages/NEP/NEPCISSSetSizes.html#NEPCISSSetSizes">NEPCISSSetSizes</a>"</font>,i3,&amp;i3,&amp;flg3);
+<a name="line976">976: </a>    PetscOptionsInt(<font color="#666666">"-nep_ciss_partitions"</font>,<font color="#666666">"Number of partitions"</font>,<font color="#666666">"<a href="../../../../docs/manualpages/NEP/NEPCISSSetSizes.html#NEPCISSSetSizes">NEPCISSSetSizes</a>"</font>,i4,&amp;i4,&amp;flg4);
+<a name="line977">977: </a>    PetscOptionsInt(<font color="#666666">"-nep_ciss_maxblocksize"</font>,<font color="#666666">"Maximum block size"</font>,<font color="#666666">"<a href="../../../../docs/manualpages/NEP/NEPCISSSetSizes.html#NEPCISSSetSizes">NEPCISSSetSizes</a>"</font>,i5,&amp;i5,&amp;flg5);
+<a name="line978">978: </a>    PetscOptionsBool(<font color="#666666">"-nep_ciss_realmats"</font>,<font color="#666666">"True if T(z) is real for real z"</font>,<font color="#666666">"<a href="../../../../docs/manualpages/NEP/NEPCISSSetSizes.html#NEPCISSSetSizes">NEPCISSSetSizes</a>"</font>,b1,&amp;b1,&amp;flg6);
+<a name="line979">979: </a>    <font color="#4169E1">if</font> (flg || flg2 || flg3 || flg4 || flg5 || flg6) <a href="../../../../docs/manualpages/NEP/NEPCISSSetSizes.html#NEPCISSSetSizes">NEPCISSSetSizes</a>(nep,i1,i2,i3,i4,i5,b1);
+
+<a name="line981">981: </a>    <a href="../../../../docs/manualpages/NEP/NEPCISSGetThreshold.html#NEPCISSGetThreshold">NEPCISSGetThreshold</a>(nep,&amp;r1,&amp;r2);
+<a name="line982">982: </a>    PetscOptionsReal(<font color="#666666">"-nep_ciss_delta"</font>,<font color="#666666">"Threshold for numerical rank"</font>,<font color="#666666">"<a href="../../../../docs/manualpages/NEP/NEPCISSSetThreshold.html#NEPCISSSetThreshold">NEPCISSSetThreshold</a>"</font>,r1,&amp;r1,&amp;flg);
+<a name="line983">983: </a>    PetscOptionsReal(<font color="#666666">"-nep_ciss_spurious_threshold"</font>,<font color="#666666">"Threshold for the spurious eigenpairs"</font>,<font color="#666666">"<a href="../../../../docs/manualpages/NEP/NEPCISSSetThreshold.html#NEPCISSSetThreshold">NEPCISSSetThreshold</a>"</font>,r2,&amp;r2,&amp;flg2);
+<a name="line984">984: </a>    <font color="#4169E1">if</font> (flg || flg2) <a href="../../../../docs/manualpages/NEP/NEPCISSSetThreshold.html#NEPCISSSetThreshold">NEPCISSSetThreshold</a>(nep,r1,r2);
+
+<a name="line986">986: </a>    <a href="../../../../docs/manualpages/NEP/NEPCISSGetRefinement.html#NEPCISSGetRefinement">NEPCISSGetRefinement</a>(nep,&amp;i6,&amp;i7);
+<a name="line987">987: </a>    PetscOptionsInt(<font color="#666666">"-nep_ciss_refine_inner"</font>,<font color="#666666">"Number of inner iterative refinement iterations"</font>,<font color="#666666">"<a href="../../../../docs/manualpages/NEP/NEPCISSSetRefinement.html#NEPCISSSetRefinement">NEPCISSSetRefinement</a>"</font>,i6,&amp;i6,&amp;flg);
+<a name="line988">988: </a>    PetscOptionsInt(<font color="#666666">"-nep_ciss_refine_blocksize"</font>,<font color="#666666">"Number of blocksize iterative refinement iterations"</font>,<font color="#666666">"<a href="../../../../docs/manualpages/NEP/NEPCISSSetRefinement.html#NEPCISSSetRefinement">NEPCISSSetRefinement</a>"</font>,i7,&amp;i7,&amp;flg2);
+<a name="line989">989: </a>    <font color="#4169E1">if</font> (flg || flg2) <a href="../../../../docs/manualpages/NEP/NEPCISSSetRefinement.html#NEPCISSSetRefinement">NEPCISSSetRefinement</a>(nep,i6,i7);
+
+<a name="line991">991: </a>    PetscOptionsEnum(<font color="#666666">"-nep_ciss_extraction"</font>,<font color="#666666">"Extraction technique"</font>,<font color="#666666">"<a href="../../../../docs/manualpages/NEP/NEPCISSSetExtraction.html#NEPCISSSetExtraction">NEPCISSSetExtraction</a>"</font>,NEPCISSExtractions,(PetscEnum)ctx-&gt;extraction,(PetscEnum*)&amp;extraction,&amp;flg);
+<a name="line992">992: </a>    <font color="#4169E1">if</font> (flg) <a href="../../../../docs/manualpages/NEP/NEPCISSSetExtraction.html#NEPCISSSetExtraction">NEPCISSSetExtraction</a>(nep,extraction);
+
+<a name="line994">994: </a>  PetscOptionsTail();
+
+<a name="line996">996: </a>  <font color="#4169E1">if</font> (!nep-&gt;rg) <a href="../../../../docs/manualpages/NEP/NEPGetRG.html#NEPGetRG">NEPGetRG</a>(nep,&amp;nep-&gt;rg);
+<a name="line997">997: </a>  <a href="../../../../docs/manualpages/RG/RGSetFromOptions.html#RGSetFromOptions">RGSetFromOptions</a>(nep-&gt;rg); <font color="#B22222">/* this is necessary here to set useconj */</font>
+<a name="line998">998: </a>  <font color="#4169E1">if</font> (!ctx-&gt;contour || !ctx-&gt;contour-&gt;ksp) <a href="../../../../docs/manualpages/NEP/NEPCISSGetKSPs.html#NEPCISSGetKSPs">NEPCISSGetKSPs</a>(nep,NULL,NULL);
+<a name="line999">999: </a>  <font color="#4169E1">for</font> (i=0;i&lt;ctx-&gt;contour-&gt;npoints;i++) KSPSetFromOptions(ctx-&gt;contour-&gt;ksp[i]);
+<a name="line1000">1000: </a>  PetscSubcommSetFromOptions(ctx-&gt;contour-&gt;subcomm);
+<a name="line1001">1001: </a>  PetscFunctionReturn(0);
+<a name="line1002">1002: </a>}
+
+<a name="line1004">1004: </a><strong><font color="#4169E1"><a name="NEPDestroy_CISS"></a>PetscErrorCode NEPDestroy_CISS(<a href="../../../../docs/manualpages/sys/NEP.html#NEP">NEP</a> nep)</font></strong>
+<a name="line1005">1005: </a>{
+<a name="line1006">1006: </a>  NEP_CISS       *ctx = (NEP_CISS*)nep-&gt;data;
+
+<a name="line1008">1008: </a>  SlepcContourDataDestroy(&amp;ctx-&gt;contour);
+<a name="line1009">1009: </a>  PetscFree4(ctx-&gt;weight,ctx-&gt;omega,ctx-&gt;pp,ctx-&gt;sigma);
+<a name="line1010">1010: </a>  PetscFree(nep-&gt;data);
+<a name="line1011">1011: </a>  PetscObjectComposeFunction((PetscObject)nep,<font color="#666666">"NEPCISSSetSizes_C"</font>,NULL);
+<a name="line1012">1012: </a>  PetscObjectComposeFunction((PetscObject)nep,<font color="#666666">"NEPCISSGetSizes_C"</font>,NULL);
+<a name="line1013">1013: </a>  PetscObjectComposeFunction((PetscObject)nep,<font color="#666666">"NEPCISSSetThreshold_C"</font>,NULL);
+<a name="line1014">1014: </a>  PetscObjectComposeFunction((PetscObject)nep,<font color="#666666">"NEPCISSGetThreshold_C"</font>,NULL);
+<a name="line1015">1015: </a>  PetscObjectComposeFunction((PetscObject)nep,<font color="#666666">"NEPCISSSetRefinement_C"</font>,NULL);
+<a name="line1016">1016: </a>  PetscObjectComposeFunction((PetscObject)nep,<font color="#666666">"NEPCISSGetRefinement_C"</font>,NULL);
+<a name="line1017">1017: </a>  PetscObjectComposeFunction((PetscObject)nep,<font color="#666666">"NEPCISSSetExtraction_C"</font>,NULL);
+<a name="line1018">1018: </a>  PetscObjectComposeFunction((PetscObject)nep,<font color="#666666">"NEPCISSGetExtraction_C"</font>,NULL);
+<a name="line1019">1019: </a>  PetscObjectComposeFunction((PetscObject)nep,<font color="#666666">"NEPCISSGetKSPs_C"</font>,NULL);
+<a name="line1020">1020: </a>  PetscFunctionReturn(0);
+<a name="line1021">1021: </a>}
+
+<a name="line1023">1023: </a><strong><font color="#4169E1"><a name="NEPView_CISS"></a>PetscErrorCode NEPView_CISS(<a href="../../../../docs/manualpages/sys/NEP.html#NEP">NEP</a> nep,PetscViewer viewer)</font></strong>
+<a name="line1024">1024: </a>{
+<a name="line1025">1025: </a>  NEP_CISS       *ctx = (NEP_CISS*)nep-&gt;data;
+<a name="line1026">1026: </a>  PetscBool      isascii;
+<a name="line1027">1027: </a>  PetscViewer    sviewer;
+
+<a name="line1029">1029: </a>  PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&amp;isascii);
+<a name="line1030">1030: </a>  <font color="#4169E1">if</font> (isascii) {
+<a name="line1031">1031: </a>    PetscViewerASCIIPrintf(viewer,<font color="#666666">"  sizes { integration points: %"</font> PetscInt_FMT <font color="#666666">", block size: %"</font> PetscInt_FMT <font color="#666666">", moment size: %"</font> PetscInt_FMT <font color="#666666">", partitions: %"</font> PetscInt_FMT <font color="#666666">", maximum block size: %"</font> PetscInt_FMT <font color="#666666">" }\n"</font>,ctx-&gt;N,ctx-&gt;L,ctx-&gt;M,ctx-&gt;npart,ctx-&gt;L_max);
+<a name="line1032">1032: </a>    <font color="#4169E1">if</font> (ctx-&gt;isreal) PetscViewerASCIIPrintf(viewer,<font color="#666666">"  exploiting symmetry of integration points\n"</font>);
+<a name="line1033">1033: </a>    PetscViewerASCIIPrintf(viewer,<font color="#666666">"  threshold { delta: %g, spurious threshold: %g }\n"</font>,(double)ctx-&gt;delta,(double)ctx-&gt;spurious_threshold);
+<a name="line1034">1034: </a>    PetscViewerASCIIPrintf(viewer,<font color="#666666">"  iterative refinement  { inner: %"</font> PetscInt_FMT <font color="#666666">", blocksize: %"</font> PetscInt_FMT <font color="#666666">" }\n"</font>,ctx-&gt;refine_inner, ctx-&gt;refine_blocksize);
+<a name="line1035">1035: </a>    PetscViewerASCIIPrintf(viewer,<font color="#666666">"  extraction: %s\n"</font>,NEPCISSExtractions[ctx-&gt;extraction]);
+<a name="line1036">1036: </a>    <font color="#4169E1">if</font> (!ctx-&gt;contour || !ctx-&gt;contour-&gt;ksp) <a href="../../../../docs/manualpages/NEP/NEPCISSGetKSPs.html#NEPCISSGetKSPs">NEPCISSGetKSPs</a>(nep,NULL,NULL);
+<a name="line1037">1037: </a>    PetscViewerASCIIPushTab(viewer);
+<a name="line1038">1038: </a>    <font color="#4169E1">if</font> (ctx-&gt;npart&gt;1 &amp;&amp; ctx-&gt;contour-&gt;subcomm) {
+<a name="line1039">1039: </a>      PetscViewerGetSubViewer(viewer,ctx-&gt;contour-&gt;subcomm-&gt;child,&amp;sviewer);
+<a name="line1040">1040: </a>      <font color="#4169E1">if</font> (!ctx-&gt;contour-&gt;subcomm-&gt;color) KSPView(ctx-&gt;contour-&gt;ksp[0],sviewer);
+<a name="line1041">1041: </a>      PetscViewerFlush(sviewer);
+<a name="line1042">1042: </a>      PetscViewerRestoreSubViewer(viewer,ctx-&gt;contour-&gt;subcomm-&gt;child,&amp;sviewer);
+<a name="line1043">1043: </a>      PetscViewerFlush(viewer);
+<a name="line1044">1044: </a>      <font color="#B22222">/* extra call needed because of the two calls to PetscViewerASCIIPushSynchronized() in PetscViewerGetSubViewer() */</font>
+<a name="line1045">1045: </a>      PetscViewerASCIIPopSynchronized(viewer);
+<a name="line1046">1046: </a>    } <font color="#4169E1">else</font> KSPView(ctx-&gt;contour-&gt;ksp[0],viewer);
+<a name="line1047">1047: </a>    PetscViewerASCIIPopTab(viewer);
+<a name="line1048">1048: </a>  }
+<a name="line1049">1049: </a>  PetscFunctionReturn(0);
+<a name="line1050">1050: </a>}
+
+<a name="line1052">1052: </a><strong><font color="#4169E1"><a name="NEPCreate_CISS"></a>SLEPC_EXTERN PetscErrorCode NEPCreate_CISS(<a href="../../../../docs/manualpages/sys/NEP.html#NEP">NEP</a> nep)</font></strong>
+<a name="line1053">1053: </a>{
+<a name="line1054">1054: </a>  NEP_CISS       *ctx = (NEP_CISS*)nep-&gt;data;
+
+<a name="line1056">1056: </a>  PetscNewLog(nep,&amp;ctx);
+<a name="line1057">1057: </a>  nep-&gt;data = ctx;
+<a name="line1058">1058: </a>  <font color="#B22222">/* set default values of parameters */</font>
+<a name="line1059">1059: </a>  ctx-&gt;N                  = 32;
+<a name="line1060">1060: </a>  ctx-&gt;L                  = 16;
+<a name="line1061">1061: </a>  ctx-&gt;M                  = ctx-&gt;N/4;
+<a name="line1062">1062: </a>  ctx-&gt;delta              = SLEPC_DEFAULT_TOL*1e-4;
+<a name="line1063">1063: </a>  ctx-&gt;L_max              = 64;
+<a name="line1064">1064: </a>  ctx-&gt;spurious_threshold = PetscSqrtReal(SLEPC_DEFAULT_TOL);
+<a name="line1065">1065: </a>  ctx-&gt;isreal             = PETSC_FALSE;
+<a name="line1066">1066: </a>  ctx-&gt;npart              = 1;
+
+<a name="line1068">1068: </a>  nep-&gt;useds = PETSC_TRUE;
+
+<a name="line1070">1070: </a>  nep-&gt;ops-&gt;solve          = NEPSolve_CISS;
+<a name="line1071">1071: </a>  nep-&gt;ops-&gt;setup          = NEPSetUp_CISS;
+<a name="line1072">1072: </a>  nep-&gt;ops-&gt;setfromoptions = NEPSetFromOptions_CISS;
+<a name="line1073">1073: </a>  nep-&gt;ops-&gt;reset          = NEPReset_CISS;
+<a name="line1074">1074: </a>  nep-&gt;ops-&gt;destroy        = NEPDestroy_CISS;
+<a name="line1075">1075: </a>  nep-&gt;ops-&gt;view           = NEPView_CISS;
+
+<a name="line1077">1077: </a>  PetscObjectComposeFunction((PetscObject)nep,<font color="#666666">"NEPCISSSetSizes_C"</font>,NEPCISSSetSizes_CISS);
+<a name="line1078">1078: </a>  PetscObjectComposeFunction((PetscObject)nep,<font color="#666666">"NEPCISSGetSizes_C"</font>,NEPCISSGetSizes_CISS);
+<a name="line1079">1079: </a>  PetscObjectComposeFunction((PetscObject)nep,<font color="#666666">"NEPCISSSetThreshold_C"</font>,NEPCISSSetThreshold_CISS);
+<a name="line1080">1080: </a>  PetscObjectComposeFunction((PetscObject)nep,<font color="#666666">"NEPCISSGetThreshold_C"</font>,NEPCISSGetThreshold_CISS);
+<a name="line1081">1081: </a>  PetscObjectComposeFunction((PetscObject)nep,<font color="#666666">"NEPCISSSetRefinement_C"</font>,NEPCISSSetRefinement_CISS);
+<a name="line1082">1082: </a>  PetscObjectComposeFunction((PetscObject)nep,<font color="#666666">"NEPCISSGetRefinement_C"</font>,NEPCISSGetRefinement_CISS);
+<a name="line1083">1083: </a>  PetscObjectComposeFunction((PetscObject)nep,<font color="#666666">"NEPCISSSetExtraction_C"</font>,NEPCISSSetExtraction_CISS);
+<a name="line1084">1084: </a>  PetscObjectComposeFunction((PetscObject)nep,<font color="#666666">"NEPCISSGetExtraction_C"</font>,NEPCISSGetExtraction_CISS);
+<a name="line1085">1085: </a>  PetscObjectComposeFunction((PetscObject)nep,<font color="#666666">"NEPCISSGetKSPs_C"</font>,NEPCISSGetKSPs_CISS);
+<a name="line1086">1086: </a>  PetscFunctionReturn(0);
+<a name="line1087">1087: </a>}
+</pre>
+</body>
+
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD> <link rel="canonical" href="https://slepc.upv.es/documentation/current/docs/manualpages/DS/DSNEP.html" />
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<link rel="stylesheet" href="/slepc.css" type="text/css">
+<TITLE>DSNEP</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+   <div id="version" align=right><b>slepc-3.17.2 2022-08-09</b></div>
+   <div id="bugreport" align=right><a href="mailto:slepc-maint@upv.es?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: slepc-3.17.2 v3.17.2 docs/manualpages/DS/DSNEP.html "><small>Report Typos and Errors</small></a></div>
+<H1>DSNEP</H1>
+Dense Nonlinear Eigenvalue Problem. 
+<P>
+<H3><FONT COLOR="#883300">Notes</FONT></H3>
+The problem is expressed as T(lambda)*x = 0, where T(lambda) is a
+parameter-dependent matrix written as T(lambda) = sum_i E_i*f_i(lambda).
+The eigenvalues lambda are the arguments returned by <A HREF="../DS/DSSolve.html#DSSolve">DSSolve</A>()..
+<P>
+The coefficient matrices E_i are the extra matrices of the <A HREF="../sys/DS.html#DS">DS</A>, and
+the scalar functions f_i are passed via <A HREF="../DS/DSNEPSetFN.html#DSNEPSetFN">DSNEPSetFN</A>(). Optionally, a
+callback function to fill the E_i matrices can be set with
+<A HREF="../DS/DSNEPSetComputeMatrixFunction.html#DSNEPSetComputeMatrixFunction">DSNEPSetComputeMatrixFunction</A>().
+<P>
+<H3><FONT COLOR="#883300">Used DS matrices</FONT></H3>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>DS_MAT_Ex </B></TD><TD>&nbsp;- coefficient matrices of the split form of T(lambda)
+</TD></TR>
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B><A HREF="../sys/DSMatType.html#DSMatType">DS_MAT_A</A>  </B></TD><TD>&nbsp;- (workspace) T(lambda) evaluated at a given lambda
+</TD></TR>
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B><A HREF="../sys/DSMatType.html#DSMatType">DS_MAT_B</A>  </B></TD><TD>&nbsp;- (workspace) T'(lambda) evaluated at a given lambda
+</TD></TR>
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B><A HREF="../sys/DSMatType.html#DSMatType">DS_MAT_W</A>  </B></TD><TD>&nbsp;- (workspace) eigenvectors of linearization in SLP
+</TD></TR></TABLE>
+<P>
+<H3><FONT COLOR="#883300">Implemented methods</FONT></H3>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>0 </B></TD><TD>&nbsp;- Successive Linear Problems (SLP), computes just one eigenpair
+</TD></TR>
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>1 </B></TD><TD>&nbsp;- Contour integral, computes all eigenvalues inside a region
+</TD></TR></TABLE>
+<P>
+<H3><FONT COLOR="#883300">See Also</FONT></H3>
+ <A HREF="../DS/DSCreate.html#DSCreate">DSCreate</A>(), <A HREF="../DS/DSSetType.html#DSSetType">DSSetType</A>(), <A HREF="../sys/DSType.html#DSType">DSType</A>, <A HREF="../DS/DSNEPSetFN.html#DSNEPSetFN">DSNEPSetFN</A>(), <A HREF="../DS/DSNEPSetComputeMatrixFunction.html#DSNEPSetComputeMatrixFunction">DSNEPSetComputeMatrixFunction</A>()
+<BR><P><B><FONT COLOR="#883300">Location: </FONT></B><A HREF="../../../src/sys/classes/ds/impls/nep/dsnep.c.html#DSNEP">src/sys/classes/ds/impls/nep/dsnep.c</A>
+<BR><A HREF="./index.html">Index of all DS routines</A>
+<BR><A HREF="../../../docs/manualpages/index.html">Table of Contents for all manual pages</A>
+<BR><A HREF="../singleindex.html">Index of all manual pages</A>
+</BODY></HTML>

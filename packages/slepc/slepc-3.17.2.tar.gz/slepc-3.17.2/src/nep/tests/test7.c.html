@@ -1,0 +1,389 @@
+<center><a href="test7.c">Actual source code: test7.c</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="https://slepc.upv.es/documentation/current/src/nep/tests/test7.c.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2022-08-09T09:05:55+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>slepc-3.17.2 2022-08-09</b></div>
+   <div id="bugreport" align=right><a href="mailto:slepc-maint@upv.es?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: slepc-3.17.2 v3.17.2 src/nep/tests/test7.c.html "><small>Report Typos and Errors</small></a></div>
+<pre width="80">
+<a name="line1">  1: </a><font color="#B22222">/*</font>
+<a name="line2">  2: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line3">  3: </a><font color="#B22222">   SLEPc - Scalable Library for Eigenvalue Problem Computations</font>
+<a name="line4">  4: </a><font color="#B22222">   Copyright (c) 2002-, Universitat Politecnica de Valencia, Spain</font>
+
+<a name="line6">  6: </a><font color="#B22222">   This file is part of SLEPc.</font>
+<a name="line7">  7: </a><font color="#B22222">   SLEPc is distributed under a 2-clause BSD license (see LICENSE).</font>
+<a name="line8">  8: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line9">  9: </a><font color="#B22222">*/</font>
+
+<a name="line11"> 11: </a>static char help[] = <font color="#666666">"Test the NLEIGS solver with shell matrices.\n\n"</font>
+<a name="line12"> 12: </a>  <font color="#666666">"This is based on ex27.\n"</font>
+<a name="line13"> 13: </a>  <font color="#666666">"The command line options are:\n"</font>
+<a name="line14"> 14: </a>  <font color="#666666">"  -n &lt;n&gt;, where &lt;n&gt; = matrix dimension.\n"</font>
+<a name="line15"> 15: </a>  <font color="#666666">"  -split &lt;0/1&gt;, to select the split form in the problem definition (enabled by default).\n"</font>;
+
+<a name="line17"> 17: </a><font color="#B22222">/*</font>
+<a name="line18"> 18: </a><font color="#B22222">   Solve T(lambda)x=0 using NLEIGS solver</font>
+<a name="line19"> 19: </a><font color="#B22222">      with T(lambda) = -D+sqrt(lambda)*I</font>
+<a name="line20"> 20: </a><font color="#B22222">      where D is the Laplacian operator in 1 dimension</font>
+<a name="line21"> 21: </a><font color="#B22222">      and with the interpolation interval [.01,16]</font>
+<a name="line22"> 22: </a><font color="#B22222">*/</font>
+
+<a name="line24"> 24: </a>#include <A href="../../../include/slepcnep.h.html">&lt;slepcnep.h&gt;</A>
+
+<a name="line26"> 26: </a><font color="#B22222">/* User-defined routines */</font>
+<a name="line27"> 27: </a><strong><font color="#4169E1">PetscErrorCode FormFunction(<a href="../../../docs/manualpages/sys/NEP.html#NEP">NEP</a>,PetscScalar,Mat,Mat,void*)</font></strong>;
+<a name="line28"> 28: </a><strong><font color="#4169E1">PetscErrorCode ComputeSingularities(<a href="../../../docs/manualpages/sys/NEP.html#NEP">NEP</a>,PetscInt*,PetscScalar*,void*)</font></strong>;
+<a name="line29"> 29: </a><strong><font color="#4169E1">PetscErrorCode MatMult_A0(Mat,Vec,Vec)</font></strong>;
+<a name="line30"> 30: </a><strong><font color="#4169E1">PetscErrorCode MatGetDiagonal_A0(Mat,Vec)</font></strong>;
+<a name="line31"> 31: </a><strong><font color="#4169E1">PetscErrorCode MatDuplicate_A0(Mat,MatDuplicateOption,Mat*)</font></strong>;
+<a name="line32"> 32: </a><strong><font color="#4169E1">PetscErrorCode MatMult_A1(Mat,Vec,Vec)</font></strong>;
+<a name="line33"> 33: </a><strong><font color="#4169E1">PetscErrorCode MatGetDiagonal_A1(Mat,Vec)</font></strong>;
+<a name="line34"> 34: </a><strong><font color="#4169E1">PetscErrorCode MatDuplicate_A1(Mat,MatDuplicateOption,Mat*)</font></strong>;
+<a name="line35"> 35: </a><strong><font color="#4169E1">PetscErrorCode MatMult_F(Mat,Vec,Vec)</font></strong>;
+<a name="line36"> 36: </a><strong><font color="#4169E1">PetscErrorCode MatGetDiagonal_F(Mat,Vec)</font></strong>;
+<a name="line37"> 37: </a><strong><font color="#4169E1">PetscErrorCode MatDuplicate_F(Mat,MatDuplicateOption,Mat*)</font></strong>;
+<a name="line38"> 38: </a><strong><font color="#4169E1">PetscErrorCode MatDestroy_F(Mat)</font></strong>;
+
+<a name="line40"> 40: </a><font color="#4169E1">typedef</font> <font color="#4169E1">struct</font> {
+<a name="line41"> 41: </a>  PetscScalar t;  <font color="#B22222">/* square root of lambda */</font>
+<a name="line42"> 42: </a>} MatCtx;
+
+<a name="line44"> 44: </a><strong><font color="#4169E1"><a name="main"></a>int main(int argc,char **argv)</font></strong>
+<a name="line45"> 45: </a>{
+<a name="line46"> 46: </a>  <a href="../../../docs/manualpages/sys/NEP.html#NEP">NEP</a>            nep;
+<a name="line47"> 47: </a>  KSP            *ksp;
+<a name="line48"> 48: </a>  PC             pc;
+<a name="line49"> 49: </a>  Mat            F,A[2];
+<a name="line50"> 50: </a>  <a href="../../../docs/manualpages/sys/NEPType.html#NEPType">NEPType</a>        type;
+<a name="line51"> 51: </a>  PetscInt       i,n=100,nev,its,nsolve;
+<a name="line52"> 52: </a>  PetscReal      keep,tol=PETSC_SQRT_MACHINE_EPSILON/10;
+<a name="line53"> 53: </a>  <a href="../../../docs/manualpages/sys/RG.html#RG">RG</a>             rg;
+<a name="line54"> 54: </a>  <a href="../../../docs/manualpages/sys/FN.html#FN">FN</a>             f[2];
+<a name="line55"> 55: </a>  PetscBool      terse,flg,lock,split=PETSC_TRUE;
+<a name="line56"> 56: </a>  PetscScalar    coeffs;
+<a name="line57"> 57: </a>  MatCtx         *ctx;
+
+<a name="line59"> 59: </a>  <a href="../../../docs/manualpages/sys/SlepcInitialize.html#SlepcInitialize">SlepcInitialize</a>(&amp;argc,&amp;argv,(char*)0,help);
+<a name="line60"> 60: </a>  PetscOptionsGetInt(NULL,NULL,<font color="#666666">"-n"</font>,&amp;n,NULL);
+<a name="line61"> 61: </a>  PetscOptionsGetBool(NULL,NULL,<font color="#666666">"-split"</font>,&amp;split,NULL);
+<a name="line62"> 62: </a>  PetscPrintf(PETSC_COMM_WORLD,<font color="#666666">"\nSquare root eigenproblem, n=%"</font> PetscInt_FMT <font color="#666666">"%s\n\n"</font>,n,split?<font color="#666666">" (in split form)"</font>:<font color="#666666">""</font>);
+
+<a name="line64"> 64: </a>  <font color="#B22222">/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line65"> 65: </a><font color="#B22222">     Create <a href="../../../docs/manualpages/sys/NEP.html#NEP">NEP</a> context, configure NLEIGS with appropriate options</font>
+<a name="line66"> 66: </a><font color="#B22222">     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */</font>
+
+<a name="line68"> 68: </a>  <a href="../../../docs/manualpages/NEP/NEPCreate.html#NEPCreate">NEPCreate</a>(PETSC_COMM_WORLD,&amp;nep);
+<a name="line69"> 69: </a>  <a href="../../../docs/manualpages/NEP/NEPSetType.html#NEPSetType">NEPSetType</a>(nep,NEPNLEIGS);
+<a name="line70"> 70: </a>  <a href="../../../docs/manualpages/NEP/NEPNLEIGSSetSingularitiesFunction.html#NEPNLEIGSSetSingularitiesFunction">NEPNLEIGSSetSingularitiesFunction</a>(nep,ComputeSingularities,NULL);
+<a name="line71"> 71: </a>  <a href="../../../docs/manualpages/NEP/NEPGetRG.html#NEPGetRG">NEPGetRG</a>(nep,&amp;rg);
+<a name="line72"> 72: </a>  <a href="../../../docs/manualpages/RG/RGSetType.html#RGSetType">RGSetType</a>(rg,RGINTERVAL);
+<a name="line73"> 73: </a><font color="#A020F0">#if defined(PETSC_USE_COMPLEX)</font>
+<a name="line74"> 74: </a>  <a href="../../../docs/manualpages/RG/RGIntervalSetEndpoints.html#RGIntervalSetEndpoints">RGIntervalSetEndpoints</a>(rg,0.01,16.0,-0.001,0.001);
+<a name="line75"> 75: </a><font color="#A020F0">#else</font>
+<a name="line76"> 76: </a>  <a href="../../../docs/manualpages/RG/RGIntervalSetEndpoints.html#RGIntervalSetEndpoints">RGIntervalSetEndpoints</a>(rg,0.01,16.0,0,0);
+<a name="line77"> 77: </a><font color="#A020F0">#endif</font>
+<a name="line78"> 78: </a>  <a href="../../../docs/manualpages/NEP/NEPSetTarget.html#NEPSetTarget">NEPSetTarget</a>(nep,1.1);
+<a name="line79"> 79: </a>  <a href="../../../docs/manualpages/NEP/NEPNLEIGSGetKSPs.html#NEPNLEIGSGetKSPs">NEPNLEIGSGetKSPs</a>(nep,&amp;nsolve,&amp;ksp);
+<a name="line80"> 80: </a>  <font color="#4169E1">for</font> (i=0;i&lt;nsolve;i++) {
+<a name="line81"> 81: </a>   KSPSetType(ksp[i],KSPBICG);
+<a name="line82"> 82: </a>   KSPGetPC(ksp[i],&amp;pc);
+<a name="line83"> 83: </a>   PCSetType(pc,PCJACOBI);
+<a name="line84"> 84: </a>   KSPSetTolerances(ksp[i],tol,PETSC_DEFAULT,PETSC_DEFAULT,PETSC_DEFAULT);
+<a name="line85"> 85: </a>  }
+
+<a name="line87"> 87: </a>  <font color="#B22222">/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line88"> 88: </a><font color="#B22222">     Define the nonlinear problem</font>
+<a name="line89"> 89: </a><font color="#B22222">     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */</font>
+
+<a name="line91"> 91: </a>  <font color="#4169E1">if</font> (split) {
+<a name="line92"> 92: </a>    <font color="#B22222">/* Create matrix A0 (tridiagonal) */</font>
+<a name="line93"> 93: </a>    MatCreateShell(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,n,n,NULL,&amp;A[0]);
+<a name="line94"> 94: </a>    MatShellSetOperation(A[0],MATOP_MULT,(void(*)(void))MatMult_A0);
+<a name="line95"> 95: </a>    MatShellSetOperation(A[0],MATOP_MULT_TRANSPOSE,(void(*)(void))MatMult_A0);
+<a name="line96"> 96: </a>    MatShellSetOperation(A[0],MATOP_GET_DIAGONAL,(void(*)(void))MatGetDiagonal_A0);
+<a name="line97"> 97: </a>    MatShellSetOperation(A[0],MATOP_DUPLICATE,(void(*)(void))MatDuplicate_A0);
+
+<a name="line99"> 99: </a>    <font color="#B22222">/* Create matrix A0 (identity) */</font>
+<a name="line100">100: </a>    MatCreateShell(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,n,n,NULL,&amp;A[1]);
+<a name="line101">101: </a>    MatShellSetOperation(A[1],MATOP_MULT,(void(*)(void))MatMult_A1);
+<a name="line102">102: </a>    MatShellSetOperation(A[1],MATOP_MULT_TRANSPOSE,(void(*)(void))MatMult_A1);
+<a name="line103">103: </a>    MatShellSetOperation(A[1],MATOP_GET_DIAGONAL,(void(*)(void))MatGetDiagonal_A1);
+<a name="line104">104: </a>    MatShellSetOperation(A[1],MATOP_DUPLICATE,(void(*)(void))MatDuplicate_A1);
+
+<a name="line106">106: </a>    <font color="#B22222">/* Define functions for the split form */</font>
+<a name="line107">107: </a>    <a href="../../../docs/manualpages/FN/FNCreate.html#FNCreate">FNCreate</a>(PETSC_COMM_WORLD,&amp;f[0]);
+<a name="line108">108: </a>    <a href="../../../docs/manualpages/FN/FNSetType.html#FNSetType">FNSetType</a>(f[0],FNRATIONAL);
+<a name="line109">109: </a>    coeffs = 1.0;
+<a name="line110">110: </a>    <a href="../../../docs/manualpages/FN/FNRationalSetNumerator.html#FNRationalSetNumerator">FNRationalSetNumerator</a>(f[0],1,&amp;coeffs);
+<a name="line111">111: </a>    <a href="../../../docs/manualpages/FN/FNCreate.html#FNCreate">FNCreate</a>(PETSC_COMM_WORLD,&amp;f[1]);
+<a name="line112">112: </a>    <a href="../../../docs/manualpages/FN/FNSetType.html#FNSetType">FNSetType</a>(f[1],FNSQRT);
+<a name="line113">113: </a>    <a href="../../../docs/manualpages/NEP/NEPSetSplitOperator.html#NEPSetSplitOperator">NEPSetSplitOperator</a>(nep,2,A,f,SUBSET_NONZERO_PATTERN);
+<a name="line114">114: </a>  } <font color="#4169E1">else</font> {
+<a name="line115">115: </a>    <font color="#B22222">/* Callback form: create shell matrix for F=A0+sqrt(lambda)*A1  */</font>
+<a name="line116">116: </a>    PetscNew(&amp;ctx);
+<a name="line117">117: </a>    MatCreateShell(PETSC_COMM_WORLD,PETSC_DECIDE,PETSC_DECIDE,n,n,(void*)ctx,&amp;F);
+<a name="line118">118: </a>    MatShellSetOperation(F,MATOP_MULT,(void(*)(void))MatMult_F);
+<a name="line119">119: </a>    MatShellSetOperation(F,MATOP_MULT_TRANSPOSE,(void(*)(void))MatMult_F);
+<a name="line120">120: </a>    MatShellSetOperation(F,MATOP_GET_DIAGONAL,(void(*)(void))MatGetDiagonal_F);
+<a name="line121">121: </a>    MatShellSetOperation(F,MATOP_DUPLICATE,(void(*)(void))MatDuplicate_F);
+<a name="line122">122: </a>    MatShellSetOperation(F,MATOP_DESTROY,(void(*)(void))MatDestroy_F);
+<a name="line123">123: </a>    <font color="#B22222">/* Set Function evaluation routine */</font>
+<a name="line124">124: </a>    <a href="../../../docs/manualpages/NEP/NEPSetFunction.html#NEPSetFunction">NEPSetFunction</a>(nep,F,F,FormFunction,NULL);
+<a name="line125">125: </a>  }
+
+<a name="line127">127: </a>  <font color="#B22222">/* Set solver parameters at runtime */</font>
+<a name="line128">128: </a>  <a href="../../../docs/manualpages/NEP/NEPSetFromOptions.html#NEPSetFromOptions">NEPSetFromOptions</a>(nep);
+
+<a name="line130">130: </a>  <font color="#B22222">/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line131">131: </a><font color="#B22222">                      Solve the eigensystem</font>
+<a name="line132">132: </a><font color="#B22222">     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */</font>
+<a name="line133">133: </a>  <a href="../../../docs/manualpages/NEP/NEPSolve.html#NEPSolve">NEPSolve</a>(nep);
+<a name="line134">134: </a>  <a href="../../../docs/manualpages/NEP/NEPGetType.html#NEPGetType">NEPGetType</a>(nep,&amp;type);
+<a name="line135">135: </a>  PetscPrintf(PETSC_COMM_WORLD,<font color="#666666">" Solution method: %s\n"</font>,type);
+<a name="line136">136: </a>  <a href="../../../docs/manualpages/NEP/NEPGetDimensions.html#NEPGetDimensions">NEPGetDimensions</a>(nep,&amp;nev,NULL,NULL);
+<a name="line137">137: </a>  PetscPrintf(PETSC_COMM_WORLD,<font color="#666666">" Number of requested eigenvalues: %"</font> PetscInt_FMT <font color="#666666">"\n"</font>,nev);
+<a name="line138">138: </a>  PetscObjectTypeCompare((PetscObject)nep,NEPNLEIGS,&amp;flg);
+<a name="line139">139: </a>  <font color="#4169E1">if</font> (flg) {
+<a name="line140">140: </a>    <a href="../../../docs/manualpages/NEP/NEPNLEIGSGetRestart.html#NEPNLEIGSGetRestart">NEPNLEIGSGetRestart</a>(nep,&amp;keep);
+<a name="line141">141: </a>    <a href="../../../docs/manualpages/NEP/NEPNLEIGSGetLocking.html#NEPNLEIGSGetLocking">NEPNLEIGSGetLocking</a>(nep,&amp;lock);
+<a name="line142">142: </a>    <a href="../../../docs/manualpages/NEP/NEPNLEIGSGetInterpolation.html#NEPNLEIGSGetInterpolation">NEPNLEIGSGetInterpolation</a>(nep,&amp;tol,&amp;its);
+<a name="line143">143: </a>    PetscPrintf(PETSC_COMM_WORLD,<font color="#666666">" Restart factor is %3.2f"</font>,(double)keep);
+<a name="line144">144: </a>    <font color="#4169E1">if</font> (lock) PetscPrintf(PETSC_COMM_WORLD,<font color="#666666">" (locking activated)"</font>);
+<a name="line145">145: </a>    PetscPrintf(PETSC_COMM_WORLD,<font color="#666666">"\n Divided diferences with tol=%6.2g maxit=%"</font> PetscInt_FMT <font color="#666666">"\n"</font>,(double)tol,its);
+<a name="line146">146: </a>    PetscPrintf(PETSC_COMM_WORLD,<font color="#666666">"\n"</font>);
+<a name="line147">147: </a>  }
+
+<a name="line149">149: </a>  <font color="#B22222">/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line150">150: </a><font color="#B22222">                    Display solution and clean up</font>
+<a name="line151">151: </a><font color="#B22222">     - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */</font>
+
+<a name="line153">153: </a>  <font color="#B22222">/* show detailed info unless -terse option is given by user */</font>
+<a name="line154">154: </a>  PetscOptionsHasName(NULL,NULL,<font color="#666666">"-terse"</font>,&amp;terse);
+<a name="line155">155: </a>  <font color="#4169E1">if</font> (terse) <a href="../../../docs/manualpages/NEP/NEPErrorView.html#NEPErrorView">NEPErrorView</a>(nep,<a href="../../../docs/manualpages/sys/NEPErrorType.html#NEPErrorType">NEP_ERROR_RELATIVE</a>,NULL);
+<a name="line156">156: </a>  <font color="#4169E1">else</font> {
+<a name="line157">157: </a>    PetscViewerPushFormat(PETSC_VIEWER_STDOUT_WORLD,PETSC_VIEWER_ASCII_INFO_DETAIL);
+<a name="line158">158: </a>    <a href="../../../docs/manualpages/NEP/NEPConvergedReasonView.html#NEPConvergedReasonView">NEPConvergedReasonView</a>(nep,PETSC_VIEWER_STDOUT_WORLD);
+<a name="line159">159: </a>    <a href="../../../docs/manualpages/NEP/NEPErrorView.html#NEPErrorView">NEPErrorView</a>(nep,<a href="../../../docs/manualpages/sys/NEPErrorType.html#NEPErrorType">NEP_ERROR_RELATIVE</a>,PETSC_VIEWER_STDOUT_WORLD);
+<a name="line160">160: </a>    PetscViewerPopFormat(PETSC_VIEWER_STDOUT_WORLD);
+<a name="line161">161: </a>  }
+<a name="line162">162: </a>  <a href="../../../docs/manualpages/NEP/NEPDestroy.html#NEPDestroy">NEPDestroy</a>(&amp;nep);
+<a name="line163">163: </a>  <font color="#4169E1">if</font> (split) {
+<a name="line164">164: </a>    MatDestroy(&amp;A[0]);
+<a name="line165">165: </a>    MatDestroy(&amp;A[1]);
+<a name="line166">166: </a>    <a href="../../../docs/manualpages/FN/FNDestroy.html#FNDestroy">FNDestroy</a>(&amp;f[0]);
+<a name="line167">167: </a>    <a href="../../../docs/manualpages/FN/FNDestroy.html#FNDestroy">FNDestroy</a>(&amp;f[1]);
+<a name="line168">168: </a>  } <font color="#4169E1">else</font> MatDestroy(&amp;F);
+<a name="line169">169: </a>  <a href="../../../docs/manualpages/sys/SlepcFinalize.html#SlepcFinalize">SlepcFinalize</a>();
+<a name="line170">170: </a>  <font color="#4169E1">return</font> 0;
+<a name="line171">171: </a>}
+
+<a name="line173">173: </a><font color="#B22222">/*</font>
+<a name="line174">174: </a><font color="#B22222">   FormFunction - Computes Function matrix  T(lambda)</font>
+<a name="line175">175: </a><font color="#B22222">*/</font>
+<a name="line176">176: </a><strong><font color="#4169E1"><a name="FormFunction"></a>PetscErrorCode FormFunction(<a href="../../../docs/manualpages/sys/NEP.html#NEP">NEP</a> nep,PetscScalar lambda,Mat fun,Mat B,void *ctx)</font></strong>
+<a name="line177">177: </a>{
+<a name="line178">178: </a>  MatCtx         *ctxF;
+
+<a name="line181">181: </a>  MatShellGetContext(fun,&amp;ctxF);
+<a name="line182">182: </a>  ctxF-&gt;t = PetscSqrtScalar(lambda);
+<a name="line183">183: </a>  PetscFunctionReturn(0);
+<a name="line184">184: </a>}
+
+<a name="line186">186: </a><font color="#B22222">/*</font>
+<a name="line187">187: </a><font color="#B22222">   ComputeSingularities - Computes maxnp points (at most) in the complex plane where</font>
+<a name="line188">188: </a><font color="#B22222">   the function T(.) is not analytic.</font>
+
+<a name="line190">190: </a><font color="#B22222">   In this case, we discretize the singularity region (-inf,0)~(-10e+6,-10e-6)</font>
+<a name="line191">191: </a><font color="#B22222">*/</font>
+<a name="line192">192: </a><strong><font color="#4169E1"><a name="ComputeSingularities"></a>PetscErrorCode ComputeSingularities(<a href="../../../docs/manualpages/sys/NEP.html#NEP">NEP</a> nep,PetscInt *maxnp,PetscScalar *xi,void *pt)</font></strong>
+<a name="line193">193: </a>{
+<a name="line194">194: </a>  PetscReal h;
+<a name="line195">195: </a>  PetscInt  i;
+
+<a name="line198">198: </a>  h = 12.0/(*maxnp-1);
+<a name="line199">199: </a>  xi[0] = -1e-6; xi[*maxnp-1] = -1e+6;
+<a name="line200">200: </a>  <font color="#4169E1">for</font> (i=1;i&lt;*maxnp-1;i++) xi[i] = -PetscPowReal(10,-6+h*i);
+<a name="line201">201: </a>  PetscFunctionReturn(0);
+<a name="line202">202: </a>}
+
+<a name="line204">204: </a><font color="#B22222">/* -------------------------------- A0 ----------------------------------- */</font>
+
+<a name="line206">206: </a><strong><font color="#4169E1"><a name="MatMult_A0"></a>PetscErrorCode MatMult_A0(Mat A,Vec x,Vec y)</font></strong>
+<a name="line207">207: </a>{
+<a name="line208">208: </a>  PetscInt          i,n;
+<a name="line209">209: </a>  PetscMPIInt       rank,size,next,prev;
+<a name="line210">210: </a>  const PetscScalar *px;
+<a name="line211">211: </a>  PetscScalar       *py,upper=0.0,lower=0.0;
+<a name="line212">212: </a>  MPI_Comm          comm;
+
+<a name="line215">215: </a>  PetscObjectGetComm((PetscObject)A,&amp;comm);
+<a name="line216">216: </a>  <a href="http://www.mpich.org/static/docs/latest/www3/MPI_Comm_size.html#MPI_Comm_size">MPI_Comm_size</a>(comm,&amp;size);
+<a name="line217">217: </a>  <a href="http://www.mpich.org/static/docs/latest/www3/MPI_Comm_rank.html#MPI_Comm_rank">MPI_Comm_rank</a>(comm,&amp;rank);
+<a name="line218">218: </a>  next = rank==size-1? MPI_PROC_NULL: rank+1;
+<a name="line219">219: </a>  prev = rank==0? MPI_PROC_NULL: rank-1;
+
+<a name="line221">221: </a>  VecGetArrayRead(x,&amp;px);
+<a name="line222">222: </a>  VecGetArray(y,&amp;py);
+<a name="line223">223: </a>  VecGetLocalSize(x,&amp;n);
+
+<a name="line225">225: </a>  <a href="http://www.mpich.org/static/docs/latest/www3/MPI_Sendrecv.html#MPI_Sendrecv">MPI_Sendrecv</a>(px,1,MPIU_SCALAR,prev,0,&amp;lower,1,MPIU_SCALAR,next,0,comm,MPI_STATUS_IGNORE);
+<a name="line226">226: </a>  <a href="http://www.mpich.org/static/docs/latest/www3/MPI_Sendrecv.html#MPI_Sendrecv">MPI_Sendrecv</a>(px+n-1,1,MPIU_SCALAR,next,0,&amp;upper,1,MPIU_SCALAR,prev,0,comm,MPI_STATUS_IGNORE);
+
+<a name="line228">228: </a>  py[0] = upper-2.0*px[0]+px[1];
+<a name="line229">229: </a>  <font color="#4169E1">for</font> (i=1;i&lt;n-1;i++) py[i] = px[i-1]-2.0*px[i]+px[i+1];
+<a name="line230">230: </a>  py[n-1] = px[n-2]-2.0*px[n-1]+lower;
+<a name="line231">231: </a>  VecRestoreArrayRead(x,&amp;px);
+<a name="line232">232: </a>  VecRestoreArray(y,&amp;py);
+<a name="line233">233: </a>  PetscFunctionReturn(0);
+<a name="line234">234: </a>}
+
+<a name="line236">236: </a><strong><font color="#4169E1"><a name="MatGetDiagonal_A0"></a>PetscErrorCode MatGetDiagonal_A0(Mat A,Vec diag)</font></strong>
+<a name="line237">237: </a>{
+<a name="line239">239: </a>  VecSet(diag,-2.0);
+<a name="line240">240: </a>  PetscFunctionReturn(0);
+<a name="line241">241: </a>}
+
+<a name="line243">243: </a><strong><font color="#4169E1"><a name="MatDuplicate_A0"></a>PetscErrorCode MatDuplicate_A0(Mat A,MatDuplicateOption op,Mat *B)</font></strong>
+<a name="line244">244: </a>{
+<a name="line245">245: </a>  PetscInt       m,n,M,N;
+<a name="line246">246: </a>  MPI_Comm       comm;
+
+<a name="line248">248: </a>  MatGetSize(A,&amp;M,&amp;N);
+<a name="line249">249: </a>  MatGetLocalSize(A,&amp;m,&amp;n);
+<a name="line250">250: </a>  PetscObjectGetComm((PetscObject)A,&amp;comm);
+<a name="line251">251: </a>  MatCreateShell(comm,m,n,M,N,NULL,B);
+<a name="line252">252: </a>  MatShellSetOperation(*B,MATOP_MULT,(void(*)(void))MatMult_A0);
+<a name="line253">253: </a>  MatShellSetOperation(*B,MATOP_MULT_TRANSPOSE,(void(*)(void))MatMult_A0);
+<a name="line254">254: </a>  MatShellSetOperation(*B,MATOP_GET_DIAGONAL,(void(*)(void))MatGetDiagonal_A0);
+<a name="line255">255: </a>  MatShellSetOperation(*B,MATOP_DUPLICATE,(void(*)(void))MatDuplicate_A0);
+<a name="line256">256: </a>  PetscFunctionReturn(0);
+<a name="line257">257: </a>}
+
+<a name="line259">259: </a><font color="#B22222">/* -------------------------------- A1 ----------------------------------- */</font>
+
+<a name="line261">261: </a><strong><font color="#4169E1"><a name="MatMult_A1"></a>PetscErrorCode MatMult_A1(Mat A,Vec x,Vec y)</font></strong>
+<a name="line262">262: </a>{
+<a name="line264">264: </a>  VecCopy(x,y);
+<a name="line265">265: </a>  PetscFunctionReturn(0);
+<a name="line266">266: </a>}
+
+<a name="line268">268: </a><strong><font color="#4169E1"><a name="MatGetDiagonal_A1"></a>PetscErrorCode MatGetDiagonal_A1(Mat A,Vec diag)</font></strong>
+<a name="line269">269: </a>{
+<a name="line271">271: </a>  VecSet(diag,1.0);
+<a name="line272">272: </a>  PetscFunctionReturn(0);
+<a name="line273">273: </a>}
+
+<a name="line275">275: </a><strong><font color="#4169E1"><a name="MatDuplicate_A1"></a>PetscErrorCode MatDuplicate_A1(Mat A,MatDuplicateOption op,Mat *B)</font></strong>
+<a name="line276">276: </a>{
+<a name="line277">277: </a>  PetscInt       m,n,M,N;
+<a name="line278">278: </a>  MPI_Comm       comm;
+
+<a name="line280">280: </a>  MatGetSize(A,&amp;M,&amp;N);
+<a name="line281">281: </a>  MatGetLocalSize(A,&amp;m,&amp;n);
+<a name="line282">282: </a>  PetscObjectGetComm((PetscObject)A,&amp;comm);
+<a name="line283">283: </a>  MatCreateShell(comm,m,n,M,N,NULL,B);
+<a name="line284">284: </a>  MatShellSetOperation(*B,MATOP_MULT,(void(*)(void))MatMult_A1);
+<a name="line285">285: </a>  MatShellSetOperation(*B,MATOP_MULT_TRANSPOSE,(void(*)(void))MatMult_A1);
+<a name="line286">286: </a>  MatShellSetOperation(*B,MATOP_GET_DIAGONAL,(void(*)(void))MatGetDiagonal_A1);
+<a name="line287">287: </a>  MatShellSetOperation(*B,MATOP_DUPLICATE,(void(*)(void))MatDuplicate_A1);
+<a name="line288">288: </a>  PetscFunctionReturn(0);
+<a name="line289">289: </a>}
+
+<a name="line291">291: </a><font color="#B22222">/* -------------------------------- F ----------------------------------- */</font>
+
+<a name="line293">293: </a><strong><font color="#4169E1"><a name="MatMult_F"></a>PetscErrorCode MatMult_F(Mat A,Vec x,Vec y)</font></strong>
+<a name="line294">294: </a>{
+<a name="line295">295: </a>  PetscInt          i,n;
+<a name="line296">296: </a>  PetscMPIInt       rank,size,next,prev;
+<a name="line297">297: </a>  const PetscScalar *px;
+<a name="line298">298: </a>  PetscScalar       *py,d,upper=0.0,lower=0.0;
+<a name="line299">299: </a>  MatCtx            *ctx;
+<a name="line300">300: </a>  MPI_Comm          comm;
+
+<a name="line303">303: </a>  PetscObjectGetComm((PetscObject)A,&amp;comm);
+<a name="line304">304: </a>  <a href="http://www.mpich.org/static/docs/latest/www3/MPI_Comm_size.html#MPI_Comm_size">MPI_Comm_size</a>(comm,&amp;size);
+<a name="line305">305: </a>  <a href="http://www.mpich.org/static/docs/latest/www3/MPI_Comm_rank.html#MPI_Comm_rank">MPI_Comm_rank</a>(comm,&amp;rank);
+<a name="line306">306: </a>  next = rank==size-1? MPI_PROC_NULL: rank+1;
+<a name="line307">307: </a>  prev = rank==0? MPI_PROC_NULL: rank-1;
+
+<a name="line309">309: </a>  MatShellGetContext(A,&amp;ctx);
+<a name="line310">310: </a>  VecGetArrayRead(x,&amp;px);
+<a name="line311">311: </a>  VecGetArray(y,&amp;py);
+<a name="line312">312: </a>  VecGetLocalSize(x,&amp;n);
+
+<a name="line314">314: </a>  <a href="http://www.mpich.org/static/docs/latest/www3/MPI_Sendrecv.html#MPI_Sendrecv">MPI_Sendrecv</a>(px,1,MPIU_SCALAR,prev,0,&amp;lower,1,MPIU_SCALAR,next,0,comm,MPI_STATUS_IGNORE);
+<a name="line315">315: </a>  <a href="http://www.mpich.org/static/docs/latest/www3/MPI_Sendrecv.html#MPI_Sendrecv">MPI_Sendrecv</a>(px+n-1,1,MPIU_SCALAR,next,0,&amp;upper,1,MPIU_SCALAR,prev,0,comm,MPI_STATUS_IGNORE);
+
+<a name="line317">317: </a>  d = -2.0+ctx-&gt;t;
+<a name="line318">318: </a>  py[0] = upper+d*px[0]+px[1];
+<a name="line319">319: </a>  <font color="#4169E1">for</font> (i=1;i&lt;n-1;i++) py[i] = px[i-1]+d*px[i]+px[i+1];
+<a name="line320">320: </a>  py[n-1] = px[n-2]+d*px[n-1]+lower;
+<a name="line321">321: </a>  VecRestoreArrayRead(x,&amp;px);
+<a name="line322">322: </a>  VecRestoreArray(y,&amp;py);
+<a name="line323">323: </a>  PetscFunctionReturn(0);
+<a name="line324">324: </a>}
+
+<a name="line326">326: </a><strong><font color="#4169E1"><a name="MatGetDiagonal_F"></a>PetscErrorCode MatGetDiagonal_F(Mat A,Vec diag)</font></strong>
+<a name="line327">327: </a>{
+<a name="line328">328: </a>  MatCtx         *ctx;
+
+<a name="line331">331: </a>  MatShellGetContext(A,&amp;ctx);
+<a name="line332">332: </a>  VecSet(diag,-2.0+ctx-&gt;t);
+<a name="line333">333: </a>  PetscFunctionReturn(0);
+<a name="line334">334: </a>}
+
+<a name="line336">336: </a><strong><font color="#4169E1"><a name="MatDuplicate_F"></a>PetscErrorCode MatDuplicate_F(Mat A,MatDuplicateOption op,Mat *B)</font></strong>
+<a name="line337">337: </a>{
+<a name="line338">338: </a>  MatCtx         *actx,*bctx;
+<a name="line339">339: </a>  PetscInt       m,n,M,N;
+<a name="line340">340: </a>  MPI_Comm       comm;
+
+<a name="line342">342: </a>  MatShellGetContext(A,&amp;actx);
+<a name="line343">343: </a>  MatGetSize(A,&amp;M,&amp;N);
+<a name="line344">344: </a>  MatGetLocalSize(A,&amp;m,&amp;n);
+<a name="line345">345: </a>  PetscNew(&amp;bctx);
+<a name="line346">346: </a>  bctx-&gt;t = actx-&gt;t;
+<a name="line347">347: </a>  PetscObjectGetComm((PetscObject)A,&amp;comm);
+<a name="line348">348: </a>  MatCreateShell(comm,m,n,M,N,(void*)bctx,B);
+<a name="line349">349: </a>  MatShellSetOperation(*B,MATOP_MULT,(void(*)(void))MatMult_F);
+<a name="line350">350: </a>  MatShellSetOperation(*B,MATOP_MULT_TRANSPOSE,(void(*)(void))MatMult_F);
+<a name="line351">351: </a>  MatShellSetOperation(*B,MATOP_GET_DIAGONAL,(void(*)(void))MatGetDiagonal_F);
+<a name="line352">352: </a>  MatShellSetOperation(*B,MATOP_DUPLICATE,(void(*)(void))MatDuplicate_F);
+<a name="line353">353: </a>  MatShellSetOperation(*B,MATOP_DESTROY,(void(*)(void))MatDestroy_F);
+<a name="line354">354: </a>  PetscFunctionReturn(0);
+<a name="line355">355: </a>}
+
+<a name="line357">357: </a><strong><font color="#4169E1"><a name="MatDestroy_F"></a>PetscErrorCode MatDestroy_F(Mat A)</font></strong>
+<a name="line358">358: </a>{
+<a name="line359">359: </a>  MatCtx         *ctx;
+
+<a name="line361">361: </a>  MatShellGetContext(A,&amp;ctx);
+<a name="line362">362: </a>  PetscFree(ctx);
+<a name="line363">363: </a>  PetscFunctionReturn(0);
+<a name="line364">364: </a>}
+
+<a name="line366">366: </a><font color="#B22222">/*TEST</font>
+
+<a name="line368">368: </a><font color="#B22222">   testset:</font>
+<a name="line369">369: </a><font color="#B22222">      nsize: {{1 2}}</font>
+<a name="line370">370: </a><font color="#B22222">      args: -nep_nev 3 -nep_tol 1e-8 -terse</font>
+<a name="line371">371: </a><font color="#B22222">      filter: sed -e "s/[+-]0\.0*i//g"</font>
+<a name="line372">372: </a><font color="#B22222">      requires: !single</font>
+<a name="line373">373: </a><font color="#B22222">      test:</font>
+<a name="line374">374: </a><font color="#B22222">         suffix: 1</font>
+<a name="line375">375: </a><font color="#B22222">         args: -nep_nleigs_locking 0 -nep_nleigs_interpolation_degree 90 -nep_nleigs_interpolation_tol 1e-8 -nep_nleigs_restart 0.4</font>
+<a name="line376">376: </a><font color="#B22222">      test:</font>
+<a name="line377">377: </a><font color="#B22222">         suffix: 2</font>
+<a name="line378">378: </a><font color="#B22222">         args: -split 0</font>
+
+<a name="line380">380: </a><font color="#B22222">TEST*/</font>
+</pre>
+</body>
+
+</html>

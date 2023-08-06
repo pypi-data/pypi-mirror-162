@@ -1,0 +1,428 @@
+<center><a href="rgring.c">Actual source code: rgring.c</a></center><br>
+
+<html>
+<head> <link rel="canonical" href="https://slepc.upv.es/documentation/current/src/sys/classes/rg/impls/ring/rgring.c.html" />
+<title></title>
+<meta name="generator" content="c2html 0.9.4">
+<meta name="date" content="2022-08-09T09:05:31+00:00">
+</head>
+
+<body bgcolor="#FFFFFF">
+   <div id="version" align=right><b>slepc-3.17.2 2022-08-09</b></div>
+   <div id="bugreport" align=right><a href="mailto:slepc-maint@upv.es?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: slepc-3.17.2 v3.17.2 src/sys/classes/rg/impls/ring/rgring.c.html "><small>Report Typos and Errors</small></a></div>
+<pre width="80">
+<a name="line1">  1: </a><font color="#B22222">/*</font>
+<a name="line2">  2: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line3">  3: </a><font color="#B22222">   SLEPc - Scalable Library for Eigenvalue Problem Computations</font>
+<a name="line4">  4: </a><font color="#B22222">   Copyright (c) 2002-, Universitat Politecnica de Valencia, Spain</font>
+
+<a name="line6">  6: </a><font color="#B22222">   This file is part of SLEPc.</font>
+<a name="line7">  7: </a><font color="#B22222">   SLEPc is distributed under a 2-clause BSD license (see LICENSE).</font>
+<a name="line8">  8: </a><font color="#B22222">   - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</font>
+<a name="line9">  9: </a><font color="#B22222">*/</font>
+<a name="line10"> 10: </a><font color="#B22222">/*</font>
+<a name="line11"> 11: </a><font color="#B22222">   Ring region, similar to the ellipse but with a start and end angle,</font>
+<a name="line12"> 12: </a><font color="#B22222">   together with the width</font>
+<a name="line13"> 13: </a><font color="#B22222">*/</font>
+
+<a name="line15"> 15: </a>#include <A href="../../../../../../include/slepc/private/rgimpl.h.html">&lt;slepc/private/rgimpl.h&gt;</A>
+<a name="line16"> 16: </a><font color="#A020F0">#include &lt;petscdraw.h&gt;</font>
+
+<a name="line18"> 18: </a><font color="#4169E1">typedef</font> <font color="#4169E1">struct</font> {
+<a name="line19"> 19: </a>  PetscScalar center;     <font color="#B22222">/* center of the ellipse */</font>
+<a name="line20"> 20: </a>  PetscReal   radius;     <font color="#B22222">/* radius of the ellipse */</font>
+<a name="line21"> 21: </a>  PetscReal   vscale;     <font color="#B22222">/* vertical scale of the ellipse */</font>
+<a name="line22"> 22: </a>  PetscReal   start_ang;  <font color="#B22222">/* start angle */</font>
+<a name="line23"> 23: </a>  PetscReal   end_ang;    <font color="#B22222">/* end angle */</font>
+<a name="line24"> 24: </a>  PetscReal   width;      <font color="#B22222">/* ring width */</font>
+<a name="line25"> 25: </a>} RG_RING;
+
+<a name="line27"> 27: </a><strong><font color="#4169E1"><a name="RGRingSetParameters_Ring"></a>static PetscErrorCode RGRingSetParameters_Ring(<a href="../../../../../../docs/manualpages/sys/RG.html#RG">RG</a> rg,PetscScalar center,PetscReal radius,PetscReal vscale,PetscReal start_ang,PetscReal end_ang,PetscReal width)</font></strong>
+<a name="line28"> 28: </a>{
+<a name="line29"> 29: </a>  RG_RING *ctx = (RG_RING*)rg-&gt;data;
+
+<a name="line31"> 31: </a>  ctx-&gt;center = center;
+<a name="line32"> 32: </a>  <font color="#4169E1">if</font> (radius == PETSC_DEFAULT) {
+<a name="line33"> 33: </a>    ctx-&gt;radius = 1.0;
+<a name="line34"> 34: </a>  } <font color="#4169E1">else</font> {
+<a name="line36"> 36: </a>    ctx-&gt;radius = radius;
+<a name="line37"> 37: </a>  }
+<a name="line39"> 39: </a>  ctx-&gt;vscale = vscale;
+<a name="line40"> 40: </a>  <font color="#4169E1">if</font> (start_ang == PETSC_DEFAULT) {
+<a name="line41"> 41: </a>    ctx-&gt;start_ang = 0.0;
+<a name="line42"> 42: </a>  } <font color="#4169E1">else</font> {
+<a name="line45"> 45: </a>    ctx-&gt;start_ang = start_ang;
+<a name="line46"> 46: </a>  }
+<a name="line47"> 47: </a>  <font color="#4169E1">if</font> (end_ang == PETSC_DEFAULT) {
+<a name="line48"> 48: </a>    ctx-&gt;end_ang = 1.0;
+<a name="line49"> 49: </a>  } <font color="#4169E1">else</font> {
+<a name="line52"> 52: </a>    ctx-&gt;end_ang = end_ang;
+<a name="line53"> 53: </a>  }
+<a name="line54"> 54: </a><font color="#A020F0">#if !defined(PETSC_USE_COMPLEX)</font>
+<a name="line56"> 56: </a><font color="#A020F0">#endif</font>
+<a name="line57"> 57: </a>  <font color="#4169E1">if</font> (width == PETSC_DEFAULT) {
+<a name="line58"> 58: </a>    ctx-&gt;width = 0.1;
+<a name="line59"> 59: </a>  } <font color="#4169E1">else</font> {
+<a name="line61"> 61: </a>    ctx-&gt;width = width;
+<a name="line62"> 62: </a>  }
+<a name="line63"> 63: </a>  PetscFunctionReturn(0);
+<a name="line64"> 64: </a>}
+
+<a name="line66"> 66: </a><font color="#B22222">/*@</font>
+<a name="line67"> 67: </a><font color="#B22222">   <a href="../../../../../../docs/manualpages/RG/RGRingSetParameters.html#RGRingSetParameters">RGRingSetParameters</a> - Sets the parameters defining the ring region.</font>
+
+<a name="line69"> 69: </a><font color="#B22222">   Logically Collective on rg</font>
+
+<a name="line71"> 71: </a><font color="#B22222">   Input Parameters:</font>
+<a name="line72"> 72: </a><font color="#B22222">+  rg        - the region context</font>
+<a name="line73"> 73: </a><font color="#B22222">.  center    - center of the ellipse</font>
+<a name="line74"> 74: </a><font color="#B22222">.  radius    - radius of the ellipse</font>
+<a name="line75"> 75: </a><font color="#B22222">.  vscale    - vertical scale of the ellipse</font>
+<a name="line76"> 76: </a><font color="#B22222">.  start_ang - the right-hand side angle</font>
+<a name="line77"> 77: </a><font color="#B22222">.  end_ang   - the left-hand side angle</font>
+<a name="line78"> 78: </a><font color="#B22222">-  width     - width of the ring</font>
+
+<a name="line80"> 80: </a><font color="#B22222">   Options Database Keys:</font>
+<a name="line81"> 81: </a><font color="#B22222">+  -rg_ring_center     - Sets the center</font>
+<a name="line82"> 82: </a><font color="#B22222">.  -rg_ring_radius     - Sets the radius</font>
+<a name="line83"> 83: </a><font color="#B22222">.  -rg_ring_vscale     - Sets the vertical scale</font>
+<a name="line84"> 84: </a><font color="#B22222">.  -rg_ring_startangle - Sets the right-hand side angle</font>
+<a name="line85"> 85: </a><font color="#B22222">.  -rg_ring_endangle   - Sets the left-hand side angle</font>
+<a name="line86"> 86: </a><font color="#B22222">-  -rg_ring_width      - Sets the width of the ring</font>
+
+<a name="line88"> 88: </a><font color="#B22222">   Notes:</font>
+<a name="line89"> 89: </a><font color="#B22222">   The values of center, radius and vscale have the same meaning as in the</font>
+<a name="line90"> 90: </a><font color="#B22222">   ellipse region. The startangle and endangle define the span of the ring</font>
+<a name="line91"> 91: </a><font color="#B22222">   (by default it is the whole ring), while the width is the separation</font>
+<a name="line92"> 92: </a><font color="#B22222">   between the two concentric ellipses (above and below the radius by</font>
+<a name="line93"> 93: </a><font color="#B22222">   width/2).</font>
+
+<a name="line95"> 95: </a><font color="#B22222">   The start and end angles are expressed as a fraction of the circumference.</font>
+<a name="line96"> 96: </a><font color="#B22222">   The allowed range is [0..1], with 0 corresponding to 0 radians, 0.25 to</font>
+<a name="line97"> 97: </a><font color="#B22222">   pi/2 radians, and so on. It is allowed to have startangle&gt;endangle, in</font>
+<a name="line98"> 98: </a><font color="#B22222">   which case the ring region crosses over the zero angle.</font>
+
+<a name="line100">100: </a><font color="#B22222">   In the case of complex scalars, a complex center can be provided in the</font>
+<a name="line101">101: </a><font color="#B22222">   command line with [+/-][realnumber][+/-]realnumberi with no spaces, e.g.</font>
+<a name="line102">102: </a><font color="#B22222">   -rg_ring_center 1.0+2.0i</font>
+
+<a name="line104">104: </a><font color="#B22222">   When PETSc is built with real scalars, the center is restricted to a real value,</font>
+<a name="line105">105: </a><font color="#B22222">   and the start and end angles must be such that the region is symmetric with</font>
+<a name="line106">106: </a><font color="#B22222">   respect to the real axis.</font>
+
+<a name="line108">108: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line110">110: </a><font color="#B22222">.seealso: <a href="../../../../../../docs/manualpages/RG/RGRingGetParameters.html#RGRingGetParameters">RGRingGetParameters</a>()</font>
+<a name="line111">111: </a><font color="#B22222">@*/</font>
+<a name="line112">112: </a><strong><font color="#4169E1"><a name="RGRingSetParameters"></a>PetscErrorCode <a href="../../../../../../docs/manualpages/RG/RGRingSetParameters.html#RGRingSetParameters">RGRingSetParameters</a>(<a href="../../../../../../docs/manualpages/sys/RG.html#RG">RG</a> rg,PetscScalar center,PetscReal radius,PetscReal vscale,PetscReal start_ang,PetscReal end_ang,PetscReal width)</font></strong>
+<a name="line113">113: </a>{
+<a name="line121">121: </a>  PetscTryMethod(rg,<font color="#666666">"RGRingSetParameters_C"</font>,(<a href="../../../../../../docs/manualpages/sys/RG.html#RG">RG</a>,PetscScalar,PetscReal,PetscReal,PetscReal,PetscReal,PetscReal),(rg,center,radius,vscale,start_ang,end_ang,width));
+<a name="line122">122: </a>  PetscFunctionReturn(0);
+<a name="line123">123: </a>}
+
+<a name="line125">125: </a><strong><font color="#4169E1"><a name="RGRingGetParameters_Ring"></a>static PetscErrorCode RGRingGetParameters_Ring(<a href="../../../../../../docs/manualpages/sys/RG.html#RG">RG</a> rg,PetscScalar *center,PetscReal *radius,PetscReal *vscale,PetscReal *start_ang,PetscReal *end_ang,PetscReal *width)</font></strong>
+<a name="line126">126: </a>{
+<a name="line127">127: </a>  RG_RING *ctx = (RG_RING*)rg-&gt;data;
+
+<a name="line129">129: </a>  <font color="#4169E1">if</font> (center)    *center    = ctx-&gt;center;
+<a name="line130">130: </a>  <font color="#4169E1">if</font> (radius)    *radius    = ctx-&gt;radius;
+<a name="line131">131: </a>  <font color="#4169E1">if</font> (vscale)    *vscale    = ctx-&gt;vscale;
+<a name="line132">132: </a>  <font color="#4169E1">if</font> (start_ang) *start_ang = ctx-&gt;start_ang;
+<a name="line133">133: </a>  <font color="#4169E1">if</font> (end_ang)   *end_ang   = ctx-&gt;end_ang;
+<a name="line134">134: </a>  <font color="#4169E1">if</font> (width)     *width     = ctx-&gt;width;
+<a name="line135">135: </a>  PetscFunctionReturn(0);
+<a name="line136">136: </a>}
+
+<a name="line138">138: </a><font color="#B22222">/*@</font>
+<a name="line139">139: </a><font color="#B22222">   <a href="../../../../../../docs/manualpages/RG/RGRingGetParameters.html#RGRingGetParameters">RGRingGetParameters</a> - Gets the parameters that define the ring region.</font>
+
+<a name="line141">141: </a><font color="#B22222">   Not Collective</font>
+
+<a name="line143">143: </a><font color="#B22222">   Input Parameter:</font>
+<a name="line144">144: </a><font color="#B22222">.  rg     - the region context</font>
+
+<a name="line146">146: </a><font color="#B22222">   Output Parameters:</font>
+<a name="line147">147: </a><font color="#B22222">+  center    - center of the region</font>
+<a name="line148">148: </a><font color="#B22222">.  radius    - radius of the region</font>
+<a name="line149">149: </a><font color="#B22222">.  vscale    - vertical scale of the region</font>
+<a name="line150">150: </a><font color="#B22222">.  start_ang - the right-hand side angle</font>
+<a name="line151">151: </a><font color="#B22222">.  end_ang   - the left-hand side angle</font>
+<a name="line152">152: </a><font color="#B22222">-  width     - width of the ring</font>
+
+<a name="line154">154: </a><font color="#B22222">   Level: advanced</font>
+
+<a name="line156">156: </a><font color="#B22222">.seealso: <a href="../../../../../../docs/manualpages/RG/RGRingSetParameters.html#RGRingSetParameters">RGRingSetParameters</a>()</font>
+<a name="line157">157: </a><font color="#B22222">@*/</font>
+<a name="line158">158: </a><strong><font color="#4169E1"><a name="RGRingGetParameters"></a>PetscErrorCode <a href="../../../../../../docs/manualpages/RG/RGRingGetParameters.html#RGRingGetParameters">RGRingGetParameters</a>(<a href="../../../../../../docs/manualpages/sys/RG.html#RG">RG</a> rg,PetscScalar *center,PetscReal *radius,PetscReal *vscale,PetscReal *start_ang,PetscReal *end_ang,PetscReal *width)</font></strong>
+<a name="line159">159: </a>{
+<a name="line161">161: </a>  PetscUseMethod(rg,<font color="#666666">"RGRingGetParameters_C"</font>,(<a href="../../../../../../docs/manualpages/sys/RG.html#RG">RG</a>,PetscScalar*,PetscReal*,PetscReal*,PetscReal*,PetscReal*,PetscReal*),(rg,center,radius,vscale,start_ang,end_ang,width));
+<a name="line162">162: </a>  PetscFunctionReturn(0);
+<a name="line163">163: </a>}
+
+<a name="line165">165: </a><strong><font color="#4169E1"><a name="RGView_Ring"></a>PetscErrorCode RGView_Ring(<a href="../../../../../../docs/manualpages/sys/RG.html#RG">RG</a> rg,PetscViewer viewer)</font></strong>
+<a name="line166">166: </a>{
+<a name="line167">167: </a>  RG_RING        *ctx = (RG_RING*)rg-&gt;data;
+<a name="line168">168: </a>  int            winw,winh;
+<a name="line169">169: </a>  PetscBool      isdraw,isascii;
+<a name="line170">170: </a>  PetscDraw      draw;
+<a name="line171">171: </a>  PetscDrawAxis  axis;
+<a name="line172">172: </a>  PetscReal      cx,cy,radius,width,ab,cd,lx,ly,w,end_ang,x1,y1,x2,y2,r,theta,scale=1.2;
+<a name="line173">173: </a>  char           str[50];
+
+<a name="line175">175: </a>  PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERDRAW,&amp;isdraw);
+<a name="line176">176: </a>  PetscObjectTypeCompare((PetscObject)viewer,PETSCVIEWERASCII,&amp;isascii);
+<a name="line177">177: </a>  <font color="#4169E1">if</font> (isascii) {
+<a name="line178">178: </a>    <a href="../../../../../../docs/manualpages/sys/SlepcSNPrintfScalar.html#SlepcSNPrintfScalar">SlepcSNPrintfScalar</a>(str,<font color="#4169E1">sizeof</font>(str),ctx-&gt;center,PETSC_FALSE);
+<a name="line179">179: </a>    PetscViewerASCIIPrintf(viewer,<font color="#666666">"  center: %s, radius: %g, vscale: %g, start angle: %g, end angle: %g, ring width: %g\n"</font>,str,RGShowReal(ctx-&gt;radius),RGShowReal(ctx-&gt;vscale),(double)ctx-&gt;start_ang,(double)ctx-&gt;end_ang,(double)ctx-&gt;width);
+<a name="line180">180: </a>  } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (isdraw) {
+<a name="line181">181: </a>    PetscViewerDrawGetDraw(viewer,0,&amp;draw);
+<a name="line182">182: </a>    PetscDrawCheckResizedWindow(draw);
+<a name="line183">183: </a>    PetscDrawGetWindowSize(draw,&amp;winw,&amp;winh);
+<a name="line184">184: </a>    winw = PetscMax(winw,1); winh = PetscMax(winh,1);
+<a name="line185">185: </a>    PetscDrawClear(draw);
+<a name="line186">186: </a>    PetscDrawSetTitle(draw,<font color="#666666">"Ring region"</font>);
+<a name="line187">187: </a>    PetscDrawAxisCreate(draw,&amp;axis);
+<a name="line188">188: </a>    cx = PetscRealPart(ctx-&gt;center)*rg-&gt;sfactor;
+<a name="line189">189: </a>    cy = PetscImaginaryPart(ctx-&gt;center)*rg-&gt;sfactor;
+<a name="line190">190: </a>    radius = ctx-&gt;radius*rg-&gt;sfactor;
+<a name="line191">191: </a>    width  = ctx-&gt;width*rg-&gt;sfactor;
+<a name="line192">192: </a>    lx = 2*(radius+width);
+<a name="line193">193: </a>    ly = 2*(radius+width)*ctx-&gt;vscale;
+<a name="line194">194: </a>    ab = cx;
+<a name="line195">195: </a>    cd = cy;
+<a name="line196">196: </a>    w  = scale*PetscMax(lx/winw,ly/winh)/2;
+<a name="line197">197: </a>    PetscDrawAxisSetLimits(axis,ab-w*winw,ab+w*winw,cd-w*winh,cd+w*winh);
+<a name="line198">198: </a>    PetscDrawAxisDraw(axis);
+<a name="line199">199: </a>    PetscDrawAxisDestroy(&amp;axis);
+<a name="line200">200: </a>    <font color="#B22222">/* draw outer ellipse */</font>
+<a name="line201">201: </a>    PetscDrawEllipse(draw,cx,cy,2*(radius+width),2*(radius+width)*ctx-&gt;vscale,PETSC_DRAW_ORANGE);
+<a name="line202">202: </a>    <font color="#B22222">/* remove inner part */</font>
+<a name="line203">203: </a>    PetscDrawEllipse(draw,cx,cy,2*(radius-width),2*(radius-width)*ctx-&gt;vscale,PETSC_DRAW_WHITE);
+<a name="line204">204: </a>    <font color="#4169E1">if</font> (ctx-&gt;start_ang!=ctx-&gt;end_ang) {
+<a name="line205">205: </a>      <font color="#B22222">/* remove section from end_ang to start_ang */</font>
+<a name="line206">206: </a>      end_ang = (ctx-&gt;start_ang&lt;ctx-&gt;end_ang)? ctx-&gt;end_ang-1: ctx-&gt;end_ang;
+<a name="line207">207: </a>      theta = end_ang;
+<a name="line208">208: </a>      r = scale*(radius+width);
+<a name="line209">209: </a>      <font color="#4169E1">if</font> (ctx-&gt;vscale&gt;1) r *= ctx-&gt;vscale;
+<a name="line210">210: </a>      x1 = PetscMin(PetscMax(ab+r*PetscCosReal(2.0*PETSC_PI*theta),ab-w*winw),ab+w*winw);
+<a name="line211">211: </a>      y1 = PetscMin(PetscMax(cd+r*PetscSinReal(2.0*PETSC_PI*theta),cd-w*winh),cd+w*winh);
+<a name="line212">212: </a>      <font color="#4169E1">do</font> {
+<a name="line213">213: </a>        theta = PetscMin(PetscFloorReal(8*theta+1)/8,ctx-&gt;start_ang);
+<a name="line214">214: </a>        x2 = PetscMin(PetscMax(ab+r*PetscCosReal(2.0*PETSC_PI*theta),ab-w*winw),ab+w*winw);
+<a name="line215">215: </a>        y2 = PetscMin(PetscMax(cd+r*PetscSinReal(2.0*PETSC_PI*theta),cd-w*winh),cd+w*winh);
+<a name="line216">216: </a>        PetscDrawTriangle(draw,cx,cy,x1,y1,x2,y2,PETSC_DRAW_WHITE,PETSC_DRAW_WHITE,PETSC_DRAW_WHITE);
+<a name="line217">217: </a>        x1 = x2; y1 = y2;
+<a name="line218">218: </a>      } <font color="#4169E1">while</font> (theta&lt;ctx-&gt;start_ang);
+<a name="line219">219: </a>    }
+<a name="line220">220: </a>    PetscDrawFlush(draw);
+<a name="line221">221: </a>    PetscDrawSave(draw);
+<a name="line222">222: </a>    PetscDrawPause(draw);
+<a name="line223">223: </a>  }
+<a name="line224">224: </a>  PetscFunctionReturn(0);
+<a name="line225">225: </a>}
+
+<a name="line227">227: </a><strong><font color="#4169E1"><a name="RGIsTrivial_Ring"></a>PetscErrorCode RGIsTrivial_Ring(<a href="../../../../../../docs/manualpages/sys/RG.html#RG">RG</a> rg,PetscBool *trivial)</font></strong>
+<a name="line228">228: </a>{
+<a name="line229">229: </a>  RG_RING *ctx = (RG_RING*)rg-&gt;data;
+
+<a name="line231">231: </a>  <font color="#4169E1">if</font> (rg-&gt;complement) *trivial = PetscNot(ctx-&gt;radius);
+<a name="line232">232: </a>  <font color="#4169E1">else</font> *trivial = PetscNot(ctx-&gt;radius&lt;PETSC_MAX_REAL);
+<a name="line233">233: </a>  PetscFunctionReturn(0);
+<a name="line234">234: </a>}
+
+<a name="line236">236: </a><strong><font color="#4169E1"><a name="RGComputeContour_Ring"></a>PetscErrorCode RGComputeContour_Ring(<a href="../../../../../../docs/manualpages/sys/RG.html#RG">RG</a> rg,PetscInt n,PetscScalar *cr,PetscScalar *ci)</font></strong>
+<a name="line237">237: </a>{
+<a name="line238">238: </a>  RG_RING   *ctx = (RG_RING*)rg-&gt;data;
+<a name="line239">239: </a>  PetscReal theta,start_ang;
+<a name="line240">240: </a>  PetscInt  i,n2=n/2;
+
+<a name="line242">242: </a>  start_ang = (ctx-&gt;start_ang&gt;ctx-&gt;end_ang)? ctx-&gt;start_ang-1: ctx-&gt;start_ang;
+<a name="line243">243: </a>  <font color="#4169E1">for</font> (i=0;i&lt;n;i++) {
+<a name="line244">244: </a>    <font color="#4169E1">if</font> (i &lt; n2) {
+<a name="line245">245: </a>      theta = ((ctx-&gt;end_ang-start_ang)*i/n2 + start_ang)*2.0*PETSC_PI;
+<a name="line246">246: </a><font color="#A020F0">#if defined(PETSC_USE_COMPLEX)</font>
+<a name="line247">247: </a>      cr[i] = ctx-&gt;center + (ctx-&gt;radius+ctx-&gt;width/2.0)*PetscCMPLX(PetscCosReal(theta),ctx-&gt;vscale*PetscSinReal(theta));
+<a name="line248">248: </a><font color="#A020F0">#else</font>
+<a name="line249">249: </a>      <font color="#4169E1">if</font> (cr) cr[i] = ctx-&gt;center + (ctx-&gt;radius+ctx-&gt;width/2.0)*PetscCosReal(theta);
+<a name="line250">250: </a>      <font color="#4169E1">if</font> (ci) ci[i] = (ctx-&gt;radius+ctx-&gt;width/2.0)*ctx-&gt;vscale*PetscSinReal(theta);
+<a name="line251">251: </a><font color="#A020F0">#endif</font>
+<a name="line252">252: </a>    } <font color="#4169E1">else</font> {
+<a name="line253">253: </a>      theta = ((ctx-&gt;end_ang-start_ang)*(n-i)/n2 + start_ang)*2.0*PETSC_PI;
+<a name="line254">254: </a><font color="#A020F0">#if defined(PETSC_USE_COMPLEX)</font>
+<a name="line255">255: </a>      cr[i] = ctx-&gt;center + (ctx-&gt;radius-ctx-&gt;width/2.0)*PetscCMPLX(PetscCosReal(theta),ctx-&gt;vscale*PetscSinReal(theta));
+<a name="line256">256: </a><font color="#A020F0">#else</font>
+<a name="line257">257: </a>      <font color="#4169E1">if</font> (cr) cr[i] = ctx-&gt;center + (ctx-&gt;radius-ctx-&gt;width/2.0)*PetscCosReal(theta);
+<a name="line258">258: </a>      <font color="#4169E1">if</font> (ci) ci[i] = (ctx-&gt;radius-ctx-&gt;width/2.0)*ctx-&gt;vscale*PetscSinReal(theta);
+<a name="line259">259: </a><font color="#A020F0">#endif</font>
+<a name="line260">260: </a>    }
+<a name="line261">261: </a>  }
+<a name="line262">262: </a>  PetscFunctionReturn(0);
+<a name="line263">263: </a>}
+
+<a name="line265">265: </a><strong><font color="#4169E1"><a name="RGComputeBoundingBox_Ring"></a>PetscErrorCode RGComputeBoundingBox_Ring(<a href="../../../../../../docs/manualpages/sys/RG.html#RG">RG</a> rg,PetscReal *a,PetscReal *b,PetscReal *c,PetscReal *d)</font></strong>
+<a name="line266">266: </a>{
+<a name="line267">267: </a>  RG_RING *ctx = (RG_RING*)rg-&gt;data;
+
+<a name="line269">269: </a>  <font color="#B22222">/* current implementation does not return a tight bounding box */</font>
+<a name="line270">270: </a>  <font color="#4169E1">if</font> (a) *a = PetscRealPart(ctx-&gt;center) - (ctx-&gt;radius+ctx-&gt;width/2.0);
+<a name="line271">271: </a>  <font color="#4169E1">if</font> (b) *b = PetscRealPart(ctx-&gt;center) + (ctx-&gt;radius+ctx-&gt;width/2.0);
+<a name="line272">272: </a>  <font color="#4169E1">if</font> (c) *c = PetscImaginaryPart(ctx-&gt;center) - (ctx-&gt;radius+ctx-&gt;width/2.0)*ctx-&gt;vscale;
+<a name="line273">273: </a>  <font color="#4169E1">if</font> (d) *d = PetscImaginaryPart(ctx-&gt;center) + (ctx-&gt;radius+ctx-&gt;width/2.0)*ctx-&gt;vscale;
+<a name="line274">274: </a>  PetscFunctionReturn(0);
+<a name="line275">275: </a>}
+
+<a name="line277">277: </a><strong><font color="#4169E1"><a name="RGComputeQuadrature_Ring"></a>PetscErrorCode RGComputeQuadrature_Ring(<a href="../../../../../../docs/manualpages/sys/RG.html#RG">RG</a> rg,<a href="../../../../../../docs/manualpages/sys/RGQuadRule.html#RGQuadRule">RGQuadRule</a> quad,PetscInt n,PetscScalar *z,PetscScalar *zn,PetscScalar *w)</font></strong>
+<a name="line278">278: </a>{
+<a name="line279">279: </a>  RG_RING     *ctx = (RG_RING*)rg-&gt;data;
+<a name="line280">280: </a>  PetscReal   max_w=0.0;
+<a name="line281">281: </a>  PetscScalar tmp,tmp2;
+<a name="line282">282: </a>  PetscInt    i,j;
+
+<a name="line284">284: </a>  <font color="#4169E1">if</font> (quad == <a href="../../../../../../docs/manualpages/sys/RGQuadRule.html#RGQuadRule">RG_QUADRULE_CHEBYSHEV</a>) {
+<a name="line285">285: </a><font color="#A020F0">#if defined(PETSC_USE_COMPLEX)</font>
+<a name="line286">286: </a>    PetscReal theta;
+<a name="line287">287: </a>    <font color="#4169E1">for</font> (i=0;i&lt;n;i++) {
+<a name="line288">288: </a>      theta = PETSC_PI*(i+0.5)/n;
+<a name="line289">289: </a>      zn[i] = PetscCosReal(theta);
+<a name="line290">290: </a>      w[i]  = PetscCosReal((n-1)*theta)/n;
+<a name="line291">291: </a>      theta = (ctx-&gt;start_ang*2.0+(ctx-&gt;end_ang-ctx-&gt;start_ang)*(PetscRealPart(zn[i])+1.0))*PETSC_PI;
+<a name="line292">292: </a>      z[i] = rg-&gt;sfactor*(ctx-&gt;center + ctx-&gt;radius*PetscCMPLX(PetscCosReal(theta),ctx-&gt;vscale*PetscSinReal(theta)));
+<a name="line293">293: </a>    }
+<a name="line294">294: </a><font color="#A020F0">#else</font>
+<a name="line295">295: </a>    SETERRQ(PETSC_COMM_SELF,PETSC_ERR_SUP,<font color="#666666">"Integration points on a vertical line require complex arithmetic"</font>);
+<a name="line296">296: </a><font color="#A020F0">#endif</font>
+<a name="line297">297: </a>  } <font color="#4169E1">else</font> {  <font color="#B22222">/* <a href="../../../../../../docs/manualpages/sys/RGQuadRule.html#RGQuadRule">RG_QUADRULE_TRAPEZOIDAL</a> */</font>
+<a name="line298">298: </a>    <font color="#4169E1">for</font> (i=0;i&lt;n;i++) {
+<a name="line299">299: </a>      zn[i] = (z[i]-rg-&gt;sfactor*ctx-&gt;center)/(rg-&gt;sfactor*ctx-&gt;radius);
+<a name="line300">300: </a>      tmp = 1.0; tmp2 = 1.0;
+<a name="line301">301: </a>      <font color="#4169E1">for</font> (j=0;j&lt;n;j++) {
+<a name="line302">302: </a>        tmp *= z[j];
+<a name="line303">303: </a>        <font color="#4169E1">if</font> (i != j) tmp2 *= z[j]-z[i];
+<a name="line304">304: </a>      }
+<a name="line305">305: </a>      w[i] = tmp/tmp2;
+<a name="line306">306: </a>      max_w = PetscMax(PetscAbsScalar(w[i]),max_w);
+<a name="line307">307: </a>    }
+<a name="line308">308: </a>    <font color="#4169E1">for</font> (i=0;i&lt;n;i++) w[i] /= (PetscScalar)max_w;
+<a name="line309">309: </a>  }
+<a name="line310">310: </a>  PetscFunctionReturn(0);
+<a name="line311">311: </a>}
+
+<a name="line313">313: </a><strong><font color="#4169E1"><a name="RGCheckInside_Ring"></a>PetscErrorCode RGCheckInside_Ring(<a href="../../../../../../docs/manualpages/sys/RG.html#RG">RG</a> rg,PetscReal px,PetscReal py,PetscInt *inside)</font></strong>
+<a name="line314">314: </a>{
+<a name="line315">315: </a>  RG_RING   *ctx = (RG_RING*)rg-&gt;data;
+<a name="line316">316: </a>  PetscReal dx,dy,r;
+
+<a name="line318">318: </a>  <font color="#B22222">/* outer ellipse */</font>
+<a name="line319">319: </a><font color="#A020F0">#if defined(PETSC_USE_COMPLEX)</font>
+<a name="line320">320: </a>  dx = (px-PetscRealPart(ctx-&gt;center))/(ctx-&gt;radius+ctx-&gt;width/2.0);
+<a name="line321">321: </a>  dy = (py-PetscImaginaryPart(ctx-&gt;center))/(ctx-&gt;radius+ctx-&gt;width/2.0);
+<a name="line322">322: </a><font color="#A020F0">#else</font>
+<a name="line323">323: </a>  dx = (px-ctx-&gt;center)/(ctx-&gt;radius+ctx-&gt;width/2.0);
+<a name="line324">324: </a>  dy = py/(ctx-&gt;radius+ctx-&gt;width/2.0);
+<a name="line325">325: </a><font color="#A020F0">#endif</font>
+<a name="line326">326: </a>  r = 1.0-dx*dx-(dy*dy)/(ctx-&gt;vscale*ctx-&gt;vscale);
+<a name="line327">327: </a>  *inside = PetscSign(r);
+<a name="line328">328: </a>  <font color="#B22222">/* inner ellipse */</font>
+<a name="line329">329: </a><font color="#A020F0">#if defined(PETSC_USE_COMPLEX)</font>
+<a name="line330">330: </a>  dx = (px-PetscRealPart(ctx-&gt;center))/(ctx-&gt;radius-ctx-&gt;width/2.0);
+<a name="line331">331: </a>  dy = (py-PetscImaginaryPart(ctx-&gt;center))/(ctx-&gt;radius-ctx-&gt;width/2.0);
+<a name="line332">332: </a><font color="#A020F0">#else</font>
+<a name="line333">333: </a>  dx = (px-ctx-&gt;center)/(ctx-&gt;radius-ctx-&gt;width/2.0);
+<a name="line334">334: </a>  dy = py/(ctx-&gt;radius-ctx-&gt;width/2.0);
+<a name="line335">335: </a><font color="#A020F0">#endif</font>
+<a name="line336">336: </a>  r = -1.0+dx*dx+(dy*dy)/(ctx-&gt;vscale*ctx-&gt;vscale);
+<a name="line337">337: </a>  *inside *= PetscSign(r);
+<a name="line338">338: </a>  <font color="#4169E1">if</font> (*inside == 1) {  <font color="#B22222">/* check angles */</font>
+<a name="line339">339: </a><font color="#A020F0">#if defined(PETSC_USE_COMPLEX)</font>
+<a name="line340">340: </a>    dx = (px-PetscRealPart(ctx-&gt;center));
+<a name="line341">341: </a>    dy = (py-PetscImaginaryPart(ctx-&gt;center));
+<a name="line342">342: </a><font color="#A020F0">#else</font>
+<a name="line343">343: </a>    dx = px-ctx-&gt;center;
+<a name="line344">344: </a>    dy = py;
+<a name="line345">345: </a><font color="#A020F0">#endif</font>
+<a name="line346">346: </a>    <font color="#4169E1">if</font> (dx == 0) {
+<a name="line347">347: </a>      <font color="#4169E1">if</font> (dy == 0) r = -1;
+<a name="line348">348: </a>      <font color="#4169E1">else</font> <font color="#4169E1">if</font> (dy &gt; 0) r = 0.25;
+<a name="line349">349: </a>      <font color="#4169E1">else</font> r = 0.75;
+<a name="line350">350: </a>    } <font color="#4169E1">else</font> <font color="#4169E1">if</font> (dx &gt; 0) {
+<a name="line351">351: </a>      r = PetscAtanReal((dy/ctx-&gt;vscale)/dx);
+<a name="line352">352: </a>      <font color="#4169E1">if</font> (dy &gt;= 0) r /= 2*PETSC_PI;
+<a name="line353">353: </a>      <font color="#4169E1">else</font> r = r/(2*PETSC_PI)+1;
+<a name="line354">354: </a>    } <font color="#4169E1">else</font> r = PetscAtanReal((dy/ctx-&gt;vscale)/dx)/(2*PETSC_PI)+0.5;
+<a name="line355">355: </a>    <font color="#4169E1">if</font> (ctx-&gt;start_ang&gt;ctx-&gt;end_ang) {
+<a name="line356">356: </a>      <font color="#4169E1">if</font> (r&gt;ctx-&gt;end_ang &amp;&amp; r&lt;ctx-&gt;start_ang) *inside = -1;
+<a name="line357">357: </a>    } <font color="#4169E1">else</font> {
+<a name="line358">358: </a>      <font color="#4169E1">if</font> (r&lt;ctx-&gt;start_ang || r&gt;ctx-&gt;end_ang) *inside = -1;
+<a name="line359">359: </a>    }
+<a name="line360">360: </a>  }
+<a name="line361">361: </a>  PetscFunctionReturn(0);
+<a name="line362">362: </a>}
+
+<a name="line364">364: </a><strong><font color="#4169E1"><a name="RGIsAxisymmetric_Ring"></a>PetscErrorCode RGIsAxisymmetric_Ring(<a href="../../../../../../docs/manualpages/sys/RG.html#RG">RG</a> rg,PetscBool vertical,PetscBool *symm)</font></strong>
+<a name="line365">365: </a>{
+<a name="line366">366: </a>  RG_RING *ctx = (RG_RING*)rg-&gt;data;
+
+<a name="line368">368: </a>  <font color="#4169E1">if</font> (vertical) *symm = (PetscRealPart(ctx-&gt;center) == 0.0 &amp;&amp; PetscAbs(ctx-&gt;start_ang+ctx-&gt;end_ang-PetscRealConstant(1.0)) == 0.5)? PETSC_TRUE: PETSC_FALSE;
+<a name="line369">369: </a>  <font color="#4169E1">else</font> *symm = (PetscImaginaryPart(ctx-&gt;center) == 0.0 &amp;&amp; ctx-&gt;start_ang+ctx-&gt;end_ang == 1.0)? PETSC_TRUE: PETSC_FALSE;
+<a name="line370">370: </a>  PetscFunctionReturn(0);
+<a name="line371">371: </a>}
+
+<a name="line373">373: </a><strong><font color="#4169E1"><a name="RGSetFromOptions_Ring"></a>PetscErrorCode RGSetFromOptions_Ring(PetscOptionItems *PetscOptionsObject,<a href="../../../../../../docs/manualpages/sys/RG.html#RG">RG</a> rg)</font></strong>
+<a name="line374">374: </a>{
+<a name="line375">375: </a>  PetscScalar    s;
+<a name="line376">376: </a>  PetscReal      r1,r2,r3,r4,r5;
+<a name="line377">377: </a>  PetscBool      flg1,flg2,flg3,flg4,flg5,flg6;
+
+<a name="line379">379: </a>  PetscOptionsHead(PetscOptionsObject,<font color="#666666">"<a href="../../../../../../docs/manualpages/sys/RG.html#RG">RG</a> Ring Options"</font>);
+
+<a name="line381">381: </a>    <a href="../../../../../../docs/manualpages/RG/RGRingGetParameters.html#RGRingGetParameters">RGRingGetParameters</a>(rg,&amp;s,&amp;r1,&amp;r2,&amp;r3,&amp;r4,&amp;r5);
+<a name="line382">382: </a>    PetscOptionsScalar(<font color="#666666">"-rg_ring_center"</font>,<font color="#666666">"Center of ellipse"</font>,<font color="#666666">"<a href="../../../../../../docs/manualpages/RG/RGRingSetParameters.html#RGRingSetParameters">RGRingSetParameters</a>"</font>,s,&amp;s,&amp;flg1);
+<a name="line383">383: </a>    PetscOptionsReal(<font color="#666666">"-rg_ring_radius"</font>,<font color="#666666">"Radius of ellipse"</font>,<font color="#666666">"<a href="../../../../../../docs/manualpages/RG/RGRingSetParameters.html#RGRingSetParameters">RGRingSetParameters</a>"</font>,r1,&amp;r1,&amp;flg2);
+<a name="line384">384: </a>    PetscOptionsReal(<font color="#666666">"-rg_ring_vscale"</font>,<font color="#666666">"Vertical scale of ellipse"</font>,<font color="#666666">"<a href="../../../../../../docs/manualpages/RG/RGRingSetParameters.html#RGRingSetParameters">RGRingSetParameters</a>"</font>,r2,&amp;r2,&amp;flg3);
+<a name="line385">385: </a>    PetscOptionsReal(<font color="#666666">"-rg_ring_startangle"</font>,<font color="#666666">"Right-hand side angle"</font>,<font color="#666666">"<a href="../../../../../../docs/manualpages/RG/RGRingSetParameters.html#RGRingSetParameters">RGRingSetParameters</a>"</font>,r3,&amp;r3,&amp;flg4);
+<a name="line386">386: </a>    PetscOptionsReal(<font color="#666666">"-rg_ring_endangle"</font>,<font color="#666666">"Left-hand side angle"</font>,<font color="#666666">"<a href="../../../../../../docs/manualpages/RG/RGRingSetParameters.html#RGRingSetParameters">RGRingSetParameters</a>"</font>,r4,&amp;r4,&amp;flg5);
+<a name="line387">387: </a>    PetscOptionsReal(<font color="#666666">"-rg_ring_width"</font>,<font color="#666666">"Width of ring"</font>,<font color="#666666">"<a href="../../../../../../docs/manualpages/RG/RGRingSetParameters.html#RGRingSetParameters">RGRingSetParameters</a>"</font>,r5,&amp;r5,&amp;flg6);
+<a name="line388">388: </a>    <font color="#4169E1">if</font> (flg1 || flg2 || flg3 || flg4 || flg5 || flg6) <a href="../../../../../../docs/manualpages/RG/RGRingSetParameters.html#RGRingSetParameters">RGRingSetParameters</a>(rg,s,r1,r2,r3,r4,r5);
+
+<a name="line390">390: </a>  PetscOptionsTail();
+<a name="line391">391: </a>  PetscFunctionReturn(0);
+<a name="line392">392: </a>}
+
+<a name="line394">394: </a><strong><font color="#4169E1"><a name="RGDestroy_Ring"></a>PetscErrorCode RGDestroy_Ring(<a href="../../../../../../docs/manualpages/sys/RG.html#RG">RG</a> rg)</font></strong>
+<a name="line395">395: </a>{
+<a name="line396">396: </a>  PetscFree(rg-&gt;data);
+<a name="line397">397: </a>  PetscObjectComposeFunction((PetscObject)rg,<font color="#666666">"RGRingSetParameters_C"</font>,NULL);
+<a name="line398">398: </a>  PetscObjectComposeFunction((PetscObject)rg,<font color="#666666">"RGRingGetParameters_C"</font>,NULL);
+<a name="line399">399: </a>  PetscFunctionReturn(0);
+<a name="line400">400: </a>}
+
+<a name="line402">402: </a><strong><font color="#4169E1"><a name="RGCreate_Ring"></a>SLEPC_EXTERN PetscErrorCode RGCreate_Ring(<a href="../../../../../../docs/manualpages/sys/RG.html#RG">RG</a> rg)</font></strong>
+<a name="line403">403: </a>{
+<a name="line404">404: </a>  RG_RING        *ring;
+
+<a name="line406">406: </a>  PetscNewLog(rg,&amp;ring);
+<a name="line407">407: </a>  ring-&gt;center    = 0.0;
+<a name="line408">408: </a>  ring-&gt;radius    = PETSC_MAX_REAL;
+<a name="line409">409: </a>  ring-&gt;vscale    = 1.0;
+<a name="line410">410: </a>  ring-&gt;start_ang = 0.0;
+<a name="line411">411: </a>  ring-&gt;end_ang   = 1.0;
+<a name="line412">412: </a>  ring-&gt;width     = 0.1;
+<a name="line413">413: </a>  rg-&gt;data = (void*)ring;
+
+<a name="line415">415: </a>  rg-&gt;ops-&gt;istrivial         = RGIsTrivial_Ring;
+<a name="line416">416: </a>  rg-&gt;ops-&gt;computecontour    = RGComputeContour_Ring;
+<a name="line417">417: </a>  rg-&gt;ops-&gt;computebbox       = RGComputeBoundingBox_Ring;
+<a name="line418">418: </a>  rg-&gt;ops-&gt;computequadrature = RGComputeQuadrature_Ring;
+<a name="line419">419: </a>  rg-&gt;ops-&gt;checkinside       = RGCheckInside_Ring;
+<a name="line420">420: </a>  rg-&gt;ops-&gt;isaxisymmetric    = RGIsAxisymmetric_Ring;
+<a name="line421">421: </a>  rg-&gt;ops-&gt;setfromoptions    = RGSetFromOptions_Ring;
+<a name="line422">422: </a>  rg-&gt;ops-&gt;view              = RGView_Ring;
+<a name="line423">423: </a>  rg-&gt;ops-&gt;destroy           = RGDestroy_Ring;
+<a name="line424">424: </a>  PetscObjectComposeFunction((PetscObject)rg,<font color="#666666">"RGRingSetParameters_C"</font>,RGRingSetParameters_Ring);
+<a name="line425">425: </a>  PetscObjectComposeFunction((PetscObject)rg,<font color="#666666">"RGRingGetParameters_C"</font>,RGRingGetParameters_Ring);
+<a name="line426">426: </a>  PetscFunctionReturn(0);
+<a name="line427">427: </a>}
+</pre>
+</body>
+
+</html>

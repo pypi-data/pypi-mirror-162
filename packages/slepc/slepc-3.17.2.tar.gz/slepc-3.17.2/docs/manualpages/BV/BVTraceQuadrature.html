@@ -1,0 +1,65 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML3.2 EN">
+<HTML>
+<HEAD> <link rel="canonical" href="https://slepc.upv.es/documentation/current/docs/manualpages/BV/BVTraceQuadrature.html" />
+<META NAME="GENERATOR" CONTENT="DOCTEXT">
+<link rel="stylesheet" href="/slepc.css" type="text/css">
+<TITLE>BVTraceQuadrature</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+   <div id="version" align=right><b>slepc-3.17.2 2022-08-09</b></div>
+   <div id="bugreport" align=right><a href="mailto:slepc-maint@upv.es?subject=Typo or Error in Documentation &body=Please describe the typo or error in the documentation: slepc-3.17.2 v3.17.2 docs/manualpages/BV/BVTraceQuadrature.html "><small>Report Typos and Errors</small></a></div>
+<H1>BVTraceQuadrature</H1>
+Computes an estimate of the number of eigenvalues inside a region via quantities computed in the quadrature rule of contour integral methods. 
+<H3><FONT COLOR="#883300">Synopsis</FONT></H3>
+<PRE>
+#include "slepcbv.h" 
+PetscErrorCode <A HREF="../BV/BVTraceQuadrature.html#BVTraceQuadrature">BVTraceQuadrature</A>(<A HREF="../sys/BV.html#BV">BV</A> Y,<A HREF="../sys/BV.html#BV">BV</A> V,PetscInt L,PetscInt L_max,PetscScalar *w,VecScatter scat,PetscSubcomm subcomm,PetscInt npoints,PetscBool useconj,PetscReal *est_eig)
+</PRE>
+Collective on Y
+<P>
+<H3><FONT COLOR="#883300">Input Parameters</FONT></H3>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>Y       </B></TD><TD>&nbsp;- first basis vectors
+</TD></TR>
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>V       </B></TD><TD>&nbsp;- second basis vectors
+</TD></TR>
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>L       </B></TD><TD>&nbsp;- block size
+</TD></TR>
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>L_max   </B></TD><TD>&nbsp;- maximum block size
+</TD></TR>
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>w       </B></TD><TD>&nbsp;- quadrature weights
+</TD></TR>
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>scat    </B></TD><TD>&nbsp;- (optional) VecScatter object to communicate between subcommunicators
+</TD></TR>
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>subcomm </B></TD><TD>&nbsp;- subcommunicator layout
+</TD></TR>
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>npoints </B></TD><TD>&nbsp;- number of points to process by the subcommunicator
+</TD></TR>
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>useconj </B></TD><TD>&nbsp;- whether conjugate points can be used or not
+</TD></TR></TABLE>
+<P>
+<H3><FONT COLOR="#883300">Output Parameter</FONT></H3>
+<TABLE border="0" cellpadding="0" cellspacing="0">
+<TR><TD WIDTH=40></TD><TD ALIGN=LEFT VALIGN=TOP><B>est_eig </B></TD><TD>&nbsp;- estimated eigenvalue count
+</TD></TR></TABLE>
+<P>
+<H3><FONT COLOR="#883300">Notes</FONT></H3>
+This function returns an estimation of the number of eigenvalues in the
+region, computed as trace(V'*S_0), where S_0 is the first panel of S
+computed by <A HREF="../BV/BVSumQuadrature.html#BVSumQuadrature">BVSumQuadrature</A>().
+<P>
+When using subcommunicators, Y is stored in the subcommunicators for a subset
+of integration points. In that case, the computation is done in the subcomm
+and then scattered to the whole communicator in S using the VecScatter scat.
+The value npoints is the number of points to be processed in this subcomm
+and the flag useconj indicates whether symmetric points can be reused.
+<P>
+
+<P>
+<H3><FONT COLOR="#883300">See Also</FONT></H3>
+ <A HREF="../BV/BVScatter.html#BVScatter">BVScatter</A>(), <A HREF="../BV/BVDotQuadrature.html#BVDotQuadrature">BVDotQuadrature</A>(), <A HREF="../BV/BVSumQuadrature.html#BVSumQuadrature">BVSumQuadrature</A>(), <A HREF="../RG/RGComputeQuadrature.html#RGComputeQuadrature">RGComputeQuadrature</A>(), <A HREF="../RG/RGCanUseConjugates.html#RGCanUseConjugates">RGCanUseConjugates</A>()
+<BR><P><B><FONT COLOR="#883300">Location: </FONT></B><A HREF="../../../src/sys/classes/bv/interface/bvcontour.c.html#BVTraceQuadrature">src/sys/classes/bv/interface/bvcontour.c</A>
+<BR><A HREF="./index.html">Index of all BV routines</A>
+<BR><A HREF="../../../docs/manualpages/index.html">Table of Contents for all manual pages</A>
+<BR><A HREF="../singleindex.html">Index of all manual pages</A>
+</BODY></HTML>
