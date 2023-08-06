@@ -1,0 +1,54 @@
+Metadata-Version: 2.1
+Name: tf-persistent-data
+Version: 1.0.0
+Summary: tf-persistent-data
+Author: kkh
+Author-email: doggood720@gmail.com
+License: MIT
+Description-Content-Type: text/markdown
+Requires-Dist: tf-encrypts
+
+"# tf-persistent-data" 
+
+#### 사용법1
+```python
+from tfpersistentdata.tfpersistentdata import TfPersistentData
+
+if __name__ == '__main__':
+    persist = TfPersistentData(b'p@ssw0rd')
+    data = {'a': 123, 'b': 'text1234'}
+    filename = 'data1.tpd'
+    persist.write(data, filename)
+    rdata = persist.read(filename)
+    print('filename:', filename, '| data:', rdata, '| type:', type(rdata))
+```
+
+#### 사용법2
+```python
+from tfpersistentdata.tfpersistentdata import TfPersistentData
+
+if __name__ == '__main__':
+    persist = TfPersistentData(b'p@ssw0rd')
+    data = 3.14
+    filename = 'data1.tpd'
+    persist.write(data, filename)
+    rdata = persist.read(filename)
+    print('filename:', filename, '| data:', rdata, '| type:', type(rdata))
+```
+
+#### 사용법3
+```python
+from tfpersistentdata.tfpersistentdata import TfPersistentData
+
+class A:
+    a = 1
+    b = 'text2'
+
+if __name__ == '__main__':
+    persist = TfPersistentData(b'p@ssw0rd')
+    data = A()
+    filename = 'data1.tpd'
+    persist.write(data, filename)
+    rdata = persist.read(filename)
+    print('filename:', filename, '| data:', rdata, '| type:', type(rdata))
+```
