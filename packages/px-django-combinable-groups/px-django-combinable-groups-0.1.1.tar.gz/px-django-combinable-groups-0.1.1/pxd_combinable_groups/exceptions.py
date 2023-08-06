@@ -1,0 +1,2 @@
+class CombinableGroupsError(Exception):
+    pass
