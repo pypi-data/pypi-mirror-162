@@ -1,0 +1,161 @@
+name: NEURON ModelDB CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+      branches: [ master ]
+  schedule:
+    # Run at 2am every day
+    - cron:  '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      neuron_v1:
+        description: Last official release (neuron) / NEURON pinned version / Azure drop (artifacts) url
+        default: 'neuron'
+        required: true
+      neuron_v2:
+        description: Last nightly release (neuron-nightly) / NEURON pinned version / Azure drop (artifacts) url
+        default: 'neuron-nightly'
+        required: true
+      models_to_run:
+        description: 'Empty for all models, space separated accession numbers for specific models'
+        default: ''
+        required: false
+
+jobs:
+  nrn-modeldb-ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9"]
+    env:
+      DISPLAY: ${{ ':0' }}
+      NEURON_V1: ${{ github.event.inputs.neuron_v1 || 'neuron' }}
+      NEURON_V2: ${{ github.event.inputs.neuron_v2 || 'neuron-nightly' }}
+      MODELS_TO_RUN: ${{ github.event.inputs.models_to_run || '' }}
+
+    steps:
+    - uses: actions/checkout@v2
+        
+    - name: check for Azure drop NEURON_V1 -> ${{ github.event.inputs.neuron_v1 }}
+      if: github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.neuron_v1, 'https://dev.azure.com/neuronsimulator/')
+      run: |
+        # check URI
+        curl -sfSI -X GET '${{ github.event.inputs.neuron_v1 }}'
+        
+        # Download Azure drop and unzip
+        AZURE_DROP_URL="$NEURON_V1"
+        rm -rf drop
+        wget --tries=4 -LO DROP_V1.zip ${AZURE_DROP_URL}
+        unzip DROP_V1.zip
+        mv drop DROP_V1
+        
+        # Set drop dir in the env
+        echo "DROP_DIR_V1=`pwd`/DROP_V1" >> $GITHUB_ENV
+    
+    - name: check for Azure drop NEURON_V2 -> ${{ github.event.inputs.neuron_v2 }}
+      if: github.event_name == 'workflow_dispatch' && startsWith(github.event.inputs.neuron_v2, 'https://dev.azure.com/neuronsimulator/')
+      run: |
+        # check URI
+        curl -sfSI -X GET '${{ github.event.inputs.neuron_v2 }}'
+
+        # Download Azure drop and unzip
+        AZURE_DROP_URL="$NEURON_V2"
+        rm -rf drop
+        wget --tries=4 -LO DROP_V2.zip ${AZURE_DROP_URL}
+        unzip DROP_V2.zip
+        mv drop DROP_V2
+
+        # Set drop dir in the env
+        echo "DROP_DIR_V2=`pwd`/DROP_V2" >> $GITHUB_ENV
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Set models to run for PR
+      run: |
+        # Select a few models to run CI for PRs 
+        echo 'MODELS_TO_RUN=279 3264 22203 144549 105507 194897' >> $GITHUB_ENV
+      if: github.event_name == 'pull_request'
+
+    - name: Install dependencies and project
+      id: install-deps
+      run: |
+        set
+        # Set up Xvfb
+        sudo apt-get install xvfb
+        sudo /usr/bin/Xvfb $DISPLAY -screen 0 1600x1200x24 &  # run in bg
+        # Install python dependencies
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        #Install project in editable mode
+        python -m pip install -e .
+        echo "::set-output name=date::$(date -u "+%Y%m")"
+    
+    - name: Cache ModelDB models
+      id: cache-models
+      uses: actions/cache@v3
+      with:
+        path: |
+          cache
+          modeldb/modeldb-meta.yaml
+        key: models-${{steps.install-deps.outputs.date}}
+
+    - name: Get ModelDB models
+      if: steps.cache-models.outputs.cache-hit != 'true'
+      run: getmodels
+
+    - name: Run Models with NEURON V1 -> ${{ env.NEURON_V1 }}
+      run: |
+        # Install NEURON V1
+        if [[ -d "${DROP_DIR_V1}" ]]; then
+          python -m pip install --user --find-links ${DROP_DIR_V1} neuron-nightly
+        else
+          python -m pip install $NEURON_V1
+        fi
+        nrn_ver=`python -c "from neuron import __version__ as nrn_ver; print(nrn_ver)"`
+        runmodels --virtual --workdir=$nrn_ver $MODELS_TO_RUN
+        report2html ${nrn_ver}.json
+        if [[ -d "${DROP_DIR_V1}" ]]; then
+          python -m pip uninstall --yes neuron-nightly==${nrn_ver}
+        else
+          python -m pip uninstall --yes $NEURON_V1
+        fi
+        
+        echo "nrn1_ver=$nrn_ver" >> $GITHUB_ENV
+
+    - name: Run Models with NEURON V2 -> ${{ env.NEURON_V2 }}
+      if: env.NEURON_V1 != env.NEURON_V2
+      run: |
+        # Install NEURON V2
+        if [[ -d "${DROP_DIR_V2}" ]]; then
+          python -m pip install --user --find-links ${DROP_DIR_V2} neuron-nightly
+        else
+          python -m pip install $NEURON_V2
+        fi
+        nrn_ver=`python -c "from neuron import __version__ as nrn_ver; print(nrn_ver)"`
+        runmodels --virtual --workdir=$nrn_ver $MODELS_TO_RUN
+        report2html ${nrn_ver}.json
+        if [[ -d "${DROP_DIR_V2}" ]]; then
+          python -m pip uninstall --yes neuron-nightly==${nrn_ver}
+        else
+          python -m pip uninstall --yes $NEURON_V2
+        fi
+        echo "nrn2_ver=$nrn_ver" >> $GITHUB_ENV
+
+    - name: diffreports2html ${{ env.nrn1_ver }}.json <-> ${{ env.nrn2_ver }}.json
+      if: env.NEURON_V1 != env.NEURON_V2
+      run: |
+        diffreports2html ${nrn1_ver}.json ${nrn2_ver}.json
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: ${{ env.nrn1_ver }}-vs-${{ env.nrn2_ver }}
+        path: |
+          ./*.json
+          ./*.html
