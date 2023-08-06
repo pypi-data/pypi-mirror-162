@@ -1,0 +1,2 @@
+class AppCache():
+    pass
