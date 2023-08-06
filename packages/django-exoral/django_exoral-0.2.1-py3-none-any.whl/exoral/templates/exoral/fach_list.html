@@ -1,0 +1,48 @@
+{% extends "exoral/base.html" %}
+
+{% block content %}
+<div class="container">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item" aria-current="page"><a href="{% url 'exoral:home' %}">Start</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Fächer</li>
+      {% if perms.exoral.add_fach %}
+      <li class="breadcrumb-item" aria-current="page"><a href="{% url 'exoral:fach-create' %}">hinzufügen</a></li>
+      {% endif %}
+    </ol>
+  </nav>
+
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Dozenten</th>
+        <th>Testate</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for fach in fach_list %}
+      <tr>
+        <td>
+          {% if perms.exoral.change_fach %}
+          <a href="{% url 'exoral:fach-edit' fach.id %}">{{ fach.name }}</a>
+          {% else %}
+          {{ fach.name }}
+          {% endif %}
+        </td>
+        <td>
+          {% for dozent in fach.dozent_set.all %}
+          <a href="{% url 'exoral:dozent-detail' dozent.id %}">{{ dozent }}</a>{% if not forloop.last %}, {% endif %}
+          {% endfor %}
+        </td>
+        <td>
+          {% for testat in fach.testat_set.all %}
+          <a href="{% url 'exoral:testat-detail' testat.id %}">{{ testat }}</a>{% if not forloop.last %}, {% endif %}
+          {% endfor %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock content %}
