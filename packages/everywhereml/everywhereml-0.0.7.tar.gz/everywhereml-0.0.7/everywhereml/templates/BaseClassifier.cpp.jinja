@@ -1,0 +1,40 @@
+#ifndef {{ UUID }}
+#define {{ UUID }}
+
+/**
+ {{ str(this) | to_c_comment }}
+ */
+class {{ class_name or this.class_name }} {
+    public:
+
+        /**
+         * Predict class from features
+         */
+        {{ dtype | default("int", true) }} predict({{ input_dtype or 'float' }} *x) {
+            {{ dtype | default("int", true) }} predictedValue = 0;
+            size_t startedAt = micros();
+
+            {% block predict %}{% endblock %}
+
+            latency = micros() - startedAt;
+
+            return (lastPrediction = predictedValue);
+        }
+
+
+        {% include './class_map' %}
+        {% include './latency' %}
+
+    protected:
+        float latency = 0;
+        {{ dtype | default("int", true) }} lastPrediction = 0;
+
+        {% block protected %}{% endblock %}
+};
+
+
+{% if instance_name %}
+static {{ class_name or this.class_name }} {{ instance_name }};
+{% endif %}
+
+#endif
