@@ -1,0 +1,29 @@
+{
+    "name" : "index",
+    "label": "IDX to SOLR and latest to DYNAMO Format",
+
+    "dag": {
+        "nodes": {
+            "ffind"   : "index.FFind",
+            "index"   : "index.Index",
+            "notify"  : "index.Notify"
+        },
+        "edges": [
+            {
+                "from"     : "ffind",
+                "to"       : "index",
+                "bindings" : { "index.files" : "ffind.files" }
+            },
+            {
+                "from"     : "index",
+                "to"       : "notify",
+                "bindings" : { "notify.flag" : "index.flag" }
+            }
+        ]
+    },
+    "config" : {
+	    "steps": {
+        }
+    }
+}
+

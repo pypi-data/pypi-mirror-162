@@ -1,0 +1,40 @@
+{
+    "name" : "analyze",
+    "label": "GBD to IDX Format",
+
+    "dag": {
+        "nodes": {
+            "ffind"     : "analyze.FFind",
+            "transform" : "analyze.Transform",
+            "analyze"   : "analyze.Analyze",
+            "merge"     : "analyze.Merge"
+        },
+        "edges": [
+            {
+                "from"     : "ffind",
+                "to"       : "transform",
+                "bindings" : { "transform.files" : "ffind.files" }
+            },
+            {
+                "from"     : "ffind",
+                "to"       : "analyze",
+                "bindings" : { "analyze.files" : "ffind.files" }
+            },
+            {
+                "from"     : "transform",
+                "to"       : "merge",
+                "bindings" : { "merge.data_files" : "transform.data_files" }
+            },
+            {
+                "from"     : "analyze",
+                "to"       : "merge",
+                "bindings" : { "merge.img_files" : "analyze.img_files" }
+            }
+        ]
+    },
+    "config" : {
+	    "steps": {
+        }
+    }
+}
+
