@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunknbvv=self.webpackChunknbvv||[]).push([[838],{99838:(e,r,n)=>{n.r(r),n.d(r,{default:()=>a});var s=n(88424),u=n(70644);class a extends u.Z{decodeBlock(e){return(0,s.rr)(new Uint8Array(e)).buffer}}}}]);
