@@ -1,0 +1,104 @@
+Metadata-Version: 2.1
+Name: tw
+Version: 3.10.0
+Summary: TorchWrapper is a deep learning helper.
+Home-page: https://github.com/atranitell/TensorWrapper
+Author: Kai Jin
+Author-email: atranitell@gmail.com
+License: Apache 2.0 Licence
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Operating System :: OS Independent
+Classifier: Intended Audience :: Science/Research
+Classifier: Topic :: Scientific/Engineering :: Artificial Intelligence
+Description-Content-Type: text/markdown
+
+
+# TensorWrapper
+TensorWrapper is a extension library for PyTorch framework. It aims to supplement a few of common components: newest optimizer, opeartors, utils, drawer, common structure and etc.
+
+## Installation
+```bash
+# install 3rd pip depedency.
+pip install cython matplotlib opencv-python numpy tensorboard future memory_profiler profilehooks tqdm scipy scikit-image
+HOROVOD_GPU_OPERATIONS=NCCL pip install horovod
+```
+
+## Distributed Train/Val
+
+**Install openmpi**
+```bash
+# install openmpi 4.0 version
+curl -O -L https://download.open-mpi.org/release/open-mpi/v4.0/openmpi-4.0.1.tar.gz
+tar xvzf openmpi-4.0.1.tar.gz
+./configure --prefix=/usr/local
+make all && sudo make install
+export PATH=/usr/local/bin:$PATH
+
+# or via conda
+conda install openmpi
+```
+
+**Install NCCL**
+```bash
+# download nccl library: https://developer.nvidia.com/nccl/nccl-legacy-downloads
+# O/S agnostic local installer
+# e.g. nccl_2.6.4-1+cuda10.0_x86_64.txz
+
+# or using deb fashion
+# https://developer.nvidia.com/compute/machine-learning/nccl/secure/v2.6/prod/nccl-repo-ubuntu1604-2.6.4-ga-cuda10.0_1-1_amd64.deb
+sudo apt install libnccl2=2.6.4-1+cuda10.0 libnccl-dev=2.6.4-1+cuda10.0
+sudo apt install libnccl2=2.6.4-1+cuda10.1 libnccl-dev=2.6.4-1+cuda10.1
+export LD_LIBRARY_PATH=`pwd`/nccl_2.6.4-1+cuda10.0_x86_64/lib:$LD_LIBRARY_PATH
+```
+
+**Install Horovod**
+```bash
+HOROVOD_GPU_OPERATIONS=NCCL pip install horovod --no-cache-dir
+
+git config --global user.email "atranitell@gmail.com" && git config --global user.name "jk"
+```
+
+**Install CMake**
+```bash
+# install cmake
+# https://cmake.org/files/v3.14/
+conda create --file environment.yml
+sudo apt-get install libsparsehash-dev
+```
+
+**Train**
+```bash
+# demo for verificaiton distributed traning
+cd research/Classifier
+
+# execute single node for mnist, note that batch size is set to 128
+python Classifier.py --config configs/Classifier_Mnist_LeNet.py
+
+# execute 4 node with 4 gpu, note that batch size should be set to 32
+python -m tw.api.launch --np 4 --device cuda python Classifier.py --config configs/Classifier_Mnist_LeNet.py
+
+# monitor the validation result, the test error should be similiar.
+```
+
+## Usage
+
+```bash
+# dist train
+python -m tw.api.launch --np 2 --dev cuda python research/classification/Classifier.py --config research/classification/configs/Classifier_ImageNet_AlexNet.py --task train
+
+# dist eval
+python -m tw.api.launch --np 2 --dev cuda python research/classification/Classifier.py --config research/classification/configs/Classifier_ImageNet_AlexNet.py --task test
+
+# single train
+python research/classification/Classifier.py --config research/classification/configs/Classifier_ImageNet_AlexNet.py --task train
+
+# single eval
+python research/classification/Classifier.py --config research/classification/configs/Classifier_ImageNet_AlexNet.py --task test
+```
+
+
