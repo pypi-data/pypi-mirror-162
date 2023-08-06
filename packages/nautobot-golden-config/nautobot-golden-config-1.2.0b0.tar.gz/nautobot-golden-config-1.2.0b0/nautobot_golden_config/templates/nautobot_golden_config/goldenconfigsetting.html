@@ -1,0 +1,131 @@
+{% extends 'generic/object_detail.html' %}
+{% load helpers %}
+
+{% block content_left_page %}
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <strong>General Settings</strong>
+  </div>
+  <table class="table table-hover panel-body attr-table">
+    <tr>
+      <td>Weight</td>
+      <td>{{ object.weight }}</td>
+    </tr>
+    <tr>
+      <td>Description</td>
+      <td>{{ object.description|placeholder }}</td>
+    </tr>
+    <tr>
+      <td>
+        <a href="{{ object.get_url_to_filtered_device_list }}">Scope of Devices</a>
+        <br/>via <a href="{{ object.dynamic_group.get_absolute_url }}">{{ object.dynamic_group.name }}</a>
+      </td>
+      <td>
+        <pre>{{ object.scope|render_json }}</pre></a>
+      </td>
+    </tr>
+  </table>
+</div>
+{% endblock content_left_page %}
+
+{% block content_right_page %}
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <strong>Backup Configuration</strong>
+  </div>
+  <table class="table table-hover panel-body attr-table">
+    <tr>
+      <td>
+        Backup Repository
+      </td>
+      <td>
+        {% if object.backup_repository %}
+          <a href="{{ object.backup_repository.get_absolute_url }}">{{ object.backup_repository }}</a>
+        {% else %}
+          <span class="text-muted">None</span>
+        {% endif %}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        Backup Path in Jinja Template Form
+      </td>
+      <td>
+        {{ object.backup_path_template|placeholder }}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        Backup Test
+      </td>
+      <td>
+        {{ object.backup_test_connectivity|placeholder }}
+      </td>
+    </tr>
+  </table>
+</div>
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <strong>Intended Configuration</strong>
+  </div>
+  <table class="table table-hover panel-body attr-table">
+    <tr>
+      <td>
+        Intended Repository
+      </td>
+      <td>
+        {% if object.intended_repository %}
+          <a href="{{ object.intended_repository.get_absolute_url }}">{{ object.intended_repository }}</a>
+        {% else %}
+          <span class="text-muted">None</span>
+        {% endif %}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        Intended Path in Jinja Template Form
+      </td>
+      <td>
+        {{ object.intended_path_template|placeholder }}
+      </td>
+    </tr>
+  </table>
+</div>
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <strong>Templates Configuration</strong>
+  </div>
+  <table class="table table-hover panel-body attr-table">
+    <tr>
+      <td>
+        Jinja Repository
+      </td>
+      <td>
+        {% if object.jinja_repository %}
+          <a href="{{ object.jinja_repository.get_absolute_url }}">{{ object.jinja_repository }}</a>
+        {% else %}
+          <span class="text-muted">None</span>
+        {% endif %}
+      </td>
+    </tr>
+    <tr>
+      <td>
+        Template Path in Jinja Template Form
+      </td>
+      <td>
+        {{ object.jinja_path_template|placeholder }}
+      </td>
+    </tr>
+    <tr>
+      <td>GraphQL Query</td>
+      <td>
+        {% if object.sot_agg_query %}
+          <a href="{{ object.sot_agg_query.get_absolute_url }}">{{ object.sot_agg_query }}</a>
+        {% else %}
+          <span class="text-muted">None</span>
+        {% endif %}
+      </td>
+    </tr>
+  </table>
+</div>
+{% endblock content_right_page %}
