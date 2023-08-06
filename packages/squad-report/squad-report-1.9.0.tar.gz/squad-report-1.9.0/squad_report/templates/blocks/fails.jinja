@@ -1,0 +1,13 @@
+## Fails
+{% if fails|length == 0 %}
+No fails found.
+{% else %}
+{% for key in fails %}
+{% if fails[key]|length == 0 %}{% continue %}{% endif %}
+* {{ key[0] }}, {{ key[1] }}
+{% for t in fails[key] %}
+  - {{ t }}
+{% endfor %}
+
+{% endfor %}
+{% endif %}

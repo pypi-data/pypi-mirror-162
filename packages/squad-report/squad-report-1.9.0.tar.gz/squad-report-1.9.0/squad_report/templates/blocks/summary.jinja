@@ -1,0 +1,32 @@
+## Test result summary
+{% set comma = joiner(", ") %}
+{% for key,value in test_result.items() %}
+{{ comma() }}{{key}}: {{value}}
+{%- endfor %}
+
+
+## Build Summary
+{% for key in summary %}
+{% if key[1] == "build" -%}
+{% set env = key[0] %}
+{% set suite = key[1] %}
+{% set pass = summary[key].pass %}
+{% set fail = summary[key].fail %}
+{% set skip = summary[key].skip %}
+{% set xfail = summary[key].xfail %}
+{% set total = pass + fail + skip + xfail %}
+* {{ key[0] }}:
+{{- " %s total" % (total) }}
+{{- ", %s passed" % (pass) }}
+{{- ", %s failed" % (fail) }}
+{{- ", %s skipped" % (skip) if skip }}
+{{- ", %s xfailed" % (xfail) if xfail }}
+{% endif %}
+{% endfor %}
+
+## Test suites summary
+{% for s in suites %}
+{% if s != "build" -%}
+* {{ s }}
+{% endif %}
+{% endfor %}
