@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=63.4.1", "setuptools-scm>=7.0.5"]
+build-backend = "setuptools.build_meta"
+
+[tool.black]
+line-length = 120
+
+[tool.isort]
+profile = "black"
+known_first_party = ["sphinx_argparse_cli"]
+
+[tool.setuptools_scm]
+write_to = "src/sphinx_argparse_cli/version.py"
+write_to_template = """
+\"\"\" Version information \"\"\"
+from __future__ import annotations
+
+__version__: str = "{version}"
+"""
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore::DeprecationWarning:docutils",
+]
