@@ -1,0 +1,48 @@
+EVENT_DOCKING_ROUTINE = "docking_routine"
+EVENT_REGISTER = "register"
+EVENT_LOCATION = "location"
+EVENT_BATTERY = "batteryStatus"
+EVENT_GOAL_STATUS = "goalStatus"
+EVENT_TOPICS_LIST = "topics"
+EVENT_TOPIC_DATA = "topic_data"
+EVENT_PATH_DATA = "path_data"
+
+ALL = (
+    EVENT_DOCKING_ROUTINE,
+    EVENT_REGISTER,
+    EVENT_LOCATION,
+    EVENT_BATTERY,
+    EVENT_GOAL_STATUS,
+    EVENT_TOPIC_DATA,
+    EVENT_TOPICS_LIST,
+    EVENT_PATH_DATA,
+)
+
+# Incoming actions
+ACTION_DOCKING_ROUTINE_REQUEST = "docking_routine_request"
+ACTION_DOCKING_ROUTINE_FINALIZE = "docking_routine_finalize_request"
+ACTION_TASK = "task"
+ACTION_TASK_CANCELLATION = "drop"
+ACTION_MOVE = "move"
+ACTION_MOVE_TO_CHARGING_POINT = "move_charge"
+ACTION_SLOW_DOWN = "slow_down"
+ACTION_TOPIC_LIST = "request_topics"
+ACTION_TOPIC_INITIALIZATION = "topic_init"
+ACTION_ERROR = "errors"
+
+ALL_ACTIONS = (
+    ACTION_DOCKING_ROUTINE_REQUEST,
+    ACTION_DOCKING_ROUTINE_FINALIZE,
+    ACTION_TASK,
+    ACTION_MOVE,
+    ACTION_MOVE_TO_CHARGING_POINT,
+    ACTION_SLOW_DOWN,
+    ACTION_TOPIC_LIST,
+    ACTION_TOPIC_INITIALIZATION,
+    ACTION_ERROR,
+)
+
+IGNORED_TYPES = (
+    "initialized",
+    "not_initialized",
+)
