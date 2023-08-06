@@ -1,0 +1,264 @@
+Metadata-Version: 2.1
+Name: adop
+Version: 0.0.1a5
+Summary: Automatic deployment on-prem from zip archives
+Home-page: https://gitlab.com/fholmer/adop
+Author: Frode Holmer
+Author-email: fholmer+adop@gmail.com
+License: BSD-3-Clause
+Project-URL: Source Code, https://gitlab.com/fholmer/adop
+Keywords: rest,api,post,zip,auto,deploy,on-prem
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Environment :: Web Environment
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 3
+Requires-Dist: Flask (==2.1.2)
+Requires-Dist: waitress (==2.1.2)
+
+====
+adop
+====
+
+* Source Code: https://gitlab.com/fholmer/adop
+* PyPI: https://pypi.org/project/adop/
+* License: BSD License
+
+Summary
+=======
+
+Automatic deployment on-prem from zip archives.
+
+Warning
+=======
+
+This is an alpha release. Not ready for production.
+
+Docs
+====
+
+Not available yet. Scheduled for beta release.
+
+Installation
+============
+
+Open command line and and install using pip:
+
+.. code-block:: doscon
+
+    > pip install adop
+
+Usage
+=====
+
+adop is available as console script and library module
+
+.. code-block:: doscon
+
+    > adop -h
+    > python -m adop -h
+
+Print general help
+
+.. code-block:: doscon
+
+    > adop -h
+
+Help on serving rest api
+
+.. code-block:: doscon
+
+    > adop serve-api -h
+
+Serve rest api on http://127.0.0.1:8000
+
+.. code-block:: doscon
+
+    > adop serve-api -b 127.0.0.1 -p 8000
+
+Find the generated access token
+
+* Windows
+
+  .. code-block:: doscon
+
+    > type %USERPROFILE%\.adop\adop.ini | findstr token
+
+* Linux
+
+  .. code-block:: bash
+
+    $ cat ~/.adop/adop.ini | grep token
+
+Test rest api with curl
+
+* Windows 
+
+  .. code-block:: doscon
+
+      > curl ^
+        -H "Token: paste-token-here" ^
+        http://127.0.0.1:8000/api/v1/test
+
+* Linux
+
+  .. code-block:: bash
+
+    $ curl \
+      -H "Token: paste-token-here" \
+      http://127.0.0.1:8000/api/v1/test
+
+Upload and deploy a zip-library:
+
+.. code-block:: bash
+
+    $ curl \
+      -H "Content-Type: application/zip" \
+      -H "Root: mylib" \
+      -H "Token: paste-token-here" \
+      --data-binary @work/mylib.zip \
+      http://127.0.0.1:8000/api/v1/deploy/zip
+
+
+Zip file layout
+===============
+
+Zip files with exactly one root directory are valid and can be distributed.
+The root directory name must be unique if many zip files are to be distributed.
+
+Example of a valid zip file layout:
+
+.. code-block:: text
+
+    /mylib
+        /README.rst
+        /main.py
+        /mypackage1
+            /__init__.py
+            /__main__.py
+        /mypackage2
+            /__init__.py
+            /__main__.py
+
+Following layout is **not** valid:
+
+.. code-block:: text
+
+    /README.rst
+    /mylib1
+        /__init__.py
+        /__main__.py
+    /mylib2
+        /__init__.py
+        /__main__.py
+
+API
+===
+
+Endpoints
+---------
+
+========================================= ======= =============================
+Description                               Method  Endpoint
+========================================= ======= =============================
+Check that the API is available.          GET     /api/v1/test
+Sha sum for all deployed zip-files.       GET     /api/v1/state
+Sha sum for given deployed root.          GET     /api/v1/state/<root>
+Start auto-fetch routine if enabled.      GET     /api/v1/trigger/fetch
+Download zip-file with given root.        GET     /api/v1/download/zip/<root>
+Upload a zip-file without deploying it.   POST    /api/v1/upload/zip
+Upload and deploy a zip-file.             POST    /api/v1/deploy/zip
+Deploy a preloaded zip-file.              GET     /api/v1/deploy/zip
+Zip-file unpacking progress.              GET     /api/v1/progress
+========================================= ======= =============================
+
+Headers
+-------
+
+=========== ====================================== ============================
+Header      Description                            Endpoint
+=========== ====================================== ============================
+Token       The authorization token for this API.  - All
+Root        Name of the root folder of the         - POST /api/v1/upload/zip
+            zip-file. Used to identify which       - POST /api/v1/deploy/zip
+            file is deployed.                      - GET /api/v1/deploy/zip
+Zip-Sha256  content hash of the zip-file to        - GET /api/v1/deploy/zip
+            deploy.
+=========== ====================================== ============================
+
+Result
+------
+
+The result is encoded as a json object. Most endpoints will return an object
+with ``result`` and ``result_code`` as keywords.
+
+.. code-block:: bash
+
+    $ curl \
+      -H "Token: paste-token-here" \
+      http://127.0.0.1:8000/api/v1/test
+    {
+      "result": "It works", 
+      "result_code": 0
+    }
+
+Endpoints that take a long time will stream a progress log until
+the result is returned.
+
+.. code-block:: bash
+
+    $ curl \
+      -H "Content-Type: application/zip" \
+      -H "Root: mylib" \
+      -H "Token: paste-token-here" \
+      --data-binary @work/mylib.zip \
+      http://127.0.0.1:8000/api/v1/deploy/zip
+    // root: mylib
+    // store data
+    // verify data
+    // verify root dir
+    // verify zip data
+    // zip root: 'mylib'
+    // unpack zip data
+    // remove untracked files
+    {"root": "mylib", "result": "Success", "result_code": 0}
+
+
+The Json specification does not support comments,
+so the client must ignore lines prefixed with ``//`` before decoding.
+
+.. code-block:: bash
+
+    $ curl \
+      -H "Content-Type: application/zip" \
+      -H "Root: mylib" \
+      -H "Token: paste-token-here" \
+      --data-binary @work/mylib.zip \
+      http://127.0.0.1:8000/api/v1/deploy/zip | \
+      grep -v // | \
+      python -m json.tool
+    {
+        "root": "mylib",
+        "result": "Success",
+        "result_code": 0
+    }
+
+
+Status and result codes
+-----------------------
+
+=========== ============ =================================================
+HTTP status result_code  Descripton
+=========== ============ =================================================
+200         0            OK. Indicates that the request has succeeded.
+200         1            Fail. The request has succeeded but result was
+                         unsuccessful.
+200         2            In progress. The request as been interrupted and
+                         returned to early to give the final result code.
+401         4            Unauthorized. Invalid token.
+500         5            Internal Error
+=========== ============ =================================================
+
+
