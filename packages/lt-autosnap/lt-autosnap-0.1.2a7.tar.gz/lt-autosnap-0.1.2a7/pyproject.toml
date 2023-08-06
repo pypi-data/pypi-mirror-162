@@ -1,0 +1,45 @@
+[tool.poetry]
+name = "lt-autosnap"
+version = "0.1.2-alpha.7"
+description = "LVM snapshot automation based on smbsnap from Samba.org"
+authors = ["Randall Pittman <randall.pittman@oregonstate.edu>"]
+license = "MIT"
+repository = "https://gitlab.com/randallpittman/lt-autosnap"
+include = ["LICENSE.txt", "CHANGELOG.md"]
+readme = "README.md"
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Development Status :: 4 - Beta",
+    "Topic :: System :: Operating System",
+    "Programming Language :: Python :: 3.6",
+]
+
+
+[tool.poetry.dependencies]
+python = "^3.6.8"
+dataclasses = { version = "^0.8", python = "~3.6" }
+single-version = "^1.5.1"
+
+[tool.poetry.dev-dependencies]
+black = "^22.3.0"
+isort = "^5.10.1"
+mypy = "^0.950"
+types-dataclasses = { version = "^0.6.5", python = "~3.6" }
+typing-extensions = { version = "3.10.0.2", python = "~3.6" }
+
+[tool.poetry.scripts]
+ltautosnap = "lt_autosnap.cli:cli"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 109
+target-version = ['py36']
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 109
