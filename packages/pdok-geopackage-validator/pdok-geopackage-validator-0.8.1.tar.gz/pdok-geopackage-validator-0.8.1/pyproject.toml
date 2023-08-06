@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=42.0,!=58.*,!=59.*,!=60.*,!=61.*", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pdok-geopackage-validator"
+description = "Validate Geopackage files according to PDOK requirements and recommendations"
+keywords = ["geopackage-validator", "geopackage", "pdok"]
+license = {text = "MIT"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+]
+dynamic = ["version", "readme", "requires-python"]
+
+[project.scripts]
+geopackage-validator = "geopackage_validator.cli:cli"
+
+[tool.setuptools.dynamic]
+version = {attr = "geopackage_validator.constants.__version__"}
+readme = {file = ["README.md"], content-type = "text/markdown"}
+
+[tool.setuptools.packages.find]
+include = ["geopackage_validator*"]  # package names should match these glob patterns (["*"] by default)
+exclude = ["tests*"]  # exclude packages matching these glob patterns (empty by default)
+
+[tool.pytest.ini_options]
+testpaths = [
+    "geopackage_validator",
+    "tests",
+]
