@@ -1,0 +1,39 @@
+[tool.poetry]
+name = "tap-feed"
+version = "1.1.1"
+description = "A Singer tap for RSS and Atom feeds built with the Meltano SDK for Singer Taps."
+authors = ["Jon Watson"]
+keywords = [
+    "ELT",
+    "feed",
+    "RSS",
+    "Atom",
+]
+license = "Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/jawats/tap-feed"
+
+
+[tool.poetry.dependencies]
+python = "<3.11,>=3.7.1"
+requests = "^2.25.1"
+singer-sdk = "^0.8.0"
+feedparser = "^6.0.8"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.2.5"
+tox = "^3.24.4"
+flake8 = "^3.9.2"
+black = "^21.9b0"
+pydocstyle = "^6.1.1"
+mypy = "^0.910"
+types-requests = "^2.26.1"
+types-python-dateutil = "^2.8.2"
+
+[build-system]
+requires = ["poetry-core>=1.0.8"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+# CLI declaration
+tap-feed = 'tap_feed.tap:TapFeed.cli'
