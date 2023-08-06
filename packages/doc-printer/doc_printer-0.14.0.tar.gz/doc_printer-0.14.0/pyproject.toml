@@ -1,0 +1,61 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "doc_printer"
+version = "0.14.0"
+description = "A Wadler-Leijen Pretty Printer in Python"
+readme = "README.md"
+requires-python = ">=3.9"
+keywords = ["doc-printer"]
+authors = [{ name = "Wen Kokke" }]
+classifiers = [
+  "License :: OSI Approved :: MIT License",
+  "Topic :: Software Development :: Compilers",
+]
+dependencies = ["dataclasses_json >=0.5.7, <0.6", "more_itertools >=8.13.0, <9"]
+
+[project.optional-dependencies]
+dev = ["build >=0.8.0, <0.9", "twine >=4.0.1, <5"]
+doc = ["Sphinx >=5.1.1, <6", "sphinx-bootstrap-theme >=0.8.1, <0.9"]
+test = ["pytest >=7.1.2, <8", "pytest-golden >=0.2.2, <0.3"]
+
+[project.urls]
+documentation = "https://wenkokke.github.io/py-doc-printer/"
+repository = "https://github.com/wenkokke/py-doc-printer"
+
+[tool.setuptools.package-data]
+doc_printer = ["py.typed"]
+
+[pytest]
+testpaths = "tests"
+
+[tool.pytest.ini_options]
+enable_assertion_pass_hook = true
+filterwarnings = ["ignore::DeprecationWarning:.*:"]
+
+[tool.bumpver]
+current_version = "0.14.0"
+version_pattern = "MAJOR.MINOR.PATCH"
+commit_message = "Bump version {old_version} -> {new_version}"
+commit = true
+tag = true
+push = true
+
+[tool.bumpver.file_patterns]
+"pyproject.toml" = ['current_version = "{version}"', 'version = "{version}"']
+"doc-source/conf.py" = ['release = "{version}"']
+
+[tool.tox]
+legacy_tox_ini = """
+[tox]
+envlist = py39,py310
+isolated_build = True
+
+[testenv]
+deps =
+  pytest >=7.1.2, <8
+  pytest-golden >=0.2.2, <0.3
+commands = pytest
+"""
