@@ -1,0 +1,37 @@
+name: Lint and Test Python
+
+on: [push]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.9", "3.10"]
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "${{ matrix.python }}"
+          cache: "pipenv"
+
+      - run: pipx install pipenv
+
+      - run: pipenv sync --dev
+
+      - name: Lint
+        run: pipenv run lint
+
+      - name: Test
+        run: pipenv run test
+
+      - name: Upload coverage report to Codecov
+        if: matrix.python == '3.10'
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: true
+          verbose: true
