@@ -1,0 +1,23 @@
+Value Required vlan (\d+| All)
+Value Required macaddr (\S+)
+Value Required flags (\w+)
+Value oif (\S+)
+Value protocol (\S+)
+Value _learn (\w+)
+Value age (\d+|-)
+Value List _ports (\S+)
+
+Start
+  ^\* -> WithStar
+  ^\s+vlan.*protocol.* -> WithProtocol
+  ^\s*${vlan}\s+${macaddr}\s+${flags}\s+${oif}.*$$ -> Record
+
+WithProtocol
+  ^\s*${vlan}\s+${macaddr}\s+${flags}\s+${protocol}\s+${oif}.*$$ -> Record
+  ^Multicast\s+Entries -> Start
+
+WithStar
+  ^\* -> Continue.Record
+  ^\*\s+${vlan}\s+${macaddr}\s+${flags}\s+${_learn}\s+${age}\s+${_ports}
+  ^\s+${_ports}
+  
