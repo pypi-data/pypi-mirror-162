@@ -1,0 +1,87 @@
+Metadata-Version: 2.1
+Name: fastatomstruct
+Version: 0.5.0
+Requires-Dist: ase
+Requires-Dist: numpy
+License-File: LICENSE
+Author: Nils Cedric Holle <nils.holle@uni-muenster.de>
+Author-email: Nils Cedric Holle <nils.holle@uni-muenster.de>
+License: GPL-3.0
+Description-Content-Type: text/markdown; charset=UTF-8; variant=GFM
+
+# Fast calculation of structural parameters and autocorrelation functions
+
+`fastatomstruct` is a Python package (mostly written in Rust) that includes functions to calculate atomic structural quantities.
+If possible, thread-based parallelization (using [`rayon`](https://crates.io/crates/rayon)) is employed to speed up calculations and take advantage of multicore processors.
+
+## What can this package do?
+The package can currently calculate the following quantities:
+
+- Structural
+    - Atomic distances
+    - Coordination numbers
+    - Nearest neighbours
+    - Radial distribution function
+    - Static structure factor
+    - Bond orientational parameter (Steinhardt et al.) and Bond Order Correlation parameter
+    - Tetrahedral order parameter
+    - Angular-limited three-body correlation (ALTBC)
+    - Bond length ratio (BLR)
+- Dynamical
+    - Mean squared displacement
+    - Non-gaussian parameter
+    - Four-point correlation functions
+    - Autocorrelation (with and without interpolation)
+
+## Documentation
+
+[The documentation can be found here.](https://ag-salinga.zivgitlabpages.uni-muenster.de/fastatomstruct)
+
+## Example usage
+
+This example uses the [Atomistic Simulation Environment](https://wiki.fysik.dtu.dk/ase/), which can also be installed using pip (`pip install ase`) and is now a dependency of `fastatomstruct`.
+
+```python
+from ase.build import bulk
+from fastatomstruct import distances, coordination_numbers
+
+# Lithium in the BCC phase with the unit cell repeated
+# 10x10x10 times
+atoms = bulk("Li", "bcc", 3.45).repeat((10, 10, 10))
+
+# Atomic distances
+dists = distances(atoms)
+
+# Coordination numbers with a cutoff of 3 A
+coordination = coordination_numbers(atoms, 3)
+```
+
+## Installation
+
+### From PyPI
+`fastatomstruct` can be installed from the [Python Package Index](https://pypi.org/project/fastatomstruct/). **Currently, only Linux with a Python version >= 3.7 is supported. In addition, your processor has to be x86-64 with AVX2 support.** Most processors since 2015 should meet those criteria. If your system doesn't, you can still install `fastatomstruct` from source (see next subsection).
+
+To run the installation, use
+```
+pip install fastatomstruct
+```
+
+### From source
+Installing `fastatomstruct` from source requires
+
+- Python 3
+- pip
+- a working Rust installation (1.56 and newer), including cargo
+- `maturin`, a Python package that can e.g. be installed using `pip3 install --upgrade maturin`
+
+To build the Python wheel, run
+```
+maturin build --release
+```
+The resulting wheel will be located in `target/wheels/`. You can install it using
+```
+python3 -m pip install target/wheels/fastatomstruct-version.whl
+```
+Replace "version" with your actual Python version.
+The package can then be used in Python using e.g. `from fastatomstruct import coordination_numbers`.
+
