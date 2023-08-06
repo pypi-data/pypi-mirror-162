@@ -1,0 +1,59 @@
+Metadata-Version: 2.1
+Name: tf-persistent-data
+Version: 1.0.1
+Summary: tf-persistent-data
+Author: kkh
+Author-email: doggood720@gmail.com
+License: MIT
+Description-Content-Type: text/markdown
+Requires-Dist: tf-encrypts
+
+"# tf-persistent-data" 
+
+#### 설명
+- 데이터를 암호화하여 저장 / 복구
+- 데이터 형태에 상관없이 저장가능하고 해당 타입으로 복구한다.
+- 암호화 키를 반드시 지정하여 사용 (persist = TfPersistentData(b'p@ssw0rd'))
+
+#### 사용법1
+```python
+from tfpersistentdata.tfpersistentdata import TfPersistentData
+
+if __name__ == '__main__':
+    persist = TfPersistentData(b'p@ssw0rd')
+    data = {'a': 123, 'b': 'text1234'}
+    filename = 'data1.tpd'
+    persist.write(data, filename)
+    rdata = persist.read(filename)
+    print('filename:', filename, '| data:', rdata, '| type:', type(rdata))
+```
+
+#### 사용법2
+```python
+from tfpersistentdata.tfpersistentdata import TfPersistentData
+
+if __name__ == '__main__':
+    persist = TfPersistentData(b'p@ssw0rd')
+    data = 3.14
+    filename = 'data1.tpd'
+    persist.write(data, filename)
+    rdata = persist.read(filename)
+    print('filename:', filename, '| data:', rdata, '| type:', type(rdata))
+```
+
+#### 사용법3
+```python
+from tfpersistentdata.tfpersistentdata import TfPersistentData
+
+class A:
+    a = 1
+    b = 'text2'
+
+if __name__ == '__main__':
+    persist = TfPersistentData(b'p@ssw0rd')
+    data = A()
+    filename = 'data1.tpd'
+    persist.write(data, filename)
+    rdata = persist.read(filename)
+    print('filename:', filename, '| data:', rdata, '| type:', type(rdata))
+```
