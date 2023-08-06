@@ -1,0 +1,110 @@
+## Implementation using RAW SQL queries
+
+# import time
+import psycopg2
+from .utils import LockUtils
+from .queries import Queries as Q
+
+
+class DatabaseLock:
+    def __init__(self):
+        self.lock_name = LockUtils.get_lock_name()
+        # Time in milliseconds
+        self.lease_time = 20 * 1000
+        self.record_id = 1
+
+        self.db_host = "localhost"
+        self.db_database = "apscheduler"
+        self.db_user = "postgres"
+        self.db_password = "Admin@123"
+
+    def __get_valid_until__(self):
+        return LockUtils.get_epochtime_in_millis() + self.lease_time
+
+    def __get_connection__(self):
+        return psycopg2.connect(host=self.db_host,
+                                database=self.db_database,
+                                user=self.db_user,
+                                password=self.db_password)
+
+    def __acquire_lock__(self, conn, cur):
+        insert_record = [self.record_id, self.lock_name, self.__get_valid_until__()]
+        cur.execute(Q.INSERT, insert_record)
+        conn.commit()
+        count = cur.rowcount
+        print(f"lock acquired by {self.lock_name}, fencing_token_id: {'row'}")
+        return count == 1
+
+    # When one tries to acquire the lock, there are 3 possibilities
+    # 1. There is no row in the lock table; you can try to insert the row in the lock
+    #    table. If insert succeeds, you have the lock.
+    # 2. There is already a row in the lock table and lock lease is valid, i.e.
+    #    valid_until > epoch_time_in_milliseconds. In this case, don't try to
+    #    acquire the lock. Typically, if you own the lock, you woudln't be calling
+    #    this method.
+    # 3. There is already a row in the lock table but lock lease has expired.
+    #    Delete the row and try to insert a new one. If insert succeeds, you have the lock.
+    def try_acquire_lock(self):
+        conn = None
+        try:
+            conn = self.__get_connection__()
+            cur = conn.cursor()
+            cur.execute(Q.SELECT, [self.record_id])
+            count = cur.rowcount
+            if count == 0:
+                print('nothing in lock table, trying to acquire lock')
+                if self.__acquire_lock__(conn, cur):
+                    return True
+            else:
+                row = cur.fetchone()
+                if row[2] < LockUtils.get_epochtime_in_millis():
+                    print(f'expired lock in locktable, OWNER: {row[1]}, EXPIRY: {row[2]}')
+                    cur.execute(Q.DELETE, [self.record_id])
+                    if self.__acquire_lock__(conn, cur):
+                        return True
+                else:
+                    print(f'valid lock held by, OWNER: {row[1]}, EXPIRY: {row[2]}')
+                    return False
+        except (Exception, psycopg2.Error) as error:
+            print("Failed to acquire lock")
+            print(f"Reason: {error}")
+        finally:
+            if conn:
+                cur.close()
+                conn.close()
+        return False
+
+    def renew_lease(self):
+        # renew lease ONLY if you are the owner of the lock
+        conn = None
+        try:
+            conn = self.__get_connection__()
+            cur = conn.cursor()
+            cur.execute(Q.SELECT_4_RENEW, [self.record_id, self.lock_name])
+            count = cur.rowcount
+            if count == 0:
+                # Trying to renew lease on a non-existent lock
+                print(f"{self.lock_name} trying to renew non-existent lock.")
+                return False
+            else:
+                row = cur.fetchone()
+                if self.lock_name != row[1]:
+                    # You are not owner of the lock, but you are trying to renew lease
+                    print(f"{self.lock_name} trying to renew lock held by {row[1]}.")
+                    return False
+                else:
+                    until = self.__get_valid_until__()
+                    cur.execute(Q.UPDATE, [until, self.record_id, self.lock_name])
+                    conn.commit()
+                    count = cur.rowcount
+                    if count == 1:
+                        print(f"lease extended by {self.lock_name} until: {until}")
+                        return True
+        except (Exception, psycopg2.Error) as error:
+            print("Failed to renew lock")
+            print(f"Reason: {error}")
+        finally:
+            if conn:
+                cur.close()
+                conn.close()
+        return False
