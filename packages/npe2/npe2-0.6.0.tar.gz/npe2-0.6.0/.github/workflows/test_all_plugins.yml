@@ -1,0 +1,52 @@
+name: Test all plugins
+
+on:
+  pull_request:
+    types: [ labeled ]
+  workflow_dispatch:
+
+jobs:
+  get-plugins:
+    if: github.event.label.name == 'test-all-plugins' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: styfle/cancel-workflow-action@0.10.0
+        with:
+          access_token: ${{ github.token }}
+      - id: plugin_names
+        run: echo "::set-output name=plugins::$(curl -s https://api.napari-hub.org/plugins | jq -c 'keys')"
+    outputs:
+      plugins: ${{ steps.plugin_names.outputs.plugins }}
+
+  test_all:
+    needs: get-plugins
+    name: ${{ matrix.plugin }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        plugin: ${{ fromJson(needs.get-plugins.outputs.plugins) }}
+    defaults:
+      run:
+        shell: bash -l {0}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: tlambert03/setup-qt-libs@v1
+
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          python-version: 3.9
+          miniforge-variant: Mambaforge
+          miniforge-version: latest
+          use-mamba: true
+
+      - name: Install npe2
+        run: pip install -e .[testing]
+
+      - run: sudo apt-get install -y xvfb
+      - name: Run tests
+        run: xvfb-run --auto-servernum pytest tests/test_all_plugins.py -s -v --color=yes
+        env:
+          TEST_PACKAGE_NAME: ${{ matrix.plugin }}
