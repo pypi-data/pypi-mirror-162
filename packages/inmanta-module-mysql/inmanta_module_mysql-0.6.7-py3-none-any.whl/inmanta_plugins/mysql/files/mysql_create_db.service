@@ -1,0 +1,14 @@
+[Unit]
+Description=MySQL database create script
+After=mysqld.target
+
+[Service]
+Type=simple
+User=mysql
+Group=mysql
+
+ExecStart=/usr/bin/mysql_create_db
+
+[Install]
+WantedBy=multi-user.target
+

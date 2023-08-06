@@ -1,0 +1,155 @@
+"""
+    Copyright 2017 Inmanta
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+    Contact: code@inmanta.com
+"""
+import exec
+import ip
+import ip::services
+
+entity DBMS:
+    """
+        A DB management system (a service on a machina, DBaaS, ...)
+
+        :attr hostref: reference to host, e.g. ip or hostname
+    """
+    string hostref
+    ip::port port=3306
+end
+
+entity ManagedMysql extends DBMS:
+    string user
+    string password
+end
+
+ManagedMysql.agenthost [1] -- ip::Host
+
+entity Server extends ip::services::Server, DBMS:
+    """
+        Mysql server configuration
+
+        :attr remove_anon_users: Required when trying to connect to a mysql database on the same host over it' external IP.
+    """
+    bool remove_anon_users = false
+end
+
+# _svc is required for remove_anon_users
+Server._svc [1] -- std::Service
+
+entity Database:
+    string name
+    string user
+    string password
+    string encoding = "utf8"
+    string collation = "utf8_general_ci"
+end
+
+implementation dBDependsOnServer for Database:
+    #DB creation script is in Server
+    server.provides = self.provides
+end
+
+implement Database using dBDependsOnServer
+
+DBMS.databases [0:] -- Database.server [1]
+
+implementation manageManaged for ManagedMysql:
+    tools = std::Package(host=agenthost, name="mysql", state="installed")
+    for db in databases:
+        exec::Run(host=agenthost, command="/usr/bin/mysql -u {{user}} -h {{hostref}} --password={{password}} -s -e \"create database IF NOT EXISTS {{db.name}} CHARACTER SET {{db.encoding}} COLLATE {{db.collation}}; grant all privileges on {{db.name}}.* to '{{db.user}}'@'%' identified by '{{db.password}}'; grant all privileges on {{db.name}}.* to '{{db.user}}'@'localhost' identified by '{{db.password}}';\" >/dev/null", requires=tools)
+    end
+end
+
+implement ManagedMysql using manageManaged
+
+implementation removeAnonUsers for Server:
+    exec = exec::Run(host=host, command="/usr/bin/mysql -s -e \"delete from user where User = ''; flush privileges;\" mysql", requires=self._svc)
+    exec.provides = self.provides
+end
+
+implement Server using removeAnonUsers when remove_anon_users == true
+
+implement Server using ports
+implement Server using mysqlRedhat when std::familyof(host.os, "rhel") and host.os.version <= 6
+implement Server using mysqlMariaDB when (std::familyof(host.os, "rhel") and host.os.version >= 7) or std::familyof(host.os, "fedora")
+implement Server using ubuntuMysql when std::familyof(host.os, "ubuntu")
+
+implementation ports for Server:
+    self.services=ip::DstService(proto="tcp", dst_range=ip::Port(low=3306))
+end
+
+implementation mysqlRedhat for Server:
+    # install mysql server
+    pkg = std::Package(host=host, name="mysql-server", state="installed", requires=self.requires)
+    self._svc = std::Service(host=host, name="mysqld", state="running", onboot=true, requires = [pkg, config, conf_dir])
+
+    config = std::ConfigFile(host=host, path="/etc/my.cnf", content=std::template("mysql/my.cnf.tmpl"), requires=pkg, reload=true)
+    conf_dir = std::Directory(host=host, path="/etc/mysql.conf.d", owner="root", group="root", mode=755)
+
+    dblist = std::ConfigFile(host=host, path="/etc/sysconfig/mysql", reload=true,
+                             content=std::template("mysql/databases.tmpl"))
+
+    mysqld_config = std::ConfigFile(host=host, path="/etc/sysconfig/mysqld", content=std::file("mysql/mysqld_sysconfig"))
+    script_file = std::File(host=host, path="/usr/bin/mysql_create_db", owner="root", group="root",
+                            mode=755, content=std::file("mysql/redhat_mysql_create_db"))
+    exec = exec::Run(host=host, command="/usr/bin/mysql_create_db", requires=[dblist, script_file, self._svc])
+    exec.provides = self.provides
+
+    self.hostref = host.ip
+    self.port = 3306
+end
+
+implementation mysqlMariaDB for Server:
+    # install mysql server
+    pkg = std::Package(host=host, name="mariadb-server", state="installed", requires=self.requires)
+    self._svc = std::Service(host=host, name="mariadb", state="running", onboot=true, requires=[pkg, config, conf_dir])
+
+    config = std::ConfigFile(host=host, path="/etc/my.cnf", content=std::template("mysql/mariadb.cnf.tmpl"), requires=pkg, reload=true)
+    conf_dir = std::Directory(host=host, path="/etc/my.cnf.d", owner="root", group="root", mode=755)
+
+    dblist = std::ConfigFile(host=host, path="/etc/sysconfig/mysql", reload=true,
+                             content=std::template("mysql/databases.tmpl"))
+
+    script_file = std::File(host=host, path="/usr/bin/mysql_create_db", owner="root", group="root",
+                            mode=755, content=std::file("mysql/redhat_mysql_create_db"))
+
+    exec = exec::Run(host=host, command="/usr/bin/mysql_create_db", requires=[dblist, script_file, self._svc])
+    exec.provides = self.provides
+
+    self.hostref = host.ip
+    self.port = 3306
+end
+
+implementation ubuntuMysql for Server:
+    # install mysql server
+    pkg = std::Package(host=host, name="mysql-server", state="installed", requires=self.requires)
+    self._svc = std::Service(host=host, name="mysql", state="running", onboot=true, requires=[pkg, config, conf_dir])
+
+    config = std::ConfigFile(host=host, path="/etc/mysql/my.cnf", content=std::template("mysql/my.cnf.ubuntu.tmpl"),
+                             requires=pkg, reload=true)
+    conf_dir = std::Directory(host=host, path="/etc/mysql/conf.d", owner="root", group="root", mode=755)
+
+    dblist = std::ConfigFile(host=host, path="/etc/mysql/databases", reload=true, requires=pkg,
+                             content = std::template("mysql/databases.tmpl"))
+
+    script_file = std::File(host=host, path="/usr/bin/mysql_create_db", owner="root", group="root",
+                            mode=755, content=std::file("mysql/ubuntu_mysql_create_db"))
+
+    exec = exec::Run(host=host, command="/usr/bin/mysql_create_db", requires=[dblist, script_file], reload_only=true)
+    exec.provides = self.provides
+
+    self.hostref = host.ip
+    self.port = 3306
+end
