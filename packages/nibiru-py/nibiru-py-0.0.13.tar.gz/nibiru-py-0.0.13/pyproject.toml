@@ -1,0 +1,20 @@
+[tool.black]
+line-length = 120
+skip-string-normalization = true
+target-version = ['py39']
+include = '.*\.pyi?$'
+extend-exclude = '''
+^/(
+    \.vscode
+  | nibiru/proto
+)$
+'''
+
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nibiru"
+authors = [{name = "Nibiru team", email = "md2022@nibiru.fi"}]
+dynamic = ["version", "description"]
