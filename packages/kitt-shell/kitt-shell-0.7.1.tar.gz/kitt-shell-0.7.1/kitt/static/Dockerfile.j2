@@ -1,0 +1,45 @@
+# FROM ubuntu:20.04
+FROM senges/catalog:latest
+
+# Set command prefix as non interactive
+ARG DEBIAN_FRONTEND=noninteractive
+
+ARG USER={{ user }}
+ARG SHELL={{ shell }}
+
+# Environment variables
+CMD export $PATH
+{% for dict_item in parent_list %}
+{% for key, value in dict_item.items() %}
+ENV {{ key }}="{{ value }}"
+{% endfor %}
+{% endfor %}
+
+# Setup fixuid for UUIG/GUID reflexion
+RUN addgroup --gid 1000 ${USER} \
+    && adduser --uid 1000 --ingroup ${USER} --home /home/${USER} --shell /bin/bash --disabled-password --gecos "" ${USER}
+
+RUN catalog sudo fixuid \
+    && chown root:root $(which fixuid) \
+    && chmod 4755 $(which fixuid) \
+    && mkdir -p /etc/fixuid \
+    && echo "user: ${USER}\ngroup: ${USER}\n" > /etc/fixuid/config.yml \
+    && echo "${USER} ALL=(ALL:ALL) NOPASSWD: ALL" > /etc/sudoers.d/20-kitt-user
+
+WORKDIR "/home/${USER}"
+
+# Install Catalog packages
+RUN catalog -v utils {{ tools | join(' ') }}
+
+# Install plugins
+{% for plugin in plugins %}
+{{ plugin }}
+
+{% endfor %}
+
+RUN chsh -s $(which ${SHELL} || which bash || which sh) ${USER} \
+    && chsh -s $(which ${SHELL} || which bash || which sh) root
+
+USER ${USER}:${USER}
+
+ENTRYPOINT [ "fixuid", "-q" ]
