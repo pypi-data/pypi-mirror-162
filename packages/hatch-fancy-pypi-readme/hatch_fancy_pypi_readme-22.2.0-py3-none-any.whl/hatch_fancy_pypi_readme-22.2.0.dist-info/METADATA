@@ -1,0 +1,103 @@
+Metadata-Version: 2.1
+Name: hatch-fancy-pypi-readme
+Version: 22.2.0
+Summary: Fancy PyPI READMEs with Hatch
+Project-URL: Documentation, https://github.com/hynek/hatch-fancy-pypi-readme#readme
+Project-URL: Issues, https://github.com/hynek/hatch-fancy-pypi-readme/issues
+Project-URL: Source, https://github.com/hynek/hatch-fancy-pypi-readme
+Project-URL: Funding, https://github.com/sponsors/hynek
+Project-URL: Ko-fi, https://ko-fi.com/the_hynek
+Author-email: Hynek Schlawack <hs@ox.cx>
+Classifier: Development Status :: 4 - Beta
+Classifier: Framework :: Hatch
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: Implementation :: CPython
+Classifier: Programming Language :: Python :: Implementation :: PyPy
+Requires-Python: >=3.8
+Requires-Dist: hatchling
+Requires-Dist: tomli; python_version < '3.11'
+Provides-Extra: dev
+Requires-Dist: hatch-fancy-pypi-readme[tests]; extra == 'dev'
+Requires-Dist: mypy; extra == 'dev'
+Provides-Extra: tests
+Requires-Dist: build; extra == 'tests'
+Requires-Dist: coverage[toml]; extra == 'tests'
+Requires-Dist: pytest; extra == 'tests'
+Requires-Dist: pytest-icdiff; extra == 'tests'
+Requires-Dist: wheel; extra == 'tests'
+Description-Content-Type: text/markdown
+
+# *hatch-fancy-pypi-readme*
+
+*Because your ✨fancy project✨ deserves a ✨fancy PyPI landing page✨.*
+
+[![PyPI - Version](https://img.shields.io/pypi/v/hatch-fancy-pypi-readme.svg)](https://pypi.org/project/hatch-fancy-pypi-readme)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/hatch-fancy-pypi-readme.svg)](https://pypi.org/project/hatch-fancy-pypi-readme)
+[![License: MIT](https://img.shields.io/badge/license-MIT-C06524)](https://github.com/hynek/hatch-fancy-pypi-readme/blob/main/LICENSE.txt)
+
+*hatch-fancy-pypi-readme* is a [*Hatch*] metadata plugin for everyone who cares about the first impression of their project’s PyPI landing page.
+It allows you to define your PyPI project description in terms of concatenated fragments that are based on **static strings**, **files**, and most importantly:
+**parts of files** defined using **cut-off points** or **regular expressions**.
+
+
+You want your PyPI readme to be the project readme, but without badges, followed by the license file, and the changelog section for *only the last* release?
+You’ve come to the right place!
+
+> **Note**
+> PyPI project description, PyPI landing page, and PyPI readme all refer to the same thing.
+> In *setuptools* it’s called `long_description` and is the text shown on a project’s PyPI page.
+> We refer to it as “readme” because that’s how it’s called in [PEP 621](https://peps.python.org/pep-0621/)-based `pyproject.toml` files.
+
+
+## Motivation
+
+In the olden days of `setup.py` files, I’ve taken advantage of the fact that I can write Python to have compelling PyPI readmes.
+
+For example [this](https://github.com/python-attrs/attrs/blob/b3dfebe2e10b44437c4f97d788fb5220d790efd0/setup.py#L110-L124) is the code that gave me the PyPI readme for [*attrs* 22.1.0](https://pypi.org/project/attrs/22.1.0/).
+Especially having a summary of the latest changes is something I’ve found users to appreciate.
+
+The move away from dynamic `setup.py` files to static `pyproject.toml` configurations is great, but it robbed me of being able to provide this service to my users.
+I’ve been able to add some dynamism using the wonderful [*Cog*](https://nedbatchelder.com/code/cog/), but it’s a bit awkward and shouldn’t be the long-term solution.
+
+The goal of this plugin is to be able to switch away from `setup.py` without compromising on the user experience and without needing third-party tools for configuration-file templating.
+
+---
+
+With [*Hatch*] we got a standards-based packaging library that offers exactly the plugin interface I needed.
+Now *you* too can have fancy PyPI readmes – just by adding a few lines of configuration to your `pyproject.toml`.
+
+
+## Project Links
+
+- **License**: [MIT](https://choosealicense.com/licenses/mit/)
+- **PyPI**: https://pypi.org/project/hatch-fancy-pypi-readme/
+- **Source Code**: https://github.com/hynek/hatch-fancy-pypi-readme
+- **Documentation**:  https://github.com/hynek/hatch-fancy-pypi-readme#readme
+- **Changelog**: https://github.com/hynek/hatch-fancy-pypi-readme/blob/main/CHANGELOG.md
+- **Supported Python Versions**: 3.8 and later.
+  Please note that this is the requirement for **building** packages and *not* for the packages themselves!
+
+[example-config]: https://github.com/hynek/hatch-fancy-pypi-readme/blob/main/tests/example_pyproject.toml
+[*Hatch*]: https://hatch.pypa.io/
+
+
+# Release Information
+
+## [22.2.0](https://github.com/hynek/hatch-fancy-pypi-readme/compare/22.1.0...22.2.0) - 2022-08-05
+
+### Changed
+
+- We can finally use *hatch-fancy-pypi-readme* for our own ✨fancy✨ PyPI readme!
+
+
+### Fixed
+
+- Hopefully fixed readmes with emojis on Windows.
+
+---
+
+Of course, *this* PyPI readme has been created by *hatch-fancy-pypi-readme*. Isn’t it ✨fancy✨?
