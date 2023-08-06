@@ -1,0 +1,56 @@
+class Radiation:
+    """The Radiation object specifies radiation for a contact interaction property.
+
+    .. note:: 
+        This object can be accessed by:
+
+        .. code-block:: python
+
+            import interaction
+            mdb.models[name].interactionProperties[name].radiation
+
+        The corresponding analysis keywords are:
+
+        - GAP RADIATION
+    """
+
+    #: A Float specifying the emissivity of the master surface.
+    masterEmissivity: float
+
+    #: A Float specifying the emissivity of the slave surface.
+    slaveEmissivity: float
+
+    #: A sequence of sequences of Floats specifying the following:Effective viewfactor, FF.Gap
+    #: clearance, dd.
+    table: tuple
+
+    def __init__(self, masterEmissivity: float, slaveEmissivity: float, table: tuple):
+        """This method creates a Radiation object.
+
+        .. note:: 
+            This function can be accessed by:
+
+            .. code-block:: python
+
+                mdb.models[name].interactionProperties[name].Radiation
+
+        Parameters
+        ----------
+        masterEmissivity
+            A Float specifying the emissivity of the master surface.
+        slaveEmissivity
+            A Float specifying the emissivity of the slave surface.
+        table
+            A sequence of sequences of Floats specifying the following:Effective viewfactor, FF.Gap
+            clearance, dd.
+
+        Returns
+        -------
+        Radiation
+            A :py:class:`~abaqus.Interaction.Radiation.Radiation` object.
+        """
+        pass
+
+    def setValues(self, *args, **kwargs):
+        """This method modifies the Radiation object."""
+        pass
