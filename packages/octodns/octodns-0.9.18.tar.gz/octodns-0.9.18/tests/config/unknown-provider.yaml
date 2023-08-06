@@ -1,0 +1,12 @@
+providers:
+  yaml:
+    class: octodns.provider.yaml.YamlProvider
+    directory: ./config
+  simple_source:
+    class: helpers.SimpleSource
+zones:
+  unknown.source.:
+    sources:
+    - not-there
+    targets:
+    - yaml
