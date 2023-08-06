@@ -1,0 +1,59 @@
+Metadata-Version: 2.1
+Name: tcli-bar
+Version: 3.0
+Summary: Create a CLI progress bar for your python project
+Home-page: UNKNOWN
+Author: SiXFeet
+Author-email: chukunekunwanwene@gmail.com
+License: UNKNOWN
+Keywords: cli loading bar
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Description-Content-Type: text/markdown
+
+## Another CLI loading bar...
+
+This is a simple classic CLI loading bar animation for all your CLI loading bar
+animation needs, whatever they might be! with lots of customisation options such as displaying percentages, and colour support. This animation can be easily incorporated into any function you want and also makes your CLI look way more professional! - literally from 0 to 100 JUST LIKE THAT!
+enjoy ;)
+
+# Also note that the install requires colorama
+
+## Example Code
+```python
+import math
+numbers = [x * 5 for x in range(1000, 3000)]
+list = []
+for x, i in enumerate(numbers):
+    list.append(math.factorial(x))
+    tcli_bar.bar(x + 1, len(numbers)) #Here
+print('\nDone')
+```
+## Another example but with colour and more
+```python
+import math
+import tcli_bar
+from colorama import *
+
+numbers = [x * 5 for x in range(100, 1500)]
+list = []
+for i, a in enumerate(numbers):
+    list.append(math.factorial(i))
+    tcli_bar.bar(i + 1, len(numbers), colour=Fore.GREEN, icon='#', description='Uploading...', show_percent=False)
+print('\nHello')
+```
+
+## A 'Free' example
+```python
+import tcli_bar
+
+free_bar(set=100, icon= '+', colour=Fore.RED, description='Scanning...')
+```
+## Results
+![](https://raw.githubusercontent.com/Anderneku1/images/main/example.png)
+![](https://raw.githubusercontent.com/Anderneku1/images/main/example2.png)
+![](https://raw.githubusercontent.com/Anderneku1/images/main/example3.png)
+
+
