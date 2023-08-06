@@ -1,0 +1,18 @@
+# Pupil_Tracking
+
+
+## Synthetic Pupil DataSet Generation
+
+To de-risk the idea of using ML as the primary mechanism for determining the optical-axis of the pupil, this repo attempts to generate a synthetic dataset of images created from Blender which mimic the effect of having two cameras in very precise locations to mock up the experimental setup of have cameras mounted on a VR headset mounted on a test subject from which data collection could take place.
+
+The objective of this technique is to quickly mock-up an admittedly hyper-clean dataset of images and to attempt to apply standard computer-vision (CV) or machine-learning (ML) techniques. While not under the precise lighting conditions and while the camera position, quality, and specs will certainty not be the same as the physical experimental apparatus, this setup should be able to function as a proof-of-concept and derisk the project.
+
+### Ground Truth 
+In the application of either CV or ML methods, the ability to know with certainty the actual position of the subject (in general) and the optical axis vector of their eye specifically, is a valuable piece of information to retain as refernence or ground truth labels. 
+
+### Data Augmentation
+
+Seeing as how the images being created for the dataset are synthetically created, and since we control all aspects of the scene/world of the computer generated imaging being rendered (such as lighting, shadows, reflection, saturation, image resolution, camera positions and rotation ...etc) this synthetic dataset is a prime candidate for testing out the machine learning methods under a variety of conditions which would hopefully enable the ML to generalize the problem of pupil tracking prediction. If we can overfit hyper-clean data and reliably predict the optical vector of the pupil, that might indicate that the problem **might** be solved tractibly with ML. Since there is no human subject data to train on, this also provides the only set of data possible to train on at this moment. However, while synthetic data might derisk the process of proceeding with ML in the real experimental setup, we can also attempt to generate variable data with the computer rendering tools that we have at our disposal. 
+
+
+
