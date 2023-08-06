@@ -1,0 +1,75 @@
+name: Test install
+
+on:
+  push:
+    paths-ignore: docs/**
+  schedule:
+    - cron: "0 0 * * 0"
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: 'Log level'
+        required: true
+        default: 'warning'
+      tags:
+        description: 'manual run'
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest]
+        python-version: [3.7, 3.8, 3.9]
+      fail-fast: false
+    name: Python ${{ matrix.python-version }} on ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup conda
+        uses: s-weigand/setup-conda@v1
+        with:
+          update-conda: true
+          python-version: ${{ matrix.python-version }}
+      - run: conda --version
+      - run: which python
+      - run: conda list
+      - name: Conda environment creation
+        run: |
+          conda install anaconda-client -q -n base
+          conda env create ncb/das-env -q -n das
+          conda install pytest -q -n das
+      - name: Install libsndfile (Linux only)
+        if: runner.os == 'Linux'
+        run: sudo apt-get install libsndfile1
+      - name: Test with pytest (Linux, Macos)
+        shell: bash -l {0}
+        if: runner.os != 'Windows'
+        run: |
+          source activate das
+          printenv | sort
+          $CONDA_PREFIX/bin/python -m pytest
+      - name: Test cli (Linux, Macos)
+        shell: bash -l {0}
+        if: runner.os != 'Windows'
+        run: |
+          source activate das
+          $CONDA_PREFIX/bin/python -m das.cli train --help
+          das train --help
+          das predict --help
+          das gui --help
+      - name: Test with pytest (Windows)
+        shell: cmd /C CALL {0}
+        if: runner.os == 'Windows'
+        run: |
+          conda activate das
+          python -m pytest
+      - name: Test cli (Windows)
+        shell: cmd /C CALL {0}
+        if: runner.os == 'Windows'
+        run: |
+          C:\Miniconda\condabin\conda.bat activate das
+          C:\Miniconda\envs\das\python -m das.cli train --help
+          das train --help
+          das predict --help
+          das gui --help
+          das version

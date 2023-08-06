@@ -1,0 +1,72 @@
+{% set data = load_setup_py_data(setup_file='../../setup.py', from_recipe_dir=True) %}
+{% set name = "das" %}
+{% set version = data.get('version') %}
+
+package:
+  name: das
+  version: "{{ version }}"
+
+source:
+  url: "https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz"
+
+build:
+  number: 0
+  entry_points:
+    - das=das.cli:main
+  script: build_osx-arm.sh  # [arm64]
+
+
+requirements:
+  host:
+    - python {{ python }}
+    - pip
+    - h5py
+    - numpy>=1.20
+
+  run:
+    - python {{ python }}
+    - defopt=6.3
+    - rich
+    - flammkuchen
+    - h5py
+    - matplotlib
+    - matplotlib-scalebar
+    - pandas
+    - peakutils
+    - pyyaml
+    - scipy
+    - scikit-learn
+    - scikit-image
+    - tqdm
+    - xarray  # why this?
+    - xarray-behave
+    - cudatoolkit # [win or linux]
+    - cudnn # [win or linux]
+    - tensorflow>2.4 # [osx]
+    - tensorflow-gpu>2.4 # [win or linux]
+    - apple::tensorflow-deps  # [not osx and arm64]
+    - numpy>=1.20
+    - ipython
+    - keras-tuner  # [not arm64]
+
+test:
+  imports:
+    - das
+    - das.kapre
+    - das.tcn
+  commands:
+    - das --help
+    - das gui --help
+
+about:
+  home: "http://github.com/janclemenslab/das"
+  license: MIT
+  license_family: MIT
+  license_file:
+  summary: "DAS"
+  doc_url: "https://janclemenslab.org/das"
+  dev_url: "http://github.com/janclemenslab/das"
+
+extra:
+  recipe-maintainers:
+    - postpop
