@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+ name: voucher-consume-test-restart-m-kafka-v3-deployment
+ labels:
+   app: voucher-consume-test-restart-m-kafka-v3
+spec:
+ replicas: 1
+ selector:
+   matchLabels:
+     app: voucher-consume-test-restart-m-kafka-v3
+ template:
+   metadata:
+     labels:
+       app: voucher-consume-test-restart-m-kafka-v3
+   spec:
+     containers:
+       - name: voucher
+         image: {image}
+         imagePullPolicy: Always
+         command: ["/bin/sh", "-c"]
+         args: ["cd $VOUCHER_HOME; sh prepare_env.sh && python3.8 -u voucher_consumer_test_restart_m_kafka_v3.py"]
+         envFrom:
+           - configMapRef:
+               name: mobio-restart-pod-config
+         volumeMounts:
+           - name: mobio-restart-pod-shared-data
+             mountPath: /media/data/resources/
+         livenessProbe:
+           exec:
+             command:
+               - /bin/sh
+               - -c
+               - $VOUCHER_HOME/check_kafka_group_liveness.sh voucher-test-restart
+           timeoutSeconds: 30
+           periodSeconds: 30
+           initialDelaySeconds: 300
+           failureThreshold: 1
+     imagePullSecrets:
+       - name: registrypullsecret
+     volumes:
+       - name: mobio-restart-pod-shared-data
+         persistentVolumeClaim:
+           claimName: mobio-restart-pod-resources-pvc
