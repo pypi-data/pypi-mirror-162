@@ -1,0 +1,34 @@
+# -*- coding: utf-8 -*-
+from setuptools import setup
+
+packages = \
+['webpreview', 'webpreview.tests']
+
+package_data = \
+{'': ['*']}
+
+install_requires = \
+['beautifulsoup4>=4.0,<5.0', 'requests>=2.0,<3.0']
+
+entry_points = \
+{'console_scripts': ['webpreview = webpreview.cli:main']}
+
+setup_kwargs = {
+    'name': 'webpreview',
+    'version': '1.7.2',
+    'description': 'Extracts OpenGraph, TwitterCard and Schema properties from a webpage.',
+    'long_description': '# webpreview\n\nFor a given URL, `webpreview` extracts its **title**, **description**, and **image url** using\n[Open Graph](http://ogp.me/), [Twitter Card](https://dev.twitter.com/cards/overview), or\n[Schema](http://schema.org/) meta tags, or, as an alternative, parses it as a generic webpage.\n\n<p>\n    <a href="https://pypi.org/project/webpreview/"><img alt="PyPI - Python Version" src="https://img.shields.io/pypi/pyversions/webpreview"></a>\n    <a href="https://pypi.org/project/webpreview/"><img alt="PyPI" src="https://img.shields.io/pypi/v/webpreview?logo=pypi&color=blue"></a>\n    <a href="https://github.com/ludbek/webpreview/actions?query=workflow%3Atest"><img alt="Build status" src="https://img.shields.io/github/workflow/status/ludbek/webpreview/test?label=build&logo=github"></a>\n    <a href="https://codecov.io/gh/ludbek/webpreview"><img alt="Code coverage report" src="https://img.shields.io/codecov/c/github/ludbek/webpreview?logo=codecov"></a>\n</p>\n\n\n## Installation\n\n```shell\npip install webpreview\n```\n\n## Usage\n\nUse the generic `webpreview` method (added in *v1.7.0*) to parse the page independent of its nature.\nThis method fetches a page and tries to extracts a *title, description, and a preview image* from it.\n\nIt first attempts to parse the values from **Open Graph** properties, then it falls back to\n**Twitter Card** format, and then to **Schema**. If none of these methods succeed in extracting all\nthree properties, then the web page\'s content is parsed using a generic HTML parser.\n\n```python\n>>> from webpreview import webpreview\n\n>>> p = webpreview("https://en.wikipedia.org/wiki/Enrico_Fermi")\n>>> p.title\n\'Enrico Fermi - Wikipedia\'\n>>> p.description\n\'Italian-American physicist (1901–1954)\'\n>>> p.image\n\'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Enrico_Fermi_1943-49.jpg/1200px-Enrico_Fermi_1943-49.jpg\'\n\n# Access the parsed fields both as attributes and items\n>>> p["url"] == p.url\nTrue\n\n# Check if all three of the title, description, and image are in the parsing result\n>>> p.is_complete()\nTrue\n\n# Provide page content from somewhere else\n>>> content = """\n<html>\n    <head>\n        <title>The Dormouse\'s story</title>\n        <meta property="og:description" content="A Mad Tea-Party story" />\n    </head>\n    <body>\n        <p class="title"><b>The Dormouse\'s story</b></p>\n        <a href="http://example.com/elsie" class="sister" id="link1">Elsie</a>\n    </body>\n</html>\n"""\n\n# The the function\'s invocation won\'t make any external calls,\n# only relying on the supplied content, unlike the example above\n>>> webpreview("aa.com", content=content)\nWebPreview(url="http://aa.com", title="The Dormouse\'s story", description="A Mad Tea-Party story")\n```\n\n### Using the command line\n\nWhen `webpreview` is installed via `pip`, then the accompanying command-line tool is\ninstalled alongside.\n\n```shell\n$ webpreview https://en.wikipedia.org/wiki/Enrico_Fermi\ntitle: Enrico Fermi - Wikipedia\ndescription: Italian-American physicist (1901–1954)\nimage: https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Enrico_Fermi_1943-49.jpg/1200px-Enrico_Fermi_1943-49.jpg\n\n$ webpreview https://github.com/ --absolute-url\ntitle: GitHub: Where the world builds software\ndescription: GitHub is where over 83 million developers shape the future of software, together.\nimage: https://github.githubassets.com/images/modules/site/social-cards/github-social.png\n```\n\n### Using compatibility API\n\nBefore *v1.7.0* the package mainly exposed a different set of the API methods.\nAll of them are supported and may continue to be used.\n\n```python\n# WARNING:\n# The API below is left for BACKWARD COMPATIBILITY ONLY.\n\nfrom webpreview import web_preview\ntitle, description, image = web_preview("aurl.com")\n\n# specifing timeout which gets passed to requests.get()\ntitle, description, image = web_preview("a_slow_url.com", timeout=1000)\n\n# passing headers\nheaders = {\'User-Agent\': \'Mozilla/5.0\'}\ntitle, description, image = web_preview("a_slow_url.com", headers=headers)\n\n# pass html content thus avoiding making http call again to fetch content.\ncontent = """<html><head><title>Dummy HTML</title></head></html>"""\ntitle, description, image = web_preview("aurl.com", content=content)\n\n# specifing the parser\n# by default webpreview uses \'html.parser\'\ntitle, description, image = web_preview("aurl.com", content=content, parser=\'lxml\')\n```\n\n## Run with Docker\n\nThe docker image can be built and ran similarly to the command line.\nThe default entry point is the `webpreview` command-line function.\n\n```shell\n$ docker build -t webpreview .\n$ docker run -it --rm webpreview "https://en.m.wikipedia.org/wiki/Enrico_Fermi"\ntitle: Enrico Fermi - Wikipedia\ndescription: Enrico Fermi (Italian: [enˈriːko ˈfermi]; 29 September 1901 – 28 November 1954) was an Italian (later naturalized American) physicist and the creator of the world\'s first nuclear reactor, the Chicago Pile-1. He has been called the "architect of the nuclear age"[1] and the "architect of the atomic bomb".\nimage: https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Enrico_Fermi_1943-49.jpg/1200px-Enrico_Fermi_1943-49.jpg\n```\n\n*Note*: built docker image weighs around 210MB.\n\n## Testing\n\n```shell\n# Execute the tests\npoetry run pytest webpreview\n\n# OR execute until the first failed test\npoetry run pytest webpreview -x\n```\n\n## Setting up development environment\n\n```shell\n# Install a correct minimal supported version of python\npyenv install 3.7.13\n\n# Create a virtual environment\n# By default, the project already contains a .python-version file that points\n# to 3.7.13.\npython -m venv .venv\n\n# Install dependencies\n# Poetry will automatically install them into the local .venv\npoetry install\n\n# If you have errors likes this:\nERROR: Can not execute `setup.py` since setuptools is not available in the build environment.\n\n# Then do this:\n.venv/bin/pip install --upgrade setuptools\n```',
+    'author': 'ludbek',
+    'author_email': 'sth.srn@gmail.com',
+    'maintainer': 'vduseev',
+    'maintainer_email': 'vagiz@duseev.com',
+    'url': 'https://github.com/ludbek/webpreview',
+    'packages': packages,
+    'package_data': package_data,
+    'install_requires': install_requires,
+    'entry_points': entry_points,
+    'python_requires': '>=3.6.2,<4.0',
+}
+
+
+setup(**setup_kwargs)
