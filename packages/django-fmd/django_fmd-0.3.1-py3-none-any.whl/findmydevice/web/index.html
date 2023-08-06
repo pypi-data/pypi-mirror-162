@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>FMD</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="cache-control" content="no-cache, must-revalidate, post-check=0, pre-check=0" />
+    <meta http-equiv="cache-control" content="max-age=0" />
+    <meta http-equiv="expires" content="0" />
+    <link rel="stylesheet" href="./static/fmd_externals/style.css">
+    <script src="./static/fmd_externals/leaflet.js"></script>
+    <link href="./static/fmd_externals/leaflet.css" rel="stylesheet" />
+    <script type="text/javascript" src="./static/fmd_externals/crypto-js.js"></script>
+    <script src="./static/fmd_externals/jsencrypt.min.js" async></script>
+    <link rel="stylesheet" href="./static/fmd_externals/toasted.min.css">
+    <script src="./static/fmd_externals/toasted.min.js"></script>
+    <script src="./static/fmd_externals/logic.js"></script>
+
+<body onload="init();">
+
+    <div id="head">
+        <div class="center">
+            <h2>Find My Device</h2>
+        </div>
+        <br>
+        <div id="login">
+            <div class="center">
+                <p>This server tracks all your registered devices.<br>Please enter the device-id to receive the latest
+                    location:</p>
+            </div>
+            <br>
+            <div class="center">
+                <input type="text" onkeypress="clickPress(event)" id="fmdid" name="fmdid"><br><br>
+            </div>
+            <div class="center">
+                <button id="locateButton" type="button" onclick="prepareForLocate();">LOCATE</button>
+            </div>
+        </div>
+
+    </div>
+    <div id="dataView" onkeypress="switchWithKeys(event)">
+        <div id="map"></div>
+
+    </div>
+    <footer>
+        <div>
+            <div class="deviceInfo" id="desktop">
+                <div class="row">
+                    <div class="column-left">
+                        <div class="center">
+                            <img src="./static/fmd_externals/assets/Smartphone.png" height="96" />
+                        </div>
+                        <div style="margin-top:1vw" class="center">
+                            <p id="batView">Data</p>
+                        </div>
+                    </div>
+                    <div class="column-middle">
+                        <h3 style="display:inline;" id="idView">ID</h3>
+                        <p> - </p>
+                        <p id="providerView">Data</p>
+
+                        <div>
+                            <button type="button" class="imageButton" onclick="locateOlder()">
+                                <img src="./static/fmd_externals/assets/Left.png" height="24" />
+                            </button>
+                            <button type="button" class="imageButton" onclick="locateNewer()">
+                                <img src="./static/fmd_externals/assets/Right.png" height="24" />
+                            </button>
+                        </div>
+
+                        <div>
+                            <p id="datetime">data from </p>
+                            <p id="dateView">Date</p>
+                            <p id="timeView">Time</p>
+                        </div>
+
+                        <button type="button" class="imageButton" title="Locate" onclick="sendToPhone('locate')">
+                            <img src="./static/fmd_externals/assets/Locate.png" height="36" />
+                        </button>
+                        <button type="button" class="imageButton" title="Ring" onclick="sendToPhone('ring')">
+                            <img src="./static/fmd_externals/assets/Ring.png" height="36" />
+                        </button>
+                        <button type="button" class="imageButton" title="Lock" onclick="sendToPhone('lock')">
+                            <img src="./static/fmd_externals/assets/Locked.png" height="36" />
+                        </button>
+                        <button type="button" class="imageButton" title="Delete" onclick="sendToPhone('delete')">
+                            <img src="./static/fmd_externals/assets/Delete.png" height="36" />
+                        </button>
+                        <button type="button" class="imageButton" title="Picture" onclick="showPicture()">
+                            <img src="./static/fmd_externals/assets/Picture.png" height="36" />
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="deviceInfo" id="mobile">
+                <div class="row">
+                    <div class="column-left">
+                        <div class="center">
+                            <img src="./static/fmd_externals/assets/Smartphone.png" height="48" />
+                        </div>
+                        <div style="margin-top:1vw" class="center">
+                            <p id="batView">Data</p>
+                        </div>
+                    </div>
+                    <div class="column-middle">
+                        <h3 style="display:inline;" id="idView">ID</h3>
+                        <p> - </p>
+                        <p id="providerView">Data</p>
+
+                        <div>
+                            <button type="button" class="imageButton" onclick="locateOlder()">
+                                <img src="./static/fmd_externals/assets/Left.png" height="24" />
+                            </button>
+                            <button type="button" class="imageButton" onclick="locateNewer()">
+                                <img src="./static/fmd_externals/assets/Right.png" height="24" />
+                            </button>
+                        </div>
+
+                        <div>
+                            <p id="datetime">data from </p>
+                            <p id="dateView">Date</p>
+                            <p id="timeView">Time</p>
+                        </div>
+
+                        <button type="button" class="imageButton" title="Locate" onclick="sendToPhone('locate')">
+                            <img src="./static/fmd_externals/assets/Locate.png" height="24" />
+                        </button>
+                        <button type="button" class="imageButton" title="Ring" onclick="sendToPhone('ring')">
+                            <img src="./static/fmd_externals/assets/Ring.png" height="24" />
+                        </button>
+                        <button type="button" class="imageButton" title="Lock" onclick="sendToPhone('lock')">
+                            <img src="./static/fmd_externals/assets/Locked.png" height="24" />
+                        </button>
+                        <button type="button" class="imageButton" title="Delete" onclick="sendToPhone('delete')">
+                            <img src="./static/fmd_externals/assets/Delete.png" height="24" />
+                        </button>
+                        <button type="button" class="imageButton" title="Picture" onclick="showPicture()">
+                            <img src="./static/fmd_externals/assets/Picture.png" height="24" />
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+
+
+            <div class="center">
+                
+                <p id="version">v</p>
+                <a href="ds.html">Privacy Notice</a>
+            </div>
+        </div>
+    </footer>
+
+</body>
+
+</html>
