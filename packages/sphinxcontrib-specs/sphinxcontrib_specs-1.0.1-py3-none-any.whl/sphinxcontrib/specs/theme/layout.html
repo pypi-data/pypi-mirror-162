@@ -1,0 +1,48 @@
+{#
+  specs/layout.html
+  ~~~~~~~~~~~~~~~~~
+#}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    {%- block head %}
+      <meta charset="utf-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
+      <title>{{ title }} | {{ docstitle|e }}</title>
+
+
+      {%- for css in css_files %}
+        {%- if css|attr("filename") %}
+          {{ css_tag(css) }}
+        {%- else %}
+          <link rel="stylesheet" href="{{ pathto(css, 1)|e }}" type="text/css" />
+        {%- endif %}
+      {%- endfor %}
+    {%- endblock %}
+  </head>
+  <body>
+    {%- block content %}
+      <div class="specs specs-layout mx-5">
+        <aside class="specs-sidebar text-muted">
+          <strong class="d-none d-lg-block h6 my-2">On this page</strong>
+          <hr class="d-none d-lg-block my-2">
+          <nav>
+            {{ toc }}
+          </nav>
+        </aside>
+
+        <main class="specs-main">
+          <div class="specs-resources"></div>
+          <div class="specs-content">
+            {% block body %} {% endblock %}
+          </div>
+        </main>
+      </div>
+
+      {%- for js in script_files %}
+        {{ js_tag(js) }}
+      {%- endfor %}
+    {%- endblock %}
+  </body>
+</html>

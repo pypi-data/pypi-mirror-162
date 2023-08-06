@@ -1,0 +1,19 @@
+{#
+  specs/page.html
+  ~~~~~~~~~~~~~~~
+
+  Master template for Specs pages.
+#}
+{%- extends "layout.html" %}
+{% block body %}
+  {{ body }}
+  
+  {# Fix admonition titles :( #}
+  <script>
+    (() => {
+      document.querySelectorAll('.admonition-title + .admonition-title').forEach((el) => {
+        el.previousElementSibling.remove();
+      });
+    })();
+  </script>
+{% endblock %}
