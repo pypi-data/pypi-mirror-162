@@ -1,0 +1,2 @@
+def playweb():
+    raise NotImplementedError

@@ -1,0 +1,5 @@
+version
+========
+
+.. automodule:: version
+    :members:

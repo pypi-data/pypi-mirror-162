@@ -1,0 +1,104 @@
+import * as jsyaml from 'js-yaml';
+
+import { pyodideLoaded, addInitializer } from '../stores';
+import { loadPackage, loadFromFile } from '../interpreter';
+import { handleFetchError } from '../utils';
+
+// Premise used to connect to the first available pyodide interpreter
+let pyodideReadyPromise;
+let runtime;
+
+pyodideLoaded.subscribe(value => {
+    runtime = value;
+    console.log('RUNTIME READY');
+});
+
+export class PyEnv extends HTMLElement {
+    shadow: ShadowRoot;
+    wrapper: HTMLElement;
+    code: string;
+    environment: unknown;
+    runtime: any;
+    env: string[];
+    paths: string[];
+
+    constructor() {
+        super();
+
+        this.shadow = this.attachShadow({ mode: 'open' });
+        this.wrapper = document.createElement('slot');
+    }
+
+    connectedCallback() {
+        this.code = this.innerHTML;
+        this.innerHTML = '';
+
+        const env: string[] = [];
+        const modules: string[] = []; ???????????????????????????????????
+        let packagebase: string = '';
+        let module: {  ???????????????????????????????????
+            path: string;
+            base: string;
+        };
+
+        this.environment = jsyaml.load(this.code);
+        if (this.environment === undefined) return;
+
+        for (const entry of Array.isArray(this.environment) ? this.environment : []) {
+            if (typeof entry == 'string') {
+                env.push(entry);
+            } else if (entry && typeof entry === 'object') {
+                const obj = <Record<string, unknown>>entry;
+                const localpackage = <Record<string, unknown>>obj.localpackage;
+                if ( localpackage && typeof localpackage === 'object' ) {
+                    packagebase = localpackage.packagebase ? localpackage.packagebase : '';
+                    for (const path of Array.isArray(localpackage.paths) ? localpackage.paths : []) {
+                        if (typeof path === 'string') {
+                            module = {
+                                "path": path,
+                                "base": packagebase,
+                            };
+                            modules.push(module);
+                        }
+                    }
+                } else {
+                    packagebase = '';
+                    for (const path of Array.isArray(obj.paths) ? obj.paths : []) {
+                        if (typeof path === 'string') {
+                            module = {
+                                "path": path,
+                                "base": packagebase,
+                            };
+                            modules.push(module);
+                        }
+                    }
+                }
+            }
+        }
+
+        this.env = env;
+        this.modules = modules;
+
+        async function loadEnv() {
+            await loadPackage(env, runtime);
+            console.log('environment loaded');
+        }
+
+        async function loadPaths() {
+            for (const module of modules) {
+                console.log(`loading ${module.path}`);
+                try {
+                    await loadFromFile(module, runtime);
+                } catch (e) {
+                    //Should we still export full error contents to console?
+                    handleFetchError(e, module.path);
+                }
+            }
+            console.log('modules loaded');
+        }
+
+        addInitializer(loadEnv);
+        addInitializer(loadPaths);
+        console.log('environment loading...', this.env);
+    }
+}
