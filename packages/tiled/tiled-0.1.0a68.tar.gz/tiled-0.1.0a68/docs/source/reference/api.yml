@@ -1,0 +1,1049 @@
+components:
+  schemas:
+    About:
+      properties:
+        aliases:
+          additionalProperties:
+            additionalProperties:
+              items:
+                type: string
+              type: array
+            type: object
+          title: Aliases
+          type: object
+        api_version:
+          title: Api Version
+          type: integer
+        authentication:
+          $ref: '#/components/schemas/AboutAuthentication'
+        formats:
+          additionalProperties:
+            items:
+              type: string
+            type: array
+          title: Formats
+          type: object
+        library_version:
+          title: Library Version
+          type: string
+        links:
+          additionalProperties:
+            type: string
+          title: Links
+          type: object
+        meta:
+          title: Meta
+          type: object
+        queries:
+          items:
+            type: string
+          title: Queries
+          type: array
+      required:
+      - api_version
+      - library_version
+      - formats
+      - aliases
+      - queries
+      - authentication
+      - links
+      - meta
+      title: About
+      type: object
+    AboutAuthentication:
+      properties:
+        links:
+          $ref: '#/components/schemas/AboutAuthenticationLinks'
+        providers:
+          items:
+            $ref: '#/components/schemas/AboutAuthenticationProvider'
+          title: Providers
+          type: array
+        required:
+          title: Required
+          type: boolean
+      required:
+      - required
+      - providers
+      title: AboutAuthentication
+      type: object
+    AboutAuthenticationLinks:
+      properties:
+        apikey:
+          title: Apikey
+          type: string
+        logout:
+          title: Logout
+          type: string
+        refresh_session:
+          title: Refresh Session
+          type: string
+        revoke_session:
+          title: Revoke Session
+          type: string
+        whoami:
+          title: Whoami
+          type: string
+      required:
+      - whoami
+      - apikey
+      - refresh_session
+      - revoke_session
+      - logout
+      title: AboutAuthenticationLinks
+      type: object
+    AboutAuthenticationProvider:
+      properties:
+        confirmation_message:
+          title: Confirmation Message
+          type: string
+        links:
+          additionalProperties:
+            type: string
+          title: Links
+          type: object
+        mode:
+          $ref: '#/components/schemas/AuthenticationMode'
+        provider:
+          title: Provider
+          type: string
+      required:
+      - provider
+      - mode
+      - links
+      title: AboutAuthenticationProvider
+      type: object
+    ArrayMacroStructure:
+      properties:
+        chunks:
+          items:
+            items:
+              type: integer
+            type: array
+          title: Chunks
+          type: array
+        dims:
+          items:
+            type: string
+          title: Dims
+          type: array
+        resizable:
+          anyOf:
+          - type: boolean
+          - items:
+              type: boolean
+            type: array
+          default: false
+          title: Resizable
+        shape:
+          items:
+            type: integer
+          title: Shape
+          type: array
+      required:
+      - chunks
+      - shape
+      title: ArrayMacroStructure
+      type: object
+    ArrayStructure:
+      properties:
+        macro:
+          $ref: '#/components/schemas/ArrayMacroStructure'
+        micro:
+          anyOf:
+          - $ref: '#/components/schemas/BuiltinDtype'
+          - $ref: '#/components/schemas/StructDtype'
+          title: Micro
+      required:
+      - macro
+      - micro
+      title: ArrayStructure
+      type: object
+    AuthenticationMode:
+      description: An enumeration.
+      enum:
+      - password
+      - external
+      title: AuthenticationMode
+      type: string
+    BuiltinDtype:
+      properties:
+        endianness:
+          $ref: '#/components/schemas/Endianness'
+        itemsize:
+          title: Itemsize
+          type: integer
+        kind:
+          $ref: '#/components/schemas/Kind'
+      required:
+      - endianness
+      - kind
+      - itemsize
+      title: BuiltinDtype
+      type: object
+    DataFrameMacroStructure:
+      properties:
+        columns:
+          items:
+            type: string
+          title: Columns
+          type: array
+        npartitions:
+          title: Npartitions
+          type: integer
+        resizable:
+          anyOf:
+          - type: boolean
+          - items:
+              type: boolean
+            type: array
+          default: false
+          title: Resizable
+      required:
+      - npartitions
+      - columns
+      title: DataFrameMacroStructure
+      type: object
+    DataFrameMicroStructure:
+      properties:
+        divisions:
+          format: binary
+          title: Divisions
+          type: string
+        meta:
+          format: binary
+          title: Meta
+          type: string
+      required:
+      - meta
+      - divisions
+      title: DataFrameMicroStructure
+      type: object
+    DataFrameStructure:
+      properties:
+        macro:
+          $ref: '#/components/schemas/DataFrameMacroStructure'
+        micro:
+          $ref: '#/components/schemas/DataFrameMicroStructure'
+      required:
+      - micro
+      - macro
+      title: DataFrameStructure
+      type: object
+    EmptyDict:
+      properties: {}
+      title: EmptyDict
+      type: object
+    Endianness:
+      description: 'An enum of endian values: big, little, not_applicable.'
+      enum:
+      - big
+      - little
+      - not_applicable
+      title: Endianness
+      type: string
+    EntryFields:
+      description: An enumeration.
+      enum:
+      - metadata
+      - structure_family
+      - structure
+      - structure.micro
+      - structure.macro
+      - count
+      - sorting
+      - specs
+      - ''
+      title: EntryFields
+      type: string
+    Error:
+      properties:
+        code:
+          title: Code
+          type: integer
+        message:
+          title: Message
+          type: string
+      required:
+      - code
+      - message
+      title: Error
+      type: object
+    Field:
+      properties:
+        dtype:
+          anyOf:
+          - $ref: '#/components/schemas/BuiltinDtype'
+          - $ref: '#/components/schemas/StructDtype'
+          title: Dtype
+        name:
+          title: Name
+          type: string
+        shape:
+          items:
+            type: integer
+          title: Shape
+          type: array
+      required:
+      - name
+      - dtype
+      title: Field
+      type: object
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          title: Detail
+          type: array
+      title: HTTPValidationError
+      type: object
+    Kind:
+      description: "See https://numpy.org/devdocs/reference/arrays.interface.html#object.__array_interface__\n\
+        \nThe term \"kind\" comes from the numpy API as well.\n\nNote: At import time,\
+        \ the environment variable ``TILED_ALLOW_OBJECT_ARRAYS``\nis checked. If it\
+        \ is set to anything other than ``\"0\"``, then this\nEnum gets an additional\
+        \ member::\n\n    object = \"O\"\n\nto support numpy 'object'-type arrays\
+        \ which hold generic Python objects.\nNumpy 'object'-type arrays are not enabled\
+        \ by default because their binary\nrepresentation is not interpretable by\
+        \ clients other than Python.  It is\nrecommended to convert your data to a\
+        \ non-object type if possible so that it\ncan be read by non-Python clients."
+      enum:
+      - t
+      - b
+      - i
+      - u
+      - f
+      - c
+      - m
+      - M
+      - S
+      - U
+      - V
+      title: Kind
+      type: string
+    NodeAttributes:
+      properties:
+        ancestors:
+          items:
+            type: string
+          title: Ancestors
+          type: array
+        metadata:
+          title: Metadata
+          type: object
+        sorting:
+          items:
+            $ref: '#/components/schemas/SortingItem'
+          title: Sorting
+          type: array
+        specs:
+          items:
+            type: string
+          title: Specs
+          type: array
+        structure:
+          anyOf:
+          - $ref: '#/components/schemas/ArrayStructure'
+          - $ref: '#/components/schemas/DataFrameStructure'
+          - $ref: '#/components/schemas/NodeStructure'
+          title: Structure
+        structure_family:
+          $ref: '#/components/schemas/StructureFamily'
+      required:
+      - ancestors
+      title: NodeAttributes
+      type: object
+    NodeStructure:
+      properties:
+        contents:
+          additionalProperties:
+            $ref: '#/components/schemas/Resource_NodeAttributes__ResourceLinksT__EmptyDict_'
+          title: Contents
+          type: object
+        count:
+          title: Count
+          type: integer
+      required:
+      - count
+      title: NodeStructure
+      type: object
+    PostMetadataRequest:
+      properties:
+        metadata:
+          title: Metadata
+          type: object
+        specs:
+          items:
+            type: string
+          title: Specs
+          type: array
+        structure:
+          anyOf:
+          - $ref: '#/components/schemas/ArrayStructure'
+          - $ref: '#/components/schemas/DataFrameStructure'
+          title: Structure
+        structure_family:
+          $ref: '#/components/schemas/StructureFamily'
+      required:
+      - structure_family
+      - structure
+      - metadata
+      - specs
+      title: PostMetadataRequest
+      type: object
+    PostMetadataResponse:
+      properties:
+        key:
+          title: Key
+          type: string
+      required:
+      - key
+      title: PostMetadataResponse
+      type: object
+    Resource_NodeAttributes__ResourceLinksT__EmptyDict_:
+      description: A JSON API Resource
+      properties:
+        attributes:
+          $ref: '#/components/schemas/NodeAttributes'
+        id:
+          anyOf:
+          - type: string
+          - format: uuid
+            type: string
+          title: Id
+        links:
+          title: Links
+        meta:
+          $ref: '#/components/schemas/EmptyDict'
+      required:
+      - id
+      - attributes
+      title: Resource[NodeAttributes, ResourceLinksT, EmptyDict]
+      type: object
+    Resource_NodeAttributes__dict__dict_:
+      description: A JSON API Resource
+      properties:
+        attributes:
+          $ref: '#/components/schemas/NodeAttributes'
+        id:
+          anyOf:
+          - type: string
+          - format: uuid
+            type: string
+          title: Id
+        links:
+          title: Links
+          type: object
+        meta:
+          title: Meta
+          type: object
+      required:
+      - id
+      - attributes
+      title: Resource[NodeAttributes, dict, dict]
+      type: object
+    Response:
+      properties:
+        data:
+          title: Data
+        error:
+          $ref: '#/components/schemas/Error'
+        links:
+          title: Links
+        meta:
+          title: Meta
+      title: Response
+      type: object
+    Response_Resource_NodeAttributes__dict__dict___dict__dict_:
+      properties:
+        data:
+          $ref: '#/components/schemas/Resource_NodeAttributes__dict__dict_'
+        error:
+          $ref: '#/components/schemas/Error'
+        links:
+          title: Links
+          type: object
+        meta:
+          title: Meta
+          type: object
+      title: Response[Resource[NodeAttributes, dict, dict], dict, dict]
+      type: object
+    SortingDirection:
+      description: An enumeration.
+      enum:
+      - 1
+      - -1
+      title: SortingDirection
+      type: integer
+    SortingItem:
+      properties:
+        direction:
+          $ref: '#/components/schemas/SortingDirection'
+        key:
+          title: Key
+          type: string
+      required:
+      - key
+      - direction
+      title: SortingItem
+      type: object
+    StructDtype:
+      properties:
+        fields:
+          items:
+            $ref: '#/components/schemas/Field'
+          title: Fields
+          type: array
+        itemsize:
+          title: Itemsize
+          type: integer
+      required:
+      - itemsize
+      - fields
+      title: StructDtype
+      type: object
+    StructureFamily:
+      description: An enumeration.
+      enum:
+      - node
+      - array
+      - dataframe
+      title: StructureFamily
+      type: string
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          title: Location
+          type: array
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+      type: object
+  securitySchemes:
+    APIKeyAuthorizationHeader:
+      description: Prefix value with 'Apikey ' as in, 'Apikey SECRET'
+      in: header
+      name: Authorization
+      type: apiKey
+    APIKeyCookie:
+      in: cookie
+      name: tiled_api_key
+      type: apiKey
+    APIKeyQuery:
+      in: query
+      name: api_key
+      type: apiKey
+    OAuth2PasswordBearer:
+      flows:
+        password:
+          refreshUrl: token/refresh
+          scopes: {}
+          tokenUrl: PLACEHOLDER
+      type: oauth2
+info:
+  description: Structured data access service
+  title: Tiled
+  version: 0.1.0a66.post6.dev0+gc980bed
+openapi: 3.0.2
+paths:
+  /:
+    get:
+      operationId: index__get
+      responses:
+        '200':
+          content:
+            text/html:
+              schema:
+                type: string
+          description: Successful Response
+      security:
+      - OAuth2PasswordBearer: []
+      - APIKeyQuery: []
+      - APIKeyAuthorizationHeader: []
+      - APIKeyCookie: []
+      summary: Index
+  /api/:
+    get:
+      operationId: about_api__get
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/About'
+          description: Successful Response
+      security:
+      - OAuth2PasswordBearer: []
+      - APIKeyQuery: []
+      - APIKeyAuthorizationHeader: []
+      - APIKeyCookie: []
+      summary: About
+  /api/array/block/{path}:
+    get:
+      description: Fetch a chunk of array-like data.
+      operationId: array_block_api_array_block__path__get
+      parameters:
+      - in: path
+        name: path
+        required: true
+        schema:
+          title: Path
+          type: string
+      - in: query
+        name: format
+        required: false
+        schema:
+          title: Format
+          type: string
+      - in: query
+        name: filename
+        required: false
+        schema:
+          title: Filename
+          type: string
+      - in: query
+        name: block
+        required: true
+        schema:
+          pattern: ^[0-9]*(,[0-9]+)*$
+          title: Block
+          type: string
+      - in: query
+        name: slice
+        required: false
+        schema:
+          pattern: ^[-0-9,:]*$
+          title: Slice
+          type: string
+      - in: query
+        name: expected_shape
+        required: false
+        schema:
+          minLength: 1
+          pattern: ^[0-9]+(,[0-9]+)*$|^scalar$
+          title: Expected Shape
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - OAuth2PasswordBearer:
+        - read:data
+      - APIKeyQuery: []
+      - APIKeyAuthorizationHeader: []
+      - APIKeyCookie: []
+      summary: Array Block
+  /api/array/full/{path}:
+    get:
+      description: Fetch a slice of array-like data.
+      operationId: full_array_api_array_full__path__get
+      parameters:
+      - in: path
+        name: path
+        required: true
+        schema:
+          title: Path
+          type: string
+      - in: query
+        name: format
+        required: false
+        schema:
+          title: Format
+          type: string
+      - in: query
+        name: filename
+        required: false
+        schema:
+          title: Filename
+          type: string
+      - in: query
+        name: slice
+        required: false
+        schema:
+          pattern: ^[-0-9,:]*$
+          title: Slice
+          type: string
+      - in: query
+        name: expected_shape
+        required: false
+        schema:
+          minLength: 1
+          pattern: ^[0-9]+(,[0-9]+)*$|^scalar$
+          title: Expected Shape
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - OAuth2PasswordBearer:
+        - read:data
+      - APIKeyQuery: []
+      - APIKeyAuthorizationHeader: []
+      - APIKeyCookie: []
+      summary: Full Array
+    put:
+      operationId: put_array_full_api_array_full__path__put
+      parameters:
+      - in: path
+        name: path
+        required: true
+        schema:
+          title: Path
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - OAuth2PasswordBearer:
+        - write:data
+        - write:metadata
+      - APIKeyQuery: []
+      - APIKeyAuthorizationHeader: []
+      - APIKeyCookie: []
+      summary: Put Array Full
+  /api/dataframe/partition/{path}:
+    get:
+      description: Fetch a partition (continuous block of rows) from a DataFrame.
+      operationId: dataframe_partition_api_dataframe_partition__path__get
+      parameters:
+      - in: path
+        name: path
+        required: true
+        schema:
+          title: Path
+          type: string
+      - in: query
+        name: partition
+        required: true
+        schema:
+          title: Partition
+          type: integer
+      - in: query
+        name: field
+        required: false
+        schema:
+          items:
+            minLength: 1
+            type: string
+          minLength: 1
+          title: Field
+          type: array
+      - in: query
+        name: format
+        required: false
+        schema:
+          title: Format
+          type: string
+      - in: query
+        name: filename
+        required: false
+        schema:
+          title: Filename
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - OAuth2PasswordBearer:
+        - read:data
+      - APIKeyQuery: []
+      - APIKeyAuthorizationHeader: []
+      - APIKeyCookie: []
+      summary: Dataframe Partition
+  /api/node/full/{path}:
+    get:
+      description: Fetch the data below the given node.
+      operationId: full_generic__node__or__dataframe__api_node_full__path__get
+      parameters:
+      - in: path
+        name: path
+        required: true
+        schema:
+          title: Path
+          type: string
+      - in: query
+        name: field
+        required: false
+        schema:
+          items:
+            minLength: 1
+            type: string
+          minLength: 1
+          title: Field
+          type: array
+      - in: query
+        name: format
+        required: false
+        schema:
+          title: Format
+          type: string
+      - in: query
+        name: filename
+        required: false
+        schema:
+          title: Filename
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - OAuth2PasswordBearer:
+        - read:data
+      - APIKeyQuery: []
+      - APIKeyAuthorizationHeader: []
+      - APIKeyCookie: []
+      summary: Full Generic 'Node' Or 'Dataframe'
+    put:
+      operationId: put_dataframe_full_api_node_full__path__put
+      parameters:
+      - in: path
+        name: path
+        required: true
+        schema:
+          title: Path
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - OAuth2PasswordBearer:
+        - write:data
+        - write:metadata
+      - APIKeyQuery: []
+      - APIKeyAuthorizationHeader: []
+      - APIKeyCookie: []
+      summary: Put Dataframe Full
+  /api/node/metadata/{path}:
+    delete:
+      operationId: delete_api_node_metadata__path__delete
+      parameters:
+      - in: path
+        name: path
+        required: true
+        schema:
+          title: Path
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - OAuth2PasswordBearer:
+        - write:data
+        - write:metadata
+      - APIKeyQuery: []
+      - APIKeyAuthorizationHeader: []
+      - APIKeyCookie: []
+      summary: Delete
+    get:
+      description: Fetch the metadata and structure information for one entry.
+      operationId: node_metadata_api_node_metadata__path__get
+      parameters:
+      - in: path
+        name: path
+        required: true
+        schema:
+          title: Path
+          type: string
+      - in: query
+        name: fields
+        required: false
+        schema:
+          default:
+          - metadata
+          - structure_family
+          - structure
+          - structure.micro
+          - structure.macro
+          - count
+          - sorting
+          - specs
+          - ''
+          items:
+            $ref: '#/components/schemas/EntryFields'
+          type: array
+      - in: query
+        name: select_metadata
+        required: false
+        schema:
+          title: Select Metadata
+          type: string
+      - in: query
+        name: max_depth
+        required: false
+        schema:
+          maximum: 5.0
+          minimum: 0.0
+          title: Max Depth
+          type: integer
+      - in: query
+        name: omit_links
+        required: false
+        schema:
+          default: false
+          title: Omit Links
+          type: boolean
+      - in: query
+        name: root_path
+        required: false
+        schema:
+          default: false
+          title: Root Path
+          type: boolean
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response_Resource_NodeAttributes__dict__dict___dict__dict_'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - OAuth2PasswordBearer:
+        - read:metadata
+      - APIKeyQuery: []
+      - APIKeyAuthorizationHeader: []
+      - APIKeyCookie: []
+      summary: Node Metadata
+    post:
+      operationId: post_metadata_api_node_metadata__path__post
+      parameters:
+      - in: path
+        name: path
+        required: true
+        schema:
+          title: Path
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostMetadataRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostMetadataResponse'
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      security:
+      - OAuth2PasswordBearer:
+        - write:data
+        - write:metadata
+      - APIKeyQuery: []
+      - APIKeyAuthorizationHeader: []
+      - APIKeyCookie: []
+      summary: Post Metadata
+  /ui/{path}:
+    get:
+      operationId: ui_ui__path__get
+      parameters:
+      - in: path
+        name: path
+        required: true
+        schema:
+          title: Path
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        '422':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Ui
