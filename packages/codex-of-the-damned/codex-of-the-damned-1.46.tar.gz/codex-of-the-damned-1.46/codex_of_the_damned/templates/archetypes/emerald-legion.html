@@ -1,0 +1,85 @@
+{% extends "archetypes/_layout.html" %}
+{% import "archetypes/_layout-erratum.html" as erratum with context %}
+{% import "archetypes/emerald-legion.json" as deck_json %}
+
+{% block meta %}
+<meta property="decklist" content='{{ deck_json | tojson }}' />
+{% endblock %}
+
+{% block archetype_name %}
+<h1>{{ harbinger_of_skulls }} Emerald Legion</h1>
+{% endblock %}
+
+{% block archetype %}
+{% trans trimmed
+breath_of_thanatos=card("Breath of Thanatos"),
+emerald_legionnaire=card("Emerald Legionnaire"),
+erlik=card("Erlik"),
+fbi_special_affairs_division=card("FBI Special Affairs Division"),
+forced_march=card("Forced March"),
+inevitability_of_the_void=card("Inevitability of the Void"),
+liquidation=card("Liquidation"),
+shroud_mastery=card("Shroud Mastery"),
+spectral_divination=card("Spectral Divination"),
+the_capuchin=card("The Capuchin"),
+the_unmasking=card("The Unmasking"),
+vengeful_spirit=card("Vengeful Spirit"),
+richard_stefan_utners_deck=link("/deck-search", _("Richard Stefan Utner's deck"), id="2019gbzzc")
+%}
+<h2>Highlights</h2>
+<p>
+    This is a <em>allies toolbox</em> deck using {{ emerald_legionnaire }}.
+</p>
+<p>
+    This version uses {{ erlik }} as a star: his ability lets the player get
+    another Harbinger out fast and cheap. The fact that he has {{ CEL }} lets him use
+    the excellent {{ forced_march }} for stealth and unlock.
+</p>
+<p>
+    The idea is to defend and get an {{ emerald_legionnaire }} out,
+    then bring the others back from the ash heap if they are there.
+    Once {{ the_unmasking }} and {{ fbi_special_affairs_division }} hit the table,
+    they're a solid defence.
+</p>
+<p>
+    {{ liquidation }} is used to bloat and can put some {{ emerald_legionnaire }}
+    but also the cards to power their ability in the ash heap.
+</p>
+<p>
+    As the game progresses, {{ emerald_legionnaire }} are used to bleed.
+    {{ vengeful_spirit }} helps to boost the Harbinger bleeds, too.
+    {{ inevitability_of_the_void }} is used to lunge.
+</p>
+<h2>Tips & Tricks</h2>
+<p>
+    To be able to use their ability, an {{ emerald_legionnaire }} must be put into play
+    by recruiting it: the ones in the ash heap can not have their effect used —
+    their card text is ignored as long as they are in the ash heap.
+    In order to manage to get at least one into play, the deck packs quite a bit of
+    stealth, and uses recruitment specialized modifiers like {{ shroud_mastery }} and
+    {{ breath_of_thanatos }} .
+</p>
+<p>
+    A key feature of this deck is the versatility of its cards:
+    {{ spectral_divination }} can be used for stealth or intercept,
+    {{ breath_of_thanatos }} for stealth or a deadly strike, and so on.
+</p>
+<p>
+    The deck has quite a bit of intercept, but nothing close to what a
+    <em>wall</em> construct can display. It will be happy enough to bounce the bleed
+    with {{ AUS }} bounces if given the chance.
+</p>
+<h2>Variants</h2>
+<p>
+    A variant uses {{ the_capuchin }} as star, {{ richard_stefan_utners_deck }}
+    from 2019 is a good example of it.
+</p>
+{% endtrans %}
+{% endblock %}
+
+{% block errata %}
+<div class="insert warn">
+    <h3>Errata</h3>
+    {{ erratum.pentextmsubversion( 'remove' ) }}
+</div>
+{% endblock %}
