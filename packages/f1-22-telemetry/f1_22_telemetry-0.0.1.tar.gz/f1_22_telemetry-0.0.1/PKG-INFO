@@ -1,0 +1,69 @@
+Metadata-Version: 2.1
+Name: f1-22-telemetry
+Version: 0.0.1
+Summary: Decode F1 22 telemetry data.
+Project-URL: Homepage, https://github.com/chrishannam/f1-22-telemetry
+Project-URL: Bug Tracker, https://github.com/chrishannam/f1-22-telemetry/issues
+Author-email: Chris Hannam <ch@chrishannam.co.uk>
+License: MIT License
+        
+        Copyright (c) 2022 Chris Hannam
+        
+        Permission is hereby granted, free of charge, to any person obtaining a copy
+        of this software and associated documentation files (the "Software"), to deal
+        in the Software without restriction, including without limitation the rights
+        to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+        copies of the Software, and to permit persons to whom the Software is
+        furnished to do so, subject to the following conditions:
+        
+        The above copyright notice and this permission notice shall be included in all
+        copies or substantial portions of the Software.
+        
+        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+        IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+        FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+        AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+        LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+        OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+        SOFTWARE.
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 3
+Requires-Python: >=3.7
+Description-Content-Type: text/markdown
+
+# F1 22 Telemetry
+
+# Main Source for this Project
+To speed up the building of this project, the packet format was taken from
+[this](https://forums.codemasters.com/topic/80231-f1-2021-udp-specification/?do=findComment&comment=624274)
+post on the Codemasters forums. Which oddly works most for F1 22, which is nice.
+
+Thanks to the hard work of the poster I was able to skip the tedious packet decoding.
+
+# Installing
+
+```commandline
+pip install f1-22-telemetry
+```
+
+# Running
+```commandline
+telemetry-f1-22-listener
+```
+
+# Usage
+
+```python
+from f1_22_telemetry.listener import TelemetryListener
+
+listener = TelemetryListener(port=20777, host='localhost')
+packet = listener.get()
+```
+
+# Releasing
+```commandline
+pip install --upgrade build twine
+python -m build
+python3 -m twine upload f1-22-telemetry
+```
