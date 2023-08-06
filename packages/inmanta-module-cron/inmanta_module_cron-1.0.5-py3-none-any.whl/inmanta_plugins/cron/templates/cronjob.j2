@@ -1,0 +1,10 @@
+{% if env_vars|length > 0 -%}
+# Environment variables
+{% endif -%}
+{% for key, value in env_vars.items() -%}
+{{ key }}={{ value }}
+{% endfor -%}
+
+# Cronjob
+{{ schedule }} {{ user }} {{ command }}
+
