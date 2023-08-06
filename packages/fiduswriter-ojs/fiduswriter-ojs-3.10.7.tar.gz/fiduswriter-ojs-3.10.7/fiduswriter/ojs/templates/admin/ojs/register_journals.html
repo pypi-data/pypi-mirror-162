@@ -1,0 +1,40 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+{% load transpile %}
+{% block title %}{% trans "Register journals" %}{% endblock %}
+{% block extrahead %}{{ block.super }}
+<link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}">
+<link type="text/css" rel="stylesheet" href="{% static "css/colors.css" %}" />
+<link type="text/css" rel="stylesheet" href="{% static "css/alerts.css" %}" />
+<link type="text/css" rel="stylesheet" href="{% static "css/fonts.css" %}" />
+<!--  Translations -->
+<script type="text/javascript" src="/api/jsi18n/"></script>
+<!-- JS error handling -->
+<script type="text/javascript" src="{% url 'js-error-handler-js' %}"></script>
+<!-- jQuery -->
+<script type="text/javascript" src="{% static "admin/js/vendor/jquery/jquery.min.js" %}"></script>
+<script type="text/javascript" src="{% static "admin/js/jquery.init.js" %}"></script>
+<script type="text/javascript" src="{% static "admin/js/admin/RelatedObjectLookups.js" %}"></script>
+<!-- Font Awesome -->
+<link type="text/css" rel="stylesheet" href="{% static "css/fontawesome/css/all.css" %}" />
+<script type="text/javascript" src="{% static "js/ojs_admin_register_journals.mjs" %}"></script>
+{% endblock %}
+{% block content %}
+    <div>
+        <h1>{% trans "Register journals" %}</h1>
+        <p>
+            {% blocktrans %}
+            Register the journals from a particular OJS instance. Insert first the
+            URL and Key of the OJS installation. Decide then for each journal you
+            want to connect with Fidus Writer which user should be registered as
+            their editor.
+            {% endblocktrans %}
+        </p>
+        <div id="journal_form">
+            <p>{% trans "URL" %}: <input type=text id="ojs_url"></p>
+            <p>{% trans "Key" %}: <input type=text id="ojs_key"></p>
+            <button id="get_journals" class="button">{% trans "Query available journals" %}</button>
+
+        </div>
+    </div>
+{% endblock %}
