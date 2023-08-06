@@ -1,0 +1,70 @@
+[tool.poetry]
+name = "sqlalchemy-file"
+version = "0.1.0"
+description = ""
+authors = ["jowilf <hounonj@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+SQLAlchemy = ">=1.4,<1.5.0"
+apache-libcloud = "^3.6.0"
+
+[tool.poetry.dev-dependencies]
+filedepot = "^0.8.0"
+pytest = "^7.1.2"
+sqlmodel = "^0.0.6"
+starlette = "^0.20.4"
+Pillow = "^9.2.0"
+fasteners = "^0.17.3"
+black = "^22.6.0"
+coverage = { extras = ["toml"], version = "^6.4.2" }
+flake8 = "^5.0.4"
+flake8-bugbear = "^22.7.1"
+mypy = "^0.971"
+isort = "^5.10.1"
+mkdocs-material = "^8.2.7"
+PyMySQL = {extras = ["rsa"], version = "^1.0.2"}
+psycopg2-binary = "^2.9.3"
+
+[tool.coverage.report]
+fail_under = 95
+show_missing = true
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+]
+
+[tool.coverage.run]
+parallel = true
+command_line = "-m pytest"
+source = ["sqlalchemy_file", "tests"]
+
+[tool.isort]
+profile = "black"
+known_third_party = ["sqlalchemy_file"]
+skip_glob = [
+    "sqlalchemy_file/__init__.py",
+]
+src_paths = ["sqlalchemy_file", "tests"]
+
+[tool.mypy]
+disallow_any_generics = true
+disallow_subclassing_any = true
+disallow_untyped_calls = false
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_return_any = true
+implicit_reexport = false
+strict_equality = true
+ignore_missing_imports = true
+exclude = 'tests/'
+
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
