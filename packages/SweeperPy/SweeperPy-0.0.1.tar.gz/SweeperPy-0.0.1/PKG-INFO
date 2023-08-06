@@ -1,0 +1,57 @@
+Metadata-Version: 2.1
+Name: SweeperPy
+Version: 0.0.1
+Summary: A Library to make simple minesweeper games using OOP
+Author-email: Ousama Alhennawi <osamaziadalhinawi@gmail.com>
+License: MIT License
+        
+        Copyright (c) 2022 Ousama
+        
+        Permission is hereby granted, free of charge, to any person obtaining a copy
+        of this software and associated documentation files (the "Software"), to deal
+        in the Software without restriction, including without limitation the rights
+        to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+        copies of the Software, and to permit persons to whom the Software is
+        furnished to do so, subject to the following conditions:
+        
+        The above copyright notice and this permission notice shall be included in all
+        copies or substantial portions of the Software.
+        
+        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+        IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+        FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+        AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+        LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+        OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+        SOFTWARE.
+Project-URL: Homepage, https://github.com/osam7a/Minesweeper
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.7
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
+# Minesweeper
+This is a library to make simple minesweeper games using OOP
+
+Example Usage:
+```py
+from Minesweeper import Board # Import the Board object from the library
+
+b = Board(5, 5) # Create the Board instance
+b.place_mines(5) # Place 5 mines on our 5x5 board
+while True: # Loop forever
+    inp = input("Enter row, column: ") # Take input
+    f_or_r = inp[0] # Check if user wants to flag or reveal
+    row = int(inp[1:].split()[0]) # Get the row from the input  
+    col = int(inp[1:].split()[1]) # Get the column from the input
+    if f_or_r == "f": # If input is to flag
+        b.flag(row, col) # Use flag() to flag the cell
+        print(b.visualize()) # Use visualize() to get a string of the updated board
+    elif f_or_r == "r": # If the input is to reveal
+        b.reveal(row, col) # Use reveal() to reveal the value of the cell
+        print(b.visualize()) # Use visualize() to get a string of the updated board
+```
+
+Made by: Ousama Alhennawi
