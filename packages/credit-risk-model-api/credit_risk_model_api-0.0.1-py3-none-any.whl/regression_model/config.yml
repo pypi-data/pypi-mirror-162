@@ -1,0 +1,57 @@
+# Package Overview
+package_name: regression_model
+
+# Data Files
+whole_data_file: adjusted_data.csv
+training_data_file: train.csv
+target_data_file: y_train.csv
+test_data_file: test.csv # use different TargetVariablePreprocess for the running loans
+paramter_saved_file: optimized_parameter.json
+
+# Variables
+# The variable we are attempting to predict (loan_status/final_status)
+target: final_status
+
+# Direcotry to save and pipeline output name
+pipeline_name: regression_model
+pipeline_save_file: regression_model_output_v
+
+features:
+  - disbursed_date
+  - gender
+  - age
+  - education
+  - marital_status
+  - term
+  - loan_amount
+  - applicant_income
+  - addr_state
+  - annual_inc
+  - application_type
+  - dti
+  - installment
+  - apr
+  - total_pymnt
+  - total_rec_int
+  - total_rec_prncp
+  - no_of_loans
+  - loan_type
+  - rating
+
+selected_names:
+  - application_type
+  - term_interval
+  # - marital_status
+  - monthly_income_interval
+  - gender
+  - dti_interval
+  - age_interval
+  - no_of_loans_interval
+  - rating_interval
+  - loan_amount_interval
+
+# set train/test split
+test_size: 0.2
+
+# to set the random seed
+random_state: 0
