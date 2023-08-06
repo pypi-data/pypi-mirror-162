@@ -1,0 +1,16 @@
+[package]
+name = "altius-py"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+name = "altius_py"
+crate-type = ["cdylib"]
+
+[dependencies]
+altius-core = { path = "local_dependencies/altius-core" }
+altius-interpreter = { path = "local_dependencies/altius-interpreter" }
+pyo3 = { version = "0.16.5", features = ["extension-module"] }
+pyo3-log = "^0.6.0"
+numpy = "^0.16.0"
