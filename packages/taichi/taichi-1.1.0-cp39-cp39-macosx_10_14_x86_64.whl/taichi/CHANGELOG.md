@@ -1,0 +1,33 @@
+Highlights:
+   - **Documentation**
+      - Add introduction to quantized types (#5705) (by **Yi Xu**)
+      - Add docs for GGUI's new features (#5647) (by **Mocki**)
+      - Add introduction to forward mode autodiff (#5680) (by **Mingrui Zhang**)
+   - **Vulkan backend**
+      - Track image layout internally (#5597) (by **PENGUINLIONG**)
+
+Full changelog:
+   - [test] Fix autodiff test for unsupported shift ptr (#5723) (by **Mingrui Zhang**)
+   - [Doc] [type] Add introduction to quantized types (#5705) (by **Yi Xu**)
+   - Fix shared array for all Vulkan versions. (#5722) (by **Haidong Lan**)
+   - [autodiff] Clear all dual fields when exiting context manager (#5716) (by **Mingrui Zhang**)
+   - [bug] Support indexing via np.integer for field (#5712) (by **Ailing**)
+   - [vulkan] Relax number of array args for each kernel (#5689) (by **Ailing**)
+   - [bug] Properly delete functions of a SNode Tree (#5710) (by **Lin Jiang**)
+   - [Doc] Add docs for GGUI's new features (#5647) (by **Mocki**)
+   - [gui] Support set_image with texture (#5655) (by **PENGUINLIONG**)
+   - [Doc] Add introduction to forward mode autodiff (#5680) (by **Mingrui Zhang**)
+   - [autodiff] Fix AdStackAllocaStmt not correctly backup (#5692) (by **Mingrui Zhang**)
+   - [doc] Rename ti.struct_class to ti.dataclass (#5706) (by **Yi Xu**)
+   - [gui] GGUI renames (#5704) (by **PENGUINLIONG**)
+   - [Vulkan] Track image layout internally (#5597) (by **PENGUINLIONG**)
+   - [ci] Confine show_environ task to Linux bots (#5677) (by **Proton**)
+   - [build] [refactor] Decouple GUI source files from taichi_core target (#5676) (by **Bo Qiao**)
+   - [ci] Rename libcommon.sh -> common-utils.sh, remove expore core build task (#5673) (by **Proton**)
+   - [ci] Temporarily disable a M1 vulkan test (#5701) (by **Proton**)
+   - [doc] Add comments to explain the commit Id for Build Andriod Demos CI pipeline (#5700) (by **Zhanlue Yang**)
+   - [bug] Fix ndarray arg with shape=(1,) in cgraph (#5666) (by **Ailing**)
+   - [doc] Fix typo (#5695) (by **Proton**)
+   - [ci] Temporarily disable M1 vulkan tests (bot3 is ill) (#5698) (by **Proton**)
+   - [build] Add commit id to taichi-aot-demo for Build-Andriod-Demos CI pipeline (#5693) (by **Zhanlue Yang**)
+   - [bug] Fix potential bug of loading of offline cache (#5682) (by **Mingming Zhang**)
