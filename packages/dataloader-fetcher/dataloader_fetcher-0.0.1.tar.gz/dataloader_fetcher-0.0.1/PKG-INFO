@@ -1,0 +1,56 @@
+Metadata-Version: 2.1
+Name: dataloader-fetcher
+Version: 0.0.1
+Summary: Dataloader for PyTorch
+Home-page: https://github.com/taimatsudev/dataloader/
+License: MIT
+Keywords: PyTorch,scikit-learn,torchvision,Iris,MNIST
+Author: "Frank Kelly", "Zabil CM"
+Maintainer: Frank Kelly
+Requires-Python: >=3.9.0,<3.11
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.9
+Requires-Dist: scikit-learn (>=1.0.2,<2.0.0)
+Requires-Dist: scipy (>=1.7.0,<2.0.0)
+Requires-Dist: setuptools (>=63.2.0,<64.0.0)
+Requires-Dist: tabulate (>=0.8.9,<0.9.0)
+Requires-Dist: torch (>=1.10.0,<2.0.0)
+Requires-Dist: torchvision (>=0.11.1,<0.12.0)
+Project-URL: Repository, https://github.com/taimatsudev/dataloader/
+Project-URL: issues, https://github.com/taimatsudev/dataloader/issues
+Description-Content-Type: text/markdown
+
+# Dataloader
+
+A python module for loading datasets from 
+
+* Scikit-learn
+* Torchvision
+
+It supports loading
+
+* Wine
+* Iris
+* MNIST datasets
+
+Defaults to loading IRIS.
+
+This module also performs pre-processing relevant to each data set type.
+It handles categorical data for tabular sets like Iris and it performs transforms for images in the computer vision dataset like MNIST.
+
+## Install
+
+Using a package manager
+```
+$ poetry add dataloader-fetcher
+```
+
+## Example usage
+
+```
+fetcher = DataloaderFetcher()
+train_loader = fetcher.train_loader(name="Iris")
+test_loader  = fetcher.test_loader(name="Iris")
+```
