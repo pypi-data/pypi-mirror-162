@@ -1,0 +1,15 @@
+{% extends "obpages/accounts/auth_base.html" %}
+
+{% block content_title %}{% endblock %}
+
+{% block content %}
+  <section>
+    <form method="post">
+      {% csrf_token %}
+      {% block form_title %}<h1>{{ title }}</h1>{% endblock %}
+      {{ form }}
+      <input type="submit" value="Create Account">
+      <p><i>Already have an account? <a href="{% url "login" %}">Log in</a>.</i></p>
+      </form>
+  </section>
+{% endblock %}

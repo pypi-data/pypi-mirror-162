@@ -1,0 +1,29 @@
+{% if errors %}
+    {{ errors }}
+    {% if not fields %}
+        {% for field in hidden_fields %}
+            {{ field }}
+        {% endfor %}
+    {% endif %}
+{% endif %}
+{% for field, errors in fields %}
+    {% if field.widget_type == "checkbox" %}
+        <span class="container-checkbox">
+            {% if field.label %}{{ field.label_tag }}{% endif %}
+            {{ field }}
+        </span>
+    {% else %}
+        {% if field.label %}{{ field.label_tag }}{% endif %}
+        {{ field }}
+    {% endif %}
+    {% if field.help_text %}
+        <p class="helptext">{{ field.help_text|safe }}</p>
+    {% endif %}
+    {{ errors }}
+    {% if forloop.last %}
+        {% for field in hidden_fields %}{{ field }}{% endfor %}
+    {% endif %}
+{% endfor %}
+{% if not fields and not errors %}
+  {% for field in hidden_fields %}{{ field }}{% endfor %}
+{% endif %}

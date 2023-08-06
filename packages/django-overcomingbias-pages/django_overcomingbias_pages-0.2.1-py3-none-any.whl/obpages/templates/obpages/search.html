@@ -1,0 +1,35 @@
+{% extends "obpages/base.html" %}
+{% load static sections widgets %}
+
+{% block meta_description %}Search content.{% endblock %}
+
+{% block style_extra %}
+    {{ block.super }}
+    {{ form.media.css }}
+{% endblock %}
+
+{% block script_extra %}
+    {{ block.super }}
+    <script src="{% static "admin/js/vendor/jquery/jquery.min.js" %}" defer></script>
+    {{ form.media.js }}
+{% endblock %}
+
+{% block content %}
+    {% block sort_options %}
+        <details>
+            <summary>Search Filters</summary>
+            <form class="search-filters" method="get" action="{% url "search" %}">
+                {{ form }}
+                <button type="submit">Apply Filters</button>
+            </form>
+        </details>
+    {% endblock %}
+    {% block result_list %}
+        {% search_results search_results %}
+    {% endblock %}
+    {% if is_paginated %}
+        {% block pagination %}
+            {% pagination_bar paginator=paginator page_obj=page_obj query=request.GET %}
+        {% endblock %}
+    {% endif %}
+{% endblock content %}
