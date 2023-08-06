@@ -1,0 +1,49 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:browser="http://namespaces.zope.org/browser"
+    xmlns:plone="http://namespaces.plone.org/plone"
+    xmlns:zcml="http://namespaces.zope.org/zcml"
+    i18n_domain="kitconcept.dsgvo"
+    >
+
+  <!-- Set overrides folder for Just-a-Bunch-Of-Templates product -->
+  <include
+      package="z3c.jbot"
+      file="meta.zcml"
+      />
+  <browser:jbot
+      directory="overrides"
+      layer="kitconcept.dsgvo.interfaces.IKitconceptDsgvoLayer"
+      />
+
+
+  <browser:page
+      name="close-dsgvo-info"
+      for="*"
+      class=".info.SetCookieView"
+      permission="zope2.View"
+      />
+
+
+  <!-- Publish static files -->
+  <browser:resourceDirectory
+      name="kitconcept.dsgvo"
+      directory="static"
+      />
+
+  <plone:static
+      directory="static"
+      name="kitconcept.dsgvo"
+      type="plone"
+      />
+
+  <browser:page
+      name="export-users"
+      for="Products.CMFPlone.interfaces.IPloneSiteRoot"
+      class=".users.ExportUsers"
+      permission="cmf.ManagePortal"
+      layer="kitconcept.dsgvo.interfaces.IKitconceptDsgvoLayer"
+      zcml:condition="have plone-5"
+      />
+
+</configure>
