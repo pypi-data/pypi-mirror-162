@@ -1,0 +1,104 @@
+Metadata-Version: 2.1
+Name: rayleaf
+Version: 0.0.6
+Summary: RayLEAF: a flexible, highly-scalable benchmark for federated learning
+Project-URL: Homepage, https://github.com/rizhu/rayleaf
+Author-email: Richard Hu <r.hu@berkeley.edu>
+License: BSD 2-Clause License
+        
+        Copyright (c) 2018, TalwalkarLab
+        All rights reserved.
+        
+        Redistribution and use in source and binary forms, with or without
+        modification, are permitted provided that the following conditions are met:
+        
+        * Redistributions of source code must retain the above copyright notice, this
+          list of conditions and the following disclaimer.
+        
+        * Redistributions in binary form must reproduce the above copyright notice,
+          this list of conditions and the following disclaimer in the documentation
+          and/or other materials provided with the distribution.
+        
+        THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+        AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+        IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+        DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+        FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+        DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+        SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+        CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+        OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+        OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python :: 3
+Requires-Python: >=3.10.4
+Requires-Dist: aiohttp-cors>=0.7.0
+Requires-Dist: aiohttp>=3.7.4
+Requires-Dist: matplotlib>=3.5.2
+Requires-Dist: numpy>=1.23.0
+Requires-Dist: opencensus>=0.11.0
+Requires-Dist: pandas>=1.4.3
+Requires-Dist: pillow>=9.2.0
+Requires-Dist: prometheus-client>=0.14.1
+Requires-Dist: ray>=1.13.0
+Requires-Dist: tabulate>=0.8.10
+Requires-Dist: thop>=0.1.1.post2207130030
+Requires-Dist: torch>=1.12.0
+Requires-Dist: torchaudio>=0.12.0
+Requires-Dist: torchvision>=0.13.0
+Requires-Dist: tqdm>=4.64.0
+Description-Content-Type: text/markdown
+
+# LEAF: A Benchmark for Federated Settings
+
+## Resources
+
+  * **Homepage:** [leaf.cmu.edu](https://leaf.cmu.edu)
+  * **Paper:** ["LEAF: A Benchmark for Federated Settings"](https://arxiv.org/abs/1812.01097)
+
+## Datasets
+
+1. FEMNIST
+
+  * **Overview:** Image Dataset
+  * **Details:** 62 different classes (10 digits, 26 lowercase, 26 uppercase), images are 28 by 28 pixels (with option to make them all 128 by 128 pixels), 3500 users
+  * **Task:** Image Classification
+
+2. Sentiment140
+
+  * **Overview:** Text Dataset of Tweets
+  * **Details** 660120 users
+  * **Task:** Sentiment Analysis
+
+3. Shakespeare
+
+  * **Overview:** Text Dataset of Shakespeare Dialogues
+  * **Details:** 1129 users (reduced to 660 with our choice of sequence length. See [bug](https://github.com/TalwalkarLab/leaf/issues/19).)
+  * **Task:** Next-Character Prediction
+
+4. Celeba
+
+  * **Overview:** Image Dataset based on the [Large-scale CelebFaces Attributes Dataset](http://mmlab.ie.cuhk.edu.hk/projects/CelebA.html)
+  * **Details:** 9343 users (we exclude celebrities with less than 5 images)
+  * **Task:** Image Classification (Smiling vs. Not smiling)
+
+5. Synthetic Dataset
+
+  * **Overview:** We propose a process to generate synthetic, challenging federated datasets. The high-level goal is to create devices whose true models are device-dependant. To see a description of the whole generative process, please refer to the paper
+  * **Details:** The user can customize the number of devices, the number of classes and the number of dimensions, among others
+  * **Task:** Classification
+
+6. Reddit
+
+  * **Overview:** We preprocess the Reddit data released by [pushshift.io](https://files.pushshift.io/reddit/) corresponding to December 2017.
+  * **Details:** 1,660,820 users with a total of 56,587,343 comments. 
+  * **Task:** Next-word Prediction.
+
+## Notes
+
+- Install the libraries listed in ```requirements.txt```
+    - I.e. with pip: run ```pip3 install -r requirements.txt```
+- Go to directory of respective dataset for instructions on generating data
+    - in MacOS check if ```wget``` is installed and working
+- ```models``` directory contains instructions on running baseline reference implementations
