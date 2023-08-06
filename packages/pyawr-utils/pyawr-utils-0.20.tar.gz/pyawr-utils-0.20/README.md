@@ -1,0 +1,59 @@
+## Module for command simplification when using Python with the AWR Design Environment 
+
+AWR Design Environment Python module that wraps lower level API commands into higher level function calls
+
+# Installation
+    pip install pyawr-utils
+
+# Upgrade
+
+    pip install --upgrade pyawr-utils
+
+# Requirements
+* Python >= 3.7
+* pyawr
+* numpy
+
+# Usage
+
+    See https://kb.awr.com/display/awrscripts/Pyawr+Utilities for details
+	
+# History
+
+# 0.20
+* Add/Remove Global Definitions Documents
+* Edit element parameters and equations in Global Definitions Documents
+* Read/Set Element Parameter optimization constraints
+* Read/Set Equation optimization constraints
+* Read optimization variables
+* Read optimization goals
+* Modify optimization goals
+* Add/Remove optimization goals
+* Read/Set Optimizer options
+* Run Optimization
+* equation enable/disable
+# 0.16
+* Added modify_measurement
+# 0.15
+* project_path: replace '\' with '/'
+* Added measurement_doc_source
+* Added element_enable
+* Added element_disable
+* Added element_nodes_dict
+* Added add_wire
+* Added remove_wire
+* Added wire_segments_dict
+* Fixed bugs with system simulate
+# 0.14
+* Element dictionary update automatically when element is added or removed
+# 0.13
+* Added add_element(), remove element(), element xy_position()
+* Fixed error in remove_schematic()
+# 0.12
+* Added equations to Schematics
+# 0.11
+* Fixed PyPI Installation and Upgrade commands
+# 0.1
+* Beta version
+
+
