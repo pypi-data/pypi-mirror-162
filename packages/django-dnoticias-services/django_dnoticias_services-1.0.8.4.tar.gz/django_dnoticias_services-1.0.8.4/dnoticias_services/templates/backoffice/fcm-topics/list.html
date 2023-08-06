@@ -1,0 +1,280 @@
+{% extends 'backoffice/master.html' %}
+{% load static i18n %}
+{% block title %}dnoticias | Backoffice{% endblock %}
+{% block description %}Latest updates and statistic charts{% endblock %}
+
+{% block style_template %}
+<link href="{% static 'backoffice/vendors/custom/fullcalendar/fullcalendar.bundle.css' %}" rel="stylesheet"
+    type="text/css" />
+{% endblock %}
+
+{% block style_develop %}
+{% endblock %}
+
+{% block content %}
+<!-- begin:: Content -->
+<div class="kt-container kt-container--fluid kt-grid__item">
+
+    <!--Begin::Row-->
+    <div class="row">
+
+        <div class="col-xl-12 order-lg-2 order-xl-1">
+            <div class="kt-portlet kt-portlet--last kt-portlet--head-lg kt-portlet--responsive-mobile"
+                id="kt_page_portlet">
+                <div class="kt-portlet__head kt-portlet__head--lg kt-portlet__head--break-sm">
+                    <div class="kt-portlet__head-label">
+                        <div class="kt-input-icon kt-input-icon--left">
+                            <input type="text" class="form-control" placeholder="{% trans 'Pesquisa' %}"
+                                id="{{table_search_id}}">
+                            <span class="kt-input-icon__icon kt-input-icon__icon--left">
+                                <span><i class="la la-search"></i></span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="kt-portlet__head-toolbar">
+                        {% if perms.base.add_email %}
+                        <a href="{% url 'fcm-topic-create' %}" class="btn btn-brand kt-margin-l-10 text-nowrap">
+                            <i class="fa fa-plus-circle"></i>
+                            <span class="kt-hidden-mobile">{% trans 'Adicionar tópico' %}</span>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="kt-portlet__body kt-portlet__body--fit">
+                    <!--begin: Datatable -->
+                    <div class="kt-datatable kt-widget5" id="{{table_id}}"></div>
+                    <!--end: Datatable -->
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <!--End::Row-->
+</div>
+<!-- end:: Content -->
+{% csrf_token %}
+{% endblock %}
+
+{% block script_template %}
+<script>
+    "use strict";
+
+    jQuery(document).ready(function () {
+        {% include "../includes/post.js" %}
+
+        {% include "../includes/set_post_link.js" %}
+
+        {% include "../includes/delete_popover.js" %}
+
+        // Class definition
+        var KTDashboard = function () {
+
+            // Article List
+            var datatableEmailsList = function () {
+                if ($('#{{table_id}}').length === 0) {
+                    return;
+                }
+
+                var datatable = $('.kt-datatable').KTDatatable({
+                    data: {
+                        type: 'remote',
+                        source: {
+                            read: {
+                                url: '{% url "fcm-topic-datatable" %}'
+                            }
+                        },
+                        pageSize: 10,
+                        saveState: {
+                            cookie: false,
+                            webstorage: true
+                        },
+                        serverPaging: true,
+                        serverFiltering: true,
+                        serverSorting: true
+                    },
+                    translate: {
+                        records: {
+                            processing: "{% trans 'Carregando...' %}",
+                            noRecords: "{% trans 'Sem resultados' %}",
+                        },
+                        toolbar: {
+                            pagination: {
+                                items: {
+                                    default: {
+                                        first: "{% trans 'Início' %}",
+                                        prev: "{% trans 'Anterior' %}",
+                                        next: "{% trans 'Seguinte' %}",
+                                        last: "{% trans 'Último' %}",
+                                        more: "{% trans 'Mais páginas' %}",
+                                        input: "{% trans 'Página número' %}",
+                                        select: "{% trans 'Tamanho da página' %}",
+                                        all: "{% trans 'tudo' %}",
+                                    },
+                                    info: "",
+                                },
+                            },
+                        },
+                    },
+                    layout: {
+                        scroll: false,
+                        //height: 500,
+                        footer: false
+                    },
+                    sortable: true,
+
+                    search: {
+                        input: $('#{{table_search_id}}'),
+                    },
+
+                    pagination: true,
+                    columns: [
+                        {
+                            field: "name",
+                            title: "{% trans 'Nome' %}",
+                            autoHide: false,
+                            sortable: "asc",
+                            width: 200,
+                            // callback function support for column rendering
+                            template: function (data, i) {
+								let notificationUrl = "{% url 'fcm-topic-update' 0 %}"
+								let redirectLink = notificationUrl.replace("0", data.id)
+                                return "<span><a href='" + redirectLink + "'>" + data.name + "</a></span>";
+                            }
+                        },
+                        {
+                            field: "salug",
+                            title: "{% trans 'Slug' %}",
+                            autoHide: false,
+                            width: 150,
+                            // callback function support for column rendering
+                            template: function (data, i) {
+                                return "<span>"+ data.slug +"</span>";
+                            }
+                        },
+                        {
+                            field: "active",
+                            width: 100,
+                            title: "{% trans 'Estado' %}",
+                            autoHide: false,
+                            textAlign: "center",
+                            // callback function support for column rendering
+                            template: function (data, i) {
+                                return data.active ? '<span class="btn btn-bold btn-sm btn-font-sm btn-pill btn-label-success">Ativo</span>' : '<span class="btn btn-bold btn-sm btn-font-sm btn-pill btn-label-danger">Inativo</span>';
+                            }
+                        },
+                        {
+                            field: "devices",
+                            width: 100,
+                            title: "{% trans 'Dispositivos' %}",
+                            autoHide: false,
+                            textAlign: "center",
+                            // callback function support for column rendering
+                            template: function (data, i) {
+                                return "<span>" + data.devices + "</span>";
+                            }
+                        },
+                        {
+                            field: "actions",
+                            width: 50,
+                            title: "{% trans 'Acções' %}",
+                            sortable: false,
+                            autoHide: false,
+                            overflow: 'visible',
+                            template: function (data) {
+                                console.log(data);
+                                var extraOptions = "";
+                                let deleteTopicUrl = "{% url 'fcm-topic-delete' 0 %}".replace("0", data.id)
+								let editTopicUrl = "{% url 'fcm-topic-update' 0 %}".replace("0", data.id)
+								let viewTopicUrl = "{% url 'fcm-topic-update' 0 %}".replace("0", data.id)
+
+                                var viewOption = `
+								<li class="kt-nav__item">\
+									<a href="${viewTopicUrl}" data-id="${data.DT_RowId}" class="kt-nav__link">\
+										<i class="kt-nav__link-icon flaticon2-expand"></i>\
+										<span class="kt-nav__link-text">Ver</span>\
+									</a>\
+								</li>`;
+
+                                var editOption = `
+								<li class="kt-nav__item">\
+									<a href="${editTopicUrl}" data-id="${data.DT_RowId}" class="kt-nav__link">\
+										<i class="kt-nav__link-icon flaticon2-contract"></i>\
+										<span class="kt-nav__link-text">Editar</span>\
+									</a>\
+								</li>
+								`;
+
+                                var deleteOption = `
+								<li class="kt-nav__item">\
+									<a href="javascript:;" data-toggle="popover" data-pk="${data.DT_RowId}" data-model="subscription" data-link="${deleteTopicUrl}" data-redirect="${data.post_redirect_url}" data-id="${data.DT_RowId}" class="delete-action kt-nav__link">\
+										<i class="kt-nav__link-icon fa fa-trash"></i>\
+										<span class="kt-nav__link-text">Eliminar</span>\
+									</a>\
+								</li>
+								`;
+
+                                {% if perms.dnoticias_services.view_topic and not perms.dnoticias_services.change_topic %}
+                                    extraOptions += viewOption;
+                                {% endif %}
+
+                                {% if perms.dnoticias_services.change_topic %}
+                                    extraOptions += editOption;
+                                {% endif %}
+
+                                if(!data.is_system){
+                                    {% if perms.dnoticias_services.delete_topic %}
+                                        extraOptions += deleteOption;
+                                    {% endif %}
+                                }
+
+                                var optionsList = `<ul class="kt-nav">${extraOptions}</ul>`;
+
+                                return `\
+									<div class="dropdown">\
+										<a href="javascript:;" class="btn btn-sm btn-clean btn-icon btn-icon-md" data-toggle="dropdown">\
+											<i class="flaticon-more-1"></i>\
+										</a>\
+										<div class="dropdown-menu dropdown-menu-right">\
+											${optionsList}
+										</div>\
+									</div>\
+								`;
+                            }
+                        }
+                    ]
+                });
+
+                datatable.on("kt-datatable--on-layout-updated", function (event, data) {
+                    setDeleteActionHandlers();
+                });
+            }
+
+            return {
+                // Init demos
+                init: function () {
+
+                    // datatables
+                    datatableEmailsList();
+
+                    // demo loading
+                    var loading = new KTDialog({ 'type': 'loader', 'placement': 'top center', 'message': '{% trans "Carregando ..." %}' });
+                    loading.show();
+
+                    setTimeout(function () {
+                        loading.hide();
+                    }, 3000);
+                }
+            };
+        }();
+
+        KTDashboard.init();
+
+    });
+
+</script>
+
+{% endblock %}
+
+{% block script_develop %}
+{% endblock %}

@@ -1,0 +1,210 @@
+{% extends '../master.html' %}
+{% load i18n debug static widget_tweaks base form %}
+{% block title %}dnoticias | Backoffice{% endblock %}
+{% block description %}Latest updates and statistic charts{% endblock %}
+
+{% block style_template %}
+<!--begin:: Global Mandatory Vendors -->
+<link href="{% static 'backoffice/vendors/general/perfect-scrollbar/css/perfect-scrollbar.css' %}" rel="stylesheet" type="text/css" />
+{% endblock %}
+
+{% block style_develop %}
+{% endblock %}
+
+{% block content %}
+    <!-- begin:: Content -->
+    <div class="kt-container kt-container--fluid kt-grid__item">
+
+        <!--begin::Form-->
+        <form class="kt-form" method="POST" enctype="multipart/form-data">
+            {% render_field form.id %}
+            {% render_field form.object_id %}
+            {% render_field form.content_type_id %}
+
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="kt-portlet kt-portlet--last kt-portlet--head-lg kt-portlet--responsive-mobile" id="kt_page_portlet">
+
+                        <div class="kt-portlet__head kt-portlet__head--lg">
+                            <div class="kt-portlet__head-label">
+                                {% if perms.notifications.list_fcm_topics %}
+                                <a href="{% url 'fcm-topic-list' %}" class="btn btn-clean kt-margin-r-10">
+                                    <i class="la la-arrow-left"></i>
+                                    <span class="kt-hidden-mobile">Ver Lista</span>
+                                </a>
+                                {% endif %}
+                            </div>
+                            <div class="kt-portlet__head-toolbar">
+                                {% if form.instance.pk and perms.notifications.delete_fcmtopic %}
+                                    <button data-pk="{{form.instance.pk}}" data-model="{% get_class_name form.instance %}" data-link="{% url 'aggregators-delete' pk=form.instance.pk %}" data-redirect="{% url 'aggregators-list' %}" data-toggle="popover" type="button" class="btn btn-danger kt-margin-r-10 delete-action">
+                                        <i class="fa fa-trash"></i> {% trans 'Eliminar' %}
+                                    </button>
+                                    {% endif %}
+                                    {% if perms.notifications.change_fcmtopic and not form.is_system %}
+                                    {% if form.id.value %}
+                                    <button type="submit" class="btn btn-brand">
+                                        <i class="la la-check"></i> {% trans 'Guardar' %}
+                                    </button>
+                                    {% else %}
+                                    <button type="submit" class="btn btn-brand">
+                                        <i class="la la-check"></i> {% trans 'Criar' %}
+                                    </button>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="kt-portlet__body">
+                            {% csrf_token %}
+                            <div class="row">
+                                <div class="col-xl-3"></div>
+                                <div class="col-xl-6">
+                                    <div class="kt-section">
+                                        <h3 class="kt-section__title kt-section__title-lg">Detalhes</h3>
+
+                                        <div class="form-group row">
+                                            <label class="col-3 col-form-label">{{ form.name.label }}:</label>
+                                            <div class="col-9 slug_edit_group">
+                                                {% if form.name %}
+                                                    {% trans 'Título' as name_placeholder %}
+
+                                                    {% assign_variable "form-control slug_edit_name" as form_name_classes %}
+
+                                                    {% if form.is_bound %}
+                                                        {% if form.errors.name %}
+                                                            {% assign_variable "is-invalid" as validation_class %}
+                                                        {% else %}
+                                                            {% assign_variable "is-valid" as validation_class %}
+                                                        {% endif %}
+                                                    {% else %}
+                                                        {% assign_variable "" as validation_class %}
+                                                    {% endif %}
+                                                    {% add_string form_name_classes " " validation_class as form_name_classes_with_validation %}
+
+                                                    {% render_field form.name class+=form_name_classes_with_validation placeholder+=name_placeholder %}
+                                                    {% include "../includes/hidden_help_block_field.html" with valid_feedback=valid_feedback invalid_feedback=invalid_feedback input_html_name=form.name.html_name only %}
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <label class="col-3 col-form-label">{{ form.slug.label }}:</label>
+                                            <div class="col-9 slug_edit_group">
+                                                {% if form.slug %}
+                                                    {% trans 'Slug' as slug_placeholder %}
+
+                                                    {% assign_variable "form-control slug_edit_slug" as form_slug_classes %}
+
+                                                    {% if form.is_bound %}
+                                                        {% if form.errors.slug %}
+                                                            {% assign_variable "is-invalid" as validation_class %}
+                                                        {% else %}
+                                                            {% assign_variable "is-valid" as validation_class %}
+                                                        {% endif %}
+                                                    {% else %}
+                                                        {% assign_variable "" as validation_class %}
+                                                    {% endif %}
+                                                    {% add_string form_slug_classes " " validation_class as form_slug_classes_with_validation %}
+
+                                                    {% render_field form.slug class+=form_slug_classes_with_validation placeholder+=slug_placeholder %}
+                                                    {% include "../includes/hidden_help_block_field.html" with valid_feedback=valid_feedback invalid_feedback=invalid_feedback input_html_name=form.slug.html_name only %}
+                                                {% endif %}
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group row">
+                                            <label class="col-3 col-form-label">{{ form.active.label }}:</label>
+                                            <div class="col-9">
+                                                {% if form.active %}
+                                                    {% assign_variable "form-control" as form_active_classes %}
+                                                    {% if form.is_bound %}
+                                                        {% if form.errors.active %}
+                                                            {% assign_variable "is-invalid" as validation_class %}
+                                                        {% else %}
+                                                            {% assign_variable "is-valid" as validation_class %}
+                                                        {% endif %}
+                                                    {% else %}
+                                                        {% assign_variable "" as validation_class %}
+                                                    {% endif %}
+                                                    {% add_string form_active_classes " " validation_class as form_active_classes_with_validation %}
+                                                    <span class="kt-switch">
+                                                        <label>{% render_field form.active class+=form_active_classes_with_validation %}<span></span></label>
+                                                    </span>
+                                                    {% include "../includes/hidden_help_block_field.html" with valid_feedback=valid_feedback invalid_feedback=invalid_feedback input_html_name=form.active.html_name only %}
+                                                {% endif %}
+                                            </div>
+                                        </div>
+
+                                        {% if form.get_object_label %}
+                                        <div class="form-group row">
+                                            <label class="col-3 col-form-label">Associado a:</label>
+                                            <div class="col-9">
+                                                {{form.get_object_label}}
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-xl-3"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </form>
+        <!--end::Form-->
+
+    </div>
+    <!-- end:: Content -->
+
+    <div id="add_element" style="display: none;">
+        <div class="col-lg-4">
+            <a href="javascript:;" data-repeater-create="" class="btn btn-bold btn-sm btn-outline-brand">
+                <i class="la la-plus"></i> {% trans 'Adicionar' %}
+            </a>
+        </div>
+    </div>
+    <div id="delete_element" style="display: none;">
+        <a href="javascript:;" class="btn-sm btn btn-outline-danger btn-bold btn-icon">
+            <i class="la la-trash-o"></i>
+        </a>
+    </div>
+    {% if form.option_formset.can_order %}
+    <div id="order_element" style="display: none;">
+        <div class="btn-group mb-1">
+            <button class="formset-order-before btn btn-sm btn-secondary btn-icon"><i class="la la-angle-up"></i></button>
+            <button class="formset-order-after btn btn-sm btn-secondary btn-icon"><i class="la la-angle-down"></i></button>
+        </div>
+    </div>
+    {% endif %}
+{% endblock %}
+
+{% block script_template %}
+{% endblock %}
+
+{% block script_develop %}
+<script src="{% static 'backoffice/js/pages/jscolor/jscolor.js' %}" type="text/javascript"></script>
+<script src="{% static 'backoffice/js/pages/crud/forms/widgets/bootstrap-select.js' %}" type="text/javascript"></script>
+<script>
+    {% include "../includes/helper_functions_validation.js" %}
+
+    {% include "../includes/post.js" %}
+
+    {% build_list form as forms %}
+    {% include "../includes/styled_component.js" with forms=forms %}
+
+    var KtIcon;
+
+    $(document).ready(function(){
+        KtIcon = new KTAvatar("kt_icon");
+
+        function getPk(form){
+            return {% if form.instance.pk %}"{{form.instance.pk}}"{% else %}null{% endif %};
+        }
+
+        {% if form.instance.pk %}
+            {% include "../includes/delete_popover.js" %}
+        {% endif %}
+    });
+</script>
+{% endblock %}

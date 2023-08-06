@@ -1,0 +1,431 @@
+{% extends '../master.html' %}
+{% load static i18n %}
+{% block title %}dnoticias | Backoffice{% endblock %}
+{% block description %}Latest updates and statistic charts{% endblock %}
+
+{% block style_template %}
+<link href="{% static 'backoffice/vendors/custom/fullcalendar/fullcalendar.bundle.css' %}" rel="stylesheet" type="text/css" />
+{% endblock %}
+
+{% block style_develop %}
+{% endblock %}
+
+{% block content %}
+	<!-- begin:: Content -->
+	<div class="kt-container kt-container--fluid kt-grid__item">
+
+		<!--Begin::Row-->
+		<div class="row">
+
+			<div class="col-xl-12 order-lg-2 order-xl-1">
+				<div class="kt-portlet kt-portlet--last kt-portlet--head-lg kt-portlet--responsive-mobile" id="kt_page_portlet">
+					<div class="kt-portlet__head kt-portlet__head--lg kt-portlet__head--break-sm">
+						<div class="kt-portlet__head-label">
+							<div class="kt-input-icon kt-input-icon--left">
+								<input type="text" class="form-control" placeholder="{% trans 'Pesquisa' %}" id="{{notifications_search_field}}">
+								<span class="kt-input-icon__icon kt-input-icon__icon--left">
+									<span><i class="la la-search"></i></span>
+								</span>
+							</div>
+						</div>
+
+						<div class="kt-portlet__head-toolbar">
+							<a href="{% url 'fcm-notification-create' %}" class="btn btn-brand">
+								<i class="flaticon2-plus"></i> {% trans 'Criar Notificação' %}
+							</a>
+						</div>
+					</div>
+
+
+					<div class="kt-portlet__body kt-portlet__body--fit">
+						<!--begin: Datatable -->
+						<div class="kt-datatable kt-widget5" id="{{table_id}}"></div>
+						<!--end: Datatable -->
+					</div>
+				</div>
+			</div>
+
+		<!--End::Row-->
+		</div>
+
+	</div>
+	<!-- end:: Content -->
+{% csrf_token %}
+{% endblock %}
+
+{% block script_template %}
+<script>
+	"use strict";
+
+	// Class definition
+	{% include "../includes/get_attributes.js" %}
+
+	// Class initialization on page load
+	jQuery(document).ready(function() {
+		{% include "../includes/post.js" %}
+
+		{% include "../includes/set_post_link.js" %}
+
+		{% include "../includes/delete_popover.js" %}
+
+		var KTDashboard = function() {
+			// Article List
+			var datatableNotificationList = function() {
+				if ($('#{{table_id}}').length === 0) {
+					return;
+				}
+
+				var datatable = $('.kt-datatable').KTDatatable({
+					data: {
+						type: 'remote',
+						source: {
+                            read: {
+                                url: "{% url 'fcm-notification-datatable' %}",
+                            },
+                        },
+						pageSize: 10,
+						saveState: {
+							cookie: false,
+							webstorage: true
+						},
+						serverPaging: true,
+						serverFiltering: true,
+						serverSorting: true
+					},
+					translate: {
+						records: {
+							processing: "{% trans 'Carregando...' %}",
+							noRecords: "{% trans 'Sem resultados' %}",
+						},
+						toolbar: {
+							pagination: {
+								items: {
+									default: {
+										first: "{% trans 'Início' %}",
+										prev: "{% trans 'Anterior' %}",
+										next: "{% trans 'Seguinte' %}",
+										last: "{% trans 'Último' %}",
+										more: "{% trans 'Mais páginas' %}",
+										input: "{% trans 'Página número' %}",
+										select: "{% trans 'Tamanho da página' %}",
+										all: "{% trans 'tudo' %}",
+									},
+									info: "",
+								},
+							},
+						},
+					},
+					layout: {
+						scroll: false,
+						//height: 500,
+						footer: false
+					},
+					sortable: true,
+					search: {
+                        input: $('#{{ notifications_search_field }}'),
+                    },
+
+					pagination: true,
+					columns: [
+						{
+							field: "icon_url",
+							title: "{% trans 'Icon' %}",
+							width: 50,
+							sortable: false,
+							autoHide: false,
+							// callback function support for column rendering
+							template: function(data) {
+								if(data.icon_url){
+									var output = '\
+										<div class="kt-widget5__item mb-0 pb-0">\
+											<div class="kt-widget5__content">\
+												<div class="kt-widget5__pic">\
+													<img class="kt-widget7__img" src="' + data.icon_url + '" alt="" style="width: 32px;">\
+												</div>' +
+											'</div>' +
+										'</div>';
+									return output;
+								}else{
+									return '<i class="fas fa-minus"></i>'
+								}
+							}
+						},
+						{
+							field: "title",
+							title: "{% trans 'Título' %}",
+							autoHide: false,
+                            width: 200,
+							// callback function support for column rendering
+							template: function(data) {
+								let notificationUrl = "{% url 'fcm-notification-update' 0 %}"
+								let redirectLink = notificationUrl.replace("0", data.id)
+
+								if(data.title){
+									return '<span><a href="'+ redirectLink +'">' + data.title + '</a></span>';
+								}else{
+									return '<i class="fas fa-minus"></i>'
+								}
+							}
+						},
+						{
+							field: "image_url",
+							title: "{% trans 'Imagem' %}",
+							sortable: false,
+							autoHide: false,
+							// callback function support for column rendering
+							template: function(data) {
+								if(data.image_url){
+									var output = '\
+										<div class="kt-widget5__item mb-0 pb-0">\
+											<div class="kt-widget5__content">\
+												<div class="kt-widget5__pic">\
+													<img class="kt-widget7__img" src="' + data.image_url + '" alt="">\
+												</div>' +
+											'</div>' +
+										'</div>';
+									return output;
+								}else{
+									return '<i class="fas fa-minus"></i>'
+								}
+							}
+						},
+						{
+							field: "redirect_urls",
+							title: "{% trans 'Link de redirecionamento' %}",
+							autoHide: false,
+                            textAlign: "center",
+							// callback function support for column rendering
+							template: function(data) {
+								if(data.redirect_urls){
+									var html = "";
+									var keys = Object.keys(data.redirect_urls);
+									if(keys.length){
+										for (let index = 0; index < keys.length; index++) {
+											const key = keys[index];
+											if(data.redirect_urls[key]){
+												html += "<p><a target='_blank' href='"+data.redirect_urls[key]+"'>" + key.toUpperCase() + "</a></p>";
+											}else{
+												html += "<p>Não possui nenhuma hiperligação para o formato " + key.toUpperCase() + "</p>";
+											}
+										}
+									}else{
+										html = '<i class="fas fa-minus"></i>';
+									}
+									return html;
+								}else{
+									return '<i class="fas fa-minus"></i>'
+								}
+							}
+						},
+						{
+							field: "topics",
+							title: "{% trans 'Tópicos' %}",
+							autoHide: false,
+							sortable: false,
+							textAlign: "center",
+							// callback function support for column rendering
+							template: function(data) {
+								let topics = JSON.parse(data.topics)
+                                let topic_list = []
+
+                                for(let topic of topics){
+                                    console.log(topic.fields.name)
+                                    topic_list.push(topic.fields.name)
+                                }
+                                topic_list = topic_list.join(", ")
+                                return "<span>" + topic_list + "</span>";
+							}
+						},
+						{
+							field: "analytics",
+							title: "{% trans 'Analíticas' %}",
+							autoHide: false,
+							sortable: false,
+							textAlign: "center",
+							// callback function support for column rendering
+							template: function(data) {
+								if(data.sent){
+									var html = ""
+									var tooltip = "";
+									var analytics = JSON.parse(data.analytics)
+
+									if(analytics){
+										if(analytics.web){
+											tooltip += "<p><i class='fab fa-chrome'></i>:&nbsp" + analytics["web"] + "</p>"
+										}
+										if(analytics.android){
+											tooltip += "<p><i class='fab fa-android'></i>&nbsp" + analytics["android"] + "</p>"
+										}
+										if(analytics.ios){
+											tooltip += "<p><i class='fab fa-apple'></i>&nbsp" + analytics["ios"] + "</p>"
+										}
+									}
+									if(data.recipients){
+										tooltip += "<p><b>Total:</b>&nbsp" + data.recipients + "</p>"
+									}
+									return '<button type="button" class="btn btn-primary rounded" data-toggle="kt-tooltip" title="" data-html="true" data-content="' + tooltip +'" data-original-title="' + tooltip + '">Ver</button>';
+									return '<a href="#" onclick="return false;"><div data-toggle="kt-tooltip" data-placement="top" title="" data-html="true" data-content="' + tooltip + '">Ver</div></a>';
+								}
+								return '<i class="fas fa-minus"></i>';
+							}
+						},
+						{
+							field: "sent",
+							title: "{% trans 'Estado' %}",
+							sortable: "asc",
+							autoHide: false,
+							textAlign: "center",
+							// callback function support for column rendering
+							template: function(data) {
+								return data.sent ? '<span class="btn btn-bold btn-sm btn-font-sm btn-pill btn-label-success">Enviado</span>' : '<span class="btn btn-bold btn-sm btn-font-sm btn-pill btn-label-warning">Pendente</span>';
+							}
+						},
+						{
+							field: "sent_at",
+							title: "{% trans 'Enviado a' %}",
+							sortable: "asc",
+							autoHide: false,
+							textAlign: "center",
+							// callback function support for column rendering
+							template: function(data) {
+								return "<span>"+ (data.sent_at ? data.sent_at : '<i class="fas fa-minus"></i>') +"</span>";
+							}
+						},
+						{
+							field: "scheduled_for",
+							title: "{% trans 'Data de agendamento' %}",
+							autoHide: false,
+							textAlign: "center",
+							// callback function support for column rendering
+							template: function(data) {
+								return "<span>"+ (data.scheduled_for ? `${data.scheduled_for}` : '<i class="fas fa-minus"></i>') +"</span>";
+							}
+						},
+						{
+							field: "created_at",
+							title: "{% trans 'Data de criação' %}",
+							autoHide: false,
+							textAlign: "center",
+							// callback function support for column rendering
+							template: function(data) {
+								return "<span>"+ (data.created_at ? `${data.created_at}` : '<i class="fas fa-minus"></i>') +"</span>";
+							}
+						},
+						{
+							field: "actions",
+							width: 50,
+							title: "{% trans 'Acções' %}",
+							sortable: false,
+							autoHide: false,
+							overflow: 'visible',
+							textAlign: "center",
+							template: function(data) {
+								console.log(data);
+								var extraOptions = "";
+								let deleteNotificationUrl = "{% url 'fcm-notification-delete' 0 %}".replace("0", data.id)
+								let editNotificationUrl = "{% url 'fcm-notification-update' 0 %}".replace("0", data.id)
+								let viewNotificationUrl = "{% url 'fcm-notification-update' 0 %}".replace("0", data.id)
+								let sendNotificationUrl = "{% url 'fcm-notification-send' 0 %}".replace("0", data.id)
+
+								var viewOption = `
+								<li class="kt-nav__item">\
+									<a href="${viewNotificationUrl}" data-id="${data.DT_RowId}" class="kt-nav__link">\
+										<i class="kt-nav__link-icon flaticon2-expand"></i>\
+										<span class="kt-nav__link-text">Ver</span>\
+									</a>\
+								</li>`;
+
+								var editOption = `
+								<li class="kt-nav__item">\
+									<a href="${editNotificationUrl}" data-id="${data.DT_RowId}" class="kt-nav__link">\
+										<i class="kt-nav__link-icon fa fa-pencil-alt"></i>\
+										<span class="kt-nav__link-text">Editar</span>\
+									</a>\
+								</li>
+								`;
+
+								var deleteOption = `
+								<li class="kt-nav__item">\
+									<a href="javascript:;" data-toggle="popover" data-pk="${data.DT_RowId}" data-model="notification" data-link="${deleteNotificationUrl}" data-redirect="${data.post_redirect_url}" data-id="${data.DT_RowId}" class="delete-action kt-nav__link">\
+										<i class="kt-nav__link-icon fa fa-trash"></i>\
+										<span class="kt-nav__link-text">Eliminar</span>\
+									</a>\
+								</li>
+								`;
+
+								var sentOption = '<li class="kt-nav__item">\
+									<a href="#" data-link="'+ sendNotificationUrl +'" data-id="' + data.DT_RowId + '" class="post-link kt-nav__link">\
+										<i class="kt-nav__link-icon fa fa-share"></i>\
+										<span class="kt-nav__link-text">{% trans "Enviar" %}</span>\
+									</a>\
+								</li>';
+
+								if(data.sent){
+									{% if perms.dnoticias_services.view_notifications %}
+										extraOptions += viewOption;
+									{% endif %}
+								}else{
+									{% if perms.dnoticias_services.change_notifications %}
+										extraOptions += editOption;
+									{% endif %}
+									{% if perms.dnoticias_services.add_notifications %}
+										extraOptions += sentOption;
+									{% endif %}
+									{% if perms.dnoticias_services.delete_notifications %}
+										extraOptions += deleteOption;
+									{% endif %}
+								}
+
+								var optionsList = `<ul class="kt-nav">${extraOptions}</ul>`;
+
+								return `\
+									<div class="dropdown">\
+										<a href="javascript:;" class="btn btn-sm btn-clean btn-icon btn-icon-md" data-toggle="dropdown">\
+											<i class="flaticon-more-1"></i>\
+										</a>\
+										<div class="dropdown-menu dropdown-menu-right">\
+											${optionsList}
+										</div>\
+									</div>\
+								`;
+							}
+						}
+					]
+				});
+
+				datatable.on("kt-datatable--on-layout-updated", function(event, data){
+					setDeleteActionHandlers();
+
+					$('[data-toggle="kt-tooltip"]').each(function() {
+						KTApp.initTooltips();
+					});
+				});
+			}
+
+			return {
+				// Init demos
+				init: function() {
+
+					// datatables
+					datatableNotificationList();
+
+					// demo loading
+					var loading = new KTDialog({'type': 'loader', 'placement': 'top center', 'message': '{% trans "Carregando ..." %}'});
+					loading.show();
+
+					setTimeout(function() {
+						loading.hide();
+					}, 3000);
+				}
+			};
+		}();
+
+		KTDashboard.init();
+	});
+
+</script>
+
+{% endblock %}
+
+{% block script_develop %}
+{% endblock %}
