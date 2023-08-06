@@ -1,0 +1,76 @@
+{
+  "name": "nbvv",
+  "version": "1.0.0",
+  "description": "NoteBook Volume Viewer component for jupyter extension",
+  "author": "aics",
+  "main": "lib/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/allen-cell-animated/nbvv.git"
+  },
+  "keywords": [
+    "jupyter",
+    "widgets",
+    "ipython",
+    "ipywidgets",
+    "jupyterlab-extension"
+  ],
+  "files": [
+    "lib/**/*.js",
+    "dist/"
+  ],
+  "scripts": {
+    "clean": "rimraf dist/",
+    "build": "npm run build:lib && npm run build:css && npm run build:labextension && webpack --mode=production",
+    "build:lib": "tsc --project .",
+    "build:css": "lessc --js --include-path=./node_modules src/style.less lib/style.css",
+    "build:labextension": "jupyter labextension build .",
+    "prepare": "npm run build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "jupyterlab": {
+    "extension": "lib/labplugin",
+    "outputDir": "../share/jupyter/labextensions/nbvv",
+    "sharedPackages": {
+      "@jupyter-widgets/base": {
+        "bundled": false,
+        "singleton": true
+      }
+    },
+    "_build": {
+      "load": "static/remoteEntry.f130f218d8a28cc4eb77.js",
+      "extension": "./extension"
+    }
+  },
+  "devDependencies": {
+    "@babel/core": "^7.15.5",
+    "@babel/preset-env": "^7.15.6",
+    "@babel/preset-react": "^7.14.5",
+    "@babel/preset-typescript": "^7.15.0",
+    "@jupyterlab/builder": "^3.4.1",
+    "babel-loader": "^8.1.0",
+    "css-loader": "^6.2.0",
+    "less": "^4.1.1",
+    "less-loader": "^10.0.1",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "resolve-url-loader": "^3.1.4",
+    "rimraf": "^3.0.2",
+    "sass-loader": "^12.1.0",
+    "style-loader": "^3.2.1",
+    "webpack": "^5.53.0",
+    "webpack-cli": "^4.8.0"
+  },
+  "peerDependencies": {
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1"
+  },
+  "dependencies": {
+    "@aics/web-3d-viewer": "^2.2.0",
+    "@jupyter-widgets/base": "^4.1.0",
+    "antd": "^3.20.7",
+    "chokidar": "^3.4.1",
+    "lodash": "^4.17.4",
+    "sass": "^1.26.10"
+  }
+}
