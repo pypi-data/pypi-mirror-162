@@ -1,0 +1,36 @@
+andor3
+======
+
+This is an interface to Andor camera devices which communicate using version 3 of the Andor Software
+Development Kit (Andor SDK3).
+
+It depends on the Andor SKD3 being installed on the system (``libatcore.so.3`` etc on Linux,
+``atcore.dll`` etc on Windows). These are proprietary, non-free, and closed-source, and thus unable
+to be distributed with this package. If you feel that those licensing terms restrict the
+functionality of the very expensive camera you own, and hinder the progress of your project or
+research, please write to Andor/Oxford Instruments to complain about that.
+
+While this package should be usable without knowing the details of the SDK3, consultation of the
+SDK3 documentation is recommended for details about camera features etc. Unfortunately, the
+documentation is also not freely available.
+
+Tested using an Andor Zyla (both USB3.0 and CameraLink interfaces), however any camera compatible
+with the SDK3 should work, such as the Neo, Apogee, or i-Star sCMOS.
+
+
+Support
+-------
+
+Documentation can be found online at `<https://andor3.readthedocs.io/en/latest/>`__.
+
+Source code available at `<https://gitlab.com/ptapping/andor3>`__.
+
+Bug reports, feature requests and suggestions can be submitted to the `issue tracker
+<https://gitlab.com/ptapping/andor3/-/issues>`__.
+
+
+License
+-------
+
+All original work is free and open source, licensed under the GNU Public License.
+See the `LICENSE <https://gitlab.com/ptapping/andor3/-/blob/main/LICENSE>`__ for details.
