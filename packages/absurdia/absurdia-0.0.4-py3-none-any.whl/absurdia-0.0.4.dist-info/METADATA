@@ -1,0 +1,113 @@
+Metadata-Version: 2.1
+Name: absurdia
+Version: 0.0.4
+Summary: Python bindings for the Absurdia API
+Home-page: https://github.com/absurdia/absurdia-py
+Author: Absurdia
+Author-email: support@absurdia.markets
+License: MIT
+Project-URL: Bug Tracker, https://github.com/absurdia/absurdia-py/issues
+Project-URL: Changes, https://github.com/absurdia/absurdia-py/blob/master/CHANGELOG.md
+Project-URL: Source Code, https://github.com/absurdia/absurdia-py
+Keywords: absurdia api trading
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: Implementation :: PyPy
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Requires-Python: >=3.4, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*
+Description-Content-Type: text/markdown
+Requires-Dist: brotlipy
+Requires-Dist: httpx[http2] (>=0.21.2) ; python_version >= "3.4"
+
+# Official Absurdia Bindings for Python
+![PyPI](https://img.shields.io/pypi/v/absurdia?style=flat-square)
+
+A Python library for Absurdia's API.
+
+Orders management:
+- Create a new order (`POST /orders`)
+- Fill an order (`POST /orders/:order_id/fill`)
+- Cancel an order (`POST /orders/:order_id/cancel`)
+- Reject an order (`POST /orders/:order_id/reject`)
+- Get and order (`GET /orders/:order_id`)
+
+Additional endpoints:
+- Get your account (`GET /accounts`)
+- Get your agents (`GET /agents`)
+- Get your funds (`GET /funds`)
+
+## Setup
+
+You can install this package by using the pip tool and installing:
+
+    $ pip install absurdia
+
+
+## Setting up an Absurdia account
+
+Sign up for Absurdia at https://app.absurdia.markets/signup.
+
+## Using the the package
+
+Create a new agent in (your dashboard)[https://app.absurdia.markets/dash/agents] and 
+download the credential file. Put the credential file in the same directory as your Python script.
+
+Once done, you can use the package like this:
+
+```python
+import absurdia
+
+# Get your account
+account = absurdia.Account.current()
+
+# Create an order
+order = absurdia.Order.create(
+    fund_id="<fund_id>", 
+    venue="binance", 
+    venue_symbol="BTCBUSD",
+    side="buy",
+    quantity=0.112
+)
+
+# Get an order
+order = absurdia.Order.retrieve("<order id>")
+
+# Register an order as cancelled
+order.cancel(at = absurdia.util.current_timestamp())
+```
+
+#### Change the path of the credentials file
+
+You can change the path of the file with:
+
+```python
+import absurdia
+
+absurdia.agent_filepath = "/path/to/file/absurdia-agent.env"
+```
+
+#### Use your credentials directly
+
+Add the credentials the way you prefer by changing the global variables:
+
+```python
+import absurdia
+
+absurdia.agent_id = "<ID>"
+absurdia.agent_token = "<Agent Token>"
+absurdia.agent_signature_key = "<Signature Key>"
+```
+
+
