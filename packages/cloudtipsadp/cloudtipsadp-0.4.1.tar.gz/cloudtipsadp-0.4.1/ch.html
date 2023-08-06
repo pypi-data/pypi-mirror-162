@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="https://checkout.cloudpayments.ru/checkout.js"></script>
+</head>
+<body>
+
+<script>
+
+    const checkout = new cp.Checkout({
+        publicId: 'pk_5bd1a885126392fe9b3cc0394b2b0',
+    });
+    const fieldValues = {
+        cvv: '777',
+        cardNumber: '4242 4242 4242 4242',
+        expDateMonth: '01',
+        expDateYear: '25',
+    }
+
+    checkout.createPaymentCryptogram(fieldValues)
+        .then((cryptogram) => {
+            console.log(cryptogram);
+        }).catch((errors) => {
+        console.log(errors)
+    });
+</script>
+
+
+</body>
+</html>
