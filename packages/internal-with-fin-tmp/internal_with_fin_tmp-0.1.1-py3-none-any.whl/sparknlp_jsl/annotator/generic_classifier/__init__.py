@@ -1,0 +1,1 @@
+from sparknlp_jsl.annotator.generic_classifier.generic_classifier import *
