@@ -1,0 +1,77 @@
+[tool.poetry]
+name = "PyInfinity"
+version = "0.0.1"
+description = "Typed interactions with the Pexip Infinity API(s)"
+authors = ["Pexip AS"]
+license = "MIT"
+packages = [{include="README.md"}]
+
+
+[tool.poetry.dependencies]
+python = ">=3.7,<4.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 88
+target-version = ['py37', 'py38']
+
+[tool.isort]
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+line_length = 88
+
+[tool.pylint.MASTER]
+jobs = 0
+persistent = true
+suggestion-mode = true
+disable = """
+    locally-disabled,
+    bad-continuation,
+    fixme,
+    duplicate-code,
+    too-many-ancestors,
+"""
+
+[tool.pylint.REPORTS]
+output-format = "colorized"
+reports = false
+score = true
+
+[tool.pylint.LOGGING]
+logging-format-style = "old"
+logging-modules = "logging"
+
+[tool.pylint.MISCELLANEOUS]
+notes="""
+    FIXME,
+    XXX,
+    TODO,
+"""
+
+[tool.pylint.TYPECHECK]
+# pyVmomi typechecking is picked up by mypy
+ignored-modules = """"""
+
+[tool.pylint.BASIC]
+good-names = """
+    i,
+    j,
+    k,
+    ex,
+    Run,
+    _,
+    T,
+    K,
+    V,
+    id,
+"""
+
+[tool.pylint.DESIGN]
+max-args = 8
+max-attributes = 10
