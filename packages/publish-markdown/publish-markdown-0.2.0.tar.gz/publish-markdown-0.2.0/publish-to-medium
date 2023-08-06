@@ -1,0 +1,30 @@
+#! /usr/bin/env python3
+
+# Standard library
+import argparse
+
+# Local
+from publish_markdown import markdown_to_medium
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description='Post an article to medium.com'
+    )
+
+    parser.add_argument(
+        "filepath",
+        help='The path to the markdown containing the article to post medium.com'
+    )
+
+    parser.add_argument(
+        '-c', '--canonical-url',
+        help="The URL that this post was originally published to (e.g. on your own blog)",
+    )
+    args = vars(parser.parse_args())
+
+    markdown_to_medium(**args)
+
+
+if __name__ == '__main__':
+    main()
