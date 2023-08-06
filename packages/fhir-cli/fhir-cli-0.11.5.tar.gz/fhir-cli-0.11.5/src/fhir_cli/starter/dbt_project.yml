@@ -1,0 +1,35 @@
+# Name your project! Project names should contain only lowercase characters
+# and underscores. A good package name should reflect your organization's
+# name or the intended use of these models
+name: "arkhn"
+version: "1.0.0"
+config-version: 2
+
+# This setting configures which "profile" dbt uses for this project.
+profile: "arkhn"
+
+model-paths: ["models"]
+analysis-paths: ["analysis"]
+test-paths: ["tests"]
+seed-paths: ["data"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+target-path: "target"  # directory which will store compiled SQL files
+clean-targets:         # directories to be removed by `dbt clean`
+  - "target"
+  - "dbt_packages"
+
+
+# Configuring models
+# Full documentation: https://docs.getdbt.com/docs/configuring-models
+
+models:
+  arkhn:
+    # Config indicated by + and applies to all files under models/<dir>/
+    fhir:
+      +materialized: "{{ env_var('MATERIALIZATION_MODE', 'view') }}"
+      +schema: fhir
+    omop:
+      +materialized: "{{ env_var('MATERIALIZATION_MODE', 'view') }}"
+      +schema: omop

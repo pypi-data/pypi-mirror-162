@@ -1,0 +1,15 @@
+config:
+  send_anonymous_usage_stats: False
+arkhn:
+  outputs:
+    default:
+      dbname: "{{ env_var('POSTGRES_DB', 'project_db') }}"
+      host: "{{ env_var('POSTGRES_HOST', 'localhost') }}"
+      port: "{{ env_var('POSTGRES_PORT', 5432) | int }}"
+      user: "{{ env_var('POSTGRES_USER', 'project_user') }}"
+      password: "{{ env_var('POSTGRES_PASSWORD', 'secret') }}"
+      schema: "{{ env_var('DBT_SCHEMA', 'dbt') }}"
+      search_path: $user, public, "{{ env_var('DBT_SCHEMA', 'dbt') }}"
+      threads: 3
+      type: postgres
+  target: default

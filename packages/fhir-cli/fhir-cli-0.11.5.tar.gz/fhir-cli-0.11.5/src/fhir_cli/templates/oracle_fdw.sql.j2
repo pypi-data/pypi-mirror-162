@@ -1,0 +1,11 @@
+DROP SERVER IF EXISTS source_server CASCADE;
+
+CREATE SERVER "source_server_{{ source_db }}"
+    FOREIGN DATA WRAPPER oracle_fdw
+    OPTIONS (dbserver '//{{ source_host }}:{{ source_port }}/{{ source_db }}');
+
+GRANT USAGE ON FOREIGN SERVER "source_server_{{ source_db }}" TO PUBLIC;
+
+CREATE USER MAPPING FOR PUBLIC
+    SERVER "source_server_{{ source_db }}"
+    OPTIONS (user '{{ source_user }}', password '{{ source_password }}');

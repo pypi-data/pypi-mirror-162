@@ -1,0 +1,17 @@
+SELECT
+    1 AS condition_occurrence_id,
+    1 AS person_id,
+    0 AS condition_concept_id,
+    now()::DATE AS condition_start_date,
+    now()::TIMESTAMP AS condition_start_datetime,
+    now()::DATE AS condition_end_date,
+    now()::TIMESTAMP AS condition_end_datetime,
+    0 AS condition_type_concept_id,
+    0 AS condition_status_concept_id,
+    '' AS stop_reason,
+    1 AS provider_id,
+    1 AS visit_occurrence_id,
+    1 AS visit_detail_id,
+    '' AS condition_source_value,
+    0 AS condition_source_concept_id,
+    '' AS condition_status_source_value
