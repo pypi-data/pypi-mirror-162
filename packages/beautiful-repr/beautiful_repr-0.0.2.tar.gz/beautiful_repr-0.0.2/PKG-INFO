@@ -1,0 +1,51 @@
+Metadata-Version: 2.1
+Name: beautiful_repr
+Version: 0.0.2
+Summary: Library for beautiful object formatting
+Home-page: https://github.com/TheArtur128/Beautiful-repr
+Author: Arthur
+Author-email: s9339307190@gmail.com
+License: UNKNOWN
+Download-URL: https://github.com/TheArtur128/Beautiful-repr/archive/refs/heads/master.zip
+Platform: UNKNOWN
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+
+## Beautiful-repr
+Helps structure the formatting of objects in Python.
+
+### Installation
+`pip install beautiful-repr`
+
+### Why Beautiful-repr ?
+* Beautiful repr out of the box
+* Great expansion possibilities
+* Very small and simple
+* No external dependencies
+
+### Example
+```python
+from beautiful_repr import *
+
+
+class ShoppingCart(StylizedMixin):
+    repr = BeautifulRepr([
+        Field("token"),
+        Field(
+            "products",
+            value_getter=parse_length,
+            formatter=TemplateFormatter("{value} products")
+        ),
+    ])
+
+    def __init__(self, token: str, products: tuple[str,] = tuple()):
+        self.token = token
+        self.products = tuple(products)
+
+
+print(ShoppingCart("s12345", ("Potato", "iPhone", "New Vegas")))
+```
+
+**output:** `ShoppingCart(token=s12345, 3 products)`
+
+
