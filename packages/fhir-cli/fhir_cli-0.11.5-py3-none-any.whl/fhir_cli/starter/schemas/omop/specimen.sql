@@ -1,0 +1,16 @@
+SELECT
+    1 AS specimen_id,
+    1 AS person_id,
+    0 AS specimen_concept_id,
+    0 AS specimen_type_concept_id,
+    now()::DATE AS specimen_date,
+    now()::TIMESTAMP AS specimen_datetime,
+    1.0 AS quantity,
+    0 AS unit_concept_id,
+    0 AS anatomic_site_concept_id,
+    0 AS disease_status_concept_id,
+    '' AS specimen_source_id,
+    '' AS specimen_source_value,
+    '' AS unit_source_value,
+    '' AS anatomic_site_source_value,
+    '' AS disease_status_source_value

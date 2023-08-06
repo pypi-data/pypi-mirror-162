@@ -1,0 +1,17 @@
+SELECT
+    1 AS note_id,
+    1 AS person_id,
+    now()::DATE AS note_date,
+    now()::TIMESTAMP AS note_datetime,
+    0 AS note_type_concept_id,
+    0 AS note_class_concept_id,
+    '' AS note_title,
+    '' AS note_text,
+    0 AS encoding_concept_id,
+    0 AS language_concept_id,
+    1 AS provider_id,
+    1 AS visit_occurrence_id,
+    1 AS visit_detail_id,
+    '' AS note_source_value,
+    1::BIGINT AS note_event_id,
+    0 AS note_event_field_concept_id

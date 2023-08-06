@@ -1,0 +1,15 @@
+{
+    "name": "{{ project_db }}-connector",
+    "config": {
+        "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+        "database.hostname": "{{ postgres_server_name }}",
+        "database.port": "{{ postgres_port }}",
+        "database.user": "{{ postgres_user }}",
+        "database.dbname": "{{ project_db }}",
+        "database.password": "{{ postgres_password }}",
+        "database.server.name": "{{ postgres_server_name }}",
+        "schema.include.list": "{{ fhir_schema }}",
+        "publication.autocreate.mode": "all_tables",
+        "plugin.name": "pgoutput"
+    }
+}

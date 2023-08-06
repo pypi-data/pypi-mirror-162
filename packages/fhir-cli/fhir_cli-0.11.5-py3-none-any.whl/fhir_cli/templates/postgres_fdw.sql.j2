@@ -1,0 +1,11 @@
+DROP SERVER IF EXISTS source_server CASCADE;
+
+CREATE SERVER "source_server_{{ source_db }}"
+    FOREIGN DATA WRAPPER postgres_fdw
+    OPTIONS (host '{{ source_host }}', port '{{ source_port }}', dbname '{{ source_db }}', fetch_size '50000');
+
+GRANT USAGE ON FOREIGN SERVER "source_server_{{ source_db }}" TO PUBLIC;
+
+CREATE USER MAPPING FOR PUBLIC
+    SERVER "source_server_{{ source_db }}"
+    OPTIONS (user '{{ source_user }}', password '{{ source_password }}');

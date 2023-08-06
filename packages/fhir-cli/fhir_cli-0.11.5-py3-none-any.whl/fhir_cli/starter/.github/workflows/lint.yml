@@ -1,0 +1,36 @@
+# This workflow triggers linting & format checks on the whole repository using pre-commit.
+# Whenever pre-commit detects any issue or wants to update any file, the workflow fails. The
+# checks it performs are defined in the .pre-commit-config.yaml file.
+
+name: Lint
+
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - reopened
+      - ready_for_review
+      - synchronize
+
+jobs:
+  lint:
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.draft == false }}
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
+
+      - name: Pre-commit
+        uses: pre-commit/action@v2.0.3

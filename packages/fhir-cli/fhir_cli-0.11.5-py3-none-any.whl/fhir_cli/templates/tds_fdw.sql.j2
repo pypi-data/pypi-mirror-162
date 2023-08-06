@@ -1,0 +1,11 @@
+DROP SERVER IF EXISTS source_server CASCADE;
+
+CREATE SERVER "source_server_{{ source_db }}"
+    FOREIGN DATA WRAPPER tds_fdw
+    OPTIONS (servername '{{ source_host }}', port '{{ source_port }}', database '{{ source_db }}', msg_handler 'notice');
+
+GRANT USAGE ON FOREIGN SERVER "source_server_{{ source_db }}" TO PUBLIC;
+
+CREATE USER MAPPING FOR PUBLIC
+    SERVER "source_server_{{ source_db }}"
+    OPTIONS (username '{{ source_user }}', password '{{ source_password }}');
