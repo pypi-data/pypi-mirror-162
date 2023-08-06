@@ -1,0 +1,24 @@
+{% extends 'edc_dashboard/bootstrap3/base.html' %}
+{% load static %}
+
+{% block main %}
+
+{{ block.super }}
+
+
+  <div class="col-sm-4">&nbsp;</div>
+  <div class="col-sm-4">
+    <div class="panel panel-default">
+      <div class="panel-heading"><i class="fas fa-list-alt fa-lg fa-fw"></i> Custom QA Reports</div>
+      <div class="list-group">
+        <a id="home_list_group_home" href="{{ home_url }}" class="list-group-item"><i class="fas fa-reply fa-1x fa-fw" aria-hidden="true"></i> Home</a>
+        <a id="change_list_group_home" href="{% url 'canned_views_admin:canned_views_cannedview_changelist' %}" class="list-group-item"><i class="fas fa-gear fa-1x fa-fw" aria-hidden="true"></i> Admin</a>
+        {% for report in reports %}
+          <a id="{{ report.name }}" href="{% url 'canned_views:basic_view_url' report.name %}" class="list-group-item">{{ report.display_name }}</a>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-4">&nbsp;</div>
+
+{% endblock main %}
