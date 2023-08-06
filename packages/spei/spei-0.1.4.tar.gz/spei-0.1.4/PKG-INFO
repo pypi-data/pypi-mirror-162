@@ -1,0 +1,65 @@
+Metadata-Version: 2.1
+Name: spei
+Version: 0.1.4
+Summary: A simple Python package to calculate drought indices for time series such as the SPI, SPEI and SGI.
+Author: Martin Vonk
+License: MIT License
+        
+        Copyright (c) 2022 Martin Vonk
+        
+        Permission is hereby granted, free of charge, to any person obtaining a copy
+        of this software and associated documentation files (the "Software"), to deal
+        in the Software without restriction, including without limitation the rights
+        to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+        copies of the Software, and to permit persons to whom the Software is
+        furnished to do so, subject to the following conditions:
+        
+        The above copyright notice and this permission notice shall be included in all
+        copies or substantial portions of the Software.
+        
+        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+        IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+        FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+        AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+        LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+        OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+        SOFTWARE.
+        
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.7
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
+![PyPI](https://img.shields.io/pypi/v/SPEI)
+
+# SPEI
+A simple Python package to calculate drought indices for time series such as the SPI (Standardized Precipitation Index), SPEI (Standardized Precipitation Evaporation Index) and SGI (Standardized Groundwater Index). There are other great packages available to calculate these indices However, they are either written in R such as [SPEI](https://github.com/sbegueria/SPEI) or don't have the Standardized Groundwater Index such as [climate_indices](https://github.com/monocongo/climate_indices). Additionaly, these packages provide ways to analyse spatial data but it is easier to only deal with time series. Therefore, this package uses the popular Python packages such as Pandas and Scipy to make it easy but versitile for the user to calculate the drought indices. With the use of Scipy all [distributions](https://docs.scipy.org/doc/scipy/reference/stats.html) available in the library can be used to fit the data. However, there are general recommendations for distributions when calculating the SPEI, SPI an SGI.
+
+Note that this package does not calculate potential evaporation, we refer to [pyet](https://github.com/phydrus/pyet) for that. All time series have to be calculated in advance and be provided as a pandas Series.
+
+## Installation
+To get the latest stable version install using:
+
+`pip install spei`
+
+To get the development version download the GitHub code to your computer. Use cd to get to the download directory and install using:
+
+`pip install -e .`
+
+## To Do
+
+- [ ] Check SGI for other distributions
+
+- [ ] Check distribution correction for x = 0
+
+- [ ] Add way to identify best distribution on time series (with Scipy, Fitter or distfit)
+
+- [x] Setup package in nice way
+
+- [x] Add examples
+
+- [x] Add docstring
+
+- [x] Add Visualisation with Matplotlib
