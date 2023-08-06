@@ -1,0 +1,62 @@
+Metadata-Version: 2.1
+Name: satflow
+Version: 0.3.36
+Summary: Satellite Optical Flow
+Home-page: https://github.com/openclimatefix/satflow
+Author: Jacob Bieker
+Author-email: jacob@openclimatefix.org
+License: MIT License
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: Topic :: Scientific/Engineering :: Artificial Intelligence
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3.8
+License-File: LICENSE
+Requires-Dist: albumentations (>=1.0.3)
+Requires-Dist: antialiased-cnns (>=0.3)
+Requires-Dist: hydra-core (>=1.1.0)
+Requires-Dist: hydra-optuna-sweeper (>=1.1.0)
+Requires-Dist: hydra-colorlog
+Requires-Dist: lightning-bolts (>=0.3.4)
+Requires-Dist: neptune-client (>=0.10.2)
+Requires-Dist: neptune-pytorch-lightning (>=0.9.7)
+Requires-Dist: pytest (>=6.2.4)
+Requires-Dist: python-dotenv (>=0.19.0)
+Requires-Dist: pytorch-msssim (>=0.2.1)
+Requires-Dist: rich (>=10.6.0)
+Requires-Dist: torchvision (>=0.10.0)
+Requires-Dist: affine (==2.3.0)
+Requires-Dist: torch-optimizer
+Requires-Dist: huggingface-hub (>=0.0.16)
+Requires-Dist: einops (>=0.3.2)
+Requires-Dist: metnet (>=0.0.3)
+Requires-Dist: skillful-nowcasting (>=0.0.2)
+Requires-Dist: perceiver-model (>=0.7.0)
+Requires-Dist: nowcasting-dataset (>=1.0.21)
+Requires-Dist: nowcasting-utils (>=0.0.8)
+Requires-Dist: transformers
+Requires-Dist: torch
+
+# SatFlow
+***Sat***ellite Optical ***Flow*** with machine learning models.
+
+The goal of this repo is to improve upon optical flow models for predicting
+future satellite images from current and past ones, focused primarily on EUMETSAT data.
+
+## Installation
+
+Clone the repository, then run
+```shell
+conda env create -f environment.yml
+conda activate satflow
+pip install -e .
+````
+
+Alternatively, you can also install a usually older version through ```pip install satflow```
+
+## Data
+
+The data used here is a combination of the UK Met Office's rainfall radar data, EUMETSAT MSG
+satellite data (12 channels), derived data from the MSG satellites (cloud masks, etc.), and
+numerical weather prediction data. Currently, some example transformed EUMETSAT data can be downloaded
+from the tagged release, as well as included under ```datasets/```.
