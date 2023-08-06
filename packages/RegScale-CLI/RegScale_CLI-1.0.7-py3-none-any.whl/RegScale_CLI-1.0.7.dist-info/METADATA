@@ -1,0 +1,83 @@
+Metadata-Version: 2.1
+Name: RegScale-CLI
+Version: 1.0.7
+Summary: Command Line Interface (CLI) for bulk processing/loading data into RegScale
+Home-page: https://github.com/RegScale/regscale-cli
+Author: Travis Howerton
+Author-email: thowerton@regscale.com
+License: MIT
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.7
+Description-Content-Type: text/markdown
+Requires-Dist: aiohttp (==3.8.1)
+Requires-Dist: click (==8.1.3)
+Requires-Dist: colorama (==0.4.5)
+Requires-Dist: gql (==3.4.0)
+Requires-Dist: jira (==3.3.1)
+Requires-Dist: msal (==1.18.0)
+Requires-Dist: pyaml (==21.10.1)
+Requires-Dist: requests (==2.28.1)
+Requires-Dist: rich (==12.5.1)
+Requires-Dist: setuptools
+
+# RegScale Command Line Interface (CLI)
+
+This CLI application is for supporting advanced automation and bulk data processing related to the [RegScale Compliance Automation Platform](https://wwww.regscale.com).  This application is intended to run as a "side car" that be scheduled via CRON job or serverless function to perform sophisticated data processing.  The CLI includes multiple libraries for processing data, connecting to RegScale Application Programming Interfaces (APIs), and commercial integrations.  This software may be packaged and included in other commercial software to lower the level of effort associated with building RegScale integrations to other commercial tools.
+
+## Use Cases
+
+- Sidecar for bulk processing compliance data such as vulnerability scans or continuous monitoring logs
+- Ingest of data such as National Institute of Standards and Technology (NIST) Open Security Control Assessment Language (OSCAL)
+- Running CRON job to bulk process data
+- Processing NIST OSCAL artifacts
+- Bulk user management with Active Directory
+- Integration with 3rd party scanning tools such as:
+    - Wiz.io
+    - Tenable Security
+- ITIL ticket creation and processing such as:
+    - ServiceNow
+    - Jira
+
+## Development Using the CLI
+
+Build and install our new tool in the virtual environment to test locally (NOTE: If on Windows, may use the `py` prefix instead of `python3`):
+
+`python3 setup.py develop`
+
+This command build a local instance of the CLI for testing.  Run the "About" example to test:
+
+`regscale about` 
+
+## WARNING - this site is under construction
+
+The CLI is currently in BETA and planned for version 1.0 General Availability in late Spring or early Summer of 2022.
+
+## Packaging and Deploying the CLI
+
+To package for distribution, run the following command (make sure to update the version in `setup.py` first):
+
+`python3 setup.py sdist bdist_wheel`
+
+Publish to PyPi:
+
+`twine upload --repository testpypi --skip-existing dist/*`
+
+RegScale CLI should now be available at: https://test.pypi.org/project/RegScale-CLI
+
+## Using the CLI
+
+[Read the Online Docs for More Info on Installing, Configuring, and Using the CLI](https://regscale.com/documentation/cli-overview)
+
+## References
+
+- [Python Click Documentation](https://click.palletsprojects.com/en/8.0.x/)
+- [Wiz.io API Documentation](https://docs.wiz.io/wiz-docs/docs/getting-started-with-wiz-api)
+- [Building a Python CLI](https://medium.com/nerd-for-tech/how-to-build-and-distribute-a-cli-tool-with-python-537ae41d9d78)
+- [RegScale PyPI Page](https://pypi.org/project/RegScale-CLI)
+
+
+[![Containerizing Regscale-cli](https://github.com/RegScale/regscale-cli/actions/workflows/cli.yml/badge.svg?branch=main&event=release)](https://github.com/RegScale/regscale-cli/actions/workflows/cli.yml)
+
+
