@@ -1,0 +1,42 @@
+[build-system]
+requires = ["hatchling", "hatch-fancy-pypi-readme"]
+build-backend = "hatchling.build"
+
+
+[project]
+name = "my-pkg"
+version = "1.0"
+dynamic = ["readme"]
+
+
+[tool.hatch.metadata.hooks.fancy-pypi-readme]
+content-type = "text/markdown"
+
+[[tool.hatch.metadata.hooks.fancy-pypi-readme.fragments]]
+text = '''# Level 1 Header
+
+This is *Markdown* in a literal string.
+
+Let's import `AUTHORS.md` without its header and last paragraph next:
+
+'''
+
+[[tool.hatch.metadata.hooks.fancy-pypi-readme.fragments]]
+path = "AUTHORS.md"
+start-after = "Authors\n"
+end-before = "A full"
+
+[[tool.hatch.metadata.hooks.fancy-pypi-readme.fragments]]
+text = """
+---
+
+Now let's add an extract from [`tests/example_changelog.md`](https://github.com/hynek/hatch-fancy-pypi-readme/blob/main/tests/example_changelog.md):
+
+"""
+
+[[tool.hatch.metadata.hooks.fancy-pypi-readme.fragments]]
+path = "tests/example_changelog.md"
+pattern = "<!-- changelog follows -->\n\n\n(.*)?\n\n## "
+
+[[tool.hatch.metadata.hooks.fancy-pypi-readme.fragments]]
+text = "\n---\n\nPretty **cool**, huh? ✨"
