@@ -1,0 +1,101 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - "*"
+  pull_request:
+    branches:
+
+jobs:
+  tox:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - name: Python 3.10 Schema validation tests
+            python-version: '3.10'
+            os: ubuntu-latest
+            toxenv: py310
+
+          - name: Python 3.9 Schema validation tests
+            python-version: 3.9
+            os: ubuntu-latest
+            toxenv: py39
+
+          - name: Python 3.8 Schema validation tests
+            python-version: 3.8
+            os: ubuntu-latest
+            toxenv: py38
+
+          - name: Twine check
+            python-version: 3.9
+            os: ubuntu-latest
+            toxenv: twine
+
+          - name: Code style checks
+            python-version: 3.9
+            os: ubuntu-latest
+            toxenv: codestyle
+
+          - name: macOS
+            python-version: 3.9
+            os: macos-latest
+            toxenv: py39
+
+          - name: Windows
+            python-version: 3.9
+            os: windows-latest
+            toxenv: py39
+
+    steps:
+      - name: Install System Packages
+        if: ${{ contains(matrix.toxenv, 'docs') }}
+        run: |
+          sudo apt-get install graphviz
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install tox
+        run: |
+          python -m pip install --upgrade pip
+          pip install tox
+      - name: Run tox
+        run: tox -e ${{ matrix.toxenv }}
+
+  asdf-dev:
+    name: Run asdf-development tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout asdf-standard
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          path: asdf-standard
+      - name: Checkout asdf-dev
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          repository: asdf-format/asdf
+          ref: master
+          path: asdf
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      - name: Install asdf-standard
+        run: cd asdf-standard && pip install .
+      - name: Install asdf
+        run: cd asdf && pip install -e .[tests]
+      - name: Pip Freeze
+        run: pip freeze
+      - name: Run asdf-development tests
+        run: cd asdf && pytest
