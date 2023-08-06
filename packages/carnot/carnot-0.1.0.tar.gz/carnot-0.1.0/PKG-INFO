@@ -1,0 +1,64 @@
+Metadata-Version: 2.1
+Name: carnot
+Version: 0.1.0
+Summary: Module for defining reversible transactions.
+Home-page: https://jjj999.github.io/carnot
+License: MIT
+Author: jjj999
+Author-email: jjj999to@gmail.com
+Maintainer: jjj999
+Maintainer-email: jjj999to@gmail.com
+Requires-Python: >=3.8,<4.0
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Requires-Dist: typing-extensions (>=4.3.0,<5.0.0)
+Project-URL: Repository, https://github.com/jjj999/carnot
+Description-Content-Type: text/markdown
+
+# carnot
+
+`carnot` is a module that enables reversible transactions for general purposes. Reversible transactions may make your codes simpler and have better readability inspite of complicated logics.
+
+## Installing
+
+- Python >= 3.8
+
+```
+python -m pip install carnot
+```
+
+## Usage
+
+```python
+from carnot import reversible_function, transaction
+
+count = 0
+
+@reverse_function
+def add(num: int) -> None:
+    global count
+    count += num
+    add.set_args(num)
+
+@add.backward
+def _add(num: int) -> None:
+    global count
+    count -= num
+
+@transaction
+def add_and_emit_error() -> None:
+    add(2)
+    raise Exception
+
+if __name__ == "__main__":
+    try:
+        add_and_emit_error()
+    except:
+        pass
+    finally:
+        print(count)    # 0
+```
+
