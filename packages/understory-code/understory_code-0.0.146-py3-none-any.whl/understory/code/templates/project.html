@@ -1,0 +1,29 @@
+$def with (project, repo, package_releases)
+$var title: $project
+
+$if repo.exists():
+    <pre>git clone https://$(tx.request.headers["x-domain"])/code/$(project).git</pre>
+    <h2>Files</h2>
+    <ul>
+    $for file in repo.files:
+        <li><a href=/$project/files/$file>$file</a></li>
+    </ul>
+    <h2>Commit Log</h2>
+    <ul>
+    $for commit in repo.log.values():
+        $ author_url = commit['author_email']
+        $if "@" in author_url:
+            $ author_url = f"mailto:{author_url}"
+        $else:
+            $ author_url = f"https://{author_url}"
+        <li><a href="$author_url">$commit["author_name"]</a>
+        $commit["message"]
+        <small><a href=/$project/commits/$commit["hash"]>$commit["hash"][:7]</a></small>
+        $commit["timestamp"].diff_for_humans()</li>
+    </ul>
+
+<h2>Releases</h2>
+<ul>
+$for release in package_releases:
+    <li><a href=/$project/releases/$release>$release</a></li>
+</ul>
