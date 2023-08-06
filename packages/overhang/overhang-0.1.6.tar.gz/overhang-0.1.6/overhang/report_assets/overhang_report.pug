@@ -1,0 +1,154 @@
+#sidebar: p {{sidebar_text}}
+
+.logos
+  img(src="file:///{{ egf_logo_url }}" style="height:40px; width: auto")
+
+
+
+
+hr
+h1 Compendium of overhangs
+hr
+
+div(style="margin-top:1cm; margin-bottom:1cm;")
+
+
+p.
+  There are <b>{{ number_of_overhangs }}</b> overhangs in this report. The restriction
+   enzyme used in this compendium is <b>{{ enzyme }}</b>.
+
+p Please see the Appendix on the last page for an explanation of details.
+
+
+<div style = "display:block; clear:both; page-break-after:always;"></div>
+
+
+
+
+
+
+each overhang in overhangs
+
+  div(style="margin-top:1cm; margin-bottom:1cm;")
+
+
+  if overhang.is_usable
+    p(style="text-align:left;")
+      b(style='font-size: 50px;') #[span.green ☑] &ensp; #[span.grey {{ overhang.overhang }}]
+      #[span.big &ensp; &ensp; &ensp; &ensp; &ensp; &ensp; {{ overhang.overhang_rc }}]
+  else
+    p(style="text-align:left;")
+      b(style='font-size: 50px;') #[span.red ☒] &ensp; #[span.grey {{ overhang.overhang }}]
+      #[span.big &ensp; &ensp; &ensp; &ensp; &ensp; &ensp; {{ overhang.overhang_rc }}]
+
+
+  if overhang.has_extreme_gc
+    p #[span.red Extreme GC content: {{ overhang.gc_content_percent }} %.]
+  else
+    p GC content: #[strong {{ overhang.gc_content_percent }} %].
+
+  if overhang.is_palindromic
+    p #[span.red The overhang is palindromic, cannot be used for DNA assembly.]
+
+  if overhang.has_start_codon
+    p The overhang contains the start codon ATG.
+  else
+    if overhang.has_rc_start_codon
+      p The overhang contains the start codon ATG.
+
+  if overhang.has_stop_codon
+    p The overhang contains a stop codon (TAA, TAG or TGA).
+  else
+    if overhang.has_rc_stop_codon
+      p The overhang contains a stop codon (TAA, TAG or TGA).
+
+  if overhang.has_multimer
+    p Has 3 identical bases in a row. However, this has not shown to be very important.
+
+  p Can form the following amino acids in 6 translation frames:<br>
+    each pattern in overhang.aa_patterns
+      &ensp; {{ pattern }} <br>
+
+  p Misannealing overhangs:
+
+  img#diff-figure(src="{{ overhang.figure_data }}")
+
+
+
+  <div style = "display:block; clear:both; page-break-after:always;"></div>
+
+
+
+
+
+
+h2 Appendix
+
+p The report consists of 3 sections: summary, overhangs, appendix.
+
+p
+  h5 Summary page(s)
+p The first page summarises the compendium.
+
+p
+  h5 Overhang pages
+p.
+  Each overhang is analysed separately. The result is summarised with a symbol:
+
+p #[span.green ☑] : good overhang
+//- p #[span.yellow ⚠] : warning
+p #[span.red ☒] : unusable palindromic sequence
+
+p.
+  <b>Overhangs</b> are unpaired nucleotides at the end of a double-stranded linear DNA
+  molecule. These overhangs create "sticky" (non-blunt) DNA ends.
+  Overhangs can be on either strand; 5' or 3' overhangs.
+  During DNA assembly, these overhangs are created by type IIS restriction enzymes, and
+  ligated with another DNA with a complementary overhang, by ligases.
+  The type of the restriction enzyme and the ligase influences the misannealing rate,
+  which is displayed in a summary plot. For more details, see the
+  <a href="https://github.com/Edinburgh-Genome-Foundry/tatapov">Tatapov</a> package and
+  Pryor et al. (<a href="https://doi.org/10.1371/journal.pone.0238592">PLoS ONE (2020) 15(9): e0238592</a>).
+
+p.
+  After the assembly, these overhangs remain in the sequence as fusion sites ("scars").
+  If this is in a coding sequence (CDS), then addition of nucleotides can ensure that
+  the two joining parts remain in the same translation frame. By carefully choosing which
+  nucleotides we add, we can select suitable amino acids, or start/stop codons.
+  For each overhang, a list of codons is also displayed that shows translation options.
+  The <a href="https://github.com/Edinburgh-Genome-Foundry/genedom">GeneDom package</a>
+  can be used for automating the addition of these nucleotides, the overhangs and the
+  enzyme sites.
+
+
+p
+  strong Overhang sets
+p.
+  Use the 
+  <a href="https://github.com/Edinburgh-Genome-Foundry/GoldenHinges">GoldenHinges</a>
+  Python package to generate a set of mutually compatible overhangs that can be used for
+  DNA assembly.
+
+
+
+
+
+
+style.
+  .green {
+    color: #86bf86
+  }
+  .grey {
+    color: #a9a9a9
+  }
+  .red {
+    color: #fd5a31
+  }
+  .yellow {
+    color: #f7b500
+  }
+  .big {
+    font-size: 50px;
+    font-weight: bold;
+    color: #a9a9a9
+  }
