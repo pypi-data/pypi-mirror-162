@@ -1,0 +1,227 @@
+- series: xantech8
+  name: "Xantech 8-Zone Audio"
+  description: "Xantech 8-zone Matrix Amps"
+
+  supported:
+    - manufacturer: "Xantech"
+      model: "MRAUDIO8x8"
+      
+    - manufacturer: "Xantech"
+      model: "MRAUDIO8x8m"
+
+    - manufacturer: "Xantech"
+      model: "MRC88"
+      overrides:
+        features:
+          video: true
+          rs232_null_internal: true
+
+    - manufacturer: "Xantech"
+      model: "MRC88m"
+      overrides:
+        rs232:
+          baud: 19200
+        features:
+          video: true
+
+    - manufacturer: "Xantech"
+      model: "MX88"
+      overrides:
+        rs232: # NOTE: the USB COM connection on front uses same serial settings
+          baud: 57600
+
+    - manufacturer: "Xantech"
+      model: "MX88a"
+      overrides:
+        rs232: # NOTE: the USB COM connection on front uses same serial settings
+          baud: 57600
+ 
+    - manufacturer: "Xantech"
+      model: "MX88ai"
+      # NOTE:
+      # - two rear expansion  COM ports are DB15 (15-pin) instead of DB9 (9-pin); DB15-DB9 adapter can be used
+      # - front COM port is DB9 (but may not allow unit control)
+      # - front USB-B port exposes a serial port connection depending on client device driver support
+      overrides:
+        rs232: # NOTE: the USB COM connection on front uses same serial settings
+          baud: 57600
+        features:
+          ip_control: true
+
+    - manufacturer: "Xantech"
+      model: "MX88vi"
+      overrides:
+        features:
+          video: true
+          ip_control: true
+
+    - manufacturer: "Xantech"
+      model: "MRC88CTL"
+      overrides:
+        features:
+          video: true
+
+    - manufacturer: "Xantech"
+      model: "MRAUDIO8X8CTL"
+      overrides:
+        features:
+          video: true
+
+    - manufacturer: "Xantech"
+      model: "CM8X8"
+
+    - manufacturer: "Xantech"
+      model: "CM8X8DR"
+
+    - manufacturer: "Xantech"
+      model: "CM8X8CTL"
+      overrides:
+        features:
+          video: true
+
+  features:
+    zones: 8
+    sources: 8
+    max_expansion_amps: 1 # 16 zones using DB15-DB15 cable
+    rs232_control: true
+
+  # FIXME: deprecate these
+  num_zones: 8
+  num_sources: 8
+  max_amps: 3
+
+  # FIXME: these should come from the protocol...which has them defined (min and max)
+  max_balance: 20
+  max_bass: 14
+  max_treble: 14
+  max_volume: 38
+
+  protocol: xantech
+  min_time_between_commands: 0.4
+
+  rs232:
+    baudrate: 9600
+    bytesize: 8
+    parity: 'N'
+    stopbits: 1
+    timeout: 1.0
+    write_timeout: 1.0
+    # cable: Xantech PN 05913410 (for MRC88a)
+
+  # FIXME: this should really be from protocol...
+  hardware_volume_steps: 38
+ 
+  sources:
+    1: "Source 1"
+    2: "Source 2"
+    3: "Source 3"
+    4: "Source 4"
+    5: "Source 5"
+    6: "Source 6"
+    7: "Source 7"
+    8: "Source 8"
+      
+  zones:
+    1: "Zone 1"
+    2: "Zone 2"
+    3: "Zone 3"
+    4: "Zone 4"
+    5: "Zone 5"
+    6: "Zone 6"
+    7: "Zone 7"
+    8: "Zone 8"
+
+  # FIXME: some Xantech use 1-8, others the two-digit form, probably should split into two xantech series
+  # technically zone = {amp_number}{zone_num_within_amp_1-6} (e.g. 11 = amp number 1, zone 1)
+  alternative_zones:
+    11: "Zone 1"    # main amp 1    (e.g. 15 = amp 1, zone 5)
+    12: "Zone 2"
+    13: "Zone 3"
+    14: "Zone 4"
+    15: "Zone 5"
+    16: "Zone 6"
+    17: "Zone 7"
+    18: "Zone 8"
+    21: "Amp 2, Zone 1"   # amp 2         (e.g. 21 = amp 2, zone 1)
+    22: "Amp 2, Zone 2"
+    23: "Amp 2, Zone 3"
+    24: "Amp 2, Zone 4"
+    25: "Amp 2, Zone 5"
+    26: "Amp 2, Zone 6"
+    27: "Amp 2, Zone 7"
+    28: "Amp 2, Zone 8"
+    31: "Amp 3, Zone 2"   # amp 3         (e.g. 35 = amp 4, zone 5)
+    32: "Amp 3, Zone 2"
+    33: "Amp 3, Zone 3"
+    34: "Amp 3, Zone 4"
+    35: "Amp 3, Zone 5"
+    36: "Amp 3, Zone 6"
+    37: "Amp 3, Zone 7"
+    38: "Amp 3, Zone 8"
+
+  # these really map from the hardware protocol to user visible names...should they be in the protocol?
+  bass_level:
+    unit: "dB"
+    steps:
+      14: "+14"
+      13: "+12"
+      12: "+10"
+      11: "+8"
+      10: "+6"
+      9: "+4"
+      8: "+2"
+      7: "0"
+      6: "-2"
+      5: "-4"
+      4: "-6"
+      3: "-8"
+      2: "-10"
+      1: "-12"
+      0: "-14"
+
+  treble_level:
+    unit: "dB"
+    steps:
+      14: "+14"
+      13: "+12"
+      12: "+10"
+      11: "+8"
+      10: "+6"
+      9: "+4"
+      8: "+2"
+      7:  "0"
+      6: "-2"
+      5: "-4"
+      4: "-6"
+      3: "-8"
+      2: "-10"
+      1: "-12"
+      0: "-14"
+
+  balance_attenuation:
+    unit: "dB"
+    steps:
+      63: { "left": None,  "right": 0      }  # None = Mute
+      62: { "left": -37.5, "right": 0      }
+      #...
+      34: { "left": -2.5,  "right": 0      }
+      33: { "left": -1.25, "right": 0      }
+      32: { "left": 0,     "right": 0      }
+      32: { "left": 0,     "right": 0      }
+      31: { "left": 0,     "right": 0      }
+      30: { "left": 0,     "right": -1.25  }
+      29: { "left": 0,     "right": -2.5   }
+      #...
+      2:  { "left": 0,     "right": -36.25 }
+      1:  { "left": 0,     "right": -37.5  }
+      0:  { "left": 0,     "right": None   }  # None = Mute
+
+  volume_level:
+    units: "dB"
+    steps:
+      38: 0
+      37: -1.25
+      #...
+      2:  -71.25
+      1:  -75.00
+      0:  -78.75
