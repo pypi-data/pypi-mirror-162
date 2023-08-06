@@ -1,0 +1,1 @@
+from ormedian_resizer.resize_imgs import resizer
