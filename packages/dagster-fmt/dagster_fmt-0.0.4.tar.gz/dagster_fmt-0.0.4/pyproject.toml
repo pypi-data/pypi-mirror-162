@@ -1,0 +1,30 @@
+[tool.poetry]
+name = "dagster_fmt"
+version = "0.0.4"
+description = "Dagster code gen tool"
+authors = ["arudolph <alex3rudolph@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+repository = "https://www.github.com/alrudolph/dagster_fmt"
+packages = [
+    { include = "dagster_fmt" }
+]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+toml = "^0.10.2"
+isort = "^5.10.1"
+black = "^22.6.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^7.1.2"
+pre-commit = "^2.20.0"
+astpretty = "^3.0.0"
+dagster = "^0.15.7"
+
+[tool.poetry.scripts]
+dagster_fmt = 'dagster_fmt.__main__:cli'
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
