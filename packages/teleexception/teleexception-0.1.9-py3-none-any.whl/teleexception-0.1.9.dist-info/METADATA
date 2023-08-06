@@ -1,0 +1,39 @@
+Metadata-Version: 2.1
+Name: teleexception
+Version: 0.1.9
+Summary: Python Package for tele exception
+Author: imason
+Author-email: 635761952@qq.com
+Keywords: python exception
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.6,
+Description-Content-Type: text/markdown
+
+Tele Log
+==========================
+
+统一的异常类 python package。
+
+## how to commpile
+```bash
+python setup.py sdist bdist_wheel
+```
+
+## how to release
+```bash
+twine upload -r pypi dist/*.whl
+```
+
+## how to install 
+```bash
+pip install teleexception
+```
+
+## how to use
+```python
+from teleexception import HTTPStatus, StatusException
+status = HTTPStatus.FORBIDDEN
+raise StatusException(status.value, status.phrase)
+```
