@@ -1,0 +1,1 @@
+(self.webpackChunk_here_map_widget_ext_for_jupyter=self.webpackChunk_here_map_widget_ext_for_jupyter||[]).push([[261],{6261:(e,t,r)=>{var i=r(1568),p=r(2465);e.exports={id:"@here/map-widget-ext-for-jupyter",requires:[p.IJupyterWidgetRegistry],activate:function(e,t){t.registerWidget({name:"@here/map-widget-ext-for-jupyter",version:i.version,exports:i})},autoStart:!0}}}]);
