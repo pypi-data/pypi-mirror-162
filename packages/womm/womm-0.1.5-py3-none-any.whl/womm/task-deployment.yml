@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: womm-task-$ID
+  $NAMESPACE_LINE
+  annotations:
+    womm-cwd: "$PWD"
+    womm-host: "$HOST"
+    womm-controller-pid: "$CONTROLLER_PID"
+    womm-cmd: "$CMD"
+spec:
+  replicas: $PARALLELISM
+  selector:
+    matchLabels:
+      womm_task: $ID
+  template:
+    metadata:
+      labels:
+        womm_task: $ID
+    spec:
+      $SECRETS_LINE1
+      $SECRETS_LINE2
+      containers:
+        - name: womm-task-$ID
+          image: $IMAGE
+          imagePullPolicy: Always
+          command: ["sleep", "999999999"]
+          resources:
+            requests:
+              memory: '$JOB_MEM'
+              cpu: '$JOB_CPU'
+            limits:
+              memory: '$JOB_MEM'
+              cpu: '$JOB_CPU'
+# {{snip here}}
+          volumeMounts:
+            - name: womm-mount-$ID
+              mountPath: "$PWD"
+      volumes:
+        - name: womm-mount-$ID
+          nfs:
+            server: $NFS_SERVER
+            path: "$NFS_PATH"

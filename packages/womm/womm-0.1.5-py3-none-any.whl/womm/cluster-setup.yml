@@ -1,0 +1,89 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: womm-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: womm-server
+  template:
+    metadata:
+      labels:
+        app: womm-server
+    spec:
+      containers:
+        - name: womm-server
+          image: rhelmot/womm-server:$VERSION
+          imagePullPolicy: Always
+          securityContext:
+            privileged: true
+          ports:
+            - name: nfs
+              containerPort: 2049
+            - name: mountd
+              containerPort: 20048
+            - name: rpcbind
+              containerPort: 111
+          resources:
+            requests:
+              memory: '1Gi'
+              cpu: '1000m'
+            limits:
+              memory: '2Gi'
+              cpu: '1000m'
+          volumeMounts:
+            - name: scratch
+              mountPath: "/data"
+      volumes:
+        - name: scratch
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: womm-server
+  labels:
+    app: womm-server
+spec:
+  ports:
+    - name: nfs
+      port: 2049
+    - name: mountd
+      port: 20048
+    - name: rpcbind
+      port: 111
+  selector:
+    app: womm-server
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: womm-leader
+rules:
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["delete"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["pods/exec"]
+    verbs: ["create"]
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: womm-leader
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: womm-leader
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: womm-leader
+subjects:
+  - kind: ServiceAccount
+    name: womm-leader
