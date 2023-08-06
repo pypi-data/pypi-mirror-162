@@ -1,0 +1,25 @@
+#sample for oracle 11
+#oracle11的样例文件
+#号开头的行为注释，并不需要处理
+#冒号开头的行表示一段内容的开始，直到另外一个冒号或者是文件尾
+#执行时扫描配置文件，把每一段的内容传递给相应的处理函数处理
+:connect
+#connect段设置数据库类型以及连接所需要的数据，不同数据库需要的数据并不相同
+driver=oracle11
+loginname=loginname
+password=password
+dbserver=host address or ip or tnsname
+:readdata
+:export
+#export段设置导出数据库里的相应内容为文本文件
+datadir=/tmp
+:render
+file=librtta.h
+help=y
+#使用help=y可以打印出传入模板的数据，方便写模板的时候使用
+#下面是模板样例，jinja2模板库，这个样例是根据表定义一个c语言的结构，用于pro*c使用
+start=struct stru_tsharedetail{
+{% for c in TABLE.TSHAREDETAIL %}    {{ "%-8s"|format(c.type) }} {{ "%-22s"|format(c.ns+";")|lower }}     //{{ c.desc }}
+{% endfor %}
+end=};
+:end

@@ -1,0 +1,51 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+import sys,importlib,os,shutil
+import database2text.tool as dbtt
+from database2text.tool import *
+
+class main(object):
+    def __init__(self):
+        self.readconfig()
+    def readconfig(self):
+        fn="dbt.txt"
+        if len(sys.argv)>1:
+            fn=sys.argv[1]
+        if not os.path.isfile(fn):
+            print("can't open %s. you must create it or tell us another file name." %(fn))
+            print("for help, you may need the file in %s" %(os.path.join(os.path.dirname(os.path.abspath(dbtt.__file__)),"datafile")))
+            sys.exit(-1)
+        f=open(fn)
+        section="global"
+        for s in f.readlines():
+            if s.startswith(":"):
+                if section=="end":
+                    break
+                if section=="global":
+                    driver=stdata["driver"]
+                    dbt=importlib.import_module('database2text.%s' %(stdata["driver"]))
+                if not dbt:
+                    print("can't find driver=xxx , need it in begin of config's file")
+                    sys.exit(-1)
+                if section!="global":
+                    if hasattr(dbt,section):
+                        getattr(dbt,section)()
+                    elif hasattr(dbtt,section):
+                        getattr(dbtt,section)()
+                    else:
+                        print("can't find function %s in driver %s and dbtt" %(section,driver))
+                        sys.exit(-2)
+                section=s[1:].strip()
+                storidata.clear()
+                stdata.clear()
+                continue
+            storidata.append(s)
+            s=s.rstrip()
+            if s.find("=")>=0:
+                name=s[:s.find("=")].strip()
+                value=s[s.find("=")+1:].strip()
+                stdata[name]=value
+
+if __name__ == "__main__":
+    main()
