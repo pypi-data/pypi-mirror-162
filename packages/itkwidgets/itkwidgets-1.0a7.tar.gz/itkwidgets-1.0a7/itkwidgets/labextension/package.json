@@ -1,0 +1,118 @@
+{
+  "name": "itkwidgets",
+  "version": "0.33.0",
+  "description": "Interactive Jupyter widgets to visualize images, point sets, and meshes on the web.",
+  "keywords": [
+    "jupyter",
+    "jupyterlab",
+    "jupyterlab-extension",
+    "widgets"
+  ],
+  "files": [
+    "lib/**/*.js",
+    "dist/*.js",
+    "css/*.css"
+  ],
+  "homepage": "https://github.com/InsightSoftwareConsortium/itkwidgets",
+  "bugs": {
+    "url": "https://github.com/InsightSoftwareConsortium/itkwidgets/issues"
+  },
+  "license": "BSD-3-Clause",
+  "author": {
+    "name": "Matt McCormick",
+    "email": "matt.mccormick@kitware.com"
+  },
+  "main": "lib/index.js",
+  "types": "./lib/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/InsightSoftwareConsortium/itkwidgets"
+  },
+  "scripts": {
+    "build": "yarn run build:lib && yarn run build:nbextension && yarn run build:labextension:dev",
+    "build:prod": "yarn run build:lib && yarn run build:nbextension && yarn run build:labextension",
+    "build:labextension": "jupyter labextension build .",
+    "build:labextension:dev": "jupyter labextension build --development True .",
+    "build:lib": "tsc",
+    "build:nbextension": "webpack",
+    "clean": "yarn run clean:lib && yarn run clean:nbextension && yarn run clean:labextension",
+    "clean:lib": "rimraf lib",
+    "clean:labextension": "rimraf itkwidgets/labextension",
+    "clean:nbextension": "rimraf itkwidgets/nbextension/static/index.js",
+    "lint": "eslint . --ext .ts,.tsx --fix",
+    "lint:check": "eslint . --ext .ts,.tsx",
+    "prepack": "yarn run build:lib",
+    "test": "jest",
+    "watch": "npm-run-all -p watch:*",
+    "watch:lib": "tsc -w",
+    "watch:nbextension": "webpack --watch --mode=development",
+    "watch:labextension": "jupyter labextension watch ."
+  },
+  "dependencies": {
+    "autoprefixer": "^9.7.6",
+    "copy-webpack-plugin": "^9.0.1",
+    "css-element-queries": "^1.2.3",
+    "@babel/runtime": "^7.9.2",
+    "@jupyter-widgets/base": "^1.1.10 || ^2.0.0 || ^3.0.0 || ^4.0.0",
+    "itk": "^13.1.3",
+    "itk-vtk-viewer": "^10.7.4",
+    "jupyter-dataserializers": "^2.2.0",
+    "mobx": "^5.15.4",
+    "regenerator-runtime": "^0.13.5",
+    "vtk.js": "^14.12.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.9.0",
+    "@babel/plugin-proposal-class-properties": "^7.8.3",
+    "@babel/plugin-proposal-decorators": "^7.8.3",
+    "@babel/plugin-transform-runtime": "^7.9.0",
+    "@babel/preset-env": "^7.9.0",
+    "babel-loader": "^8.1.0",
+    "babel-preset-mobx": "^2.0.0",
+    "@jupyterlab/builder": "^3.0.0",
+    "@phosphor/application": "^1.6.0",
+    "@phosphor/widgets": "^1.6.0",
+    "@types/jest": "^26.0.0",
+    "@types/webpack-env": "^1.13.6",
+    "@typescript-eslint/eslint-plugin": "^3.6.0",
+    "@typescript-eslint/parser": "^3.6.0",
+    "acorn": "^7.2.0",
+    "css-loader": "^3.2.0",
+    "postcss": "^8.3.5",
+    "postcss-loader": "^4.1.0",
+    "raw-loader": "^4.0.2",
+    "eslint": "^7.4.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-prettier": "^3.1.4",
+    "fs-extra": "^7.0.0",
+    "identity-obj-proxy": "^3.0.0",
+    "jest": "^26.0.0",
+    "mkdirp": "^0.5.1",
+    "npm-run-all": "^4.1.3",
+    "prettier": "^2.0.5",
+    "rimraf": "^2.6.2",
+    "source-map-loader": "^1.1.3",
+    "shader-loader": "^1.3.1",
+    "stream-browserify": "^3.0.0",
+    "style-loader": "^1.0.0",
+    "url-loader": "^4.1.1",
+    "ts-jest": "^26.0.0",
+    "ts-loader": "^8.0.0",
+    "typescript": "~4.1.3",
+    "webpack": "^5.61.0",
+    "webpack-cli": "^4.0.0",
+    "webpack-node-externals": "^1.7.2",
+    "worker-loader": "^2.0.0"
+  },
+  "jupyterlab": {
+    "extension": "lib/plugin",
+    "webpackConfig": "./webpack.lab.config.js",
+    "outputDir": "itkwidgets/labextension/",
+    "sharedPackages": {
+      "@jupyter-widgets/base": {
+        "bundled": false,
+        "singleton": true
+      }
+    }
+  }
+}

@@ -1,0 +1,58 @@
+import { DOMWidgetModel, DOMWidgetView, ISerializers } from '@jupyter-widgets/base';
+export declare class ViewerModel extends DOMWidgetModel {
+    static model_name: string;
+    static model_module: any;
+    static model_module_version: any;
+    static view_name: string;
+    static view_module: any;
+    static view_module_version: any;
+    defaults(): any;
+    static serializers: ISerializers;
+}
+export declare class ViewerView extends DOMWidgetView {
+    itkVtkViewer: any;
+    colorMapLoopBreak: boolean;
+    skipOnCroppingPlanesChanged: boolean;
+    use2D: boolean;
+    initialize_itkVtkViewer(): void;
+    render(): void;
+    rendered_image_changed(): Promise<void> | Promise<null>;
+    rendered_label_image_changed(): Promise<void> | Promise<null>;
+    label_image_names_changed(): void;
+    label_image_weights_changed(): void;
+    label_image_blend_changed(): void;
+    point_sets_changed(): Promise<void> | Promise<null>;
+    point_set_colors_changed(): void;
+    point_set_opacities_changed(): void;
+    point_set_sizes_changed(): void;
+    point_set_representations_changed(): void;
+    geometries_changed(): Promise<void> | Promise<null>;
+    geometry_colors_changed(): void;
+    geometry_opacities_changed(): void;
+    ui_collapsed_changed(): void;
+    rotate_changed(): void;
+    annotations_changed(): void;
+    axes_changed(): void;
+    mode_changed(): void;
+    units_changed(): void;
+    camera_changed(): void;
+    interpolation_changed(): void;
+    cmap_changed(): void;
+    lut_changed(): void;
+    vmin_changed(): void;
+    vmax_changed(): void;
+    shadow_changed(): void;
+    slicing_planes_changed(): void;
+    x_slice_changed(): void;
+    y_slice_changed(): void;
+    z_slice_changed(): void;
+    gradient_opacity_changed(): void;
+    sample_distance_changed(): void;
+    opacity_gaussians_changed(): void;
+    channels_changed(): void;
+    blend_mode_changed(): void;
+    background_changed(): void;
+    select_roi_changed(): void;
+    scale_factors_changed(): void;
+    initialize_viewer(): void;
+}
