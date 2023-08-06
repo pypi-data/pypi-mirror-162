@@ -1,0 +1,2 @@
+from chrc import *
+chrc()
