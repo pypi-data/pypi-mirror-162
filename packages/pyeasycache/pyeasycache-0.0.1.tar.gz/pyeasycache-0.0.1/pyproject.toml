@@ -1,0 +1,51 @@
+[tool.poetry]
+name = "pyeasycache"
+version = "0.0.1"
+license = "Apache-2.0"
+description = "easy python cache"
+authors = ["phi <phi.friday@gmail.com>"]
+readme = "README.md"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.8",
+]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+diskcache = "^5.4.0"
+pydantic = "^1.9.1"
+redis = { version = "^4.3.4", optional = true }
+pottery = { version = "^3.0.0", optional = true }
+
+[tool.poetry.dev-dependencies]
+black = "^22.6.0"
+isort = "^5.10.1"
+ipython = "^8.4.0"
+pytest = "^7.1.2"
+redis = "^4.3.4"
+pytest-env = "^0.6.2"
+anyio = "^3.6.1"
+uvloop = "^0.16.0"
+pottery = "^3.0.0"
+
+[tool.poetry.extras]
+redis = ["redis", "pottery"]
+
+[tool.poetry-dynamic-versioning]
+enable = true
+bump = true
+dirty = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+env = [
+    "PYEASYCACHE_ENV_PREFIX=TEST_PYEASYCACHE_",
+    "TEST_PYEASYCACHE_TEST_SIZE=5",
+    "TEST_PYEASYCACHE_SLEEP_TIME=0.5",
+    "TEST_PYEASYCACHE_LOG_LEVEL=DEBUG",
+]
+
+[build-system]
+requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning"]
+build-backend = "poetry.core.masonry.api"
