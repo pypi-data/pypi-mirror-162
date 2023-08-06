@@ -1,0 +1,605 @@
+#!python
+
+import pdb
+from sys import exit
+
+import argparse
+from bruteloops.args import timezone_parser
+from bruteloops.db_manager import *
+from bruteloops.brute import BruteForcer
+from bruteloops.models import Config
+from bruteloops.logging import getLogger, GENERAL_EVENTS
+from pathlib import Path
+from yaml import load as loadYml, SafeLoader
+from sys import stderr, exit, argv
+from bfg.yaml_models import (
+     ManageDB as YAMLManageDB,
+     BruteForce as YAMLBruteForce,
+     KitchenSink as YAMLKitchenSink)
+from bfg import parser as modules_parser
+from bfg.cli.manage_db import (
+    parser as db_parser,
+    handle_values)
+
+NBFT = NO_BASE_FLAG_TEMPLATE = '--no-{flag}'
+BFT = BASE_FLAG_TEMPLATE = '--{flag}'
+FT = FLAG_TEMPLATE = BFT+'={value}'
+AART = \
+'''           _               _          _
+          / /\            /\ \       /\ \      
+         / /  \          /  \ \     /  \ \     
+        / / /\ \        / /\ \ \   / /\ \_\    
+       / / /\ \ \      / / /\ \_\ / / /\/_/    
+      / / /\ \_\ \    / /_/_ \/_// / / ______  
+     / / /\ \ \___\  / /____/\  / / / /\_____\ 
+    / / /  \ \ \__/ / /\____\/ / / /  \/____ / 
+   / / /____\_\ \  / / /      / / /_____/ / /  
+  / / /__________\/ / /      / / /______\/ /   
+  \/_____________/\/_/       \/___________/
+
+  https://github.com/arch4ngel/bruteloops
+  https://github.com/arch4ngel/bl-bfg\n'''
+
+# ================
+# GLOBAL VARIABLES
+# ================
+
+def initLoggers(timezone=None):
+
+    db_logger = getLogger('bfg.dbmanager',
+        log_level=10,
+        timezone=timezone)
+
+    brute_logger = getLogger('bfg',
+        log_level=10,
+        timezone=timezone) 
+
+    return db_logger, brute_logger
+
+def ymlBoolToFlag(flag:str, b:bool) -> str:
+    '''Parse a YAML boolean value to it's corresponding --{flag}
+    or --no-{flag} value.
+
+    Args:
+        flag: Base flag name.
+        b: Boolean value.
+
+    Returns:
+        str formatted as "--flag" or "--no-flag".
+
+    Raises:
+        ValueError when a non-boolean type is upplied for b.
+    '''
+
+    if not isinstance(b, bool):
+        raise ValueError(
+            f'b must be a bool, got {type(b)}')
+
+    if b == True:
+        return BFT.format(flag=swapScore(flag))
+    else:
+        return NBFT.format(flag=swapScore(flag))
+
+def swapScore(v):
+    return v.replace('_','-') 
+
+def ymlListToValue(v:list) -> list:
+    '''Accepts a single value and prepares it to be supplied to an
+    argparse argument.
+
+    - If a list is supplied, each value is converted to a str and a
+      new list is returned.
+    - If a single value is supplied, it is converted to a str and
+      returned as a single element list.
+
+    Returns:
+        [str]
+    '''
+
+    if isinstance(v, list):
+        return [str(_v) for _v in v]
+    else:
+        return [str(v)]
+
+def findFile(path) -> Path:
+    '''Find a file by path and return a Path object.
+
+    Args:
+        path: String path to find.
+
+    Returns:
+        Path object pointing to the object.
+
+    Raises:
+        FileNotFoundError when path is not found.
+    '''
+
+    path = Path(path)
+    if not path.exists() and path.is_file():
+        raise FileNotFoundError(args.yaml_file)
+    return path
+
+def processYmlArg(param, arg) -> list:
+
+    param = swapScore(param)
+    if isinstance(arg, bool):
+        return [ymlBoolToFlag(flag=param, b=arg)]
+    elif isinstance(arg, list):
+        return [BFT.format(flag=param), *ymlListToValue(arg)]
+    else:
+        return [FT.format(flag=param, value=arg)]
+
+def parseYml(f, key_checks:list=None) -> dict:
+    '''Load an open YAML file into memory as a JSON object,
+    ensure that each high-level key is supplied in key_checks,
+    and then return the output.
+
+    Args:
+        f: Open file containing YAML content.
+        key_checks: String values that should appear within the
+          YAML output.
+
+    Returns:
+        dict
+    '''
+
+    key_checks = [] if not key_checks else key_checks
+
+    try:
+
+        values = loadYml(f, Loader=SafeLoader)
+
+    except Exception as e:
+
+        print(
+            f'\n\n{e}\n\n'
+            'Failed to parse the YAML file due to the above error.\n'
+            'Is it properly formatted?\n'
+            "Here's a quick linter: "
+            'https://codebeautify.org/yaml-validator')
+        exit()
+
+    keys = values.keys()
+
+    for v in key_checks:
+
+        if not v in keys:
+
+            raise ValueError(
+               f'"{v}" value must be set in the base of the '
+           'YAML file.')
+
+    return values
+
+def get_user_input(m:str) -> str:
+    '''Simple input loop expecting either a "y" or "n" response.
+
+    Args:
+        m: String message that will be displayed to the user.
+
+    Returns:
+        str value supplied by the user.
+    '''
+
+    uinput = None
+    while uinput != 'y' and uinput != 'n':
+        uinput = input(m)
+
+    return uinput
+
+def run_db_command(parser:argparse.ArgumentParser, logger,
+        args=None, manager=None, associate_spray_values=True) -> None:
+    '''Run a database management command.
+
+    Args:
+        parser: An argument parser used to collect command arguments.
+        args: An optional list of string arguments that will be
+            passed to the parser upon parse.
+    '''
+
+    # ====================
+    # HANDLE THE ARGUMENTS
+    # ====================
+
+    if args:
+        args = parser.parse_args(args)
+    else:
+        args = parser.parse_args()
+    if not args.cmd:
+        parser.print_help()
+        exit()
+
+    # =======================
+    # HANDLE MISSING DATABASE
+    # =======================
+
+    if not Path(args.database).exists():
+
+        cont = None
+
+        while cont != 'y' and cont != 'n':
+            
+            cont = input(
+                    '\nDatabase not found. Continue and create it? ' \
+                    '(y/n) '
+                )
+
+        if cont == 'n':
+
+            logger.info('Database not found. Exiting')
+            exit()
+
+        print()
+        logger.info(f'Creating database file: {args.database}')
+
+    # ======================
+    # INITIALIZE THE MANAGER
+    # ======================
+
+    if manager is None:
+
+        try:
+            manager = Manager(args.database)
+        except Exception as e:
+            logger.info('Failed to initialize the database manager')
+            raise e
+
+    # ======================
+    # EXECUTE THE SUBCOMMAND
+    # ======================
+
+    if args.cmd == handle_values:
+        args.cmd(args, logger, manager,
+            associate_spray_values=associate_spray_values)
+    else:
+        args.cmd(args, logger, manager)
+
+def handle_keyboard_interrupt(brute,exception):
+
+    print()
+    print('CTRL+C Captured\n')
+    resp = get_user_input('Kill brute force?(y/n): ')
+
+    if resp == 'y':
+        print('Kill request received')
+        print('Monitoring final processes completion')
+        bf.shutdown(complete=False)
+        print('Exiting')
+        exit()
+    else:
+        return 1
+
+if __name__ == '__main__':
+
+    print(AART,file=stderr)
+
+    # ====================
+    # BASE ARGUMENT PARSER
+    # ====================
+
+    parser = argparse.ArgumentParser(
+		description='A brute force attack framework.')
+    parser.set_defaults(parser=parser)
+
+    # Initialize subcommands
+    subparsers = parser.add_subparsers(
+        title='Select Input Mode',
+        description='This determines how input '
+            'will be passed to BFG. "cli" indicates that inputs '
+            'will be provided at the command line, and "yaml" '
+            'indicates that input will be provided via YAML file.',
+        help='Input Modes:',
+        required=True
+    )
+
+    # =====================
+    # CLI INPUT SUBCOMMANDS
+    # =====================
+
+    # Base CLI subparser
+    cli_parser = subparsers.add_parser('cli',
+        aliases=('c','cmd',),
+        help='Supply BFG inputs via command line.')
+    cli_parser.set_defaults(parser=cli_parser)
+    cli_subparsers = cli_parser.add_subparsers(
+        title='Select Operating Mode',
+        description='Either manage an attack database or start a '
+            'brute-force attack.')
+
+    # Database management
+    db_sp = cli_subparsers.add_parser('manage-db',
+        aliases=('m','db',),
+        parents=[db_parser, timezone_parser],
+        description='Manage the attack database.',
+        help='Manage the attack database.')
+    db_sp.set_defaults(parser=db_sp, mode='db')
+
+    # Brute force
+    brute_sp = cli_subparsers.add_parser('brute-force',
+        aliases=('b','bf',),
+        parents=[modules_parser, timezone_parser],
+        description='Perform a brute-force attack.',
+        help='Perform a brute-force attack.')
+
+    brute_sp.set_defaults(mode='brute', parser=brute_sp)
+
+    # =====================
+    # YML INPUT SUBCOMMANDS
+    # =====================
+
+    yaml_parsers = subparsers.add_parser('yaml',
+        aliases=('y','yml',),
+        description='YAML Inputs',
+        help='Interact with BFG via YAML file.')
+
+    yaml_subparsers = yaml_parsers.add_subparsers(
+        title='YAML Inputs',
+        description='description')
+
+    # Run from YAML file
+    yaml_run_sp = yaml_subparsers.add_parser('run',
+        aliases=('r',),
+        description='Supply BFG inputs via YAML file. '
+            'See brute_sample.yml for a working example.',
+        help='Run BFG via YAML file.')
+    yaml_run_sp.add_argument('yaml_file',
+        help='YAML file containing db/attack configuration parameters.')
+    yaml_run_sp.set_defaults(mode='run-yaml')
+
+    # Dump YAML templates
+    yaml_temp_sp = yaml_subparsers.add_parser('templates',
+        aliases=('t', 'temp',),
+        description='Dump YAML input templates.',
+        help='Dump YAML input templates')
+
+    yaml_temp_sp.add_argument('template',
+        choices=('manage-db', 'brute-force', 'kitchen-sink',),
+        help='YAML template to dump.')
+
+    yaml_temp_sp.set_defaults(mode='dump-yaml')
+
+    # =====================
+    # PARSE INPUT ARGUMENTS
+    # =====================
+
+    if len(argv) == 1:
+        parser.print_help()
+        exit()
+
+    # Parse the arguments
+    args = parser.parse_args()
+
+    if not hasattr(args, 'mode'):
+
+        # A mode hasn't been selected
+        args.parser.print_help()
+        exit()
+
+    db_logger, brute_logger = None, None
+
+    # ===================
+    # HANDLE THE TIMEZONE
+    # ===================
+
+    timezone = None
+    if hasattr(args, 'timezone'):
+        timezone = args.timezone
+        del(args.timezone)
+
+    if timezone:
+        db_logger, brute_logger = initLoggers(timezone)
+
+    # ===================
+    # DUMP YAML TEMPLATES
+    # ===================
+
+    if args.mode == 'dump-yaml':
+
+        model = {
+            'manage-db':YAMLManageDB,
+            'brute-force':YAMLBruteForce,
+            'kitchen-sink':YAMLKitchenSink
+        }[args.template]
+
+        print(model.dump())
+        exit()
+
+    # =====================
+    # HANDLE YAML ARGUMENTS
+    # =====================
+
+    if args.mode == 'run-yaml':
+
+        # =====================
+        # HANDLE THE FILE INPUT
+        # =====================
+
+        path = findFile(args.yaml_file)
+
+        with path.open() as yfile:
+            yargs = parseYml(yfile, key_checks=('database',))
+
+        if 'timezone' in yargs:
+            timezone = yargs['timezone']
+            del(yargs['timezone'])
+
+        if not db_logger or not brute_logger:
+            db_logger, brute_logger = initLoggers(timezone)
+
+        db_arg = '--database=' + yargs['database']
+
+        db_args = yargs.get('manage-db', {})
+        bf_args = yargs.get('brute-force', {})
+
+        # ================
+        # DO DB MANAGEMENT
+        # ================
+
+        if db_args:
+
+            manager = Manager(yargs['database'])
+
+            for cmd, argset in db_args.items():
+
+                if not isinstance(argset, dict):
+
+                    raise ValueError(
+                        'All db-management subcommands should be '
+                        'configured with a dictionary of supporting ' 
+                        'arguments.')
+
+                _args = [cmd, db_arg]
+                for flag, values in argset.items():
+                    _args += processYmlArg(param=flag, arg=values)
+
+                run_db_command(db_sp, db_logger, _args, manager=manager,
+                    associate_spray_values=False)
+
+            manager.associate_spray_values(logger=db_logger)
+
+        # =====================
+        # DO BRUTE FORCE ATTACK
+        # =====================
+
+        if bf_args:
+
+            brute_cli_args = []
+
+            if not 'module' in bf_args.keys():
+                raise ValueError(
+                    '"module" field must be set in the YAML file.')
+    
+            # ====================================
+            # TRANSLATE YAML TO ARGPARSE ARGUMENTS
+            # ====================================
+
+            mod_args = bf_args.pop('module')
+            mod_name = mod_args.pop('name')
+            mod_args = mod_args['args']
+    
+            for k,v in bf_args.items():
+
+                # ====================
+                # NON-MODULE ARGUMENTS
+                # ====================
+
+                # Capture non-module arguments
+                brute_cli_args += processYmlArg(param=k, arg=v)
+
+            brute_cli_args.append(mod_name)
+
+            for k, v in mod_args.items():
+
+                brute_cli_args += processYmlArg(param=k, arg=v)
+
+            brute_cli_args.append(db_arg)
+            args = brute_sp.parse_args(brute_cli_args)
+
+    if not db_logger or not brute_logger:
+        db_logger, brute_logger = initLoggers(timezone)
+
+    if args.mode == 'db':
+
+        # ========================
+        # ONE-OFF DATABASE COMMAND
+        # ========================
+
+        if not hasattr(args,'database'):
+            db_parser.print_help()
+            exit()
+
+        run_db_command(parser, db_logger)
+
+        # This is bollocks.....
+        # Quick fix to correct a bug where associations don't
+        # occur between username and password values
+        manager = Manager(args.database)
+        manager.associate_spray_values()
+
+    if args.mode == 'brute':
+
+        # ===================
+        # BRUTE-FORCE COMMAND
+        # ===================
+
+        if not hasattr(args, 'module'):
+
+            # ==================================
+            # NO ATTACK MODULE HAS BEEN SUPPLIED
+            # ==================================
+
+            args.parser.print_help()
+            print(
+                '\n\nError: No attack module supplied! Select and '
+                'provide an attack module from above!\n\n')
+            exit()
+
+        # ========================
+        # PREPARE ATTACK ARGUMENTS
+        # ========================
+
+        module = args.module.initialize(args)
+        conf_kwargs = dict(
+            authentication_callback = module,
+            process_count = args.process_count,
+            max_auth_tries = args.max_auth_tries,
+            stop_on_valid = args.stop_on_valid,
+            db_file = args.database,
+            log_file = args.log_file,
+            log_stdout = args.log_stdout,
+            log_level = args.log_level,
+            timezone = timezone,
+            exception_handlers = [dict(
+                exception_class = KeyboardInterrupt,
+                handler = handle_keyboard_interrupt)],
+        )
+
+        # =====================
+        # JITTER CONFIGURATIONS
+        # =====================
+
+        if args.auth_jitter_min and args.auth_jitter_max:
+            conf_kwargs['authentication_jitter'] = dict(
+                min=args.auth_jitter_min,
+                max=args.auth_jitter_max)
+
+        if args.threshold_jitter_min and args.threshold_jitter_max:
+            conf_kwargs['max_auth_jitter'] = dict(
+                min=args.threshold_jitter_min,
+                max=args.threshold_jitter_max)
+
+        # ======================
+        # BLACKOUT CONFIGURATION
+        # ======================
+
+        if hasattr(args, 'blackout_start') and \
+                hasattr(args, 'blackout_stop'):
+
+            conf_kwargs['blackout'] = dict(
+                    start=args.blackout_start,
+                    stop=args.blackout_stop)
+
+        # =========================
+        # FINALIZE AND BEGIN ATTACK
+        # =========================
+
+        config = Config(
+            **conf_kwargs,
+            breakers=module.breaker_profiles)
+        
+        try:
+        
+            brute_logger.info('Initializing attack')
+            bf = BruteForcer(config)
+            bf.launch()
+            brute_logger.info('Attack complete')
+            
+        except Exception as e:
+
+            print(
+                '\n\nUnhandled exception occurred. This is generally '
+                'an indicator of an error/oversight in the attack '
+                'module.\n\n\n'
+                f'{e}\n\n'
+                f'Error Cause:\n\n{e.__cause__}\n\n')
+

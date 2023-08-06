@@ -1,0 +1,111 @@
+Metadata-Version: 2.1
+Name: bl-bfg
+Version: 1.0.0
+Summary: A password guessing framework.
+Home-page: https://github.com/arch4ngel/bl-bfg
+Author: Justin Angel
+Author-email: justin@arch4ngel.ninja
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: POSIX :: Linux
+Requires-Python: >=3.7
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: bruteloops (>=1)
+Requires-Dist: requests-ntlm (==1.1.0)
+Requires-Dist: pysmb (==1.1.27)
+Requires-Dist: lxml (>=4.6.4)
+Requires-Dist: pyyaml
+Requires-Dist: xmltodict
+Requires-Dist: dict-toolbox
+Requires-Dist: pydantic
+
+# Big Friggin Gun (BFG)
+
+BFG is a simple modular framework to perform brute-force attacks. It uses
+the [BruteLoops](https://github.com/arch4ngel/BruteLoops) library for the
+brute force and database management logic.
+
+![command-example](docs/resources/command-output.png)
+
+# Features
+
+- *SQLite Datastore*
+  - Authentication data/requests are maintained in an SQLite database.
+  - Query capabilities enable granular timing configurations.
+  - Facilitates safe, resumable attacks.
+  - **Database management tools are embedded in BFG via BruteLoops**
+    - Run `bfg cli manage-db --help`.
+- *BruteLoops Capabilities*
+  - Resumable attacks that _do not repeat previous guesses_.
+  - Simultaneous support for password spraying and credential stuffing.
+  - Parallel guessing.
+  - Lockout avoidance via two layers of jitter configurations.
+  - User/password prioritization.
+  - Universal protocol/application capabilities.
+  - Granular logging:
+    - Lockouts happen. It's part of life.
+    - BruteLoops provides a log record for each guess, along with timestamp.
+    - Allows operators to reconstruct a timeline of events if things go bad.
+- *Modular Framework*
+  - Simple class-based modules provide reusable arguments/components.
+- *YAML Attack/Database Profiles*
+  - YAML files can be used to supply configuration values to BFG.
+  - Avoids complex command line flags.
+
+# Docker Support
+
+A compose file is available for this project. See [this document](docs/docker.md) for more information.
+
+# Supported Platforms
+
+Only Linux is supported at the moment, however a Docker implementation will
+soon follow.
+
+# Quick Install
+
+```bash
+pip3 install bl-bfg
+```
+
+Then confirm installation:
+
+```bash
+bfg --help
+```
+
+# Documentation
+
+See the docs directory for additional documentation:
+
+- [Installation](docs/Installation.md)
+- [Example Attack](<docs/Example Attack.md>)
+- [YAML Attack Profiles](<docs/YAML Attack Profiles.md>)
+- [Docker](<docs/Docker Container.md>)
+- [FAQs](<docs/faqs.md>)
+
+# Current Attack Modules
+
+Below are the attack modules currently in BFG.
+
+Most people will be interested in `http.o365_graph` as it can be used to attack
+`login.microsoftonline.com`.
+
+```
+http.accellion_ftp  Accellion FTP HTTP interface login module
+http.adfs           Active Directory Federated Services
+http.basic_digest   Generic HTTP basic digest auth
+http.basic_ntlm     Generic HTTP basic NTLM authentication
+http.global_protect Global Protect web interface
+http.lync           Brute force Microsoft Lync.
+http.mattermost     Mattermost login web interface
+http.netwrix        Netwrix web login
+http.o365_graph     Office365 Graph API
+http.okta           Okta JSON API
+http.owa2010        OWA 2010 web interface
+http.owa2016        OWA 2016 web interface
+http.sap_webdynpro  SAP Netweaver Webdynpro, ver. 7.3007.20120613105137.0000
+smb.smb             Target a single SMB server
+testing.fake        Fake authentication module for training/testing
+```
+
