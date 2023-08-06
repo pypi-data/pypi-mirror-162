@@ -1,0 +1,12 @@
+---
+dataclass:
+  decorate: |-
+    class {{name}} {{'{'}}
+    {{'    '}}constructor({{attrs|join(', ')}}) {{'{\n        '}}
+    {%- for a in body.parts.body -%}
+    {%- if a.name == 'assign' -%}
+    {{'    '}}this.{{a.parts.var}} = {{a.parts.var.parts.name}};{{'\n'}}
+    {%- endif -%}
+    {%- endfor -%}{{'    }'}}
+    {{'    '}}{{methods|join('\n    ')}}
+    }

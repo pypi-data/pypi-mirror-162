@@ -1,0 +1,51 @@
+_: &import_el "let {{node.ast.names[0].name}} = Math.{{name}};"
+
+math:  
+  import_code: "{%if alias != 'Math'%}{{alias}} = Math;{%endif%}"
+  alt_name: Math
+
+  copysign:
+    args: [x, y]
+    code: "{{x}}*Math.sign({{y}})"
+
+  fabs:
+    alt_name: abs
+
+  fmod:
+    args: [x, y]
+    code: "({{x}} % {{y}})"
+  
+  fsum:
+    args: [x]
+    code: "{{x}}.reduce((sum, current)=>{return sum + current},0)"
+
+  isinf:
+    args: [x]
+    code: "({{x}} === Infinity)"
+
+  isnan:
+    args: [x]
+    code: "isNaN({{x}})"
+
+  trunc:
+    alt_name: "round"
+
+  degrees:
+    args: [x]
+    code: "({{x}}/(Math.PI/180))"
+
+  radians:
+    args: [x]
+    code: "({{x}}*(Math.PI/180))"
+
+  tau:
+    import_code: *import_el
+    code: "(Math.PI*2)"
+
+  e:
+    import_code: *import_el
+    alt_name: "E"
+
+  pi:
+    import_code: *import_el
+    alt_name: PI

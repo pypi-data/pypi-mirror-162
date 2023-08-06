@@ -1,0 +1,16 @@
+@tmp
+def slice():
+    if low >= 0 and step == 1:
+        f'{obj}[{low}:Index({up}, len({obj}))]'
+    elif step == 1:
+        node.add_code_before(
+            f'''
+{slice_name} := []interface{}
+if {low} >= 0 {
+    {slice_name} = {obj}[{low}:Index({up}, len({obj}))]
+}
+            '''
+        )
+        slice_name
+    else:
+        ''

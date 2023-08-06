@@ -1,0 +1,120 @@
+bool: "{{val|lower}}"
+
+operators:
+  "or": "||"
+  "and": "&&"
+  "not": "!"
+  "is": "=="
+  "//": "/"
+
+arg: "{{name}} {{type}}"
+
+list: "{{type}}{{'{'}}{{ls|join(', ')}}}"
+dict: "{{type}}{{'{'}}{%for item in keys_val%}{{item[0]}}: {{item[1]}},{%endfor%}}"
+
+index: |-
+  {%- if isinstance(obj.type, types['list']) -%}
+    {{- env.use('Index') -}}
+    {{obj}}[Index({{key}}, len({{obj}}))]
+  {%- else -%}
+    {{obj}}[{{key}}]
+  {%- endif -%}
+
+slice: |-
+  {%- if step.val == '1' -%}
+    {{-env.use('Index')-}}
+    {{obj}}[{{low}}:Index({{up}}, len({{obj}}))]
+  {%-endif-%}
+
+new_var: "{{var}} := {{value}}"
+var_prototype: "var {{name}} interface{}"
+if: "if {{condition}} {{body}} {{els}}"
+elif: "else if {{condition}} {{body}} {{els}}"
+else: "else {{body}}"
+ternary: no
+
+func: "func {{name}}({{args|join(', ')}}){%if ret_type.val != 'None'%} {{ret_type}}{%endif%} {{body}}"
+
+while: "for {{condition}} {{body}}"
+
+for: |-
+  {%- if obj.type == 'str' -%}
+    {{- env.use('mod_strings') -}}
+    for _, {{var}} := range strings.Split({{obj}}, "")
+  {%- elif isinstance(obj.type, types['dict']) -%}
+    for {{var}}, _ := range {{obj}}
+  {%- else -%}
+    for _, {{var}} := range {{obj}}
+  {%- endif -%} {{body}}
+
+c_like_for: >-
+  for {{var}} := {{start}};{{' '}}
+  {%- if step < 0 -%}
+    {{var}} > {{finish}};
+  {%- elif step >= 0 -%}
+    {{var}} < {{finish}};
+  {%- else -%}
+    ({{step}} < 0 && {{var}} > {{finish}}) || ({{var}} < {{finish}});
+  {%- endif -%}
+  {{' '}}{{var}} += {{step}}
+  {{body}}
+
+types:
+  list: "[]{{el_type}}"
+  str: string
+  float: float64
+  dict: "map[{{key_type}}]{{el_type}}"
+  any: "interface{}"
+
+body: |-
+  {{'{'}}{%for st in body%}
+  {{'    '*nl}}{{st}}{%endfor%}
+  {{'    '*(nl-1)}}}
+
+class: |-
+  type {{name}} struct {{'{'}}{%for a, type in attrs.items()%}
+  {{'    '*(nl+1)}}{{a}} {{type}}{%endfor%}
+  }
+  {{init}}
+  {{methods|join('\n')}}
+
+init: |-
+  func init_{{class_name}}({{(args[1:])|join(', ')}}) {{class_name}}{{'{'}}
+  {{'    '*nl}}self := {{class_name+'{}'}}
+  {{'    '*nl}}{{body.parts.body|join('\n'+' '*4*nl)}}
+  {{'    '*nl}}return self
+  }
+
+method: |-
+  func (self {{class_name}}) {{name}}({{(args[1:])|join(', ')}}) {{ret_type}} {{'{'}}
+  {{' '*4*(nl)}}{{body.parts.body|join('\n'+' '*4*(nl-1))}}
+  }
+
+static_attr: "{{var}} {{type}}"
+new: "init_{{func}}({{args|join(', ')}})"
+
+main: |-
+  package main
+  {% if env.used %}  
+  import ({%- for used in env.used -%}
+  {% if used.startswith('mod_')%}{{'\n    '}}"{{used[4:]}}"{%endif%}
+  {%- endfor -%}{{'\n'}})
+  {% if 'Index' in env.used %}
+  func Index(index, ln int) int {{'{'}}
+      if index < 0 {{'{'}}
+          return ln + index
+      }
+      return index
+  }
+  {% endif %}
+  {% endif %}
+  {{body}}
+
+meta:
+  run: "echo '{{code}}' > file1.go && go run file1.go && rm file1.go"
+  build: |-
+    {%- if out -%}
+    go build {{out}}
+    {%- else -%}
+    echo '{{code}}' > main.go && go build main.go && rm main.go
+    {%- endif -%}
