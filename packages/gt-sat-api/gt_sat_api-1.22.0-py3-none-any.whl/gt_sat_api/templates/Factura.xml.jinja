@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dte:GTDocumento
+  xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
+  xmlns:dte="http://www.sat.gob.gt/dte/fel/0.2.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  Version="0.1"
+  xsi:schemaLocation="http://www.sat.gob.gt/dte/fel/0.2.0">
+  <dte:SAT ClaseDocumento="dte">
+    <dte:DTE ID="DatosCertificados">
+      <dte:DatosEmision ID="DatosEmision">
+        {% if dte.ImportInvoice %}
+          <dte:DatosGenerales
+            CodigoMoneda="{{ dte.codigo_moneda }}"
+            Exp="SI"
+            FechaHoraEmision="{{ dte.fecha_hora_emision.isoformat() }}"
+            Tipo="{{ dte.tipo }}"/>
+        {% else %}
+          <dte:DatosGenerales
+            CodigoMoneda="{{ dte.codigo_moneda }}"
+            FechaHoraEmision="{{ dte.fecha_hora_emision.isoformat() }}"
+            Tipo="{{ dte.tipo }}"/>
+        {% endif %}
+        <dte:Emisor
+          AfiliacionIVA="{{ dte.emisor.afiliacion_iva }}"
+          CodigoEstablecimiento="{{ dte.emisor.codigo_establecimiento }}"
+          CorreoEmisor="{{ dte.emisor.correo_emisor }}"
+          NITEmisor="{{ dte.emisor.nit_emisor }}"
+          NombreComercial="{{ dte.emisor.nombre_comercial }}"
+          NombreEmisor="{{ dte.emisor.nombre_emisor }}">
+          <dte:DireccionEmisor>
+            <dte:Direccion>{{ dte.emisor.direccion.direccion }}</dte:Direccion>
+            <dte:CodigoPostal>{{ dte.emisor.direccion.codigo_postal }}</dte:CodigoPostal>
+            <dte:Municipio>{{ dte.emisor.direccion.municipio }}</dte:Municipio>
+            <dte:Departamento>{{ dte.emisor.direccion.departamento }}</dte:Departamento>
+            <dte:Pais>{{ dte.emisor.direccion.pais }}</dte:Pais>
+          </dte:DireccionEmisor>
+        </dte:Emisor>
+        <dte:Receptor
+          CorreoReceptor="{{ dte.receptor.correo_receptor }}"
+          IDReceptor="{{ dte.receptor.id_receptor }}"
+          NombreReceptor="{{ dte.receptor.nombre_receptor }}">
+          <dte:DireccionReceptor>
+            <dte:Direccion>{{ dte.receptor.direccion.direccion }}</dte:Direccion>
+            <dte:CodigoPostal>{{ dte.receptor.direccion.codigo_postal }}</dte:CodigoPostal>
+            <dte:Municipio>{{ dte.receptor.direccion.municipio }}</dte:Municipio>
+            <dte:Departamento>{{ dte.receptor.direccion.departamento }}</dte:Departamento>
+            <dte:Pais>{{ dte.receptor.direccion.pais }}</dte:Pais>
+          </dte:DireccionReceptor>
+        </dte:Receptor>
+        {% if dte.frases %}
+        <dte:Frases>
+          {% for frase in dte.frases %}
+          <dte:Frase CodigoEscenario="{{ frase.codigo_escenario }}" TipoFrase="{{ frase.tipo_frase }}"/>
+          {% endfor %}
+        </dte:Frases>
+        {% endif %}
+        <dte:Items>
+          {% for item in dte.items %}
+          <dte:Item BienOServicio="{{ item.bien_o_servicio }}" NumeroLinea="{{ loop.index }}">
+            <dte:Cantidad>{{ "%.2f"|format(item.cantidad) }}</dte:Cantidad>
+            <dte:UnidadMedida>{{ item.unidad_medida }}</dte:UnidadMedida>
+            <dte:Descripcion>{{ item.descripcion }}</dte:Descripcion>
+            <dte:PrecioUnitario>{{ "%.2f"|format(item.precio_unitario) }}</dte:PrecioUnitario>
+            <dte:Precio>{{ "%.2f"|format(item.precio) }}</dte:Precio>
+            <dte:Descuento>{{ "%.2f"|format(item.descuento) }}</dte:Descuento>
+            {% if dte.tipo != "FPEQ" %}
+              {% if item.ImpuestoGravable == 2 %}
+                <dte:Impuestos>
+                {% for impuesto in item.impuestos %}
+                <dte:Impuesto>
+                  <dte:NombreCorto>{{ impuesto.nombre_corto }}</dte:NombreCorto>
+                  <dte:CodigoUnidadGravable>{{ impuesto.codigo_unidad_gravable }}</dte:CodigoUnidadGravable>
+                  <dte:MontoGravable>{{ "%.2f"|format(item.precio) }}</dte:MontoGravable>
+                  <dte:MontoImpuesto>0</dte:MontoImpuesto>
+                </dte:Impuesto>
+                {% endfor %}
+              </dte:Impuestos>
+              {% endif %}
+              {% if item.ImpuestoGravable != 2 %}
+                <dte:Impuestos>
+                {% for impuesto in item.impuestos %}
+                <dte:Impuesto>
+                  <dte:NombreCorto>{{ impuesto.nombre_corto }}</dte:NombreCorto>
+                  <dte:CodigoUnidadGravable>{{ impuesto.codigo_unidad_gravable }}</dte:CodigoUnidadGravable>
+                  <dte:MontoGravable>{{ "%.2f"|format(impuesto.monto_gravable) }}</dte:MontoGravable>
+                  <dte:MontoImpuesto>{{ "%.2f"|format(impuesto.monto_impuesto) }}</dte:MontoImpuesto>
+                </dte:Impuesto>
+                {% endfor %}
+              </dte:Impuestos>
+              {% endif %}
+            {% endif %}
+            <dte:Total>{{ "%.2f"|format(item.total) }}</dte:Total>
+          </dte:Item>
+          {% endfor %}
+        </dte:Items>
+        
+        <dte:Totales>
+          {% if dte.tipo != "FPEQ" %}
+          <dte:TotalImpuestos>
+            {% for impuesto in dte.total_impuestos %}
+            <dte:TotalImpuesto NombreCorto="{{ impuesto.nombre_corto }}" TotalMontoImpuesto="{{ '%.2f'|format(impuesto.total_monto_impuesto) }}"/>
+            {% endfor %}
+          </dte:TotalImpuestos>
+          {% endif %}
+          <dte:GranTotal>{{ "%.2f"|format(dte.gran_total) }}</dte:GranTotal>
+        </dte:Totales>
+        {% if dte.complementos %}
+        <dte:Complementos>
+          {% set cont = 1 %} {% for comp in dte.complementos %}
+          <dte:Complemento IDComplemento="{{ cont }}" NombreComplemento="{{ comp.nombre }}" URIComplemento="{{ comp.uri }}">
+            {% if comp.type == "nota"%}
+            <cno:ReferenciasNota xmlns:cno="http://www.sat.gob.gt/face2/ComplementoReferenciaNota/0.1.0" Version="0.0" {% if comp.regimen %}RegimenAntiguo="Antiguo" {% endif %} NumeroAutorizacionDocumentoOrigen="{{ comp.no_origen }}" FechaEmisionDocumentoOrigen="{{ comp.fecha_origen }}" {% if comp.descripcion %}MotivoAjuste="{{ comp.descripcion }}" {% endif %}/>
+            {% endif %}
+          </dte:Complemento>
+          {% set cont = cont + 1 %} {% endfor %}
+          {% if dte.ImportInvoice and invoice_type != 'out_refund' %}
+            <dte:Complemento IDComplemento="TEXT" NombreComplemento="TEXT" URIComplemento="TEXT">
+              <cex:Exportacion xmlns:cex="http://www.sat.gob.gt/face2/ComplementoExportaciones/0.1.0" Version="1" xsi:schemaLocation="http://www.sat.gob.gt/face2/ComplementoExportaciones/0.1.0 C:\Users\User\Desktop\FEL\Esquemas\GT_Complemento_Exportaciones-0.1.0.xsd">
+                <cex:NombreConsignatarioODestinatario>{{ dte.NombreConsignatarioODestinatario }}</cex:NombreConsignatarioODestinatario>
+                <cex:DireccionConsignatarioODestinatario>{{ dte.DireccionConsignatarioODestinatario }}</cex:DireccionConsignatarioODestinatario>
+                <cex:CodigoConsignatarioODestinatario>{{ dte.CodigoConsignatarioODestinatario }}</cex:CodigoConsignatarioODestinatario>
+                <cex:NombreComprador>{{ dte.NombreComprador }}</cex:NombreComprador>
+                <cex:DireccionComprador>{{ dte.DireccionComprador }}</cex:DireccionComprador>
+                <cex:CodigoComprador>{{ dte.CodigoComprador }}</cex:CodigoComprador>
+                <cex:OtraReferencia>{{ dte.OtraReferencia }}</cex:OtraReferencia>
+                <cex:INCOTERM>{{ dte.INCOTERM }}</cex:INCOTERM>
+                <cex:NombreExportador>{{ dte.NombreExportador }}</cex:NombreExportador>
+                <cex:CodigoExportador>{{ dte.CodigoExportador }}</cex:CodigoExportador>
+              </cex:Exportacion>
+            </dte:Complemento>
+          {% endif %}
+          {% if dte.tipo == "FCAM" and invoice_type != 'out_refund' %}
+            <dte:Complemento IDComplemento="Cambiaria" NombreComplemento="Cambiaria" URIComplemento="http://www.sat.gob.gt/fel/cambiaria.xsd">
+              <cfc:AbonosFacturaCambiaria xmlns:cfc="http://www.sat.gob.gt/dte/fel/CompCambiaria/0.1.0" Version="1" xsi:schemaLocation="http://www.sat.gob.gt/dte/fel/CompCambiaria/0.1.0">
+                <cfc:Abono>
+                  <cfc:NumeroAbono>{{ dte.NumeroAbono }}</cfc:NumeroAbono>
+                  <cfc:FechaVencimiento>{{ dte.FechaVencimiento }}</cfc:FechaVencimiento>
+                  <cfc:MontoAbono>{{ dte.MontoAbono }}</cfc:MontoAbono>
+                </cfc:Abono>
+              </cfc:AbonosFacturaCambiaria>
+            </dte:Complemento>
+          {% endif %}
+        </dte:Complementos>
+        {% elif dte.ImportInvoice and invoice_type != 'out_refund'%}
+        <dte:Complementos>
+          <dte:Complemento IDComplemento="TEXT" NombreComplemento="TEXT" URIComplemento="TEXT">
+            <cex:Exportacion xmlns:cex="http://www.sat.gob.gt/face2/ComplementoExportaciones/0.1.0" Version="1" xsi:schemaLocation="http://www.sat.gob.gt/face2/ComplementoExportaciones/0.1.0 C:\Users\User\Desktop\FEL\Esquemas\GT_Complemento_Exportaciones-0.1.0.xsd">
+              <cex:NombreConsignatarioODestinatario>{{ dte.NombreConsignatarioODestinatario }}</cex:NombreConsignatarioODestinatario>
+              <cex:DireccionConsignatarioODestinatario>{{ dte.DireccionConsignatarioODestinatario }}</cex:DireccionConsignatarioODestinatario>
+              <cex:CodigoConsignatarioODestinatario>{{ dte.CodigoConsignatarioODestinatario }}</cex:CodigoConsignatarioODestinatario>
+              <cex:NombreComprador>{{ dte.NombreComprador }}</cex:NombreComprador>
+              <cex:DireccionComprador>{{ dte.DireccionComprador }}</cex:DireccionComprador>
+              <cex:CodigoComprador>{{ dte.CodigoComprador }}</cex:CodigoComprador>
+              <cex:OtraReferencia>{{ dte.OtraReferencia }}</cex:OtraReferencia>
+              <cex:INCOTERM>{{ dte.INCOTERM }}</cex:INCOTERM>
+              <cex:NombreExportador>{{ dte.NombreExportador }}</cex:NombreExportador>
+              <cex:CodigoExportador>{{ dte.CodigoExportador }}</cex:CodigoExportador>
+            </cex:Exportacion>
+          </dte:Complemento>
+          {% if dte.tipo == "FCAM" and invoice_type != 'out_refund' %}
+            <dte:Complemento IDComplemento="Cambiaria" NombreComplemento="Cambiaria" URIComplemento="http://www.sat.gob.gt/fel/cambiaria.xsd">
+              <cfc:AbonosFacturaCambiaria xmlns:cfc="http://www.sat.gob.gt/dte/fel/CompCambiaria/0.1.0" Version="1" xsi:schemaLocation="http://www.sat.gob.gt/dte/fel/CompCambiaria/0.1.0">
+                <cfc:Abono>
+                  <cfc:NumeroAbono>{{ dte.NumeroAbono }}</cfc:NumeroAbono>
+                  <cfc:FechaVencimiento>{{ dte.FechaVencimiento }}</cfc:FechaVencimiento>
+                  <cfc:MontoAbono>{{ dte.MontoAbono }}</cfc:MontoAbono>
+                </cfc:Abono>
+              </cfc:AbonosFacturaCambiaria>
+            </dte:Complemento>
+          {% endif %}
+        </dte:Complementos>
+        {% elif dte.tipo == "FCAM" and invoice_type != 'out_refund' %}
+        <dte:Complementos>
+          <dte:Complemento IDComplemento="Cambiaria" NombreComplemento="Cambiaria" URIComplemento="http://www.sat.gob.gt/fel/cambiaria.xsd">
+            <cfc:AbonosFacturaCambiaria xmlns:cfc="http://www.sat.gob.gt/dte/fel/CompCambiaria/0.1.0" Version="1" xsi:schemaLocation="http://www.sat.gob.gt/dte/fel/CompCambiaria/0.1.0">
+              <cfc:Abono>
+                <cfc:NumeroAbono>{{ dte.NumeroAbono }}</cfc:NumeroAbono>
+                <cfc:FechaVencimiento>{{ dte.FechaVencimiento }}</cfc:FechaVencimiento>
+                <cfc:MontoAbono>{{ dte.MontoAbono }}</cfc:MontoAbono>
+              </cfc:Abono>
+            </cfc:AbonosFacturaCambiaria>
+          </dte:Complemento>
+        </dte:Complementos>
+        {% endif %}
+
+      </dte:DatosEmision>
+    </dte:DTE>
+    <dte:Adenda>
+      {%if dte.CodigoCliente%}
+      <CodigoCliente>{{ dte.CodigoCliente }}</CodigoCliente>
+      {% endif %}
+      {%if dte.CondicionesPago %}
+      <CondicionesPago>{{ dte.CondicionesPago }}</CondicionesPago>
+      {% endif %}
+      {%if dte.Vencimiento %}
+      <Vencimiento>{{ dte.Vencimiento }}</Vencimiento>
+      {% endif %}
+      {%if dte.NoOCCliente %}
+      <NoOCCliente>{{ dte.NoOCCliente }}</NoOCCliente>
+      {% endif %}
+      {%if dte.Agente %}
+      <Agente>{{ dte.Agente }}</Agente>
+      {% endif %}
+    </dte:Adenda>
+  </dte:SAT>
+</dte:GTDocumento>
