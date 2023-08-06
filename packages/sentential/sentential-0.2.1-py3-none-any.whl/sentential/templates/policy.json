@@ -1,0 +1,33 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "ssm:GetParametersByPath",
+                "ssm:GetParameter",
+                "ssm:GetParameters",
+                "kms:Decrypt"
+            ],
+            "Resource": [
+                "arn:aws:ssm:{{ facts.region }}:{{ facts.account_id }}:parameter/{{ partition }}/{{ facts.repository_name }}",
+                "arn:aws:ssm:{{ facts.region }}:{{ facts.account_id }}:parameter/{{ partition }}/{{ facts.repository_name }}/*",
+                "arn:aws:kms:{{ facts.region }}:{{ facts.account_id }}:key/{{ facts.kms_key_id }}"
+            ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": "ssm:DescribeParameters",
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
