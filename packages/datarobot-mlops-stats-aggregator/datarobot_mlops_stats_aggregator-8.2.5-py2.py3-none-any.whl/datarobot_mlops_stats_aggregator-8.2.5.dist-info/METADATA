@@ -1,0 +1,49 @@
+Metadata-Version: 2.1
+Name: datarobot-mlops-stats-aggregator
+Version: 8.2.5
+Summary: datarobot-mlops-stats-aggregator library to compute statistics aggregations
+Home-page: http://datarobot.com
+Author: DataRobot
+Author-email: info@datarobot.com
+License: DataRobot Tool and Utility Agreement
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: License :: Other/Proprietary License
+Classifier: Operating System :: MacOS
+Classifier: Operating System :: POSIX
+Classifier: Operating System :: Unix
+Requires-Python: >=2.7
+Description-Content-Type: text/markdown
+Requires-Dist: Cython
+Requires-Dist: drfaster
+Requires-Dist: numpy
+Requires-Dist: pandas
+
+# MLOps Stats Aggregation Library (Python)
+
+## Usage
+
+The Python library for MLOps stats aggregation has two entry points:
+
+### `aggregate_stats`
+
+The `aggregate_stats` function in
+[`aggregation.py`](https://github.com/datarobot/mlops-stats-aggregator/blob/master/stats-aggr-python/datarobot/stats_aggr/aggregation.py)
+is the primary entry point into the library. This function accepts dataframes of raw features and/or predictions and
+aggregates statistics suitable to be submitted to DataRobot MLOps for deployment monitoring. In order to use this function,
+the types of each tracked feature must be specified, and certain feature types (e.g. currency) require additional format
+information. See the docstring and type declarations of `aggregate_stats` for details about specific requirements.
+
+### `merge_stats`
+
+The `merge_stats` function defined in
+[`merging.py`](https://github.com/datarobot/mlops-stats-aggregator/blob/master/stats-aggr-python/datarobot/stats_aggr/merging.py)
+is used to merge together the outputs of calls to `aggregate_stats`. It returns a value with the same shape as that
+returned by `aggregate_stats`. Merging stats makes sense (for example) in the MLOps Tracking Agent, which will buffer
+stats aggregated by the MLOps Reporting Library. The agent can merge those buffered stats before sending them in a
+single payload to DataRobot MLOps.
+
+
