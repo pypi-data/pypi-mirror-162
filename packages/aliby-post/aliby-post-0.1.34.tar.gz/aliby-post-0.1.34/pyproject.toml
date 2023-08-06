@@ -1,0 +1,65 @@
+[tool.poetry]
+name = "aliby-post"
+version = "0.1.34"
+description = "Post-processing tools for aliby pipeline."
+authors = ["Alán Muñoz <amuoz@ed.ac.uk>"]
+license = "GPL-3.0-or-later"
+packages = [
+    { include = "postprocessor" },
+]
+
+[tool.poetry.dependencies]
+python = ">=3.7.1,<3.11"
+numpy = "1.21.6" # Pinning numpy and pandas makes dep resolution much faster
+pandas = "1.3.3"
+scipy = ">=1.4.1"
+PyYAML = "^6.0"
+more-itertools = "^8.12.0"
+leidenalg = "^0.8.8"
+aliby-agora = "^0.2.32"
+pathos = "^0.2.8"
+seaborn = "^0.11.2"
+scikit-learn = ">=0.22"
+gaussianprocessderivatives = "^0.1.2"
+p-tqdm = "^1.3.3"
+pycatch22 = "^0.4.2"
+
+[tool.poetry.dev-dependencies]
+black = "^22.6.0"
+Sphinx = "^4.3.2"
+pytest = "^6.2.5"
+mypy = "^0.930"
+numpydoc = "^1.3.1"
+isort = "^5.10.1"
+jupyter = "^1.0.0"
+flake8 = "^4.0.1"
+pyright = "^1.1.258"
+pre-commit = "^2.20.0"
+
+[build-system]
+requires = ["setuptools", "poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 79
+target-version = ['py37']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 79
+include_trailing_comma = true
