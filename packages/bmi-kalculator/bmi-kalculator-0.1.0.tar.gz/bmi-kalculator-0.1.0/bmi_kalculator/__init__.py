@@ -1,0 +1,1 @@
+from .bmi_kalculator import PersonForBMI
