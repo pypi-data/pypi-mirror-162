@@ -1,0 +1,42 @@
+{% extends 'layout_short.html' %}
+
+{% block content %}
+
+    <div class="row">
+    <div style="padding-left: 30px">
+      <a class="btn btn-primary" data-toggle="collapse" href="#collapseExample" role="button" aria-expanded="false" aria-controls="collapseExample">
+    Show resulting config
+  </a> &nbsp; &nbsp;
+  <button type="button" class="btn btn-success">Run</button>
+{#<button onclick="myVar = setTimeout(myFunction, 3000)">Try it</button>#}
+{##}
+{#<button onclick="clearTimeout(myVar)">Stop it</button>#}
+</p>
+<div class="collapse" id="collapseExample">
+  <div class="card card-body">
+    <code>
+        ejana
+            -Pplugins=beagle_reader,open_charm
+            -Popen_charm:smearing=1
+            -Popen_charm:verbose=1
+            -nthreads=4
+            -nevents=2000
+    </code>
+  </div>
+</div>
+    </div>
+    </div>
+
+
+{% endblock %}
+
+{% block end_script %}
+<script>
+
+$(document).ready(function(){
+
+    console.log('plugins template initialized');
+
+});
+</script>
+{% endblock %}
