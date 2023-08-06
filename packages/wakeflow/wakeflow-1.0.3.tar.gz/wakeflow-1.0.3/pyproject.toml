@@ -1,0 +1,50 @@
+# pyproject.toml
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wakeflow"
+version = "1.0.3"
+description = "Generate and manipulate semi-analytic models of planet wakes"
+readme = "README.md"
+authors = [{ name = "Thomas Hilder", email = "tom.hilder.dlhp@gmail.com" }]
+license = { file = "LICENSE" }
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Astronomy",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Topic :: Scientific/Engineering :: Visualization"
+]
+keywords = ["astronomy", "astrophysics", "research", "protoplanets", "analytic", "modelling", "planet wake", "protoplanetary", "discs", "disks"]
+dependencies = [
+    "numpy",
+    "matplotlib",
+    "astropy",
+    "scipy",
+    "setuptools",
+    "pyyaml",
+    "tqdm",
+    "pytest"
+]
+requires-python = ">=3.6"
+
+[project.urls]
+Homepage = "https://github.com/TomHilder/wakeflow"
+
+[tool.bumpver]
+current_version = "1.0.3"
+version_pattern = "MAJOR.MINOR.PATCH"
+commit_message = "bump version {old_version} -> {new_version}"
+commit = true
+tag = true
+push = true
+
+[tool.bumpver.file_patterns]
+"pyproject.toml" = ['current_version = "{version}"', 'version = "{version}"']
+"src/wakeflow/__init__.py" = ["{version}"]
+"README.md" = ["{version}"]
