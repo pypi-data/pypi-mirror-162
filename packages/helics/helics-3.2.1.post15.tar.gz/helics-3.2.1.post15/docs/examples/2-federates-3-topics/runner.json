@@ -1,0 +1,24 @@
+{
+  "broker": true,
+  "federates": [
+    {
+      "directory": ".",
+      "exec": "python -u pisender.py 1",
+      "host": "localhost",
+      "name": "pisender1"
+    },
+    {
+      "directory": ".",
+      "exec": "python -u pireceiver.py 1",
+      "host": "localhost",
+      "name": "pireceiver1"
+    },
+    {
+      "directory": ".",
+      "exec": "helics observer --db-folder=./",
+      "host": "localhost",
+      "name": "observer"
+    }
+  ],
+  "name": "pi-exchange1"
+}
