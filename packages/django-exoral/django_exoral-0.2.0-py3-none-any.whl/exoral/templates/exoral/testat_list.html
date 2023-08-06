@@ -1,0 +1,40 @@
+{% extends "exoral/base.html" %}
+
+{% block content %}
+<div class="container">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item" aria-current="page"><a href="{% url 'exoral:home' %}">Start</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Testate</li>
+      {% if perms.exoral.add_testat %}
+      <li class="breadcrumb-item" aria-current="page"><a href="{% url 'exoral:testat-create' %}">hinzufügen</a></li>
+      {% endif %}
+    </ol>
+  </nav>
+
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th style="width: 20%;">Name</th>
+        <th>aktiv</th>
+        <th>Fächer</th>
+        <th>Studiengänge</th>
+        <th>Studienabschnitte</th>
+        <th>Fragen</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for testat in testate %}
+      <tr>
+        <td><a href="{% url 'exoral:testat-detail' testat.id %}">{{ testat.name }}</a></td>
+        <td>{% if testat.active  %}✓{% else %}✗{% endif %}</td>
+        <td>{{ testat.fach.all|join:", " }}</td>
+        <td>{{ testat.studiengang.all|join:", " }}</td>
+        <td>{{ testat.studienabschnitt.all|join:", " }}</td>
+        <td>{{ testat.frage_set.count }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock content %}
