@@ -1,0 +1,101 @@
+{% extends "exoral/base.html" %}
+
+{% load static sekizai_tags %}
+
+{% block css %}
+{% addtoblock "css" %}
+<style type="text/css" media="screen">
+.fragentext {
+  white-space: pre-line;
+}
+</style>
+{% endaddtoblock %}
+{% endblock css %}
+
+{% block js %}
+{% addtoblock "js" %}
+<script src="{% static 'js/helpers.js' %}"></script>
+<script charset="utf-8" type="text/javascript">
+  function setup() {
+    $("#suchfeld").keyup(function() {
+      var v = $(this).val();
+      if (v == '') {
+        $(".frage").show();
+      } else {
+        filter(".fragentext", v, elem => $(elem).parents('.frage').show(), elem => $(elem).parents('.frage').hide());
+      }
+    });
+  }
+
+  $(document).ready(setup);
+</script>
+{% endaddtoblock %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item" aria-current="page"><a href="{% url 'exoral:home' %}">Start</a></li>
+      <li class="breadcrumb-item" aria-current="page"><a href="{% url 'exoral:testat-detail' testat.pk %}">{{ testat }}</a></li>
+      <li class="breadcrumb-item active" aria-current="page">{{ pruefer }}</li>
+      <li class="breadcrumb-item" aria-current="page">
+        <a href="{% url 'exoral:frage-create' testat.pk pruefer.pk %}">neue Frage hinzufügen</a>
+      </li>
+    </ol>
+  </nav>
+
+  <div class="input-group mb-3">
+    <div class="input-group-prepend">
+      <span class="input-group-text" id="suche"><img src="{% static "img/icons/search.svg" %}"></span>
+    </div>
+    <input type="text" id="suchfeld" class="form-control" placeholder="Tippe zum Filtern" aria-label="Suche">
+  </div>
+
+  {% for frage in fragen %}
+  <div class="card mb-2 frage">
+    <div class="card-body">
+      <div class="row">
+        <div class="col">
+          <small class="text-muted">{{ frage.datum }}</small>
+        </div>
+        <div class="col text-right">
+          <small>Score: {{ frage.punkte }}</small>
+          {% if not frage.abgestimmt %}
+          <a href="{% url 'exoral:upvote-frage' frage.pk %}"><img src="{% static "img/icons/plus-square.svg" %}"></a>
+          {% else %}
+          <a href="{% url 'exoral:downvote-frage' frage.pk %}"><img src="{% static "img/icons/dash-square.svg" %}"></a>
+          {% endif %}
+        </div>
+      </div>
+      <p class="card-text fragentext">{{ frage.text }}</p>
+
+      {% if frage.antwort %}
+      <a data-toggle="collapse" href="#antwort_{{ frage.pk }}" role="button" aria-expanded="false">Antwort</a>
+      <div class="collapse" id="antwort_{{ frage.pk }}">
+        <p>{{ frage.antwort }}</p>
+      </div>
+      {% endif %}
+      {% if perms.exoral.change_frage or perms.exoral.delete_frage %}
+      <div class="row">
+        {% if perms.exoral.change_frage %}
+        <div class="col">
+          <small><a href="{% url 'exoral:frage-edit' frage.id %}" target="_blank">bearbeiten</a></small>
+        </div>
+        {% endif %}
+        {% if perms.exoral.delete_frage %}
+        <div class="col text-right">
+          <small><a href="{% url 'exoral:frage-delete' frage.id %}" target="_blank" class="text-danger">Löschen</a></small>
+        </div>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  {% empty %}
+  <p>
+    Keine Fragen vorhanden.
+  </p>
+  {% endfor %}
+</div>
+{% endblock content %}
