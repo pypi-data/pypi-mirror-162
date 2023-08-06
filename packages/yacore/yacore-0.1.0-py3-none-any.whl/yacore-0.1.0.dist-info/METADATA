@@ -1,0 +1,72 @@
+Metadata-Version: 2.1
+Name: yacore
+Version: 0.1.0
+Summary: yet another core library
+Home-page: https://github.com/pohmelie/yacore
+Author: pohmelie
+Author-email: multisosnooley@gmail.com
+License: MIT
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Requires-Python: >= 3.9
+Description-Content-Type: text/markdown
+License-File: license.txt
+Requires-Dist: cock (>=0.8.0)
+Requires-Dist: facet (>=0.6.0)
+Requires-Dist: giveme
+Provides-Extra: db.postgresql
+Requires-Dist: asyncpg ; extra == 'db.postgresql'
+Requires-Dist: yarl ; extra == 'db.postgresql'
+Provides-Extra: dev
+Requires-Dist: pytest-cov ; extra == 'dev'
+Requires-Dist: flake8 ; extra == 'dev'
+Requires-Dist: loguru ; extra == 'dev'
+Requires-Dist: async-timeout ; extra == 'dev'
+Requires-Dist: httpx ; extra == 'dev'
+Requires-Dist: testcontainers ; extra == 'dev'
+Requires-Dist: pytest ; extra == 'dev'
+Requires-Dist: pytest-asyncio ; extra == 'dev'
+Requires-Dist: pyyaml ; extra == 'dev'
+Requires-Dist: yarl ; extra == 'dev'
+Requires-Dist: hypercorn ; extra == 'dev'
+Requires-Dist: fastapi ; extra == 'dev'
+Requires-Dist: asyncpg ; extra == 'dev'
+Provides-Extra: log.loguru
+Requires-Dist: loguru ; extra == 'log.loguru'
+Provides-Extra: log.std
+Requires-Dist: pyyaml ; extra == 'log.std'
+Provides-Extra: net.http
+Requires-Dist: async-timeout ; extra == 'net.http'
+Requires-Dist: fastapi ; extra == 'net.http'
+Requires-Dist: httpx ; extra == 'net.http'
+Requires-Dist: hypercorn ; extra == 'net.http'
+Requires-Dist: yarl ; extra == 'net.http'
+
+# yacore — **Y**et **A**nother **CORE** library
+
+[![Github actions status for master branch](https://github.com/pohmelie/yacore/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/pohmelie/yacore/actions)
+[![Codecov coverage for master branch](https://codecov.io/gh/pohmelie/yacore/branch/master/graph/badge.svg)](https://codecov.io/gh/pohmelie/yacore)
+[![Pypi version](https://img.shields.io/pypi/v/yacore.svg)](https://pypi.org/project/yacore/)
+[![Pypi downloads count](https://img.shields.io/pypi/dm/yacore)](https://pypi.org/project/yacore/)
+
+# Reason
+TBD
+
+# Features
+TBD
+
+# Requirements
+- python 3.9+
+
+# Documentation
+TBD
+
+# License
+`yacore` is offered under MIT license.
+
+# Development
+## Run tests
+Since coverage issue/feature, plugins coverage is broken by default. [Workaround](https://pytest-cov.readthedocs.io/en/latest/plugins.html):
+``` bash
+COV_CORE_SOURCE=yacore COV_CORE_CONFIG=.coveragerc COV_CORE_DATAFILE=.coverage.eager pytest
+```
