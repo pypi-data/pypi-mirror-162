@@ -1,0 +1,240 @@
+{% for man in objects %}
+<TEI xmlns="http://www.tei-c.org/ns/1.0">
+   <teiHeader>
+      <fileDesc>
+         <titleStmt>
+            <title type="work" level="a">{{ man.work.title }}</title>
+            <title type="manifestation" level="a">{{ man.man_title }} ({{ man.signature }})</title>
+            <title type="series" level="s">Sigmund Freud Edition: Digitale Historisch-Kritische Gesamtausgabe</title>
+            <author ref="#{{ man.author.id }}">{{ man.author.name }}</author>
+            <editor>
+               <name>Diercks, Christine</name>
+               <name>Rohrwasser, Michael</name>
+            </editor>
+            <funder xmlns="http://www.tei-c.org/ns/1.0">
+               <name>FWF Der Wissenschaftsfond.</name>
+               <address>
+                  <street>Sensengasse 1</street>
+                  <postCode>1090 Wien</postCode>
+                  <placeName>
+                     <country>Österreich</country>
+                     <settlement>Wien</settlement>
+                  </placeName>
+               </address>
+            </funder>
+         </titleStmt>
+         <editionStmt>
+            <edition>Sigmund Freud Edition: Digitale Historisch-Kritische Gesamtausgabe</edition>
+            <respStmt>
+               <resp>Konzept für die Edition und die Datenbank, Richtlinien, Quellenforschung, Signaturen, Referenzsystem</resp>
+               <name>Diercks, Christine</name>
+            </respStmt>
+            <respStmt>
+               <resp>Quellenforschung, Digitalisierung der Datenquellen, Bildbearbeitung, Faksimile-Ausgabe, Bibliografie</resp>
+               <name>Blatow, Arkadi</name>
+            </respStmt>
+            <respStmt>
+               <resp>Diplomatische Umschrift, Lektorat</resp>
+               <name>Blatow, Arkadi</name>
+               <name>Diercks, Christine</name>
+               <name>Huber, Christian</name>
+               <name>Kaufmann, Kira</name>
+               <name>Rohrwasser, Michael</name>
+            </respStmt>
+            <respStmt>
+               <resp>Technische Umsetzung der Datenbank und der digitalen Instrumente</resp>
+               <name>Roedelius, Julian</name>
+            </respStmt>
+            <respStmt>
+               <resp>Datenexport aus Drupal und TEI Serialisierung</resp>
+               <name>Andorfer, Peter</name>
+               <name>Stoxreiter, Daniel</name>
+            </respStmt>
+         </editionStmt>
+         <publicationStmt>
+            <publisher>Austrian Centre for Digital Humanities and Cultural Heritage</publisher>
+            <pubPlace>Wien</pubPlace>
+            <date when="2022">2022</date>
+            <availability>
+               <licence target="https://creativecommons.org/licenses/by/4.0">
+                  <p>Sie dürfen: Teilen — das Material in jedwedem Format oder Medium vervielfältigen und weiterverbreiten</p>
+                  <p>Bearbeiten — das Material remixen, verändern und darauf aufbauen und zwar für beliebige Zwecke, sogar kommerziell.</p>
+                  <p>Der Lizenzgeber kann diese Freiheiten nicht widerrufen solange Sie sich an die Lizenzbedingungen halten. Unter folgenden Bedingungen:</p>
+                  <p>Namensnennung — Sie müssen angemessene Urheber- und Rechteangaben machen, einen Link zur Lizenz beifügen und angeben, ob Änderungen vorgenommen wurden.
+                     Diese Angaben dürfen in jeder angemessenen Art und Weise gemacht werden, allerdings nicht so, dass der Eindruck entsteht, der Lizenzgeber unterstütze
+                     gerade Sie oder Ihre Nutzung besonders.</p>
+                  <p>Keine weiteren Einschränkungen — Sie dürfen keine zusätzlichen Klauseln oder technische Verfahren einsetzen,
+                     die anderen rechtlich irgendetwas untersagen, was die Lizenz erlaubt.</p>
+                  <p>Hinweise:</p>
+                  <p>Sie müssen sich nicht an diese Lizenz halten hinsichtlich solcher Teile des Materials, die gemeinfrei sind, oder soweit Ihre Nutzungshandlungen durch Ausnahmen und
+                     Schranken des Urheberrechts gedeckt sind.</p>
+                  <p>Es werden keine Garantien gegeben und auch keine Gewähr geleistet.
+                     Die Lizenz verschafft Ihnen möglicherweise nicht alle Erlaubnisse,
+                     die Sie für die jeweilige Nutzung brauchen.
+                     Es können beispielsweise andere Rechte wie Persönlichkeits- undDatenschutzrechte zu beachten sein, die Ihre Nutzung des Materials entsprechend beschränken.</p>
+               </licence>
+            </availability>
+         </publicationStmt>
+         <sourceDesc>
+            <biblStruct xml:id="guiding_manifestation">
+               {% if man.type == "Monographie" or man.type == "Werkausgabe" or man.type == "Periodikum (Heft)" or man.type == "Periodikum (Jahrgang)" or man.type == "Periodiukum" %}
+               <monogr>
+                  <title type="manifestation">{{ man.man_title }}</title>
+                  <title type="manifestation-short">{{ man.man_shorttitle }}</title>
+                  <author ref="#{{ man.author.id }}">{{ man.author.name }}</author>
+                  {% if man.publication.id %}
+                  <imprint>
+                     {% if man.publication.publisher %}{% for pub in man.publication.publisher %}<publisher ref="#{{ pub.id }}">{{ pub.name }}</publisher>{% endfor %}{% endif %}
+                     {% if man.publication.places %}{% for place in man.publication.places %}<pubPlace>{{ place.name }}</pubPlace>{% endfor %}{% endif %}
+                     {% if man.publication.date %}<date when="{{ man.publication.date }}">{{ man.publication.date }}</date>{% endif %}
+                  </imprint>
+                  {% endif %}
+                  {% if man.page_num %}
+                  <extent>{% if man.page_num.start %}{{ man.page_num.start }}{% endif %}{% if man.page_num.start and man.page_num.end %} - {% endif %}{% if man.page_num.end %}{{ man.page_num.end }} Seiten{% endif %}</extent>
+                  {% endif %}
+                  <name>{{ man.type }}</name>
+               </monogr>
+               {% if man.publication.id %}
+               <series>
+                  {% if man.publication.title_main %}<title type="publication" level="s">{{ man.publication.title_main }}</title>{% endif %}
+                  <title type="publication-short" level="s">{{ man.man_shorttitle }}</title>
+                  {% if man.publication.herausgeber %}
+                  <respStmt>
+                     <resp>Herausgegeben von</resp>
+                     {% for pub in man.publication.herausgeber %}<name type="person" ref="#{{ pub.id }}">{{ pub.name }}</name>{% endfor %}
+                  </respStmt>
+                  {% endif %}
+                  {% if man.publication.editor %}
+                  <respStmt>
+                     <resp>Editiert von</resp>
+                     {% for pub in man.publication.editor %}<name ref="#{{ pub.id }}">{{ pub.name }}</name>{% endfor %}
+                  </respStmt>
+                  {% endif %}
+                  {% if man.publication.advisor %}
+                  <respStmt>
+                     <resp>Editiert von</resp>
+                     {% for pub in man.publication.advisor %}<name ref="#{{ pub.id }}">{{ pub.name }}</name>{% endfor %}
+                  </respStmt>
+                  {% endif %}
+                  {% if man.publication.band %}<biblScope unit="volume">{{ man.publication.band.name }}</biblScope>{% endif %}
+                  {% if man.publication.reihe.name %}<biblScope unit="series">{{ man.publication.reihe.name }}</biblScope>{% endif %}
+                  {% if man.publication.edition %}<biblScope unit="issue">{{ man.publication.edition.name }}</biblScope>{% endif %}
+                  {% if man.publication.jahrgang %}<biblScope unit="year">{{ man.publication.jahrgang }}</biblScope>{% endif %}
+                  <name>{{ man.publication.type }}</name>
+               </series>
+               {% endif %}
+               {% else %}
+               <analytic>
+                  <title type="manifestation">{{ man.man_title }}</title>
+                  <author ref="#{{ man.author.id }}">{{ man.author.name }}</author>
+                  <name>{{ man.type }}</name>
+               </analytic>
+               {% if man.publication.id %}
+               <monogr>
+                  <title type="publication">{{ man.publication.title_main }}</title>
+                  <title type="publication-sub">{{ man.publication.title_sub }}</title>
+                  <title type="publication-short">{{ man.publication.title_short }}</title>
+                  {% if man.publication.herausgeber %}
+                  <respStmt>
+                     <resp>Herausgegeben von</resp>
+                     {% for pub in man.publication.herausgeber %}<name type="person" ref="#{{ pub.id }}">{{ pub.name }}</name>{% endfor %}
+                  </respStmt>
+                  {% endif %}
+                  {% if man.publication.editor %}
+                  <respStmt>
+                     <resp>Editiert von</resp>
+                     {% for pub in man.publication.editor %}<name ref="#{{ pub.id }}">{{ pub.name }}</name>{% endfor %}
+                  </respStmt>
+                  {% endif %}
+                  {% if man.publication.advisor %}
+                  <respStmt>
+                     <resp>Editiert von</resp>
+                     {% for pub in man.publication.advisor %}<name ref="#{{ pub.id }}">{{ pub.name }}</name>{% endfor %}
+                  </respStmt>
+                  {% endif %}
+                  {% if man.publication.id %}
+                  <imprint>
+                     {% if man.publication.places %}{% for place in man.publication.places %}<pubPlace>{{ place.name }}</pubPlace>{% endfor %}{% endif %}
+                     {% if man.publication.date %}<date when="{{ man.publication.date }}">{{ man.publication.date }}</date>{% endif %}
+                  </imprint>
+                  {% endif %}
+                  {% if man.page_num %}<extent>{% if man.page_num.start %}{{ man.page_num.start }}{% endif %}{% if man.page_num.start and man.page_num.end %} - {% endif %}{% if man.page_num.end %}{{ man.page_num.end }} Seiten{% endif %}</extent>{% endif %}
+                  {% if man.publication.band %}<biblScope unit="volume">{{ man.publication.band.name }}</biblScope>{% endif %}
+                  {% if man.publication.reihe.name %}<biblScope unit="series">{{ man.publication.reihe.name }}</biblScope>{% endif %}
+                  {% if man.publication.edition %}<biblScope unit="issue">{{ man.publication.edition.name }}</biblScope>{% endif %}
+                  {% if man.publication.jahrgang %}<biblScope unit="year">{{ man.publication.jahrgang }}</biblScope>{% endif %}
+                  <name>{{ man.publication.type }}</name>
+               </monogr>
+               {% endif %}
+               {% endif %}
+               <relatedItem type="digitisedVersion">
+                  <bibl xml:id="{{ man.id }}">
+                     <title>{{ man.man_title }}</title>
+                     <author ref="#{{ man.author.id }}">{{ man.author.name }}</author>
+                     <editor>
+                        <name>Blatow, Arkadi</name>
+                        <name>Diercks, Christine</name>
+                        <name>Huber, Christian</name>
+                        <name>Kaufmann, Kira</name>
+                        <name>Rohrwasser, Michael</name>
+                     </editor>
+                     <date when="2022">2022</date>
+                     <idno type="signature">{{ man.signature }}</idno>
+                     <idno type="url">{{ man.browser_url }}</idno>
+                     <idno type="api">{{ man.url }}</idno>
+                     <relatedItem type="work">
+                        <bibl xml:id="{{ man.work.id }}">
+                           <title>{{ man.work.title }}</title>
+                           <idno type="url">{{ man.work.browser_url }}</idno>
+                           <idno type="api">{{ man.work.url }}</idno>
+                        </bibl>
+                     </relatedItem>
+                  </bibl>
+               </relatedItem>
+               <relatedItem type="exemplar">
+                  <msDesc>
+                     {% if man.repository %}
+                     <msIdentifier>
+                        <repository>{{ man.repository.name }}</repository>
+                        {% if man.repository.orig_archiv_id %}
+                        <idno type="{{ man.repository.name|replace(' ', '-') }}">{{ man.repository.orig_archiv_id }}</idno>
+                        {% endif %}
+                        <idno type="api">{{ man.repository.url }}</idno>
+                     </msIdentifier>
+                     {% endif %}                     
+                     <physDesc>
+                        <objectDesc>
+                           <supportDesc>
+                              <support>
+                                 {% if man.man_format %}{{ man.man_format }}{% endif %} aus {% if man.man_mediatype %}<material>{{ man.man_mediatype }}</material>{% endif %} in {% if man.man_font %}{% for x in man.man_font %}{{ x.name }} {% endfor %}.{% endif %}
+                              </support>
+                           </supportDesc>
+                        </objectDesc>
+                        <handDesc>
+                           <p>{% for x in man.man_font %}{{ x.name }} {% endfor %}</p>
+                        </handDesc>
+                        <typeDesc>
+                           <p>{{ man.man_type }}</p>
+                        </typeDesc>
+                     </physDesc>
+                  </msDesc>
+               </relatedItem>
+            </biblStruct>
+         </sourceDesc>
+      </fileDesc>
+      <profileDesc>
+         <langUsage>
+            <language ident="de">Deutsch</language>
+         </langUsage>
+      </profileDesc>
+   </teiHeader>
+   <text>
+      <body>
+{% for page in man.pages %}<div>
+            <pb n="{{ page.page_nr }}" xml:id="page__{{ page.id }}"/>
+            {{ page.body }}
+         </div>{% endfor %}
+      </body>
+   </text>
+</TEI>
+{% endfor %}
