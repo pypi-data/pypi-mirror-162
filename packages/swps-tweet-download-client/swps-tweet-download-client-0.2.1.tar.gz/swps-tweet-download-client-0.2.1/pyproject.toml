@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "swps-tweet-download-client"
+version = "0.2.1"
+description = ""
+authors = ["Marcin Wątroba <marcin.watroba@pwr.edu.pl>"]
+readme = "README.md"
+packages = [{ include = "swps_tweet_download_client" }]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+click = "^8.0.3"
+dynaconf = "^3.1.7"
+arrow = "^1.2.2"
+minio = "^7.1.2"
+pandas = "^1.4.0"
+XlsxWriter = "^3.0.2"
+PyYAML = "^6.0"
+#searchtweets-v2 = {url = "https://github.com/igorbrigadir/search-tweets-python/archive/patch-2.zip"}
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+tweet_download = "swps_tweet_download_client.main:main"
