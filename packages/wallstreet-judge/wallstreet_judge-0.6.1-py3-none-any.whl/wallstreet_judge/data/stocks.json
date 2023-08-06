@@ -1,0 +1,150 @@
+{
+    "name": "Stocks Layer",
+    "total_points": 5,
+    "tests": [
+        {
+            "name": "Stock 1",
+            "request": {
+                "method": "post",
+                "path": "stocks/",
+                "headers": {
+                    "Authorization": "$kushal_token"
+                },
+                "body": {
+                    "name": "Google",
+                    "price": "1100.00",
+                    "sector": "$tech_id",
+                    "unallocated": 10000,
+                    "total_volume": 10000
+                }
+            },
+            "response": {
+                "type": "object",
+                "validations": [
+                    {
+                        "key": "id"
+                    },
+                    {
+                        "key": "name"
+                    }
+                ]
+            },
+            "store": [
+                {
+                    "key": "id",
+                    "alias": "google_id"
+                }
+            ],
+            "status_code": 201,
+            "points": 1
+        },
+        {
+            "name": "Stock 2 - Get",
+            "request": {
+                "method": "get",
+                "path": "stocks/$google_id",
+                "headers": {
+                    "Authorization": "$kushal_token"
+                },
+                "body": {}
+            },
+            "response": {
+                "type": "object",
+                "validations": [
+                    {
+                        "key": "name",
+                        "value": "Google"
+                    },
+                    {
+                        "key": "price",
+                        "value": "1100.00"
+                    },
+                    {
+                        "key": "total_volume",
+                        "value": 10000
+                    }
+                ]
+            },
+            "store": [],
+            "status_code": 200,
+            "points": 1
+        },
+        {
+            "name": "Stock 3 - Create",
+            "request": {
+                "method": "post",
+                "path": "stocks/",
+                "headers": {
+                    "Authorization": "$kushal_token"
+                },
+                "body": {
+                    "name": "Google",
+                    "price": "1100.00",
+                    "sector": "$tech_id",
+                    "unallocated": 10000,
+                    "total_volume": 10000
+                }
+            },
+            "response": {
+                "type": "object",
+                "validations": []
+            },
+            "store": [],
+            "status_code": 400,
+            "points": 1
+        },
+        {
+            "name": "Stock 3",
+            "request": {
+                "method": "post",
+                "path": "stocks/",
+                "headers": {},
+                "body": {
+                    "name": "Facebook",
+                    "price": "1100.00",
+                    "sector": "$tech_id",
+                    "unallocated": 10000,
+                    "total_volume": 10000
+                }
+            },
+            "response": {
+                "type": "object",
+                "validations": []
+            },
+            "store": [],
+            "status_code": 401,
+            "points": 1
+        },
+        {
+            "name": "Stock 2 - List",
+            "request": {
+                "method": "get",
+                "path": "stocks/",
+                "headers": {
+                    "Authorization": "$kushal_token"
+                },
+                "body": {}
+            },
+            "response": {
+                "type": "array",
+                "validations": [
+                    {
+                        "key": "name",
+                        "value": "Google"
+                    },
+                    {
+                        "key": "price",
+                        "value": "1100.00"
+                    },
+                    {
+                        "key": "total_volume",
+                        "value": 10000
+                    }
+                ]
+            },
+            "store": [],
+            "status_code": 200,
+            "points": 1   
+        }
+    ]
+}
