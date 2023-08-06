@@ -1,0 +1,92 @@
+# BASIC FRACTIONS MODULE (VERSION 0.0.1)
+## Developed by Md Mahdi Tajwar Raeed, Bangladesh (August, 2022)
+This is a simple module that let's you use fractions in Python for various purposes (e.g. calculations, or displaying data in a *cleaner* way)  
+  
+## Website
+For information related to the developer of this module, please visit [mahditaz.pythonanywhere.com].  
+  
+# Features
+- Convert mixed fractions to improper fractions and vice versa
+- Convert fractions to decimals
+- Simplify fractions
+- Add, subtract, multiply, divide fractions (result comes out simplified)
+  
+## Reminder
+- A mixed fraction is a number that contains a whole number along with a rational number (fraction). For example: 2 1/3
+- An improper fraction is a rational number which has a greater numerator than denominator.
+- A proper fraction is a rational number which has a smaller numerator than denominator. It can't be converted into a mixed fraction.
+  
+## Important Note
+Not all functions support mixed fractions; use proper/improper fractions unless it allows
+mixed fractions (this will be elaborated below).
+  
+# Usage
+### Initialise the module by writing "from b_fractions import *   
+This module contains 2 classes:
+- normalFraction (for proper/improper fractions)
+- mixedFraction (for mixed fractions)  
+
+The normalFraction class takes 2 values: Numerator and Denominator (e.g. 2/3)  
+The mixedFraction class takes 3 values: Whole number, Numerator and Denominator (e.g. 2
+1/3)  
+Here are examples of how to initialise a normal fraction and a mixed fraction:
+- fraction_1 = normalFraction (2, 3)  
+*2/3*   
+- fraction_2 = mixedFraction (2, 1, 3)   
+*2 1/3*  
+In order to print a fraction to the screen, write:  
+fraction_1.show()  
+  
+## IN ORDER TO ACCESS A NUMERATOR OR DENOMINATOR INDIVIDUALLY, WRITE:
+- fraction_1.nr (for numerator)
+- fraction_1.dr (for denominator)
+- fraction_1.w (for whole number if it is a mixed fraction)
+  
+## Functions
+- The function "normalfraction_to_mixed" takes a single improper fraction object and returns a mixed fraction object.  
+*fraction_3 = normalfraction_to_mixed(fraction_1)*  
+  
+- The function "mixedfraction_to_normal" takes a single mixed fraction object and returns an improper fraction object.  
+*fraction_4 = mixedfraction_to_normal(fraction_2)*  
+  
+- The function "normalfraction_to_decimal" takes a single normal fraction object and returns it in decimal form.  
+*num1 = normalfraction_to_decimal(fraction_2)*  
+  
+- The function "mixedfraction_to_decimal" takes a single mixed fraction object and returns it in decimal form.  
+*num2 = mixedfraction_to_decimal(fraction_2)*  
+  
+- The function "addition" adds 2 IMPROPER/PROPER fractions (doesn't work with mixed fractions). It takes in 2 values.  
+*fraction_5 = addition(fraction_1, fraction_4)*  
+  
+- The function "subtraction" subtracts the first IMPROPER/PROPER fraction by the second one (doesn't work with mixed fractions). It takes in 2 values.  
+*fraction_6 = subtraction(fraction_1, fraction_4)*  
+  
+- The function "multiplication" multiplies 2 IMPROPER/PROPER fractions (doesn't work with mixed fractions). It takes in 2 values.  
+*fraction_7 = multiplication(fraction_5, fraction_6)*  
+  
+- The function "division" divides the first IMPROPER/PROPER fraction by the second one (doesn't work with mixed fractions). It takes in 2 values.  
+*fraction_8 = multiplication(fraction_7, fraction_6)*  
+  
+- The function "comparison" takes in 2 values. It returns 1 if the first PROPER/IMPROPER fraction is greater than the second, and 0 otherwise.  
+*num3 = comparison(fraction_7, fraction_8)*  
+  
+## Tip
+If you need to add/subtract/multiply/divide 2 MIXED fractions, then simply convert them into improper fractions by using the function "mixedfraction_to_normal". Now you can use these for calculations.
+
+## Sample program
+from b_fractions import *  
+f1 = normalFraction(3, 4)  
+f2 = normalFraction(3, 4)  
+f3 = addition(f1, f2)  
+f3.show()  
+*Result: 3/2*  
+  
+  
+# License
+Copyright © 2022 Md Mahdi Tajwar Raeed
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (Basic Fractions), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:  
+  
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.  
+  
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  
