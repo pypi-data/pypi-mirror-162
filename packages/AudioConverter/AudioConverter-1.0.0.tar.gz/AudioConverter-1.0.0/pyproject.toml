@@ -1,0 +1,63 @@
+[tool.poetry]
+name = "audioconverter"
+version = "1.0.0"
+description = "CLI for converting audio files from one format to another"
+authors = ["David Lam <david.lam@lamdav.com>"]
+license = "MIT"
+readme = "README.md"
+homepage = "https://github.com/lamdav/AudioConverter"
+repository = "https://github.com/lamdav/AudioConverter"
+documentation = "https://github.com/lamdav/AudioConverter#usage"
+keywords = [
+  "audio",
+  "converter",
+  "cli",
+  "audioconverter",
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Environment :: Console",
+  "Intended Audience :: End Users/Desktop",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3.7",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Topic :: Multimedia :: Sound/Audio :: Conversion",
+  "Topic :: Utilities",
+]
+packages = [
+  { include = "AudioConverter" }
+]
+
+
+[tool.poetry.urls]
+"Bug Tracker" = "https://github.com/lamdaV/AudioConverter/issues"
+
+
+[tool.poetry.scripts]
+audioconvert = "AudioConverter.converter:cli"
+
+
+[tool.poetry.dependencies]
+python = "^3.7"
+click = "^8.1.3"
+colorama = "^0.4.3"
+pydub = "^0.24.1"
+
+
+[tool.poetry.dev-dependencies]
+black = "^22.6.0"
+bump2version = "^1.0.1"
+isort = "^5.10.1"
+pur = "^5.4.2"
+
+
+[tool.isort]
+profile = "black"
+
+
+[build-system]
+requires = ["poetry-core>=1.0.0", "setuptools", "setuptools_scm"]
+build-backend = "poetry.core.masonry.api"
