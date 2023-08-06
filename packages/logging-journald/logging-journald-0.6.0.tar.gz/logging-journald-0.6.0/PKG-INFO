@@ -1,0 +1,47 @@
+Metadata-Version: 2.1
+Name: logging-journald
+Version: 0.6.0
+Summary: Pure python logging handler for writing logs to the journald using native protocol
+Home-page: https://github.com/mosquito/logging-journald
+Author: Dmitry Orlov
+Author-email: me@mosquito.su
+License: MIT
+Project-URL: Source, https://github.com/mosquito/logging-journald
+Project-URL: Tracker, https://github.com/mosquito/logging-journald/issues
+Platform: all
+Classifier: Intended Audience :: Developers
+Classifier: Operating System :: POSIX :: Linux
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: Implementation :: CPython
+Requires-Python: >=3.7, <4
+
+logging-journald
+================
+
+Pure python logging handler for writing logs to the journald using
+native protocol.
+
+.. code-block:: python
+
+    import logging
+    from logging_journald import JournaldLogHandler
+
+    # Use python default handler
+    LOG_HANDLERS = None
+
+
+    if (
+        # Check if program running as systemd service
+        JournaldLogHandler.JOURNAL_STREAM or
+        # Check if journald socket is available
+        JournaldLogHandler.SOCKET_PATH.exists()
+    ):
+        LOG_HANDLERS = [JournaldLogHandler()]
+
+    logging.basicConfig(level=logging.INFO, handlers=LOG_HANDLERS)
+    logging.info("Hello logging world.")
