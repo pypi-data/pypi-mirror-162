@@ -1,0 +1,44 @@
+{% extends "zerrors/base_error.html" %}
+
+{% block body_content %}
+	
+	<div class="row top-buffer">
+		<div class="container">
+			<div class="row mt-5"></div> 
+			<div class="row mt-5"></div>
+ 			<div class="row mt-5"></div>
+ 
+		</div>
+		<div class="container  border border-dark "> 
+			
+	    	<div class="row">
+		    	<div class="col-lg-8 text-center" > 
+					
+					{% if (config.CONTENT is defined) and (config.CONTENT.ERROR_IMAGE_404 is defined) %}
+		    			<img src="{{config.CONTENT.ERROR_IMAGE_404}}" width="100%" style='background: transparent' >  
+					{% else %}
+						<img src="zerrors/static/404_looked.jpg" width="100%" style='background: transparent' >  
+					{% endif %}
+		    	</div>
+		    	<div class="col-lg-4  text-center">
+		    		<div class="container"  >
+		    			<div class="row mt-5"></div>
+		    			<div class="row mt-5"></div>
+		    			<div class="row mt-5  ">
+								{% if (config.CONTENT is defined) and (config.CONTENT.ERROR_IMAGE_404 is defined) %}
+					    			<h1 >{{config.CONTENT.ERROR_TITLE_404}}</h1>
+								{%else%}
+									<h1 >404 not found</h1>
+								{%endif%}
+				    	</div>
+					    <div class="row mt-5  ">
+					    		<h3>We looked everywhere but couldnt find the page</h3>
+				    	</div>  
+		    		</div>
+		    	</div>
+	    	</div>
+	    				 
+		    	 
+		</div>
+    </div>
+{% endblock %}

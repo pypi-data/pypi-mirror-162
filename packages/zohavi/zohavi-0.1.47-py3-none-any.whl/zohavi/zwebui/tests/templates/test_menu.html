@@ -1,0 +1,89 @@
+
+{% extends "test_base.html" %} 
+
+{% block main_header %}Test Table{% endblock %}
+
+
+{% block body_content %}
+<div class="menu_area">
+
+    <wc-nav id = "site_config_nav" 
+            sidebar_hamburger = 'false'
+            main_div_selector = "#main_area" 
+            header_on = 'false'
+            sidebar_on = 'true'
+            sbar_color = 'grey' 
+            sbar_renderer = 'full'
+            sbar_visibility = 'always-on'
+            sbar_full_width_px='250' 
+            sbar_active_menu_item = 'i_submenu_prj_overview'
+            sbar_disable_menu_list ='i_submenu_env_config2'
+            sbar_menu_list = '[
+                        { 
+
+                        "menus":[
+                                    {"title": "1. Project Overview",  
+                                    "id":"i_submenu_prj_overview",
+                                    "link": "ABC"},	
+
+                                    {"title": "2. Env. Overview 2", 
+                                    "id":"i_submenu_env_config2",
+                                    "icon": "fas fa-industry",
+                                    "link": "ABC"},	
+
+
+                                    {"title": "2. Env. Overview", 
+                                    "id":"i_submenu_env_config",
+                                    "icon": "fas fa-industry",
+                                    
+                                    
+
+                                    "link": "https://www.google.com",
+                                    "sub_menu":[
+                                                      {"title": "Sys",
+                                                      
+                                                      "id":"i_submenu_dev_sys",
+                                                      "link": ""},
+
+                                                      {"title": "App", 
+                                                      "id":"i_submenu_dev_app",
+                                                      "link": "ABC"},
+
+                                                      {"title": "Sys",
+                                                    "id":"i_submenu_prod_sys",
+                                                    "link": "ABC"},
+
+                                                    {"title": "App", 
+                                                    "id":"i_submenu_prod_app",
+                                                    "link": "ABC"}
+                                                
+                                                  ]
+                                      
+                                        
+                                                    
+                                    } 
+                                ]
+                        }
+                        
+
+                        ]'>
+    </wc-nav>
+</div>
+<div id="main_area">
+</div>
+
+{% endblock %}
+
+
+{% block page_script %}
+  <script>
+    
+    document.addEventListener('DOMContentLoaded', function () {
+       
+    });
+
+  </script> 
+
+  <script type="module" src="/webui/static/zwc/wc_nav.js"></script>  
+
+{% endblock %}

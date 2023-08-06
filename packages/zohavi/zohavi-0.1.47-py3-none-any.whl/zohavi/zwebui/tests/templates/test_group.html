@@ -1,0 +1,74 @@
+
+{% extends "test_base.html" %} 
+
+{% block main_header %}Test Groups{% endblock %}
+
+
+{% block body_content %}
+        
+<wc-group class="  "   id="logon_checks" 
+          action="/test/group/save"
+          popup_message_submit_success="Site Added"
+          popup_message_submit_fail="Internal error in adding new site"
+          submit_data_selector = "#logon_checks .ck_grp_elt"
+          >
+
+    <wc-hidden id="si_env_id" value="1"></wc-hidden>
+    <div class="py-5">
+      <wc-checkbox id="si_env_cs" label="Cross Scripting" class="ck_grp_elt" checkbox_label="Enabled" value="true"></wc-checkbox>  
+    </div>
+
+    <div class="">
+      <wc-checkbox id="si_env_authlogon" label="Logon" class="ck_grp_elt" checkbox_label="Authenticated logon" value="true" target_when_on='si_env_authlogon_option'></wc-checkbox>  
+
+      <wc-tab-panel class="  "   id="si_env_authlogon_option">
+        <div class="container sc_layer_0 ">  
+
+            <wc-input-text  {{jc_fill_attribs("wc-input-text", "SiteEnv", "si_env_authsite_name", data_ui, env_data.env_desc  )|safe }} ></wc-input-text>
+
+            <wc-radio-button  id="si_env_authmethod" class="ck_grp_elt" 
+                              label = "Chose authentication mode"
+                              radio_list='[ {"label":"Username & passowrd", "value":"user", "checked":"false"},
+                                      {"label":"Email & passowrd", "value":"email", "checked":"true"},
+                                      {"label":"Username, email & passowrd", "value":"user_email", "checked":"false"}
+                                    ]'
+                              render = "vertical"
+                              
+
+                              >
+            </wc-radio-button>
+        </div>
+      </wc-tab-panel>
+    </div>
+</wc-group>
+
+       
+<wc-group class="  "   id="logon_checks2" bordered="false">
+    <div class="py-5">
+      <wc-checkbox id="i_cross_script_check2" label="Cross Scripting" checkbox_label="Enabled" value="true"></wc-checkbox>  
+    </div>
+</wc-group>
+{% endblock %}
+
+
+{% block page_script %}
+  <script>
+    
+    document.addEventListener('DOMContentLoaded', function () {
+       
+    });
+
+  </script>
+  <!-- <script  src="/common/st/_def/common/static/_def/js/common_utils.js"></script>  -->
+  <script type="module" src="/webui/static/zwc/wc_all.js"></script> 
+  <!-- <script type="module"  defer src="/webui/static/zwc/wc_tab.js"></script> 
+  
+  <script type="module"  defer src="/webui/static/zwc/wc_table.js"></script> 
+  <script type="module"  defer src="/webui/static/zwc/wc_form_checkbox.js"></script> 
+  <script type="module"  defer  src="/webui/static/zwc/wc_modal.js"></script> 
+  <script type="module"  defer  src="/webui/static/zwc/wc_form_radio.js"></script> 
+
+  <script type="module"  defer  src="/webui/static/zwc/wc_form_group.js"></script>  -->
+
+
+{% endblock %}

@@ -1,0 +1,92 @@
+{% extends "zbase/base.html" %}
+
+{% block head_inserts %}
+{% endblock %} 
+
+
+{% block nav_content %}
+
+		<!-- base_members.html x1 -->
+		<wc-nav id = "si_navbar"
+		              logo="https://bulma.io/images/bulma-logo.png"
+		              logo_link="https://apple.com"
+		              header_menu_start='{
+		                              "Home":"https://google.com",
+		                              "About":"https://tesla.com", 
+		                              "More":[
+		                                      {"AA":"https://abc.com",
+		                                      "BB":"https://xyz.com"} 
+		                                      ] 
+		                          }'
+		              header_on = 'true'
+		              sidebar_on = 'true'
+		              sidebar_hamburger = 'true'
+		              main_div_selector = "#main_area" 
+		    
+		              sbar_menu_list = '[
+		                          {"section":"General",
+		                          "menus":[
+		                                      {"title": "Dashboard", 
+		                                      "icon": "fas fa-home",
+		                                      "active":"true",
+		                                      "link": "ABC"}
+		                                  ]
+		                          },
+		                          {"section":"Admin",
+		                          "menus":[
+		                                      {"title": "Team Settings", 
+		                                      "icon": "",
+		                                      "link": "ABC"},
+		                                      {"title": "General Settings" ,
+		                                      "link": "ABC"}
+		                                  ]
+		                          }, 
+		                          {"section":"Sub",
+		                          "menus":[
+		                                      {"title": "Manage Team", 
+		                                      "icon": "fas fa-home",
+		                                      "link": "ABC"},
+		                                      {"title": "Optimize Settings" ,
+		                                      "link": "ABC",
+		                                      "active":"true",
+		                                      "sub_menu":[
+		                                                      {"title": "Top performer", 
+		                                                      "active":"true",
+		                                                      "link": "ABC"},
+		                                                      {"title": "Employee of month", 
+		                                                      "link": "ABC"}
+		                                                  ]
+		                                      },
+		                                      {"title": "Create Team", 
+		                                      "icon": "fas fa-down",
+		                                      "link": "ABC"}
+		                                  ]
+		                          }
+		                          
+
+		                          ]'>
+		</wc-nav>
+		{% endblock %}
+
+{% block main_body %}
+	
+	<div id="main_area" class="container is-flex" >
+		<!-- <input type="text" name="abc"> -->
+		
+
+
+	  
+	  	{% block body_content %}
+	  	{% endblock %}
+
+  </div>
+{% endblock %}
+
+
+
+{% block nav_script %}
+	<script type="module" src="/webui/static/zwc/wc_nav.js"></script> 
+{% endblock %}
+
+{% block page_script %}
+{% endblock %}

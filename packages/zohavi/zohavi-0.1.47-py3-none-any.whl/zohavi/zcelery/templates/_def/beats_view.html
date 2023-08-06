@@ -1,0 +1,138 @@
+{% extends "_def/base_members.html" %} 
+
+{% block body_content %}
+
+<script src="/common/st/_def/wc/wc_control_switch.js"></script> 
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card"> 
+                <div class="card-body">
+                    <div class="row" style='font-size: 1.2em;'>
+                        <div class="col-4  text-center">
+                            <span><i class="fas fa-microchip"></i></span> <span ><b>Period Job Disptacher</b></span>
+                        </div>
+                        <div class="col-4 text-center">
+                            <wc-control-switch  id = 'id_beat_process_control'
+                                                    class='key_wc_control_switch' 
+                                                    ajax_url_start="{{ url_for('processes.ajax_background_job_start' ) }}" 
+                                                    ajax_data='{"id":"" }' 
+                                                    ajax_url_stop="{{ url_for('processes.ajax_background_job_stop' ) }}" 
+                                                    default='off'  
+                                                    labels='On;Loading..;Off'>
+                            </wc-control-switch> 
+                        </div>
+
+                        <div class="col-4 text-center">
+                            <span><b>Process ID:</b></span><span id='id_process_id'></span>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    {% include "_def/tmpl_tabledata.html" %}
+    
+
+{% endblock %}
+
+
+{% block page_script %}
+    {% include "_def/tmpl_tabledata_script.html" %}
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.1/jquery.validate.min.js"></script>
+
+    <script src="/common/st/_def/js/common_utils.js"></script>
+
+    <script>
+        
+        $(document).ready( function () {
+
+            function get_beats_process_status(){
+                    C_AJAX.call_json(  "{{ url_for('processes.ajax_get_job_item' ) }}", 
+                                      {'process_search_string':'CELERY_BEAT'},
+                                      null, null, null, //no messages
+                                      function(response){ 
+                                            // var pid = response['cl_job']['pid'];
+                                            $('#id_process_id').html( response['cl_job']['pid'] );  
+                                            $('#id_beat_process_control').attr( 'ajax_data', 
+                                                                                JSON.stringify( {"id":response['cl_job']['id'] }) );
+                                            if( response['cl_job']['is_running'] ){
+                                                $('#id_beat_process_control').val( 'on');
+                                            }else{
+                                                $('#id_beat_process_control').val( 'off' );
+                                            }
+                                             
+                                        },
+                                      null,
+                                      true );
+                                            
+            }
+            get_beats_process_status();
+            // //************************************************************************************
+            // // toggle status
+            // function get_beats_url(element){
+            //     console.log(element);
+            // }       
+            
+            $('#id_wc_control_switch').on('wc_control_switch_change_success', function(e){
+                // debugger;
+                console.log('post-event', e.detail.response);
+                // debugger;
+                if( e.detail.new_status =='on'){
+                    $('#id_process_id').html(e.detail.response.pid);
+                }else{
+                    $('#id_process_id').html('');
+                }
+            } );
+            
+            //************************************************************************************
+            // Start or stop the process 
+            // $('.key_process_status_cell').on('click', function(event) {
+
+            //     console.log('clicked switch');
+            //     var curr_elt = this;
+            //     $('.key_status_running').css("display","inline-block");
+            //     $('.key_status_on').hide() ;
+            //     $('.key_status_off').hide();
+            //     // $('#id_switch_control_main').hide();
+            //     // $('#id_switch_control_processing').show();
+            //     // debugger;
+            //     // var ID = $('#id_worker_rec_id').val() ;
+            //     // debugger;
+            //     // var ID = $(curr_elt).closest('tr').data('val');
+            //     // console.log('updating record:', ID)
+            //     // var active_status = $(curr_elt).closest('td').attr('data-val') + "";
+            //     // console.log('current statys:',  active_status)
+            //     // // debugger;
+ 
+            //     // // if( $('#id_process_control').prop('checked') ){
+            //     // if( ['True', 'true'].indexOf( String(active_status) ) >= 0  ){
+    
+            //     // }
+            //     // console.log('Calling url:', url_query, " active status:", active_status);
+            //     // $.ajax({
+            //     //         url: url_query, 
+            //     //         data: {'rec_id': ID  },
+            //     //         type: 'POST',
+            //     //         success: function(response) { 
+            //     //             console.log(response); 
+            //     //             update_table_record( response.data);
+            //     //             _set_worker_config_edit_stauts(ID);
+            //     //             $('#id_worker_details').hide();
+            //     //         },
+            //     //         error: function(error) {
+            //     //             Swal.fire('Error in process', '', 'error');
+            //     //             console.log(error);  
+            //     //             update_table_record( error.data);
+            //     //         }
+            //     //     });
+            // });
+
+        });
+    </script>
+
+{% endblock %}
