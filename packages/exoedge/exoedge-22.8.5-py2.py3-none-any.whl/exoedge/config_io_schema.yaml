@@ -1,0 +1,105 @@
+$schema: 'http://json-schema.org/draft-07/schema'
+title: config_io schema
+description: |
+  config_io schema
+type: object
+properties:
+  channels:
+    type: object
+    title: channel name
+    patternProperties:
+      ^.+:
+        type: object
+        properties:
+          channel_name:
+            type: string
+          display_name:
+            type: string
+          description:
+            type: string
+          protocol_config:
+            type: object
+            properties:
+              application:
+                type: string
+                default: ''
+                examples:
+                  - exoedge_canopen
+              interface:
+                type: [string, 'null']
+                default: 'not specified'
+                examples:
+                  - exoedge_canopen
+              multiplier:
+                type: number
+                default: 1
+              offset:
+                type: number
+                default: 0
+              sample_rate:
+                type: number
+                default: 1000
+              report_rate:
+                type: number
+                default: 1000
+              report_on_change:
+                type: boolean
+                default: False
+              report_on_change_tolerance:
+                type: number
+                default: 0.0
+              down_sample:
+                type: string
+                default: 'ACT'
+                enum:
+                  - MAX
+                  - MIN
+                  - SUM
+                  - AVG
+                  - ACT
+              app_specific_config:
+                type: object
+                properties:
+                  module:
+                    type: string
+                    title: 'The module from which ExoEdge imports the `function`.'
+                    default: ''
+                    examples:
+                      - exoedge_canopen
+                  function:
+                    type: string
+                    title: 'The function that ExoEdge calls with `positionals` and `parameters`.'
+                    default: ''
+                    examples:
+                      - pdo
+                  parameters:
+                    type: object
+                    default: {}
+                  positionals:
+                    type: array
+                    default: []
+            required:
+              - app_specific_config
+          "properties":
+            type: object
+            properties:
+              data_unit":
+                type: [string, "null"]
+              data_type":
+                type: [string, "null"]
+              min":
+                type: [number, "null"]
+              max":
+                type: [number, "null"]
+              device_diagnostic":
+                type: [string, "null"]
+              precision":
+                type: [integer, "null"]
+              data_out":
+                type: [boolean, "null"]
+  last_edited:
+    type: [string, number]
+    description: |
+      timestamp
+required:
+  - channels
