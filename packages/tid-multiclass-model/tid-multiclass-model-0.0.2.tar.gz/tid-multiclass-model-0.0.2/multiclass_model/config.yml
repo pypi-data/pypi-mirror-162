@@ -1,0 +1,52 @@
+# Package Overview
+package_name: multiclass_model
+
+# Data Files
+training_data_file: Train.csv
+test_data_file: Test.csv
+
+# Variables
+# The variable we are attempting to predict (sale price)
+target: Map_Product_Category
+
+pipeline_name: multiclass_model
+pipeline_save_file: multiclass_model_output_v
+
+# Will cause syntax errors since they begin with numbers
+
+initial_features:
+  - Inv_Id
+  - Vendor_Code
+  - GL_Code
+  - Inv_Amt
+  - Item_Description
+
+
+# set train/test split
+test_size: 0.33
+
+# to set the random seed
+random_state: 12
+
+n_neighbors: 4
+
+# categorical variables with NA in train set
+ordinal_encode:
+  - GCL_number
+
+mapper_encode:
+  - TypeEnt_number
+
+drop_features:
+  - Inv_Id
+  - Vendor_Code
+  - GL_Code
+  - Item_Description
+  - TypeEnt
+  - GCL
+
+fillna_features:
+  - TypeEnt_number
+
+json_file_TypeEnt: TypeEnt_number_maps.json
+json_file_target: map_target.json
