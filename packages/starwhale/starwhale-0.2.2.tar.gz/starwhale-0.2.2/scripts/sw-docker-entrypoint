@@ -1,0 +1,136 @@
+#!/usr/bin/env bash
+
+set -e
+ulimit -n 65535 || true
+
+CONDA_BIN="/opt/miniconda3/bin"
+WORKDIR=${SW_SWMP_WORKDIR:=/opt/starwhale/swmp}
+PIP_CACHE_DIR=${SW_PIP_CACHE_DIR:=/root/.cache/pip}
+_MANIFEST_RUNTIME=$(cat ${WORKDIR}/_manifest.yaml| grep "python:" | awk '{print $2}' | awk -F '.' '{print $1"."$2}') || true
+_MODEL_RUNTIME=$(cat ${WORKDIR}/model.yaml | grep 'runtime' | awk '{print $2}') || true
+VERBOSE="-vvvv"
+
+_update_python_alter() {
+    echo "--> set python/python3 to $1 ..."
+    update-alternatives --install /usr/bin/python3 python3 /usr/bin/$1 10
+    update-alternatives --install /usr/bin/python python /usr/bin/$1 10
+    python3 --version
+}
+
+pre_config() {
+    echo "--> debug config ..."
+    if [ "${SW_TASK_DISABLE_DEBUG}" = "1" ]; then
+        VERBOSE="-v"
+    fi
+
+    echo "--> config pypi and conda config ..."
+
+    if [ ${SW_PYPI_INDEX_URL} ] ; then
+        echo -e "\t ** use SW_PYPI_* env to config ~/.pip/pip.conf"
+        mkdir -p ~/.pip
+        cat > ~/.pip/pip.conf << EOF
+[global]
+index-url = ${SW_PYPI_INDEX_URL}
+extra-index-url = ${SW_PYPI_EXTRA_INDEX_URL}
+
+[install]
+trusted-host= ${SW_PYPI_TRUSTED_HOST}
+EOF
+        echo -e "\t ** current pip conf:"
+        echo "-------------------"
+        cat ~/.pip/pip.conf
+        echo "-------------------"
+    else
+        echo -e "\t ** use image builtin pip.conf"
+    fi
+}
+
+set_pip_cache() {
+    echo "\t ** set pip cache dir:"
+    python3 -m pip config set global.cache-dir ${PIP_CACHE_DIR} || true
+    python3 -m pip cache dir || true
+}
+
+pre_check() {
+    echo "--> run pre check for swmp model dir ..."
+    cd ${WORKDIR}
+
+    if [ ! -f "_manifest.yaml" ] || [ ! -f "model.yaml" ]; then
+        echo "${WORKDIR} is not starwhale target dir, will exit"
+        exit 1
+    fi
+
+    if [ ! -f "${SW_TASK_INPUT_CONFIG}" ]; then
+        echo "${SW_TASK_INPUT_CONFIG} not found, please set env and volume file into container"
+        exit 1
+    fi
+}
+
+set_python() {
+    _RUNTIME="python${_MANIFEST_RUNTIME}"
+    if [ "$_RUNTIME" = "" ]; then
+      _RUNTIME="${_MODEL_RUNTIME}"
+    fi
+
+    echo "**** DETECT RUNTIME: ${_RUNTIME}"
+
+    if [ "$_RUNTIME" = "python3.7" ] || [ "$_RUNTIME" = "python3.9" ] || [ "$_RUNTIME" = "python3.10"] ; then
+        _update_python_alter "$_RUNTIME"
+    else
+        _update_python_alter "python3.8"
+    fi
+}
+
+restore_activate_runtime() {
+    echo '--> restore python env ...'
+    export PYTHONWARNINGS="ignore:Unverified HTTPS request"
+    swcli ${VERBOSE} runtime restore .
+    unset PYTHONWARNINGS
+
+    echo '--> source activate ...'
+    eval "$(./activate.sw)"
+}
+
+run_ppl() {
+    echo "--> start to run swmp ppl, use $(which swcli) cli..."
+    swcli ${VERBOSE} model ppl ${WORKDIR}/src
+}
+
+run_cmp() {
+    echo "--> start to run swmp cmp, use $(which swcli) cli..."
+    swcli ${VERBOSE} model cmp ${WORKDIR}/src
+}
+
+welcome() {
+    echo "===================================="
+    echo "StarWhale Docker Entrypoint"
+    echo "Date: `date -u +%Y-%m-%dT%H:%M:%SZ`"
+    echo "Version: `swcli --version`"
+    echo "Run: $1 "
+    echo "Model: ${SW_SWMP_NAME}@${SW_SWMP_VERSION}"
+    echo "===================================="
+}
+
+eval_task_prepare(){
+    welcome $1
+    pre_config
+    pre_check
+    set_python
+    set_pip_cache
+    restore_activate_runtime
+}
+
+case "$1" in
+    pre_config)
+        pre_config
+        ;;
+    cmp)
+        eval_task_prepare $1 && run_cmp
+        ;;
+    ppl)
+        eval_task_prepare $1 && run_ppl
+        ;;
+    *)
+        exec "$@"
+        ;;
+esac
