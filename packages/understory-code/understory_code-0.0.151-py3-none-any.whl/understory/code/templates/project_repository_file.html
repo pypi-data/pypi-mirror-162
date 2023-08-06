@@ -1,0 +1,11 @@
+$def with (project, filename, content)
+$var breadcrumbs = (project, project, "files", "Files")
+$var title = filename
+
+$if isinstance(content, str):
+    <pre>$content</pre>
+$else:
+    <ul>
+    $for file in content:
+        <li><a href=/$project/files/$filename/$file.name>$file.name</a></li>
+    </ul>
