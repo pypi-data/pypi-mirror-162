@@ -1,0 +1,48 @@
+---
+title: Contact
+sender_endpoint: sendmail.example.com
+redirect_url: thankyou.html
+order: 4
+---
+
+<h1>Contact Me</h1>
+
+<form class="contact-form"
+  action="{{ sender_endpoint }}"
+  method="post"
+>
+  <input type="hidden" name="redirect" value="{{ redirect_url }}" />
+  <div class="contact-sender">
+    <label class="contact-form-label" for="sender">Name</label>
+    <input
+      class="contact-form-input"
+      type="text"
+      name="sender"
+      size="40"
+      required
+      placeholder="Your name"
+    />
+  </div>
+  <div class="contact-email">
+    <label class="contact-form-label" for="email">Email address</label>
+    <input
+      class="contact-form-input"
+      type="email"
+      name="email"
+      size="40"
+      required
+      placeholder="Email"
+    />
+  </div>
+  <div class="contact-form-message">
+    <label class="contact-form-label" for="message">Message</label>
+    <textarea
+      class="contact-form-textarea"
+      rows="7"
+      cols="80"
+      name="message"
+      required
+    ></textarea>
+  </div>
+  <button class="contact-form-submit" type="submit" name="submit">Submit</button>
+</form>
