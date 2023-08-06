@@ -1,0 +1,99 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+testpaths = [
+    "tests"
+]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::UserWarning",
+]
+
+[tool.tox]
+legacy_tox_ini = """
+[tox]
+requires = tox-conda
+envlist =
+    py36-click7latest
+    py{37,38}-click{70,7latest,80,8latest}
+
+[testenv]
+deps =
+    pytest
+    pytest-cov
+    click70: click==7.0
+    click7latest: click==7
+    click80: click==8.0
+    click8latest: click
+commands =
+    pytest
+"""
+
+[tool.coverage.run]
+data_file = "build/.coverage"
+branch = true
+
+[tool.coverage.report]
+fail_under = 95
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "break"
+]
+
+[tool.coverage.html]
+directory = "build/coverage"
+
+[tool.flake8]
+exclude = [
+    ".git", 
+    ".tox",
+    ".vscode",
+    ".pytest_cache", 
+    "__pycache__", 
+    "build",
+    "docs/conf.py"
+]
+statistics = true
+max-line-length = 88
+extend-ignore = [
+    "E203",
+]
+per-file-ignores = [
+    "tests/*:F811,F401"
+]
+
+[tool.pylint.main]
+jobs = 0
+
+[tool.pylint.design]
+min-public-methods = 0
+
+[tool.pylint.format]
+max-line-length = 88
+
+[tool.pylint."messages control"]
+disable = [
+    "redefined-outer-name",
+    "raw-checker-failed", 
+    "bad-inline-option", 
+    "locally-disabled", 
+    "file-ignored", 
+    "suppressed-message", 
+    "useless-suppression", 
+    "deprecated-pragma", 
+    "use-symbolic-message-instead"
+]
+
+[tool.black]
+line-length = 88
+target-version = ["py38"]
+extend-exclude = ".*\\.ipynb"
+
+[tool.isort]
+profile = "black"
+py_version = 38
