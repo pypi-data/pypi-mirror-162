@@ -1,0 +1,121 @@
+{
+    "backend": "quantify_scheduler.backends.zhinst_backend.compile_backend",
+    "mode": "calibration",
+    "latency_corrections":
+        {
+            "q0:mw-q0.01": 95e-9,
+            "q1:mw-q1.01": 95e-9,
+            "q0:res-q0.ro": -95e-9,
+            "q1:res-q1.ro": -95e-9
+        },
+    "local_oscillators": [
+        {
+            "unique_name": "mw_qubit_ch1",
+            "instrument_name": "mw_qubit",
+            "frequency":
+                {
+                    "ch_1.frequency": null
+                },
+            "power":
+                {
+                    "power": 13
+                }
+        },
+        {
+            "unique_name": "mw_qubit_ch2",
+            "instrument_name": "mw_qubit",
+            "frequency":
+                {
+                    "ch_2.frequency": null
+                },
+            "power":
+                {
+                    "ch_2.power": 10
+                }
+        },
+        {
+            "unique_name": "mw_readout",
+            "instrument_name": "mw_readout",
+            "frequency":
+                {
+                    "frequency": null
+                },
+            "power":
+                {
+                    "power": 16
+                }
+        }
+    ],
+    "devices": [
+        {
+            "name": "ic_hdawg0",
+            "type": "HDAWG4",
+            "clock_select": 0,
+            "ref": "int",
+            "channelgrouping": 0,
+            "channel_0": {
+                "port": "q0:mw",
+                "clock": "q0.01",
+                "mode": "complex",
+                "modulation": {
+                    "type": "premod",
+                    "interm_freq": -100000000.0
+                },
+                "local_oscillator": "mw_qubit_ch1",
+                "clock_frequency": 6000000000.0,
+                "markers": [
+                    "AWG_MARKER1",
+                    "AWG_MARKER2"
+                ],
+                "gain1": 1,
+                "gain2": 1,
+                "mixer_corrections": {
+                    "amp_ratio": 0.95,
+                    "phase_error": 0.07,
+                    "dc_offset_I": -0.0542,
+                    "dc_offset_Q": -0.0328
+                }
+            },
+            "channel_1": {
+                "port": "q1:mw",
+                "clock": "q1.01",
+                "mode": "complex",
+                "modulation": {
+                    "type": "premod",
+                    "interm_freq": -100000000.0
+                },
+                "local_oscillator": "mw_qubit_ch2",
+                "clock_frequency": 6000000000.0,
+                "markers": [
+                    "AWG_MARKER1",
+                    "AWG_MARKER2"
+                ],
+                "gain1": 1,
+                "gain2": 1,
+                "mixer_corrections": {
+                    "amp_ratio": 0.95,
+                    "phase_error": 0.07,
+                    "dc_offset_I": 0.042,
+                    "dc_offset_Q": 0.028
+                }
+            }
+        },
+        {
+            "name": "ic_uhfqa0",
+            "type": "UHFQA",
+            "ref": "ext",
+            "channel_0": {
+                "port": "q0:res",
+                "clock": "q0.ro",
+                "mode": "real",
+                "modulation": {
+                    "type": "premod",
+                    "interm_freq": 200000000.0
+                },
+                "local_oscillator": "mw_readout",
+                "clock_frequency": 6000000000.0,
+                "trigger": 2
+            }
+        }
+    ]
+}
