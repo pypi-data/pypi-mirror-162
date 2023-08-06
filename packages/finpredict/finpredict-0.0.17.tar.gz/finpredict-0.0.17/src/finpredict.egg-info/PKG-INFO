@@ -1,0 +1,46 @@
+Metadata-Version: 2.1
+Name: finpredict
+Version: 0.0.17
+Summary: Finance tools module
+Home-page: https://github.com/omers/finpredict
+Author: Omer Segev
+Project-URL: Bug Tracker, https://github.com/omers/finpredict/issues
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Development Status :: 4 - Beta
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
+# finpredict python package
+## Example Usage
+```python
+from finpredict import FinData
+
+data = FinData()
+
+df = data.get_stock('MSFT', start='2015-01', end='2021-04')
+print(df.tail())
+```
+
+Output:
+```
+           Date        High         Low        Open       Close      Volume   Adj Close  ...  Year        8ema       21ema       20sma       50sma      100sma      200sma
+1568 2021-03-26  236.710007  231.550003  231.550003  236.479996  25471700.0  236.479996  ...  2021  234.814500  234.462601  233.582500  234.082044  224.850104  216.130061
+1569 2021-03-29  236.800003  231.880005  236.589996  235.240005  25227500.0  235.240005  ...  2021  234.909057  234.533274  233.497501  234.536234  225.189124  216.381713
+1570 2021-03-30  233.850006  231.100006  233.529999  231.850006  24792000.0  231.850006  ...  2021  234.229268  234.289341  233.396501  234.930007  225.453446  216.609118
+1571 2021-03-31  239.100006  232.389999  232.910004  235.770004  43623500.0  235.770004  ...  2021  234.571654  234.423947  233.807001  235.326554  225.657856  216.850167
+1572 2021-04-01  242.839996  238.050003  238.470001  242.350006  30312000.0  242.350006  ...  2021  236.300176  235.144498  234.588002  235.697064  225.859404  217.101135
+```
+
+## Supported methods and how to use
+### get_gdp
+Get Global GDP 
+### get_unemployment
+Get Unemployment rate
+### get_currencies
+### get_finance_data
+### get_stock
+### get_war_index
+### get_covid_stat
