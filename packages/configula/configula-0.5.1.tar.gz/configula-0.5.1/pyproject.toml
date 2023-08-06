@@ -1,0 +1,40 @@
+[tool.poetry]
+name = "configula"
+version = "0.5.1"
+description = "Merges configuration from toml file and environment variables"
+authors = ["Eugen Ciur <eugen@papermerge.com>"]
+maintainers = ["Eugen Ciur <eugen@papermerge.com>"]
+license = "Apache-2.0"
+include = ["LICENSE", "changelog.md", "README.md"]
+readme = "README.md"
+classifiers = [
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10"
+]
+homepage = "https://github.com/papermerge/configula"
+repository = "https://github.com/papermerge/configula"
+keywords = ["configurations", "config", "environment variables", "toml"]
+
+[tool.poetry.dependencies]
+python = ">=3.8, <=3.10.6"
+tomlkit = "^0.7.2"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+pycodestyle = "^2.8.0"
+taskipy = "^1.10.2"
+
+[tool.taskipy.tasks]
+lint = "pycodestyle configula/ tests/"
+test = "pytest tests/"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
