@@ -1,0 +1,49 @@
+Metadata-Version: 2.1
+Name: chainsail-helpers
+Version: 0.1.3
+Summary: Probability distribution interfaces, examples, and utilities for the Chainsail sampling service
+Home-page: https://github.com/tweag/chainsail-resources
+License: MIT
+Keywords: probabilistic programming,sampling,MCMC
+Author: Simeon Carstens
+Author-email: simeon.carstens@tweag.io
+Requires-Python: >=3.8,<3.11
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Provides-Extra: pymc
+Provides-Extra: stan
+Requires-Dist: numpy (>=1.21.2,<2.0.0)
+Requires-Dist: pymc (>=4.1.4,<5.0.0); extra == "pymc"
+Requires-Dist: requests (>=2.26.0,<3.0.0); extra == "stan"
+Project-URL: Repository, https://github.com/tweag/chainsail-resources
+Description-Content-Type: text/markdown
+
+# Chainsail PDF interfaces and utilities
+
+This small package complements the [Chainsail](https://chainsail.io) sampling service. It
+- defines the general interface for objects representing Chainsail-consumable probability distributions,
+- provides implementations thereof for popular probabilistic programming languages,
+- and contains a few helper scripts for post-processing.
+
+## Installation
+```bash
+$ pip install chainsail-helpers
+```
+If you'd like implement a probability density using [Stan](https://mc-stan.org) or [PyMC3](https://docs.pymc.io), install the corresponding extra dependencies like so: `poetry install --extras pymc3` and similarly for `stan`. 
+When using Chainsail, this package will be automatically installed, so no need to add it to the list of dependencies in the job submission form.
+If you like to develop this package, best use [Poetry](https://python-poetry.org):
+```bash
+$ poetry install
+$ poetry shell
+```
+and you will be dropped into a virtual environment with all dependencies installed.
+
+## Contributing
+Contributions, for example PDF implementations for other probabilistic programming languages, are highly welcome!
+Just open a pull request and we'll be happy to work with you to make Chainsail even more useful.
+
+## License
+&copy; 2021 [Tweag](https://tweag.io). `chainsail_helpers` is open-source software and licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
