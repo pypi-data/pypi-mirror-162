@@ -1,0 +1,56 @@
+[tool.pdm.dev-dependencies]
+dev = [
+    "pytest>=7.1.2",
+    "pytest-cov<3.0.0,>=2.11.1",
+    "pylint>=2.13.9",
+    "mypy>=0.971",
+    "flake8>=5.0.4",
+    "typeguard>=2.13.3",
+    "black>=22.6.0",
+]
+
+[tool.pdm.build]
+includes = []
+
+[tool.pdm.scripts.publish-test]
+cmd = "twine upload -r testpypi dist/*"
+
+[tool.pdm.scripts.publish]
+cmd = "twine upload dist/*"
+
+[build-system]
+requires = [
+    "pdm-pep517",
+]
+build-backend = "pdm.pep517.api"
+
+[project]
+name = "Fungi"
+version = "0.1.1"
+description = "A set of common utilities for iNotify (based on iNotify Simple) that makes it a little easier to work with"
+authors = [
+    { name = "Eugene Kovalev", email = "eugene@kovalev.systems" },
+]
+dependencies = [
+    "inotify-simple>=1.3.5",
+    "psutil<6.0.0,>=5.8.0",
+]
+requires-python = ">=3.7,<4.0"
+readme = "README.md"
+license-expression = "GPL-3.0-only"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+]
+
+[project.urls]
+repository = "https://gitlab.com/abraxos/fungi"
+documentation = "https://gitlab.com/abraxos/fungi"
+
+[project.optional-dependencies]

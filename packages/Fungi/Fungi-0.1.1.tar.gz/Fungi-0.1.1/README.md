@@ -1,0 +1,96 @@
+# Fungi
+
+A set of common utilities for iNotify that allows developers to keep track of file changes even when their application is not running.
+
+## Usage
+
+This library is designed as an easy way to work with iNotify for the purposes of tracking file changes. It is built on top of [`inotify-simple`](https://inotify-simple.readthedocs.io/en/latest/#) which is already excellent and makes some things a LOT easier, but this library tacks on some functionality, such as the ability to react to file changes that occur when the application is not running as well as the ability to deal with changes that iNotify does not pick up for whatever reason.
+
+The basic means of using it is something like this:
+
+```python
+from pathlib import Path
+from fungi import SQLiteMonitor, MODIFIED_OR_DELETED
+
+for changed in SQLiteMonitor(Path.home() / '.config' / 'my-app-file-tracking.db',
+                             MODIFIED_OR_DELETED,
+                             [Path.cwd()]).read(timeout=1000, read_delay=100):
+    print(changed)
+```
+
+So what's happening here? Well, we instantiate a [`SQLiteMonitor`](https://gitlab.com/abraxos/fungi/-/blob/main/fungi/core.py#L146), which uses a [SQLite Database](https://www.sqlite.org/index.html) to keep track of files and when they've been modified. In our example, this database would live in `~/.config/my-app-file-tracking.db`. On top of this, we have the `MODIFIED_OR_DELETED` flag, which is just a variable representing several flags used by `inotify-simple`. [You can see all the accepted flag inputs here](https://inotify-simple.readthedocs.io/en/latest/#inotify_simple.flags), [as well as how to use them](https://inotify-simple.readthedocs.io/en/latest/#example-usage). Then we have a list of paths to watch (which can be either directories or individual files), and finally we have the `timeout` which is how often (in milliseconds) it polls for changes that might not have been tracked for whatever reason, [and the `read_delay`](https://inotify-simple.readthedocs.io/en/latest/#inotify_simple.INotify.read).
+
+While the `SQLiteMonitor` uses a SQLite DB file to keep track of files, there are other options. For example, [`SymlinkMonitor`](https://gitlab.com/abraxos/fungi/-/blob/main/fungi/core.py#L191) takes a directory, where it keeps symlinks of tracked files and uses this to keep track of when files were modified. There is also a [`MemoryMonitor`](https://gitlab.com/abraxos/fungi/-/blob/main/fungi/core.py#L123) which only keeps information in memory, and the most basic [`Monitor`](https://gitlab.com/abraxos/fungi/-/blob/main/fungi/core.py#L22) which is just a thin wrapper iNotify observer. Note that `Monitor` and `MemoryMonitor` cannot keep track of files that change when they're not running, you have to use either `SymlinkMonitor` or `SQLiteMonitor`. One might ask, why bother with a `SymlinkMonitor`? What's the advantage? Isn't it considerably slower than SQLite? and the answer is that yes it is, however, the `SymlinkMonitor` allows you to see the symlinks in the file system as they are being tracked and even change them if you want to, easer than in a SQLite DB.
+
+Arguably the coolest part of this is what happens when you *stop* the script. Try it for yourself, stop it, make some changes, and then run the script again. You will notice that it prints out the modified files even though the script was not running!
+
+## Installation & Setup
+
+To install fungi with [`pip`](https://pip.pypa.io/en/stable/) execute the following:
+
+```bash
+pip install fungi
+```
+
+## Development
+
+### Standards
+
+- Be excellent to each other
+- Code coverage must be at 100% for all new code, or a good reason must be provided for why a given bit of code is not covered.
+  - Example of an acceptable reason: "There is a bug in the code coverage tool and it says its missing this, but its not".
+  - Example of unacceptable reason: "This is just exception handling, its too annoying to cover it".
+- The code must pass the following analytics tools. Similar exceptions are allowable as in rule 2.
+  - `pylint --disable=W1203,R0903 --max-line-length=120 ...`
+  - `flake8 --max-line-length=120 ...`
+  - `mypy --ignore-missing-imports --follow-imports=skip --strict-optional ...`
+- All incoming information from users, clients, and configurations should be validated.
+- All internal arguments passing should be typechecked whenever possible with `typeguard.typechecked`
+
+### Development Setup
+
+Using [pdm](https://pdm.fming.dev/latest/) install from inside the repo directory:
+
+```bash
+pdm install
+```
+
+#### IDE Setup
+
+**Sublime Text 3/4**
+
+```bash
+curl -sSL https://gitlab.com/-/snippets/2385805/raw/main/pdm.sublime-project.py | pdm run python
+```
+
+## Testing
+
+All testing should be done with `pytest` which is installed with the `dev` requirements.
+
+To run all the unit tests, execute the following from the repo directory:
+
+```bash
+pdm run pytest
+```
+
+This should produce a coverage report in `/path/to/dewey-api/htmlcov/`
+
+While developing, you can use [`watchexec`](https://github.com/watchexec/watchexec) to monitor the file system for changes and re-run the tests:
+
+```bash
+pdm run watchexec -r -e py,yaml pytest
+```
+
+To run a specific test file:
+
+```bash
+pdm run pytest tests/unit/test_core.py
+```
+
+To run a specific test:
+
+```bash
+pdm run pytest tests/unit/test_core.py::test_basic_inotify
+```
+
+For more information on testing, see the `pytest.ini` file as well as the [documentation](https://docs.pytest.org/en/stable/).
