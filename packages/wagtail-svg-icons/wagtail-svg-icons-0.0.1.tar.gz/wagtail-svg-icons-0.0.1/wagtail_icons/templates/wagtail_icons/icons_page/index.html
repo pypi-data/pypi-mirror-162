@@ -1,0 +1,27 @@
+<!-- @usefull main icon page -->
+{% extends "wagtailadmin/base.html" %}
+{% load static wagtailadmin_tags i18n %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'wagtail_icons/style/index.css' %}" type="text/css" />
+{% endblock %}
+
+
+{% block content %}
+
+    {% url "wagtailicons:add" as add_icon %}
+    {% url "wagtailicons:groups" as groups %}
+    {% include "wagtail_icons/icons_page/icons_header.html" with search_url="wagtailicons:index" title="Icons" second_btn=groups second_btn_text='Groups' action_url=add_icon group=group action_text='Add icons' action_icon='plus' icon="tick-inverse" %}
+
+    
+    <div class="nice-padding">
+        <div id="icons-results">
+            {% include "wagtail_icons/icons_page/icons_results.html" %}
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'wagtail_icons/js/index.js' %}"></script>
+{% endblock %}
