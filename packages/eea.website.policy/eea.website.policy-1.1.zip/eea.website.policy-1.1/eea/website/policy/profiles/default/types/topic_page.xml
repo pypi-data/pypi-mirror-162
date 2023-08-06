@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<object name="topic_page" meta_type="Dexterity FTI" i18n:domain="plone"
+   xmlns:i18n="http://xml.zope.org/namespaces/i18n">
+ <property name="title" i18n:translate="">Topic page</property>
+ <property name="description"
+    i18n:translate="">used for the so called Topic cards. contain environmental information.</property>
+ <property name="icon_expr">string:${portal_url}/document_icon.png</property>
+ <property name="factory">topic_page</property>
+ <property
+    name="add_view_expr">string:${folder_url}/++add++topic_page</property>
+ <property name="link_target"></property>
+ <property name="immediate_view">view</property>
+ <property name="global_allow">True</property>
+ <property name="filter_content_types">True</property>
+ <property name="allowed_content_types">
+  <element value="Image"/>
+  <element value="File"/>
+ </property>
+ <property name="allow_discussion">False</property>
+ <property name="default_view">view</property>
+ <property name="view_methods">
+  <element value="view"/>
+ </property>
+ <property name="default_view_fallback">False</property>
+ <property name="add_permission">cmf.AddPortalContent</property>
+ <property name="klass">plone.dexterity.content.Container</property>
+ <property name="behaviors">
+  <element value="plone.dublincore"/>
+  <element value="plone.namefromtitle"/>
+  <element value="plone.allowdiscussion"/>
+  <element value="plone.leadimage"/>
+  <element value="plone.locking"/>
+  <element value="collective.taxonomy.generated.themes"/>
+  <element value="plone.versioning"/>
+  <element value="collective.taxonomy.generated.hog_users"/>
+  <element value="volto.navtitle"/>
+  <element value="plone.excludefromnavigation"/>
+ </property>
+ <property name="schema"></property>
+ <property
+    name="model_source">&lt;model xmlns:i18n=&quot;http://xml.zope.org/namespaces/i18n&quot; xmlns:marshal=&quot;http://namespaces.plone.org/supermodel/marshal&quot; xmlns:form=&quot;http://namespaces.plone.org/supermodel/form&quot; xmlns:security=&quot;http://namespaces.plone.org/supermodel/security&quot; xmlns:indexer=&quot;http://namespaces.plone.org/supermodel/indexer&quot; xmlns:lingua=&quot;http://namespaces.plone.org/supermodel/lingua&quot; xmlns:users=&quot;http://namespaces.plone.org/supermodel/users&quot; xmlns=&quot;http://namespaces.plone.org/supermodel/schema&quot;&gt;
+    &lt;schema&gt;
+      &lt;fieldset name=&quot;layout&quot; label=&quot;Layout&quot;&gt;
+        &lt;field name=&quot;blocks&quot; type=&quot;plone.schema.jsonfield.JSONField&quot;&gt;
+          &lt;default&gt;{&#x27;1371555f-c65e-482c-9432-a35c24d72d7a&#x27;: {&#x27;@type&#x27;: &#x27;teaserGrid&#x27;, &#x27;columns&#x27;: [{&#x27;@type&#x27;: &#x27;teaser&#x27;, &#x27;id&#x27;: &#x27;460abd04-9b97-4f94-b06a-47ad84146ccf&#x27;}, {&#x27;@type&#x27;: &#x27;teaser&#x27;, &#x27;id&#x27;: &#x27;32a031fc-2654-4a0e-b02e-78569b94433d&#x27;}, {&#x27;@type&#x27;: &#x27;teaser&#x27;, &#x27;id&#x27;: &#x27;77042aa5-1a92-455a-a45e-4494cfbff1f7&#x27;}]}, &#x27;1e38c3f3-0ff7-4d7a-9780-522600109566&#x27;: {&#x27;@type&#x27;: &#x27;slate&#x27;, &#x27;plaintext&#x27;: &#x27;You may also be interested in...&#x27;, &#x27;value&#x27;: [{&#x27;children&#x27;: [{&#x27;text&#x27;: &#x27;You may also be interested in...&#x27;}], &#x27;type&#x27;: &#x27;h2&#x27;}]}, &#x27;8c3a9888-75b4-4a17-afd3-36a7f78a2d67&#x27;: {&#x27;@type&#x27;: &#x27;slateFootnotes&#x27;}, &#x27;90541288-9c43-4ea0-9244-2da646cac1d7&#x27;: {&#x27;@type&#x27;: &#x27;title&#x27;, &#x27;fixed&#x27;: True, &#x27;placeholder&#x27;: &#x27;Type topic title&#x27;, &#x27;required&#x27;: True}, &#x27;dc2a1e44-105d-4d76-bb70-939bb2358f72&#x27;: {&#x27;@type&#x27;: &#x27;slate&#x27;, &#x27;plaintext&#x27;: &#x27;Footnotes and references&#x27;, &#x27;value&#x27;: [{&#x27;children&#x27;: [{&#x27;text&#x27;: &#x27;Footnotes and references&#x27;}], &#x27;type&#x27;: &#x27;h2&#x27;}]}, &#x27;c8dab098-b5b3-4e16-8124-8b9581f9369f&#x27;: {&#x27;@type&#x27;: &#x27;slate&#x27;, &#x27;value&#x27;: [{&#x27;type&#x27;: &#x27;p&#x27;, &#x27;children&#x27;: [{&#x27;text&#x27;: &#x27;&#x27;}]}], &#x27;plaintext&#x27;: &#x27;&#x27;}, &#x27;23a519af-acec-44ed-bfd5-7588c2f8bfb3&#x27;: {&#x27;@type&#x27;: &#x27;columnsBlock&#x27;, &#x27;data&#x27;: {&#x27;blocks&#x27;: {&#x27;c2bfb1f0-99c8-4621-94d6-dd08b4931972&#x27;: {&#x27;blocks&#x27;: {&#x27;2d5d5853-c6ca-4af1-9bb0-c3f7392ae2b0&#x27;: {&#x27;@type&#x27;: &#x27;description&#x27;, &#x27;required&#x27;: True}, &#x27;12c42256-f7cd-4bfd-8185-bd23d36fccda&#x27;: {&#x27;@type&#x27;: &#x27;slate&#x27;, &#x27;fixed&#x27;: False, &#x27;plaintext&#x27;: &#x27;Section 1&#x27;, &#x27;required&#x27;: False, &#x27;value&#x27;: [{&#x27;children&#x27;: [{&#x27;text&#x27;: &#x27;Section 1&#x27;}], &#x27;type&#x27;: &#x27;h2&#x27;}]}, &#x27;823d2302-dd55-47b4-b6f9-5a993049e01f&#x27;: {&#x27;@type&#x27;: &#x27;slate&#x27;, &#x27;placeholder&#x27;: &#x27;Add some text&#x27;, &#x27;plaintext&#x27;: &#x27;&#x27;, &#x27;value&#x27;: [{&#x27;children&#x27;: [{&#x27;text&#x27;: &#x27;&#x27;}], &#x27;type&#x27;: &#x27;p&#x27;}]}, &#x27;8a25b988-6523-4d1a-9639-9b7fb4492062&#x27;: {&#x27;@type&#x27;: &#x27;slate&#x27;, &#x27;plaintext&#x27;: &#x27;Section 2&#x27;, &#x27;value&#x27;: [{&#x27;children&#x27;: [{&#x27;text&#x27;: &#x27;Section 2&#x27;}], &#x27;type&#x27;: &#x27;h2&#x27;}]}, &#x27;83a51064-c244-408b-828f-bd11886b756d&#x27;: {&#x27;@type&#x27;: &#x27;slate&#x27;, &#x27;placeholder&#x27;: &#x27;Some more text&#x27;, &#x27;plaintext&#x27;: &#x27;&#x27;, &#x27;value&#x27;: [{&#x27;children&#x27;: [{&#x27;text&#x27;: &#x27;&#x27;}], &#x27;type&#x27;: &#x27;p&#x27;}]}}, &#x27;blocks_layout&#x27;: {&#x27;items&#x27;: [&#x27;2d5d5853-c6ca-4af1-9bb0-c3f7392ae2b0&#x27;, &#x27;12c42256-f7cd-4bfd-8185-bd23d36fccda&#x27;, &#x27;823d2302-dd55-47b4-b6f9-5a993049e01f&#x27;, &#x27;8a25b988-6523-4d1a-9639-9b7fb4492062&#x27;, &#x27;83a51064-c244-408b-828f-bd11886b756d&#x27;]}}, &#x27;29f102bf-9ca9-4320-8189-11103622830b&#x27;: {&#x27;blocks&#x27;: {&#x27;bfc5f9f3-2be0-45ef-a5c7-b020eef94655&#x27;: {&#x27;@type&#x27;: &#x27;slate&#x27;, &#x27;value&#x27;: [{&#x27;type&#x27;: &#x27;p&#x27;, &#x27;children&#x27;: [{&#x27;type&#x27;: &#x27;strong&#x27;, &#x27;children&#x27;: [{&#x27;text&#x27;: &#x27;&#x27;}]}, {&#x27;text&#x27;: &#x27;&#x27;}]}], &#x27;plaintext&#x27;: &#x27; &#x27;}, &#x27;cde8c4d5-0f09-4aac-a3e1-98957d218860&#x27;: {&#x27;@type&#x27;: &#x27;slate&#x27;, &#x27;value&#x27;: [{&#x27;type&#x27;: &#x27;p&#x27;, &#x27;children&#x27;: [{&#x27;text&#x27;: &#x27;&#x27;}, {&#x27;type&#x27;: &#x27;strong&#x27;, &#x27;children&#x27;: [{&#x27;text&#x27;: &#x27;Navigation goes here&#x27;}]}, {&#x27;text&#x27;: &#x27;&#x27;}]}], &#x27;plaintext&#x27;: &#x27; Navigation goes here &#x27;}, &#x27;178c7bf0-7085-45b7-8508-7f7ead20a7dc&#x27;: {&#x27;@type&#x27;: &#x27;slate&#x27;, &#x27;value&#x27;: [{&#x27;type&#x27;: &#x27;ul&#x27;, &#x27;children&#x27;: [{&#x27;type&#x27;: &#x27;li&#x27;, &#x27;children&#x27;: [{&#x27;text&#x27;: &#x27;Data&#x27;}]}, {&#x27;type&#x27;: &#x27;li&#x27;, &#x27;children&#x27;: [{&#x27;text&#x27;: &#x27;Reports&#x27;}]}, {&#x27;type&#x27;: &#x27;li&#x27;, &#x27;children&#x27;: [{&#x27;text&#x27;: &#x27;News&#x27;}]}, {&#x27;type&#x27;: &#x27;li&#x27;, &#x27;children&#x27;: [{&#x27;text&#x27;: &#x27;...&#x27;}]}]}], &#x27;plaintext&#x27;: &#x27;Data Reports News ...&#x27;}}, &#x27;blocks_layout&#x27;: {&#x27;items&#x27;: [&#x27;cde8c4d5-0f09-4aac-a3e1-98957d218860&#x27;, &#x27;178c7bf0-7085-45b7-8508-7f7ead20a7dc&#x27;, &#x27;bfc5f9f3-2be0-45ef-a5c7-b020eef94655&#x27;]}}}, &#x27;blocks_layout&#x27;: {&#x27;items&#x27;: [&#x27;c2bfb1f0-99c8-4621-94d6-dd08b4931972&#x27;, &#x27;29f102bf-9ca9-4320-8189-11103622830b&#x27;]}}, &#x27;gridSize&#x27;: 12, &#x27;gridCols&#x27;: [&#x27;fourFifths&#x27;, &#x27;oneFifth&#x27;]}}&lt;/default&gt;
+          &lt;description/&gt;
+          &lt;required&gt;False&lt;/required&gt;
+          &lt;title&gt;Blocks&lt;/title&gt;
+        &lt;/field&gt;
+        &lt;field name=&quot;blocks_layout&quot; type=&quot;plone.schema.jsonfield.JSONField&quot;&gt;
+          &lt;default&gt;{&#x27;items&#x27;: [&#x27;90541288-9c43-4ea0-9244-2da646cac1d7&#x27;, &#x27;23a519af-acec-44ed-bfd5-7588c2f8bfb3&#x27;, &#x27;c8dab098-b5b3-4e16-8124-8b9581f9369f&#x27;, &#x27;1e38c3f3-0ff7-4d7a-9780-522600109566&#x27;, &#x27;1371555f-c65e-482c-9432-a35c24d72d7a&#x27;, &#x27;dc2a1e44-105d-4d76-bb70-939bb2358f72&#x27;, &#x27;8c3a9888-75b4-4a17-afd3-36a7f78a2d67&#x27;]}&lt;/default&gt;
+          &lt;description/&gt;
+          &lt;required&gt;False&lt;/required&gt;
+          &lt;title&gt;Blocks Layout&lt;/title&gt;
+        &lt;/field&gt;
+      &lt;/fieldset&gt;
+    &lt;/schema&gt;
+  &lt;/model&gt;</property>
+ <property name="model_file"></property>
+ <property name="schema_policy">dexterity</property>
+ <alias from="(Default)" to="(dynamic view)"/>
+ <alias from="edit" to="@@edit"/>
+ <alias from="sharing" to="@@sharing"/>
+ <alias from="view" to="(selected layout)"/>
+ <action title="View" action_id="view" category="object" condition_expr=""
+    icon_expr="" link_target="" url_expr="string:${object_url}"
+    visible="True">
+  <permission value="View"/>
+ </action>
+ <action title="Edit" action_id="edit" category="object" condition_expr=""
+    icon_expr="" link_target="" url_expr="string:${object_url}/edit"
+    visible="True">
+  <permission value="Modify portal content"/>
+ </action>
+</object>
