@@ -1,0 +1,8 @@
+__title__ = "sample-project"
+__description__ = "Sample Project"
+__url__ = ""
+__version__ = "0.0.7"
+__author__ = "Joey Ding"
+__author_email__ = "joeyding@tencent.com"
+__license__ = "Apache 2.0"
+__copyright__ = "Copyright 2022 Tencent"
