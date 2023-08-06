@@ -1,0 +1,58 @@
+Metadata-Version: 2.1
+Name: searchgithubrepo
+Version: 1.0.9
+Summary: Search repositories on GitHub
+Home-page: https://github.com/tushartushar/search-repo
+Author: Tushar Sharma
+Author-email: 000.tushar@gmail.com
+License: Apache License
+Platform: UNKNOWN
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Environment :: Console
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Science/Research
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Classifier: Operating System :: OS Independent
+Classifier: Operating System :: POSIX
+Classifier: Operating System :: Microsoft :: Windows
+Classifier: Operating System :: MacOS :: MacOS X
+Requires-Python: >=3.7
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
+
+The package searches repositories on GitHub using GraphQL API. One may specify parameters such as programming language, start date, and number of stars to get a *list of GitHub repositories modified on or after the specified start date* and satisfying other filters.
+
+The package takes care of constraints such as API limit and the size of responses by reducing the search scope (in terms of time) by following a mechanism similar to binary search. The search results are stored in a file separated in the following format per line.
+
+`<repo_owner>/<project name><space><programming language><space><modification date and time>`
+
+Ex: `apache/tomcat Java 2022-08-06T13:31:25Z`
+
+## Parameters
+- `--api-token`: GitHub API token or Personal Access Token
+- `--out-file`: Output file path
+- `--start-date`: Start date for search in dd-mm-yyyy
+- `--lang`: Primary programming language of the repositories 
+- `--min-stars`: Minimum star count 
+- `--verbose`: Verbose mode 
+
+## Example
+Install `searchgithubrepo` package using `pip` and use it in your program.
+```python
+from searchrepo import search_repo
+
+one_day_old_date = (datetime.datetime.now().date() - datetime.timedelta(days=1))
+search_repo(start_date=one_day_old_date,
+            out_file='repos.csv',
+            api_token='51ec41929c6f48c23482a734534327d308', # fake; just for the example
+            stars=100,
+            lang='Java', 
+            verbose=True)
+```
+
+
