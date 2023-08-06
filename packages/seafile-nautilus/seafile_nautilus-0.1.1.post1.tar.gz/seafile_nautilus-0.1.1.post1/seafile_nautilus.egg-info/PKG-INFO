@@ -1,0 +1,166 @@
+Metadata-Version: 2.1
+Name: seafile-nautilus
+Version: 0.1.1.post1
+Summary: Seafile script for gnome-files (nautilus)
+Home-page: https://gitlab.com/zigma12/seafile-nautilus
+Author: Vincent Raspal
+Author-email: vincent.raspal@uca.fr
+License: MIT
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Operating System :: POSIX :: Linux
+Classifier: Environment :: X11 Applications :: Gnome
+Classifier: Intended Audience :: End Users/Desktop
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3.8
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
+# Description
+
+`seafile_nautilus` provides Nautilus users the ability to manage seafile links
+directly from the file manager (right-click menu > scripts). Once the package is
+installed, the `seafile-nautilus` command is defined for the user and can be called
+in a Nautilus script (note the dash `-` instead of the underscore `_`).
+
+`seafile_nautilus` allows to simply display, create and delete and alter permissions of 
+seafile links for local files contained in synchronized libraries. Three types of links (share,
+internal and upload) are supported. Link details can be easily viewed (creator name,
+expiration date, read/write permissions, etc.).
+    
+`seafile_nautilus` also allows to open directly a file or a folder in the cloud.
+
+The interface is based on `Zenity`.
+
+![](https://gitlab.com/zigma12/seafile-nautilus/-/raw/master/doc/main_window.png "seafile_nautilus main window")
+
+# Install the python package
+First, install pip3 (if not already present):
+
+    $ sudo apt install python3-pip
+Then, install `nautilus_seafile` package from Pypi:
+
+    $ pip3 install nautilus_seafile
+---
+
+If `pip` raises the warning below
+
+    WARNING: The script seafile-nautilus is installed in '/home/USER/.local/bin' which is not on PATH.
+    Consider adding this directory to PATH or, if you prefer to suppress this warning, use --no-warn-script-location.
+
+simply log out and in again.
+
+---
+
+Now, if the previous operations were successful, type `seafile-nautilus` in a terminal
+and you should get the response below: 
+    
+    $ seafile-nautilus
+
+    usage: seafile-nautilus [-h] [-v] file [file ...]
+    seafile-nautilus: error: the following arguments are required: file
+
+
+# Create a nautilus interface
+Add a script to nautilus scripts folder:
+
+    $ cd ~/.local/share/nautilus/scripts/
+    $ echo '#!/usr/bin/sh'    >  seafile_nautilus
+    $ echo 'seafile-nautilus' >> seafile_nautilus
+    $ chmod +x seafile_nautilus
+---
+**Tip:** If the first command fails for the folder does not exist, then type<br>
+`mkdir -p ~/.local/share/nautilus/scripts/`
+---
+Optionnaly, add `nautilus_seafile` icon to the script:
+
+    $ gio set seafile_nautilus metadata::custom-icon 'file://'$(python3 -m site --user-site)'/seafile_nautilus/icons/icon.png'
+
+# Usage
+
+## From Nautilus
+
+Simply right-click on a file or folder from a synchronized
+library, choose `scripts` then `seafile_nautilus`.
+
+## From a terminal
+
+    seafile-nautilus relative/or/absolute/path/to/the/file/or/folder
+
+## From python: simple usage
+
+    >>> from seafile_nautilus.main import main
+    >>> main('relative/or/absolute/path/to/the/file/or/folder')
+
+## From python: api usage
+
+Instead of calling `seafile_nautilus.main` function you can use directly the 
+seafile api by importing classes from `seafile_nautilus.seafile`.
+
+    >>> from seafile_nautilus.seafile import *
+    >>> from pprint import pprint
+
+Create a `SeafileAccount()`. This requires that `seafile-cli` is installed and correctly 
+configured (server, user, password).
+
+    >>> account = SeafileAccount()
+    >>> account.username
+    'john.doe@xyz.com'
+    
+    >>> account.url
+    'https://seafile.server.com'
+     
+    >>> account.token
+    'c9fdd29e372ed61deb1540a6b066a7ce6c53b44f'
+
+One can list the libraries stored on the safile server:
+
+    >>> account.remote_repository.get_libs()
+    {<RemoteLibrary> id=5092085d-11bb-4f52-aa7e-7ac49c6287d4 name=Folder1,
+     <RemoteLibrary> id=d9a74e89-348b-4ae3-953a-72eb0835be54 name=Folder2,
+     <RemoteLibrary> id=8affbb97-50d0-4998-975c-a5ccff650c31 name=Folder3,
+     <RemoteLibrary> id=8ac50c31-ac49-74e8-085d-2eb08affbc87 name=Folder4}
+And those stored and synchronized locally:
+
+    >>> account.local_repository.local_libraries
+    {<LocalLibrary> id=5092085d-11bb-4f52-aa7e-7ac49c6287d4 name=/home/john/Seafile/Folder1,
+     <LocalLibrary> id=d9a74e89-348b-4ae3-953a-72eb0835be54 name=/home/john/Seafile/Folder2,
+     <LocalLibrary> id=8affbb97-50d0-4998-975c-a5ccff650c31 name=/home/john/Seafile/Folder3}
+Choose one element (file or folder) of a synchronized library
+
+    >>> elt = SyncedElement(account, '/home/john/Seafile/Folder1/my_file.pdf')
+Look at the file details from the seafile server point of view:
+
+    >>> pprint(elt.file_details.__dict__)  # for folders, use 'elt.dir.details' instead
+    {'can_edit': False,
+     'comment_total': 0,
+     'id': '92ab1f0bfa3549100425279833701024adf04f11',
+     'last_modified': datetime.datetime(2021, 11, 22, 7, 43, 48, tzinfo=datetime.timezone(datetime.timedelta(seconds=3600))),
+     'last_modifier_contact_email': 'john.doe@xyz.com',
+     'last_modifier_email': 'john.doe@xyz.com',
+     'last_modifier_name': 'John DOE',
+     'mtime': 1637563428,
+     'name': 'my_file.pdf',
+     'permission': 'rw',
+     'size': 146945,
+     'starred': False,
+     'type': 'file'}
+
+Check whether the file already has a share link:
+
+    >>> details = elt.get_share_link_details()
+    >>> details.link
+    'https://seafile.server.com/d/8aa5fe4897375a988712/'
+and its permissions
+
+    >>> details.permissions
+    Permissions(can_edit=False, can_download=True, can_upload=False)
+You can set different permission parameters  (disallowing download for example):
+
+    >>> new_perm = Permissions(can_edit=False, can_download=False, can_upload=False)
+    >>> elt.set_share_link_permissions(new_perm)
+    >>> elt.get_share_link_details().permissions
+    Permissions(can_edit=False, can_download=False, can_upload=True)
+
+Let's see the file on the cloud:
+
+    >>> elt.show_on_cloud()
