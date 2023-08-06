@@ -1,0 +1,76 @@
+[tool.poetry]
+name = "slotscheck"
+version = "0.15.0"
+description = "Ensure your __slots__ are working properly."
+authors = ["Arie Bovenberg <a.c.bovenberg@gmail.com>"]
+license = "MIT"
+classifiers = [
+    "Typing :: Typed",
+    "Topic :: Software Development :: Quality Assurance",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+]
+packages = [
+    { include = "slotscheck", from = "src" },
+]
+readme = "README.rst"
+include = ["CHANGELOG.rst", "README.rst"]
+repository = "https://github.com/ariebovenberg/slotscheck"
+homepage = "https://github.com/ariebovenberg/slotscheck"
+
+[tool.poetry.dependencies]
+python = ">=3.6.2,<4"
+importlib-metadata = {version = ">=1,<5", python = "<3.8"}
+dataclasses = {version = ">=0.6", python = "<3.7"}
+click = "^8.0"
+tomli = ">=0.2.6,<3.0.0"
+
+[tool.poetry.dev-dependencies]
+flake8 = "^5.0.4"
+isort = "^5.7.0"
+mypy = "^0.971"
+pytest = "^7.0.1"
+tox = "^3.25.1"
+black = "^22.6"
+pytest-cov = "^3.0.0"
+pytest-mock = "^3.6.1"
+types-dataclasses = "^0.6.6"
+# Not actually used, but a rare library whose __init__ is an extension.
+pydantic = "1.9.1"
+
+[tool.poetry.scripts]
+slotscheck = "slotscheck.cli:root"
+
+[tool.black]
+line-length = 79
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.eggs
+  | \.hg
+  | \.git
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = 'black'
+line_length = 79
+
+[tool.slotscheck]
+strict-imports = true
+require-subclass = true
+require-superclass = true
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
