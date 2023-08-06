@@ -1,0 +1,59 @@
+[tool.poetry]
+authors = ["Konstantin-Dudersky <Konstantin.Dudersky@gmail.com>"]
+description = "Генерация документации"
+name = "konstantin_docs"
+readme = "README.md"
+repository = "https://github.com/Konstantin-Dudersky/konstantin_docs"
+version = "0.0.14"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+requests = "*"
+typing_extensions = "*"
+
+[build-system]
+build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core>=1.0.0"]
+
+[tool.poetry.dev-dependencies]
+black = "*"
+darglint = "*"
+flake8 = "*"
+flake8-annotations = "*"
+flake8-broken-line = "*"
+flake8-class-attributes-order = "*"
+flake8-commas = "*"
+flake8-docstrings = "*"
+flake8-import-order = "*"
+flake8-multiline-containers = "*"
+flake8-print = "*"
+flake8-return = "*"
+flake8-variables-names = "*"
+pep8-naming = "*"
+poethepoet = "*"
+pylint = "*"
+
+[tool.black]
+line-length = 80
+
+[tool.poe.tasks]
+docs = {script = "konstantin_docs.main:generate_images(path_src='test/dia_src', path_dist='test/dia_dist')"}
+lint = ["lint_pyright", "lint_flake8"]
+lint_flake8 = {shell = 'flake8 konstantin_docs/'}
+lint_pyright = {shell = 'pyright'}# npm install --global pyright
+
+[tool.pylint.BASIC]
+good-names = 'db'
+
+[tool.pylint.'MESSAGES CONTROL']
+extension-pkg-whitelist = "pydantic"
+
+[tool.pylint.logging]
+logging-format-style = "old"
+logging-modules = ["logging"]
+
+[tool.pyright]
+include = ["konstantin_docs"]
+pythonPlatform = "Linux"
+pythonVersion = "3.10"
+typeCheckingMode = "strict"
