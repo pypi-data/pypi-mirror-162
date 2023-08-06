@@ -1,0 +1,73 @@
+[project]
+name = "mfdls"
+version = "0.0.2"
+description = "A language server, implementing the Language Server Protocol, for the MEDFORD metadata markup language."
+authors = [
+    { name="Liam Strand", email="Liam.Strand@tufts.edu" },
+    { name="Andrew Powers", email="andrew_powers@uri.edu" },
+]
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Topic :: Text Processing :: Markup",
+    "Topic :: Text Editors :: Integrated Development Environments (IDE)",
+    "Operating System :: OS Independent",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project.urls]
+homepage = "https://github.com/liam-strand/medford-language-server/"
+repository = "https://github.com/liam-strand/medford-language-server/"
+
+
+# Requirements
+[dependencies]
+pygls = "^0.11"
+medford = "^1.0"
+
+[dev-dependencies]
+black = "^22.1"
+mock = "^4.0"
+pylint = "^2.24"
+pytest = "^7.1"
+mypy = "0.*"
+
+#### BLACK ####
+
+[tool.black]
+line-length = 88
+target_version = ['py38']
+
+#### MYPY ####
+
+[tool.mypy]
+python_version = 3.8
+
+[[tool.mypy.overrides]]
+module = "MEDFORD.*"
+ignore_missing_imports = true
+
+#### PYLINT ####
+
+[tool.pylint.'BASIC']
+good-names = ["f", "ls", "medford-language-server"]
+
+[tool.pylint.'LOGGING']
+logging-format-style = "new"
+
+[tools.pylint."MASTER"]
+py-version = 3.8
+jobs = 0
+
+[tool.pylint.'MESSAGES CONTROL']
+disable = ["R1705", "R0801"]
+# R1705: sometimes having each branch enumerated is more clear
+# R0801: sometimes you need to repeat yourself
+[tool.pylint.'REPORTS']
+output-format = "colorized"
