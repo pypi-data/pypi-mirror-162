@@ -1,0 +1,60 @@
+Metadata-Version: 2.1
+Name: putali
+Version: 0.0.1
+Summary: Extracting information from the website
+Author: Ujjawal Shah
+Author-email: ujjawalshah360@gmail.com
+License: UNKNOWN
+Keywords: python,email,phone number,telephone,url,count url
+Platform: UNKNOWN
+Classifier: Development Status :: 1 - Planning
+Classifier: Intended Audience :: Developers
+Classifier: Programming Language :: Python :: 3
+Classifier: Operating System :: Unix
+Classifier: Operating System :: MacOS :: MacOS X
+Classifier: Operating System :: Microsoft :: Windows
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
+
+# putali
+
+Under construction! Give a try at it!
+
+Developed by Ujjawal Shah (c) 2022
+
+## Examples of How To Use Package
+
+Count number of total URL
+
+```python
+import putali
+
+urls = putali.Getallurls('https://www.bok.com.np/')
+total_unique_url = len(urls.uniqueurls())
+print(f'total unique urls: {total_unique_url}')
+```
+
+Get all urls from which information can be extracted. 
+Those webpages which are non-image can only be used to extract information i.e webpages excluding '.pdf', '.jpeg', '.jpg', '.zip', '.png' extension
+
+```python
+import putali
+
+urls = putali.Getallurls('https://www.bok.com.np/')
+
+#usefulurls() will filter the urls except the ones with '.pdf', '.jpeg', '.jpg', '.zip', '.png' extension
+useful_urls = urls.usefulurls()
+print(f'useful urls: {useful_urls}')
+```
+
+Print all the emails from the website
+
+```python
+import putali
+
+urls = putali.Getallurls('https://www.bok.com.np/')
+email_address = urls.emails()
+print(f'emails: {email_address}')
+```
+
