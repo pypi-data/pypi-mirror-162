@@ -1,0 +1,41 @@
+{
+    "name": "Stocks Layer",
+    "tests": [
+        {
+            "name": "Stock 1",
+            "request": {
+                "method": "post",
+                "path": "/stocks/",
+                "headers": {
+                    "Authorization": "$kushal_token"
+                },
+                "body": {
+                    "name": "Google",
+                    "price": "1100.00",
+                    "sector": "$tech_id",
+                    "unallocated": 10000,
+                    "total_volume": 10000
+                }
+            },
+            "response": {
+                "type": "object",
+                "validations": [
+                    {
+                        "key": "id"
+                    },
+                    {
+                        "key": "name"
+                    }
+                ]
+            },
+            "store": [
+                {
+                    "key": "id",
+                    "alias": "tech_id"
+                }
+            ],
+            "status_code": 201,
+            "points": 1
+        }
+    ]
+}
