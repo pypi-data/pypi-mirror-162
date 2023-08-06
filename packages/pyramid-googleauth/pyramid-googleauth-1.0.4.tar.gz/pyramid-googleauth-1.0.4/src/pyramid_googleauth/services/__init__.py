@@ -1,0 +1,1 @@
+from pyramid_googleauth.services.google_auth import GoogleAuthService
