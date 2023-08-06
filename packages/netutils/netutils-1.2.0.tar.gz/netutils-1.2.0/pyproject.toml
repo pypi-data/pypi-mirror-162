@@ -1,0 +1,122 @@
+[tool.poetry]
+name = "netutils"
+version = "v1.2.0"
+description = "Common helper functions useful in network automation."
+authors = ["Network to Code, LLC <opensource@networktocode.com>"]
+license = "Apache-2.0"
+homepage = "https://netutils.readthedocs.io"
+repository = "https://github.com/networktocode/netutils"
+documentation = "https://netutils.readthedocs.io"
+readme = "README.md"
+keywords = ["netutils", "network utils", "network utilities", "net-utils"]
+classifiers = [
+    "Intended Audience :: Developers",
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+]
+include = [
+    "CHANGELOG.md",
+    "LICENSE",
+    "README.md",
+    "netutils/protocols.json"
+]
+
+[tool.poetry.dependencies]
+python = "^3.6"
+
+[tool.poetry.dev-dependencies]
+bandit = "*"
+black = {version="^21.10b0", python="^3.6.2"}
+coverage = "*"
+invoke = "*"
+flake8 = "*"
+pylint = "*"
+pytest = "*"
+pyyaml = "*"
+pydocstyle = "*"
+m2r2 = "*"
+sphinx = "*"
+sphinx-rtd-theme = "*"
+toml = "*"
+yamllint = "*"
+mypy = "^0.961"
+
+[tool.black]
+line-length = 120
+target-version = ['py37']
+include = '\.pyi?$'
+exclude = '''
+(
+  /(
+      \.eggs         # exclude a few common directories in the
+    | \.git          # root of the project
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | _build
+    | buck-out
+    | build
+    | dist
+  )/
+  | settings.py     # This is where you define files that should not be stylized by black
+                     # the root of the project
+)
+'''
+
+[tool.pylint.basic]
+# No docstrings required for private methods (Pylint default), or for test_ functions, or for inner Meta classes.
+no-docstring-rgx="^(_|test_|Meta$)"
+good-names="i,ip,j,k,ex,Run,_"
+
+[tool.pylint.messages_control]
+# Line length is enforced by Black, so pylint doesn't need to check it.
+# Pylint and Black disagree about how to format multi-line arrays; Black wins.
+disable = """,
+    line-too-long,
+    bad-continuation,
+    consider-iterating-dictionary,
+    """
+
+[tool.pylint.miscellaneous]
+# Don't flag TODO as a failure, let us commit with things that still need to be done in the code
+notes = """,
+    FIXME,
+    XXX,
+    """
+
+[tool.pytest.ini_options]
+python_paths = "./"
+testpaths = "tests/"
+addopts = "-vv --doctest-modules -p no:warnings --ignore-glob='*mock*'"
+
+[tool.mypy]
+python_version = 3.7
+ignore_errors = false
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_untyped_decorators = true
+check_untyped_defs = true
+disallow_any_generics = true
+ignore_missing_imports = true
+strict_optional = true
+warn_unused_ignores = true
+warn_return_any = true
+warn_unused_configs = true
+warn_redundant_casts = true
+disallow_subclassing_any = true
+no_implicit_optional = true
+implicit_reexport = true
+strict_equality = true
+exclude = ["tests/", "tasks.py"]
+show_error_codes = true
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
