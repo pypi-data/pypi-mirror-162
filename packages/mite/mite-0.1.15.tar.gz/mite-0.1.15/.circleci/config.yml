@@ -1,0 +1,124 @@
+version: 2.1
+
+orbs:
+  python: circleci/python@2.0.3
+
+# Further ideas for jobs to run:
+# - license check
+# - make sure test coverage increases
+# And, once we're sure that the pipeline is working:
+# - integration/performance tests
+# Once we have docs:
+# - documentation coverage
+# - docs build (on master only)
+
+
+workflows:
+  mite:
+    jobs:
+      - build-and-test
+      - tag:
+          requires:
+            - build-and-test
+          filters:
+            branches:
+              only: master
+      - linux-wheels:
+          requires:
+            - tag
+          filters:
+            branches:
+              only: master
+      - osx-wheels:
+          requires:
+            - tag
+          filters:
+            branches:
+              only: master
+
+
+jobs:
+  build-and-test:
+    docker:
+      - image: cimg/python:3.10
+    steps:
+      - checkout
+      - python/install-packages:
+          pkg-manager: pip
+      - python/install-packages:
+          pip-dependency-file: test-requirements.txt
+          pkg-manager: pip
+      - python/install-packages:
+          pip-dependency-file: dev-requirements.txt
+          pkg-manager: pip
+      - run:
+          name: pre-commit checks
+          command: pre-commit run --origin HEAD --source origin/master || git diff
+      - run:
+          name: tox
+          command: tox -e py310
+
+  tag:
+    docker:
+      - image: cimg/python:3.10
+    steps:
+      - add_ssh_keys:
+          fingerprints:
+            - "fc:39:a2:b8:32:23:52:a5:fe:45:b6:9b:12:e7:30:2a"
+      - checkout
+      - run:
+          name: tag github version
+          command: bash cd-scripts/cdRelease.sh -v patch
+
+  linux-wheels:
+    # we only need to build the 'mite' wheels on one platform
+    # so we only need to run `python3 -m build` in this job
+    working_directory: ~/linux-wheels
+    docker:
+      - image: cimg/python:3.10
+    environment:
+      CIBW_BEFORE_ALL_LINUX: "yum install -y libcurl-devel || apt-get install -y libcurl-dev || apk add curl-dev"
+      CIBW_SKIP: "*i686"
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build the Linux wheels.
+          command: |
+            pip3 install --user cibuildwheel==2.8.1 build Cython twine
+            python3 -m build --outdir ./wheelhouse
+            cd acurl && cibuildwheel --output-dir ../wheelhouse
+      - run:
+          name: init .pypirc
+          command: |
+            echo -e "[pypi]" >> ~/.pypirc
+            echo -e "username = __token__" >> ~/.pypirc
+            echo -e "password = $PYPI_PASSWORD" >> ~/.pypirc
+      - run:
+          name: upload packages to pypi
+          command: twine upload wheelhouse/*
+      # - store_artifacts:
+      #     path: wheelhouse/
+
+  osx-wheels:
+    working_directory: ~/osx-wheels
+    macos:
+      xcode: 12.5.1
+    steps:
+      - checkout
+      - run:
+          name: Build the OS X wheels.
+          command: |
+            pip3 install cibuildwheel==2.8.1 Cython twine
+            cd acurl && cibuildwheel --output-dir ../wheelhouse
+      - run:
+          name: init .pypirc
+          command: |
+            echo -e "[pypi]" >> ~/.pypirc
+            echo -e "username = __token__" >> ~/.pypirc
+            echo -e "password = $PYPI_PASSWORD" >> ~/.pypirc
+      - run:
+          name: upload packages to pypi
+          command: twine upload wheelhouse/*
+      # - store_artifacts:
+      #     path: wheelhouse/
