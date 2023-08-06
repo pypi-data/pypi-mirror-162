@@ -1,0 +1,10 @@
+#!/bin/bash
+newexec="${0%/lalapps_spec_avg}/lalpulsar_spec_avg"
+echo >&2
+echo "WARNING: 'lalapps_spec_avg' has been renamed to 'lalpulsar_spec_avg'" >&2
+echo "WARNING: please update your scripts" >&2
+echo "WARNING: now running '${newexec}' ..." >&2
+echo >&2
+case "$1" in -h|--help) exit 1;; esac
+exec "${newexec}" "$@"
+exit 1
