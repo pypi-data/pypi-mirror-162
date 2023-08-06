@@ -1,0 +1,89 @@
+[build-system]
+requires = ["setuptools>=40.8.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "torrentfile"
+authors = [{name = "alexpdev", email = "alexpdev@pm.me"}]
+description = "Terminal based command line tool for creating Bittorrent files."
+license = {file = "LICENSE"}
+version = "0.8.0"
+readme = "./README.md"
+requires-python = ">=3.6"
+keywords = ["Bittorrent", "torrent", "bittorrent-metafiles", "CLI"]
+classifiers = [
+    "Environment :: Console",
+    "Development Status :: 4 - Beta",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3 :: Only",
+    "Intended Audience :: End Users/Desktop",
+    "Intended Audience :: Developers",
+    "Topic :: Utilities",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "License :: OSI Approved :: Apache Software License",
+]
+dependencies = ["pyben"]
+
+[project.scripts]
+torrentfile = "torrentfile.__main__:main"
+
+[tool.bandit]
+skips = ["B101"]
+
+[tool.black]
+line-length = 79
+
+[tool.autopep8]
+max_line_length = 80
+ignore = "E266"
+in-place = true
+recursive = true
+aggressive = 3
+
+[tool.pytest.ini_options]
+testpaths = [
+    "tests",
+    "torrentfile",
+]
+console_output_style = "progress"
+addopts = "--maxfail=5"
+
+
+[tool.pylint. 'MESSAGES CONTROL']
+disable = [
+    "R1729",
+    "W0108",
+    "redefined-outer-name",
+    "attribute-defined-outside-init",
+    "invalid-name",
+    "not-callable",
+    "consider-using-with"
+]
+
+[tool.pylint. 'VARIABLES']
+callbacks = ["cb_", "_cb", "hook_"]
+
+[tool.pylint. 'FORMAT']
+max-line-length = 80
+single-line-if-stmt = true
+
+[tool.pylint.'SIMILARITIES']
+ignore-comments = true
+ignore-docstrings=true
+ignore-imports=true
+
+[tool.pylint. 'DESIGN']
+max-args=15
+min-public-methods=0
+max-attributes=20
+max-statements=75
+max-branches=20
+min-similarity-lines=4
+max-locals=25
