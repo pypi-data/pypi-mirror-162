@@ -1,0 +1,82 @@
+Metadata-Version: 2.1
+Name: Pyfka
+Version: 0.1.0
+Summary: A python library to easily create kafka producer/consumer and manage topics
+Home-page: https://github.com/Claudezss/PyKafka
+Author: Yan Zhang
+License: GNU
+Project-URL: Source, https://github.com/Claudezss/PyKafka
+Project-URL: Tracker, https://github.com/Claudezss/PyKafka/issues
+Keywords: kafka
+Platform: unix
+Platform: linux
+Platform: osx
+Platform: cygwin
+Platform: win32
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: Operating System :: MacOS :: MacOS X
+Classifier: Operating System :: Microsoft :: Windows
+Classifier: Operating System :: POSIX
+Classifier: License :: OSI Approved :: GNU General Public License (GPL)
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Topic :: Software Development :: Libraries
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
+# PyKafka
+A python library to easily create kafka producer/consumer and manage topics
+
+## Install
+
+```shell
+pip install PyKafka
+```
+
+## Setup
+Use `docker-compose.yaml` file to start kafka service
+
+```shell
+docker-compose up -d
+```
+
+## Samples
+
+### Producer
+
+```python
+from pykafka import PyKafkaConfig, PyKafkaTopic, producer
+
+config = PyKafkaConfig(
+    {
+        "bootstrap.servers": "localhost:9092",
+        "group.id": "default",
+        "auto.offset.reset": "earliest",
+    }
+)
+
+my_topics = [
+    PyKafkaTopic(name="my.topic1", partitions=[0]),
+    PyKafkaTopic(name="my.topic2", partitions=[0, 1]),
+]
+
+@producer(
+    topics=my_topics,
+    config=config,
+)
+def my_producer(my_name: str):
+    return {
+        "name": my_name
+    }
+
+if __name__ == "__main__":
+    my_producer("Jack")
+    my_producer("Alice")
+
+```
+
