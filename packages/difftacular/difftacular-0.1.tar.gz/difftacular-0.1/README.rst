@@ -1,0 +1,23 @@
+difftacular: Extra diff-generation commands for Bazaar
+======================================================
+
+This `Breezy <https://breezy-vcs.org/>`_ plugin adds a few commands that
+perform variants on the basic ``brz diff`` command.
+
+``brz diff-mainline`` performs a diff between the specified revisions,
+reflecting only changes originated in the mainline: that is, it first
+applies any merges introduced between the old and new revisions to a
+temporary copy of the old tree, and then performs a diff between that
+temporary copy and the new tree.  For example, this can be used to see
+changes introduced while resolving conflicts during a manual merge.
+
+``brz diff-ignore-branches`` performs a diff between the specified
+revisions, but ignoring merges from the specified branches.
+
+``brz preview-diff`` performs a preview diff in the style used by Launchpad
+merge proposals: it shows the diff that would be introduced by merging the
+tip of the source branch into the target branch.  If a prerequisite branch
+is also given using the ``--prerequisite-branch`` option, then it will merge
+the tip of the prerequisite branch into a temporary copy of the target
+branch, and then show the diff that would be introduced by merging the tip
+of the source branch into that temporary copy.
