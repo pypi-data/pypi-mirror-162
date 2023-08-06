@@ -1,0 +1,26 @@
+{% load i18n %}
+{% trans Report %} {{ frequency_verbose }}. {% trans "Time interval:" %} {{ notification_start|date:"d/m/Y H:i:s" }} - {{ notification_end|date:"d/m/Y H:i:s" }}
+
+
+    {% for report, notification_report in notification_reports.items %}
+        <h1>REPORT {{report}}</h1>
+        {% for value, notification_report_value in notification_report.items %}
+            <h2>>> {{ value }}</h2>
+            {% for key, summary_detail in notification_report_value.summaries.items %}
+                <h3>{{ key }}</h3>
+                {% for summary_detail_value, how_many in summary_detail.items %}
+                    <p>{{ summary_detail_value }}: <strong>{{ how_many }} {% trans "times" %} </strong></p>
+                {% endfor %}
+            {% endfor %}
+            {% if notification_report_value.notifications|length > 0 %}
+                <h2>{% trans "Notifications" %}</h2>
+                {% for n in notification_report_value.notifications %}
+                    {% include "email/components/notification.html" %}
+                {% endfor %}
+            {% endif %}
+        {% endfor %}
+    {% endfor %}
+
+
+<br>
+{% trans "Staff of" %} {{ site_name }}<br>
