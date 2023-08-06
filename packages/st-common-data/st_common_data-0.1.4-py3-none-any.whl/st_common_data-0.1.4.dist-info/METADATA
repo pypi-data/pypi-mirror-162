@@ -1,0 +1,50 @@
+Metadata-Version: 2.1
+Name: st-common-data
+Version: 0.1.4
+Summary: Data that is used in different ST projects
+Home-page: https://github.com/ivanovds/st_common_data
+Author: Daniil Ivanov
+Author-email: danil.98and@gmail.com
+Project-URL: Bug Tracker, https://github.com/ivanovds/st_common_data/issues
+Classifier: Programming Language :: Python :: 3
+Classifier: Environment :: Web Environment
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+License-File: LICENCE
+
+# ST common data
+
+## Introduction
+
+`st_common_data` is common data that is used in different ST projects.
+## Installation
+
+```shell
+pip install st_common_data
+```
+
+## Usage
+
+```python
+from st_common_data.nyse_holidays import NYSE_HOLIDAYS
+from st_common_data.utils.common import (
+    is_holiday,
+    get_current_eastern_datetime,
+    round_half_up_decimal,
+    # ....     
+)
+```
+
+## To update pip package via terminal:
+
+```
+python3 -m build
+python3 -m pip install --upgrade twine
+```
+
+Run this command from the same directory where dist directory is located:
+```
+twine upload dist/*
+```
