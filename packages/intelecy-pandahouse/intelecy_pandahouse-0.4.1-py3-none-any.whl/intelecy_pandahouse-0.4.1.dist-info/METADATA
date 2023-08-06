@@ -1,0 +1,51 @@
+Metadata-Version: 2.1
+Name: intelecy-pandahouse
+Version: 0.4.1
+Summary: Pandas interface for Clickhouse HTTP API
+Home-page: https://github.com/Intelecy/pandahouse
+License: BSD-3-Clause
+Author: Krisztián Szűcs
+Author-email: szucs.krisztian@gmail.com
+Requires-Python: >=3.8.0,<4.0.0
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Requires-Dist: pandas (>=1.4.3)
+Requires-Dist: requests (>=2.28.1)
+Requires-Dist: toolz (>=0.12.0)
+Project-URL: Repository, https://github.com/Intelecy/pandahouse
+Description-Content-Type: text/markdown
+
+Pandahouse
+==========
+
+> Note: this is a fork. You probably want to use https://github.com/kszucs/pandahouse
+
+Pandas interface for ClickHouse HTTP API
+
+Install
+-------
+
+```bash
+pip install pandahouse
+```
+
+Usage
+-----
+
+Writing a dataframe to ClickHouse
+
+```python
+connection = {"host": "http://clickhouse-host:8123",
+              "database": "test"}
+affected_rows = to_clickhouse(df, table="name", connection=connection)
+```
+
+Reading arbitrary ClickHouse query to pandas
+
+```python
+df = read_clickhouse("SELECT * FROM {db}.table", index_col="id",
+                     connection=connection)
+```
