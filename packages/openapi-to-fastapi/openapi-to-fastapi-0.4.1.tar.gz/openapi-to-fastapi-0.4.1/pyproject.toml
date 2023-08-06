@@ -1,0 +1,35 @@
+[tool.poetry]
+name = "openapi-to-fastapi"
+version = "0.4.1"
+description = "Create FastAPI routes from OpenAPI spec"
+authors = ["Digital Living International Ltd"]
+license = "BSD-3-Clause"
+readme = "README.md"
+repository = "https://github.com/ioxiocom/openapi-to-fastapi"
+packages = [
+    {include="openapi_to_fastapi", from="."}
+]
+
+[tool.poetry.scripts]
+openapi-validator = "openapi_to_fastapi.cli:cli_validate_specs"
+
+[tool.poetry.dependencies]
+python = ">=3.7,<4.0.0"
+datamodel-code-generator = "^0.12.0"
+fastapi = "^0.75.2"
+genson = "^1.2.2"
+click = "^8.1.2"
+coloredlogs = "^15.0.1"
+
+[tool.poetry.dev-dependencies]
+isort = "^5.10.1"
+pytest = "^7.1.1"
+pytest-asyncio = "^0.18.3"
+snapshottest = "^0.6.0"
+flake8 = "^4.0.1"
+mypy = "^0.942"
+invoke = "^1.7.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
