@@ -1,0 +1,84 @@
+[tool.poetry]
+name = "aporia"
+version = "v2.6.0"
+description = "Aporia SDK"
+authors = []
+readme = "README.md"
+repository = "https://github.com/aporia-ai/sdk"
+
+[tool.poetry.dependencies]
+python = "^3.7"
+aiohttp = "^3.8.0"
+orjson = "^3.6.4"
+certifi = "^2022.6.15"
+importlib-metadata = { version = "^1.5.0", python = "<3.8" }
+tenacity = ">=7.0 <9.0"
+numpy = [
+    { version = ">=1.15 <1.22", python = "~3.7" },
+    { version = "^1.17.4", python = "^3.8" },
+]
+pyspark = { version = "^3.0", optional = true }
+pandas = [
+    { version = ">=1.0 <1.4", python = "~3.7", optional = true },
+    { version = "^1.0", python = "^3.8", optional = true },
+]
+
+[tool.poetry.dev-dependencies]
+pytest = "~7.1"
+pytest-asyncio = "~0.18"
+# Installing aioresponses from git, because they don't have a PyPI release for python 3.10
+aioresponses = { git = "https://github.com/pnuckowski/aioresponses.git", tag = "0.7.3" }
+isort = "~5.10"
+black = "~22.6"
+mypy = "~0.961"
+flake8 = "~4.0"
+flake8-import-order = "~0.18"
+flake8-bugbear = "~22.7"
+flake8-bandit = "~3.0"
+flake8-annotations = "~2.9"
+flake8-docstrings = "~1.6"
+darglint = "~1.8"
+
+[tool.poetry.extras]
+training = ["pandas"]
+pandas = ["pandas"]
+pyspark = ["pyspark"]
+all = ["pandas", "pyspark"]
+
+[tool.coverage.paths]
+source = ["src", "*/site-packages"]
+
+[tool.coverage.run]
+branch = true
+source = ["aporia"]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 100
+
+[tool.black]
+line-length = 100
+
+[tool.isort]
+profile = "black"
+force_sort_within_sections = true
+lexicographical = true
+order_by_type = false
+group_by_package = true
+no_lines_before = ['LOCALFOLDER']
+line_length = 100
+known_first_party = ['aporia']
+
+[tool.mypy]
+show_error_codes = true
+
+[[tool.mypy.overrides]]
+module = ["pytest", "_pytest.*", "aioresponses", "numpy", "pandas", "pandas.*", "pyspark.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
