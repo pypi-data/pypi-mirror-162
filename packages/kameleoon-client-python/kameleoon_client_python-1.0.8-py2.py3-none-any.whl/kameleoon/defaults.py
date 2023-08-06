@@ -1,0 +1,35 @@
+"""Default constants"""
+
+import os
+
+BASE_DIR: str = os.path.dirname((os.path.dirname(__file__)))
+
+DEFAULT_BLOCKING: bool = False
+
+DEFAULT_CONFIGURATION_PATH: str = os.path.join('/etc', 'kameleoon', 'client-python.yaml')
+
+DEBUG: bool = True
+
+DEFAULT_TIMEOUT_MILLISECONDS: int = 15000  # milli-seconds
+
+DEFAULT_MILLISECONDS_BETWEEN_TARGETING_DATA_UPDATE: int = 1800000
+
+MINUTES_SESSION_DURATION: int = 30
+
+TARGETING_DATA_MAXIMUM_SIZE_BYTES = 500
+
+DEFAULT_VISITOR_DATA_MAXIMUM_SIZE = 500  # Mb
+
+KAMELEOON_COOKIE_NAME = 'kameleoonVisitorCode'
+
+EXPIRE_DAYS = 380
+
+MAX_AGE = 32832000
+
+KAMELEOON_COOKIE_VALUE_LENGTH = 16
+
+KAMELEOON_VISITOR_CODE_LENGTH = 255
+
+DEFAULT_CONFIGURATION_UPDATE_INTERVAL = 60 * 60  # sec
+
+KAMELEOON_KEY_JS_COOKIE = "_js_"
