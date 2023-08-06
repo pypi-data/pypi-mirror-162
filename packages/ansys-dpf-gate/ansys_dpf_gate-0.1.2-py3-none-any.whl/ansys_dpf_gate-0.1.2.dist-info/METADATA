@@ -1,0 +1,40 @@
+Metadata-Version: 2.1
+Name: ansys-dpf-gate
+Version: 0.1.2
+Summary: DPF Python helpers to call DPF C and gRPC APIs
+Home-page: UNKNOWN
+Author: ANSYS
+Author-email: ramdane.lagha@ansys.com
+Maintainer-email: pyansys.maintainers@ansys.com
+License: Ansys Redistribution License
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Science/Research
+Classifier: Topic :: Scientific/Engineering :: Information Analysis
+Classifier: Operating System :: Microsoft :: Windows
+Classifier: Operating System :: POSIX
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Requires-Python: >=3.7.*
+Description-Content-Type: text/markdown
+Requires-Dist: numpy
+Requires-Dist: ansys.grpc.dpf (>=0.2.3)
+Requires-Dist: protobuf (<4.0)
+Requires-Dist: ansys-dpf-gatebin ; platform_system != "Darwin"
+
+# ansys-dpf-gate: DPF (Ansys Data Processing Framework) python helpers to call DPF C and gRPC APIs
+
+This module is designed to provide helper APIs to call C functions from DPFClientAPI (.dll or .so)
+from python.
+DPFClientAPI is a dynamic library providing C APIs to create, access and modify DPF's objects "in process" 
+(sharing memory) and/or in "client/server" mode through gRPC. DPFClientAPI wraps and makes easier the switch
+between the 2 modes of communication.
+
+To allow for backward compatibility with old DPF Servers (strictly older than Ansys 2022 R2), which didn't have a DPFClientAPI,
+an implementation of ansys-dpf-capi functions is done with direct calls to ansys-grpc-dpf (dpf grpc python module which
+directly communicates with DPF server).
+
+
+
