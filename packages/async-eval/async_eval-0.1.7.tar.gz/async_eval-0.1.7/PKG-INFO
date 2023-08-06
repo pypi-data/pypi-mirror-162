@@ -1,0 +1,37 @@
+Metadata-Version: 2.1
+Name: async-eval
+Version: 0.1.7
+Summary: eval async code from sync
+Home-page: https://github.com/uriyyo/async-eval
+License: MIT
+Author: Yurii Karabas
+Author-email: 1998uriyyo@gmail.com
+Requires-Python: >=3.7,<4.0
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Provides-Extra: all
+Provides-Extra: pydevd-pycharm
+Provides-Extra: trio
+Requires-Dist: nest-asyncio (>=1.5.5,<2.0.0)
+Requires-Dist: pydevd-pycharm (>=222.3739.30,<223.0.0); extra == "pydevd-pycharm" or extra == "all"
+Requires-Dist: trio (>=0.21.0,<0.22.0); extra == "trio" or extra == "all"
+Project-URL: Repository, https://github.com/uriyyo/async-eval
+Description-Content-Type: text/markdown
+
+# async-eval
+
+```python
+from async_eval import eval
+
+
+async def foo() -> int:
+    return 10
+
+
+print(eval("await foo()"))
+```
+
