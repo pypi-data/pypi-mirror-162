@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Page Title</title>
+<meta name="viewport" content="initial-scale=1.0, user-scalable=yes"/>
+<link rel="stylesheet" href="resources/web/style.css">
+<link rel="stylesheet" href="resources/web/leaflet-1.7.1.css"/>
+<script src="resources/web/leaflet-1.7.1.js"></script>
+<script src="resources/web/turf.js"></script>
+<script type="text/javascript" src="qrc:///qtwebchannel/qwebchannel.js"></script>
+</head>
+<body>
+
+ <div id="map"></div>
+
+ <script>
+
+  new QWebChannel(qt.webChannelTransport, function (channel) {
+      var map_view = channel.objects.map_view;
+      var string_editor_controller = channel.objects.string_editor_controller;
+
+      // modules layout
+      var modules_geojson = null;
+
+      // defect annotations
+      var annotation_data = null;
+
+      // string annotations
+      var string_annotation_data = null;
+      var string_annotation_lines = null;
+      var string_annotation_labels = null;
+
+      // show/hide map layers
+      var show_strings = null;
+
+      var map = L.map('map');
+      L.tileLayer(
+          'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+          maxZoom: 22,
+          maxNativeZoom: 19,
+          zoom: 18,
+          zoomSnap: 0,
+          zoomDelta: 0.5,
+          wheelPxPerZoomLevel: 70,
+      }).addTo(map);
+
+      map.on('click', () => {
+        map_view.printObj(JSON.stringify("Clicked on map"));
+        var selected_string_id = null;
+        string_editor_controller.set_selected_string_id(JSON.stringify(selected_string_id));
+      });
+
+      reset_map();
+
+      function reset_map() {
+        map.setView(new L.LatLng(48.1, 11.5), 8);
+      }
+
+      // callback when module is clicked
+      function module_clicked(event) {
+        const track_id = event.target.feature.properties.track_id;
+        map_view.printObj(JSON.stringify("Clicked on module " + track_id));
+        map_view.set_track_id(JSON.stringify(track_id));
+      }
+
+      function draw_data(data, colors, fit_map_bounds) {
+        if (data.length === 0) { return; }
+
+        // clear map
+        if (modules_geojson !== null) {
+          map_view.printObj(JSON.stringify("Deleting modules_geojson"));
+          map.removeLayer(modules_geojson);
+        }
+
+        // draw PV modules on map
+        modules_geojson = L.geoJSON(data, {
+          onEachFeature: function(feature, layer) {
+            layer._leaflet_id = feature.properties.track_id;
+            //layer.track_id = layer.feature.properties.track_id;
+            layer.on({
+              click: module_clicked
+            });
+          },
+          filter: function(feature, layer) {
+            return (feature.geometry.type == "Polygon");
+          },
+          style: function(feature) {
+            var color = colors[feature.properties.track_id];
+            return {
+              "color": color,
+              "fillColor": color,
+              "weight": 1,
+              "opacity": 1,
+              "fill": true,
+              "fillOpacity": 0.5
+            };
+          }
+        }).addTo(map);
+
+        draw_defect_annotations();
+        draw_string_annotations();
+
+        if (fit_map_bounds) {
+          map.fitBounds(modules_geojson.getBounds());
+        }
+      }
+
+      //*****************************************************************
+      //  Draw modules and analysis data
+      //*****************************************************************
+
+      // draw modules whenever dataset changes
+      map_view.dataset_changed.connect(function(fit_map_bounds) {
+          map_view.printObj(JSON.stringify("Loading dataset in JS."));
+
+          // draw modules + data
+          map_view.get_data(function(data) {
+            var map_data = JSON.parse(data);
+            if (map_data === null) { return; }
+            draw_data(map_data.data, map_data.colors, fit_map_bounds);
+          });
+      });
+
+      // clear modules when dataset is closed
+      map_view.dataset_closed.connect(function() {
+        map_view.printObj(JSON.stringify("Closing dataset, clearing data in JS"));
+        map.removeLayer(modules_geojson);
+        modules_geojson = null;
+        reset_map();
+      });
+
+      // highlight currently selected module
+      map_view.track_id_changed.connect(function(track_id_prev, track_id) {
+        if (modules_geojson === null) { return; }
+        if (track_id_prev) {
+          var layer = modules_geojson.getLayer(track_id_prev);
+          modules_geojson.resetStyle(layer);
+        }
+        var layer = modules_geojson.getLayer(track_id);
+        if (layer) {
+          layer.setStyle({
+            color: 'red',
+            fillColor: 'red'
+          });
+        }
+        draw_defect_annotations();
+      });
+
+      // "show strings" checked/unchecked
+      map_view.show_strings_changed.connect(function(value) {
+        show_strings = value;
+        draw_string_annotations();
+      });
+
+      //*****************************************************************
+      //  Draw defect annotation data
+      //*****************************************************************
+
+      function reset_defect_annotations() {
+        if (modules_geojson === null) { return; }
+        modules_geojson.eachLayer(function (layer) {
+          var fill_color = layer.options.fillColor;
+          layer.setStyle({color: fill_color, fillColor: fill_color, weight: 1});
+        });
+      }
+
+      function draw_defect_annotations() {
+        if (modules_geojson === null) { return; }
+        if (annotation_data === null) { 
+          reset_defect_annotations();
+          return;
+        }
+        map_view.printObj(JSON.stringify("Drawing defect annotations."));
+        modules_geojson.eachLayer(function (layer) {
+          var track_id = layer.feature.properties.track_id;
+          var defects = annotation_data[track_id];          
+          if (defects.length > 0) {
+            var fill_color = layer.options.fillColor;
+            layer.setStyle({color: 'red', fillColor: fill_color, weight: 3});
+          }
+          // reset style
+          else {
+            var fill_color = layer.options.fillColor;
+            layer.setStyle({color: fill_color, fillColor: fill_color, weight: 1});
+          }
+        });
+      }
+
+      // load annotation data whenever defect annotations change
+      map_view.annotation_data_changed.connect(function() {
+        map_view.get_annotation_data(function(data) {
+          annotation_data = JSON.parse(data);
+          draw_defect_annotations();
+        });
+      });
+
+      //*****************************************************************
+      //  Draw string annotation data
+      //*****************************************************************
+
+      function reset_string_annotations() {
+        if (string_annotation_lines === null) {
+          return;
+        }
+        map.removeLayer(string_annotation_lines);
+        map.removeLayer(string_annotation_labels);
+        string_annotation_lines = null;
+        string_annotation_labels = null;
+      }
+
+      function handle_string_clicked(event) {
+        map_view.printObj(JSON.stringify("String clicked"));
+        var selected_string_id = event.target.string_id;
+        string_editor_controller.set_selected_string_id(JSON.stringify(selected_string_id));
+        L.DomEvent.stopPropagation(event);
+      }
+
+      function draw_string_annotations() {
+        reset_string_annotations();
+        if (string_annotation_data === null) { return; }
+        if (!show_strings) { return; }
+        map_view.printObj(JSON.stringify("Drawing string annotations."));
+        var lines = [];
+        var labels = [];
+        for (const [string_id, data] of Object.entries(string_annotation_data.string_data)) {
+          if (data.points.length < 2) { return; }
+          // draw string line segments
+          var line_segments = [];
+          for (var i = 1; i < data.points.length; i++) {
+            var style;
+            if (data.paused[i]) {
+              style = {weight: 2, opacity: 1, color: '#ff0000'}; // red
+            }
+            else {            
+              style = {weight: 2, opacity: 1, color: '#636363'}; // blue
+            }
+            line_segments.push(new L.polyline(
+              [data.points[i-1], data.points[i]], 
+              style
+            ));
+          }
+          var line = new L.featureGroup(line_segments);
+          line.string_id = string_id;
+          line.on('click', handle_string_clicked);
+          lines.push(line);
+          // string ID label as SVG
+          var label_svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+          label_svg.setAttribute('xmlns', "http://www.w3.org/2000/svg");
+          label_svg.setAttribute('viewBox', "0 0 200 200");          
+          label_svg.setAttribute('style', "font-size: 10em; fill: #636363; overflow: visible;");
+          label_svg.innerHTML = '<text x="100" y="100" text-anchor="middle" alignment-baseline="central" class="string_annotation_label">' + string_id + '</text>';
+          var center = line.getBounds().getCenter();
+          var bounds = L.latLngBounds([center.lat - 0.000005, center.lng - 0.00001], [center.lat + 0.000005, center.lng + 0.00001])
+          var label = new L.svgOverlay(label_svg, bounds, {interactive: true});
+          label.string_id = string_id;
+          label.on('click', handle_string_clicked);
+          labels.push(label);
+        }
+        string_annotation_lines = L.featureGroup(lines).addTo(map);
+        string_annotation_labels = L.featureGroup(labels).addTo(map);
+      }
+
+      // string annotation data changed
+      string_editor_controller.string_annotation_data_changed.connect(function() {
+        map_view.printObj(JSON.stringify("string_annotation_data_changed"));
+        // get annotation data
+        string_editor_controller.get_string_annotation_data(function(data) {
+          string_annotation_data = JSON.parse(data);
+          draw_string_annotations();
+        }); 
+      })
+
+      // string selection changed
+      string_editor_controller.selected_string_id_changed.connect(function(selected_string_id_prev, selected_string_id) {
+        map_view.printObj(JSON.stringify("selected_string_id_changed " + selected_string_id + " " + selected_string_id_prev));
+        if (modules_geojson === null) { return; }
+        if (string_annotation_data === null) { return; }
+        // reset highlighting of previous selected string
+        if (selected_string_id_prev) {
+          for (track_id of string_annotation_data.string_data[selected_string_id_prev].track_ids) {
+            var layer = modules_geojson.getLayer(track_id);
+            modules_geojson.resetStyle(layer);
+          }
+        }
+        // highlight selected string
+        if (selected_string_id) {
+          for (track_id of string_annotation_data.string_data[selected_string_id].track_ids) {
+            var layer = modules_geojson.getLayer(track_id);
+            layer.setStyle({
+              color: '#9673ba',
+              fillColor: '#9673ba'
+            });
+          }
+        }
+        draw_defect_annotations();
+      });
+
+      //*****************************************************************
+      //  Handle string annotation
+      //*****************************************************************
+
+      var current_string_layer;  // contains the lines of the current string on the leaflet map
+      var intersecting_modules;  // list of modules interesected by current (non-paused) string lines
+      var current_string_points; // points defining the lines of the current string
+      var current_string_paused_states; // paused state of each line segments of the current string
+      var paused;
+
+      // draw line segments that make up the current string
+      function draw_current_string() {
+        if (current_string_layer) {
+          map.removeLayer(current_string_layer);
+        }
+        if (current_string_points.length < 2) { return; }
+        var line_segments = [];
+        for (var i = 1; i < current_string_points.length; i++) {
+          var style;
+          if (current_string_paused_states[i]) {
+            style = {weight: 2, opacity: 1, color: '#ff0000'}; // red
+          }
+          else {            
+            style = {weight: 2, opacity: 1, color: '#425df5'}; // blue
+          }
+          line_segments.push(new L.polyline(
+            [current_string_points[i-1], current_string_points[i]], 
+            style
+          ));
+        }
+        current_string_layer = new L.featureGroup(line_segments).addTo(map);
+      }
+
+      // handle mouse click on map in string annotation mode
+      function handle_line_drawing(event) {
+        if (modules_geojson === null) { return; }
+        intersecting_modules = [];
+
+        var click_point = turf.point([event.latlng.lng, event.latlng.lat]);
+        var clicked_module_center = null;
+
+        // get center point of module clicked
+        modules_geojson.eachLayer(function (layer) {
+          var module = turf.polygon(layer.feature.geometry.coordinates);
+          if (turf.booleanWithin(click_point, module)) {
+            clicked_module_center = turf.centroid(module);
+          }
+        });
+        if (clicked_module_center === null) { return; }
+        clicked_module_center = turf.getCoord(clicked_module_center);
+        current_string_points.push(L.latLng(clicked_module_center[1], clicked_module_center[0]));
+        current_string_paused_states.push(paused);
+
+        if (current_string_points.length < 2) { return; }
+        draw_current_string();
+
+        // get modules intersected by the (non-paused) line segments
+        var lines = []; 
+        for (var i = 1; i < current_string_points.length; i++) {
+          var line = new L.polyline([current_string_points[i-1], current_string_points[i]]);
+          lines.push(turf.lineString(line.toGeoJSON().geometry.coordinates));
+        }
+        modules_geojson.eachLayer(function (layer) {
+          var track_id = layer.feature.properties.track_id;
+          var module = turf.polygon(layer.feature.geometry.coordinates);
+          for (var i = 0; i < lines.length; i++) {
+            if (!current_string_paused_states[i+1]) {  // skip paused lines
+              if (turf.booleanIntersects(module, lines[i])) {
+                if (intersecting_modules.filter(e => e.track_id === track_id).length === 0 ) {  // prevent duplicates
+                  intersecting_modules.push({"track_id": track_id, "module": module});
+                }
+              }
+            }
+          }
+        });
+
+        // determine order of modules along current string line (gives lowest level module IDs)
+        var current_string_polyline = new L.polyline(current_string_points);
+        var line = turf.lineString(current_string_polyline.toGeoJSON().geometry.coordinates);
+        var distance_along_line = {};
+        for (var i = 0; i < intersecting_modules.length; i++) {
+          var track_id = intersecting_modules[i].track_id
+          var module_center = turf.centroid(intersecting_modules[i].module);
+          var nearest_line_point = turf.nearestPointOnLine(line, module_center, {units: 'kilometers'});
+          distance_along_line[track_id] = nearest_line_point.properties.location;
+        }
+        intersecting_modules = intersecting_modules.slice().sort(function(a, b) {  
+          return distance_along_line[a.track_id] - distance_along_line[b.track_id];
+        });
+      }
+
+      // "new string" clicked
+      string_editor_controller.new_string.connect(function() {
+        current_string_points = [];
+        current_string_paused_states = [];
+        intersecting_modules = [];
+      });
+      
+      // "start drawing" clicked
+      string_editor_controller.drawing_started.connect(function(drawing_string) {
+        if (modules_geojson === null) { return; }
+        map.on('click', handle_line_drawing);
+      });
+
+      // "end drawing" clicked
+      string_editor_controller.drawing_ended.connect(function(drawing_string) {
+        map.off('click', handle_line_drawing);
+        // store current string annotation in temporary string data of model
+        string_editor_controller.set_temporary_string_annotation_data(JSON.stringify({
+          "modules": intersecting_modules,
+          "points": current_string_points,
+          "paused": current_string_paused_states
+        }));
+      });
+
+      // "pause drawing" / "continue drawing" clicked
+      string_editor_controller.drawing_paused_changed.connect(function(value) {
+        paused = value;
+      });
+
+      // "cancel string" clicked
+      string_editor_controller.cancel_string.connect(function() {
+        current_string_points = [];
+        current_string_paused_states = [];
+        intersecting_modules = [];
+        draw_current_string();
+      });
+
+      // string confirmed
+      string_editor_controller.confirm_string.connect(function() {
+        current_string_points = [];
+        current_string_paused_states = [];
+        intersecting_modules = [];
+        draw_current_string();
+      });
+  });
+ </script>
+
+</body>
+</html>
