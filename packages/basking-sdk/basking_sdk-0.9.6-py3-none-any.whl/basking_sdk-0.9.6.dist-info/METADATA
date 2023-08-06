@@ -1,0 +1,103 @@
+Metadata-Version: 2.1
+Name: basking-sdk
+Version: 0.9.6
+Summary: Basking.io python SDK
+Home-page: https://basking.io
+Author: Basking Automation GmbH
+Author-email: info@basking.io
+License: Copyright © 2022 Basking Automation GmbH
+        
+        Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+        The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+        THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+        IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+        
+Project-URL: Homepage, https://basking.io
+Keywords: occupancy analytics data api bas basking basking.io
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.7, <4
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: backoff (==2.1.2)
+Requires-Dist: boto3 (==1.24.45)
+Requires-Dist: botocore (==1.27.45)
+Requires-Dist: graphqlclient (==0.2.4)
+Requires-Dist: pandas (==1.4.3)
+Requires-Dist: pytz (==2022.1)
+Requires-Dist: requests (==2.28.1)
+Requires-Dist: certifi (==2022.6.15) ; python_full_version >= "3.6.0"
+Requires-Dist: charset-normalizer (==2.1.0) ; python_full_version >= "3.6.0"
+Requires-Dist: numpy (==1.23.1) ; python_version < "3.10" and platform_machine != "aarch64" and platform_machine != "arm64"
+Requires-Dist: python-dateutil (==2.8.2) ; python_version >= "2.7" and python_version not in "3.0, 3.1, 3.2, 3.3"
+Requires-Dist: six (==1.16.0) ; python_version >= "2.7" and python_version not in "3.0, 3.1, 3.2, 3.3"
+Requires-Dist: urllib3 (==1.26.11) ; python_version >= "2.7" and python_version not in "3.0, 3.1, 3.2, 3.3, 3.4, 3.5" and python_version < "4"
+Requires-Dist: idna (==3.3) ; python_version >= "3.5"
+Requires-Dist: jmespath (==1.0.1) ; python_version >= "3.7"
+Requires-Dist: s3transfer (==0.6.0) ; python_version >= "3.7"
+
+# Basking.io SDK
+
+Integrate your data with the Basking API, customize the reports & experience,
+and join the community of developers building with workplace software apps together with Basking.
+
+Basking.io is a cloud based workplace occupancy platform.
+More Information about Basking can be found here: https://basking.io
+
+Basking uses a GraphQL API. The following Python SDK is a wrapper around the production API
+designed for our customers that require to access to data programmatically.
+
+## Requirements
+
+* python >=3.7 (current tested version: 3.9)
+* pipenv
+* A [basking.io account](https://app.basking.io)
+
+## Getting started
+
+#### set the following environment variables:
+* `BASKING_USERNAME`: Your username (usually your email)
+* `BASKING_USER_PASSWORD`: Your password for Basking. 
+* _Optional_: `BASKING_AWS_REGION`: the aws region where your Basking.io instance is hosted. (Defaults to `eu-central-1`)
+* _Optional_: `BASKING_API_URL`: the url of the Basking API you would like to query. (Defaults to `api.basking.io`)
+
+```
+import logging
+from basking.basking_sdk import Basking
+
+# set the default logging
+logging.basicConfig()
+
+# mofify the required level of logging for Basking
+logging.getLogger('Basking').setLevel(logging.INFO)
+logging.getLogger('botocore').setLevel(logging.INFO)
+
+# initialize the SDK and set general query parameters
+basking_client = Basking()
+
+# list buildings the current user has access to
+df_buildings = basking_client.location.get_user_buildings(pandify=True)
+
+# get building meta data
+building_meta_data = basking_client.location.get_building(
+building_id=building_id
+)
+tz_str = building_meta_data['data']['getBuilding']['timeZone']
+
+
+# get building daily occupancy statistics
+df_daily = basking_client.occupancy.get_building_occupancy_stats_daily(
+building_id=building_id,
+start_obj_tz_unaware=start_date_obj,
+end_obj_tz_unaware=end_date_obj,
+pandify=True
+)
+df_daily.to_csv('./df_daily.csv')
+```
+
+
+For more examples, see `basking.api_usage_example`, or [contact us](https://basking.io/contact-us/)
