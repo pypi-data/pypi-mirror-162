@@ -1,0 +1,94 @@
+Metadata-Version: 2.1
+Name: HypixelPlayerApi
+Version: 1.1.2
+Summary: A package that you can use to get the data of a player in hypixel, and hypixel skyblock.
+Author-email: Keshav Verma <vkeshav300@gmail.com>
+Maintainer-email: Keshav Verma <vkeshav300@gmail.com>
+License: MIT License
+        
+        Copyright (c) 2021 Keshav V.
+        
+        Permission is hereby granted, free of charge, to any person obtaining a copy
+        of this software and associated documentation files (the "Software"), to deal
+        in the Software without restriction, including without limitation the rights
+        to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+        copies of the Software, and to permit persons to whom the Software is
+        furnished to do so, subject to the following conditions:
+        
+        The above copyright notice and this permission notice shall be included in all
+        copies or substantial portions of the Software.
+        
+        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+        IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+        FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+        AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+        LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+        OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+        SOFTWARE.
+        
+Project-URL: Homepage, https://github.com/vkeshav300/PlayerApiContact/
+Project-URL: Bug Tracker, https://github.com/vkeshav300/PlayerApiContact/issues/
+Project-URL: Releases, https://github.com/vkeshav300/PlayerApiContact/releases/
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Natural Language :: English
+Classifier: Development Status :: 7 - Inactive
+Requires-Python: >=3.9.13
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
+# Hypixel Player Api (vkeshav300):
+> v1.1.2
+
+This is a package made for getting the data of Hypixel Minecraft players in JSON format. You can also get the data of the player's Skyblock profiles.
+
+## General Information:
+### To Install:
+For Windows / macOS:
+```
+pip install HypixelPlayerApi
+```
+
+### If you get an error:
+Make sure you are on the latest version of Python! Also make sure that you have the latest version of this package! To get on the latest version of this package, you can enter the command found below:
+```
+pip install --upgrade HypixelPlayerApi
+```
+If you still have an error, go to the Issues link found under the Links section below.
+
+### Changes Since Last Version:
+- **ADDED** option to use a player's `username` instead of their `uuid_dashed`.
+- **UPDATED** README to be more organized
+- **ADDED** `Using The Package` section to tell how to use the package.
+- **REMOVED** links that only worked on Github.
+
+### Links:
+[Issues](https://github.com/vkeshav300/PlayerApiContact/Issues), [Releases](https://github.com/vkeshav300/PlayerApiContact/releases/), [Author Profile](https://github.com/vkeshav300), [PyPI page](https://pypi.org/project/HypixelPlayerApi/),
+
+## Using The Package:
+### To Import:
+```
+from HypixelPlayerApi import plr
+```
+### How to instantiate
+```
+obj = plr.Player([<(Player UUID-Dashed) or (Player Username)>, <(UUID) or (USERNAME)>], <API_KEY>)
+```
+In argument 1, you input a list, with the player's uuid-dashed or username as the first element in the list, and then you enter a string telling the program that you entered the UUID or Username. You will see examples at the end of the `How to instantiate` section.
+To get the `uuid_dashed` of a player, just go to a website like namemc.com and search up the player's username. It should give you their `uuid` & `uuid_dashed`. To get the `API_KEY`, type `/api` in a Hypixel server. If your `API_KEY` gets leaked, create a new one.
+
+```
+obj = plr.Player(['TestUser123', 'USERNAME'], <API_KEY>) # With USERNAME
+```
+```
+obj = plr.Player(['abcdefgh-ijkl-mnop-qrst-uvwxyz', 'UUID'], <API_KEY>) # With UUID-Dashed
+```
+
+### Code Examples:
+```
+PlayerData = obj.get_hypixel_stats() # Returns Hypixel player data
+```
+```
+SkyblockData = obj.get_skyblock_data(<Profile>) # Returns Hypixel Skyblock data for the inputted profile
+```
