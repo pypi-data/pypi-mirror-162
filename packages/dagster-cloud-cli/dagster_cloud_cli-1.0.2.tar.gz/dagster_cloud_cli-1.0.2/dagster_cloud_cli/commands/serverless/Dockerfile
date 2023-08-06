@@ -1,0 +1,21 @@
+FROM python:3.8-slim
+
+RUN pip install --upgrade pip
+
+# This is to enable Docker caching - if setup.py exists, we install the dependencies before
+#   copying all other files
+COPY *setup.py /setup.py
+RUN if [ -f "setup.py" ]; then \
+        pip install .; \
+    fi
+
+WORKDIR /opt/dagster/app
+COPY . /opt/dagster/app
+
+# Install the rest of dependencies in case there is a requirements.txt
+RUN if [ -f "requirements.txt" ]; then \
+        pip install -r requirements.txt; \
+    fi
+
+# Make sure dagster-cloud is installed. Fail early here if not.
+RUN dagster-cloud --version
