@@ -1,0 +1,87 @@
+Metadata-Version: 2.1
+Name: dingonyms
+Version: 0.8
+Summary: fetch synonyms from various web services
+Home-page: https://fossil.include-once.org/pagetranslate/wiki/dingonyms
+License: PD
+Keywords: glossary,synonyms,antonyms
+Classifier: License :: Public Domain
+Classifier: Topic :: Communications :: Email :: Filters
+Classifier: Topic :: Internet :: WWW/HTTP :: Indexing/Search
+Classifier: Topic :: Text Processing :: Filters
+Requires-Python: >= 3.6
+Description-Content-Type: text/markdown
+Requires-Dist: requests (>=2.4)
+
+CLI tool to extract synonyms/antonyms from online services, which formats
+them into dict structures (`word|alt :: definition; etc.`) suitable for
+[`ding`](https://www-user.tu-chemnitz.de/~fri/ding/).
+
+![img](https://fossil.include-once.org/pagetranslate/raw/ac0a03111ddc72?m=image/png)
+
+It's fairly basic, and not all result sets are structured alike.
+Furthermore the extraction schemes aren't likely to last for long (web
+scraping is typically a maintenance task).  
+Only scans for singular words (most services wouldn't return results
+otherwise). And might yield error messages for charset issues as well.
+
+### SYNTAX
+
+>     dingonyms --merriamwebster "find"
+
+| Parameter         | Aliases                                     | Class |
+|-------------------|---------------------------------------------|-------|
+| \--thesaurus      | -t --thes                                   | EN    |
+| \--merriamwebster | -mw --merr \--webster \--merweb             | EN    |
+| \--synonym        | -s --syn -\-synonym.com                     | EN    |
+| \--reverso        | \--rev  //  -fr -es -it -pt -nl -ru -jp     | EN/\**|
+| \--wordhippo      | -hippo --wordhip                            | EN    |
+| \--mobythesaurus  | -mby --moby                                 | EN    |
+| \--urban          | -u --urb \--ubn                             |LEXICON|
+| \--dictcc         | --en-es --en-it --de-fr --en-pt             | DICT  |
+| \--openthesaurus  | -ot \--othes --open                         | DE    |
+| \--woxikon        | -wx \--woxi                                 | DE    |
+| \--synonyme_de    | -sd --desyn                                 | DE    |
+| \--all            | (-t -mw -syn -rev -ot -wx -urban)           | MIXED |
+| \--en             | (-t -mw -syn -rev)                          | MIXED |
+| \--de             | (-ot -wx -sd)                               | MIXED |
+| \--no-antonyms    | -na                                         | FLAG  |
+| \--no-headers     | -nh                                         | FLAG  |
+| \--async          | \--parallel \--io                           | FLAG  |
+
+Flags can be abbreviated and also combined: `--thes --merrweb` would query two
+services at once, or `--all` even all. While `--en` or `--de` run through language-
+specific functions. (See the man page for more details. There is a man page.)
+
+### CONFIG IN ~/.dingrc (take care to change `3` to available index)
+
+>     set searchmeth(3,name) {Synonyms}
+>     set searchmeth(3,type) {3}
+>     set searchmeth(3,dictfile) {}
+>     set searchmeth(3,separator) { :: }
+>     set searchmeth(3,language1) {Group}
+>     set searchmeth(3,language2) {Synonyms}
+>     set searchmeth(3,grepcmd) {dingonyms}
+>     set searchmeth(3,grepopts) {--async --thesaurus --merriamwebster --synonyms}
+>     set searchmeth(3,maxlength) {30}
+>     set searchmeth(3,maxresults) {200}
+>     set searchmeth(3,minlength) {2}
+>     set searchmeth(3,shapedresult) {1}
+>     set searchmeth(3,foldedresult) {0}
+
+You might want to add one entry for each search backend even.
+(Unique index, title/name, and grepopts --parameter each.)
+
+### SETUP (pip3 install -U dingonyms)
+
+You might have to symlink `~/.local/bin/dingonyms` into `~/bin` after
+installation. pip-package binaries are often only picked up in
+terminal/interactive shells.
+
+### Hijack as module
+
+Obviously this is priamrily a CLI tool, but can be utilized per monkeypatching:
+
+  import dingonyms
+  ls = []
+  dingonyms.out.alternatives = lambda *x: ls.append(x)
