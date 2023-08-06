@@ -1,0 +1,67 @@
+---
+queries:
+    - name: "api_source_ip"
+      evaluator: "Cloudtrail"
+      params:
+        - name: "ip_address"
+          type: "str"
+      query: |-
+        APICheckIpSource {
+          SOURCE {
+              CloudTrailRawEvents
+          }
+          FILTER {
+            EVENT:sourceIPAddress = '<<ip_address>>'
+            AND ERROR_CODE IS NULL
+          }
+          RETURN DISTINCT {
+            INSERT_ID,
+            INSERT_TIME,
+            EVENT_TIME,
+            EVENT
+          }
+        }
+
+    - name: "dns_to_ip"
+      params:
+        - name: "ip_address"
+          type: "str"
+      query: |-
+        Test_DNS_Resolution {
+          SOURCE {
+            LW_HA_DNS_REQUESTS
+          }
+          FILTER {
+            HOST_IP_ADDR = '<<ip_address>>'
+          }
+          RETURN DISTINCT {
+            MID,
+            SRV_IP_ADDR,
+            HOSTNAME,
+            HOST_IP_ADDR,
+            TTL,
+            PKTLEN
+          }
+        }
+
+    - name: "dns_to_hostname"
+      params:
+        - name: "hostname"
+          type: "str"
+      query: |-
+        Test_DNS_Resolution {
+          SOURCE {
+            LW_HA_DNS_REQUESTS
+          }
+          FILTER {
+            HOSTNAME LIKE '%<<hostname>>%'
+          }
+          RETURN DISTINCT {
+            MID,
+            SRV_IP_ADDR,
+            HOSTNAME,
+            HOST_IP_ADDR,
+            TTL,
+            PKTLEN
+          }
+        }
