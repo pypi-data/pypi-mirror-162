@@ -1,0 +1,64 @@
+{# -*- engine:django -*- #}
+
+{% load menu_generator data_helpers %}
+
+{% get_menu "NAV_MENU_CORE" as core_menu %}
+
+{% for item in core_menu %}
+  {% if not item.submenu %}
+    <v-list-item {% if item.selected %} input-value="true" {% endif %}
+      {% if item.new_tab %} target="_blank" {% endif %} href="{{ item.url }}">
+      <v-list-item-icon>
+        {% if item.vuetify_icon %}
+          <v-icon>{{ item.vuetify_icon }}</v-icon>
+        {% elif item.icon_class %}
+          <i class="{{ item.icon_class }}"></i>
+        {% elif item.icon %}
+          <i class="material-icons">{{ item.icon }}</i>
+        {% elif item.svg_icon %}
+          <i class="material-icons iconify" data-icon="{{ item.svg_icon }}"></i>
+        {% endif %}
+      </v-list-item-icon>
+      <v-list-item-title>{{ item.name }}</v-list-item-title>
+      {% build_badge item as badge %}
+      {% if badge %}
+        <span class="new badge sidenav-badge"> {{ badge }}</span>
+      {% endif %}
+    </v-list-item>
+  {% endif %}
+  {% if item.submenu %}
+    <v-list-group {% if item.selected %} value="true" {% endif %}
+      {% if item.new_tab %} target="_blank" {% endif %} href="{{ item.url|default:"#" }}"
+                  {% if item.vuetify_icon %}prepend-icon="{{ item.vuetify_icon }}"{% endif %}
+    >
+      <template v-slot:activator>
+        <v-list-item-title>{{ item.name }}</v-list-item-title>
+      </template>
+      {% build_badge item as badge %}
+      {% if badge %}
+        <span class="new badge sidenav-badge"> {{ badge }}</span>
+      {% endif %}
+      {% for menu in item.submenu %}
+        <v-list-item {% if menu.selected %} input-value="true" {% endif %} href="{{ menu.url }}">
+          <v-list-item-icon>
+            {% if menu.vuetify_icon %}
+              <v-icon>{{ menu.vuetify_icon }}</v-icon>
+            {% elif menu.icon_class %}
+              <i class="{{ menu.icon_class }}"></i>
+            {% elif menu.icon %}
+              <i class="material-icons">{{ menu.icon }}</i>
+            {% elif menu.svg_icon %}
+              <i class="material-icons iconify" data-icon="{{ menu.svg_icon }}"></i>
+            {% endif %}
+          </v-list-item-icon>
+          <v-list-item-title>{{ menu.name }}</v-list-item-title>
+          {% build_badge menu as badge %}
+          {% if badge %}
+            <span class="new badge sidenav-badge"> {{ badge }}</span>
+          {% endif %}
+          </a>
+        </v-list-item>
+      {% endfor %}
+    </v-list-group>
+  {% endif %}
+{% endfor %}

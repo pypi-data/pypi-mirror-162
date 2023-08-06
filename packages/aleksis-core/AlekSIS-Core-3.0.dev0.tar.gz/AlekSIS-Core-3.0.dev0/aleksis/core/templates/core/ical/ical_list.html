@@ -1,0 +1,38 @@
+{% extends 'core/base.html' %}
+{% load i18n msg_box static html_helpers %}
+
+{% block page_title %}{% trans "iCal Feeds" %}{% endblock page_title %}
+{% block browser_title %}{% trans "iCal Feeds" %}{% endblock browser_title %}
+
+{% block content %}
+  {% trans "These are URLs for different Calendar Feeds in the iCal (.ics) format. You can create as many as you want and import them in your calendar software." as msg %}
+  {% msg_box msg=msg status="info" %}
+  <a href="{% url "ical_feed_create" %}" class="btn green">
+  <i class="material-icons iconify left" data-icon="mdi:add"></i>
+  {% trans "Create iCal URL" %}
+  </a>
+  <h2>{% trans "Your iCal URLs" %}</h2>
+  <div class="collection">
+    {% for object in object_list %}
+      <div class="collection-item">
+        <span class="title btn-small-line-height">
+          {{ object }}
+          <a href="{% url "ical_feed_delete" object.pk %}"
+                  class="secondary-content btn-flat btn-small red-text btn-smaller-padding waves-effect waves-red">
+            <i class="material-icons iconify" data-icon="mdi:delete-outline"></i>
+          </a>
+          <a href="{% url "ical_feed_edit" object.pk %}"
+             class="secondary-content btn-flat btn-small primary-color-text btn-smaller-padding waves-effect waves-primary">
+            <i class="material-icons iconify" data-icon="mdi:pencil-outline"></i>
+          </a>
+          {% generate_random_id "ical-copy-" as id %}
+          {% include "core/partials/copy_button.html" with classes="secondary-content btn-flat btn-small secondary-color-text btn-smaller-padding" target=id %}
+        </span>
+        <p class="ical-description">{{ object.ical_feed_object.title }} – {{ object.ical_feed_object.description }}</p>
+        <input type="url" readonly value="https://{{ request.site }}{{ object.get_absolute_url }}"
+               id="{{ id }}">
+      </div>
+    {% endfor %}
+  </div>
+  <script src="{% static "js/copy_button.js" %}" type="text/javascript"></script>
+{% endblock content %}

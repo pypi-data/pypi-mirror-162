@@ -1,0 +1,21 @@
+{% extends "core/base.html" %}
+
+{% load i18n %}
+
+{% block browser_title %}{% blocktrans %}Network error{% endblocktrans %}{% endblock %}
+
+{% block content %}
+  <h3>
+    <i class="material-icons iconify left medium" style="font-size: 2.92rem;" data-icon="mdi:wifi-strength-alert-outline"></i>
+    {% blocktrans %}No internet connection.{% endblocktrans %}
+  </h3>
+
+  <p class="flow-text">
+    {% blocktrans %}
+      There was an error accessing this page. You probably don't have an internet connection. Check to see if your WiFi
+      or mobile data is turned on and try again. If you think you are connected, please contact the system
+      administrators:
+    {% endblocktrans %}
+  </p>
+  {% include "core/partials/admins_list.html" %}
+{% endblock %}
