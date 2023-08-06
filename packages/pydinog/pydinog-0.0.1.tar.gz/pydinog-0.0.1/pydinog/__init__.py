@@ -1,0 +1,1 @@
+print("pydinog package is imported")
