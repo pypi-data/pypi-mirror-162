@@ -1,0 +1,89 @@
+#!/usr/bin/env python3
+# This file is placed in the Public Domain.
+
+
+"bot"
+
+
+import os
+import sys
+import termios
+import time
+
+
+sys.path.insert(0, os.getcwd())
+
+
+import op
+i
+
+op.obj.workdir = os.path.expanduser("~/.bot")
+
+
+from op.bus import Bus
+from op.hdl import Callbacks, Handler
+from op.obj import format, keys
+from op.run import CLI, Console, Table, parse_cli
+from op.utl import cdir
+
+
+from bot import bsc, fnd, irc, log, rss, sts, tdo
+
+
+Table.add(bsc)
+Table.add(fnd)
+Table.add(irc)
+Table.add(log)
+Table.add(rss)
+Table.add(sts)
+Table.add(tdo)
+
+
+class CLI(CLI):
+
+    def raw(self, txt):
+        print(txt)
+        sys.stdout.flush()
+    
+
+class Console(Console):
+
+    def raw(self, txt):
+        print(txt)
+        sys.stdout.flush()
+
+
+def wrap(func):
+    fd = sys.stdin.fileno()
+    gotterm = True
+    try:
+        old = termios.tcgetattr(fd)
+    except termios.error:
+        gotterm = False
+    try:
+        func()
+    except (EOFError, KeyboardInterrupt):
+        print("")
+    finally:
+        if gotterm:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old)
+        for b in Bus.objs:
+            if "errors" in b:
+                for err in b.errors:
+                    print(err)
+
+
+def main():
+    txt = " ".join(sys.argv[1:])
+    cfg = parse_cli(txt)
+    Table.scan()
+    if cfg.cmd:
+        c = CLI()
+        return c.cmd(txt)
+    Table.exec("init")
+    c = Console()
+    c.start()
+    c.forever()
+
+
+wrap(main)
