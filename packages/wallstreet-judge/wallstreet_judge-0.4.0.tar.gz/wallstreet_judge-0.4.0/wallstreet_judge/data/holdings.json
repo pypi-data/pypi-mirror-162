@@ -1,0 +1,220 @@
+{
+    "name": "Holdings Layer",
+    "total_points": 10, 
+    "tests": [
+        {
+            "name": "Holdings 1 - Get",
+            "request": {
+                "method": "get",
+                "path": "holdings/",
+                "headers": {},
+                "body": {}
+            },
+            "response": {
+                "type": "object",
+                "validations": []
+            },
+            "store": [],
+            "status_code": 401,
+            "points": 1
+        },
+        {
+            "name": "Holdings 2 - Get",
+            "request": {
+                "method": "get",
+                "path": "holdings/",
+                "headers": {"Authorization": "$kushal_token"},
+                "body": {}
+            },
+            "response": {
+                "type": "object",
+                "validations": [
+                    {
+                        "key": "investment",
+                        "value": "5850.00"
+                    },
+                    {
+                        "key": "current_value",
+                        "value": "6000.00"
+                    },
+                    {
+                        "key": "stocks_possessed.$[0].$name",
+                        "value": "Google"
+                    },
+                    {
+                        "key": "stocks_possessed.$[0].$avg_bid_price",
+                        "value": "1170.00"
+                    },
+                    {
+                        "key": "stocks_possessed.$[0].$total_volume",
+                        "value": "5"
+                    }
+                ]
+            },
+            "store": [],
+            "status_code": 200,
+            "points": 2
+        },
+        {
+            "name": "Holdings 3 - Get",
+            "request": {
+                "method": "get",
+                "path": "holdings/",
+                "headers": {"Authorization": "$sirjan_token"},
+                "body": {}
+            },
+            "response": {
+                "type": "object",
+                "validations": [
+                    {
+                        "key": "investment",
+                        "value": "2200.00"
+                    },
+                    {
+                        "key": "current_value",
+                        "value": "2400.00"
+                    },
+                    {
+                        "key": "stocks_possessed.$[0].$name",
+                        "value": "Google"
+                    },
+                    {
+                        "key": "stocks_possessed.$[0].$avg_bid_price",
+                        "value": "1200.00"
+                    },
+                    {
+                        "key": "stocks_possessed.$[0].$total_volume",
+                        "value": 2
+                    }
+                ]
+            },
+            "store": [],
+            "status_code": 200,
+            "points": 2
+        },
+        {
+            "name": "Holdings 4 - Setup",
+            "request": {
+                "method": "post",
+                "path": "orders/",
+                "headers": {"Authorization": "$sirjan_token"},
+                "body": {
+                    "type": "BUY", 
+                    "stock": "$google_id",
+                    "bid_price": "1200.00", 
+                    "bid_volume": 2
+                }
+            },
+            "response": {
+                "type": "object",
+                "validations": []
+            },
+            "store": [],
+            "status_code": 201,
+            "points": 0
+        },
+        {
+            "name": "Holdings 5 - Setup",
+            "request": {
+                "method": "post",
+                "path": "orders/",
+                "headers": {"Authorization": "$kushal_token"},
+                "body": {
+                    "type": "SELL", 
+                    "stock": "$google_id",
+                    "bid_price": "1200.00", 
+                    "bid_volume": 2
+                }
+            },
+            "response": {
+                "type": "object",
+                "validations": []
+            },
+            "store": [],
+            "status_code": 201,
+            "points": 0
+        },
+        {
+            "name": "Holdings 6 - Setup",
+            "request": {
+                "method": "post",
+                "path": "orders/match/",
+                "headers": {"Authorization": "$sirjan_token"},
+                "body": {}
+            },
+            "response": {
+                "type": "object",
+                "validations": []
+            },
+            "store": [],
+            "status_code": 200,
+            "points": 0
+        },
+        {
+            "name": "Holdings 7 - Get",
+            "request": {
+                "method": "get",
+                "path": "holdings/",
+                "headers": {"Authorization": "$kushal_token"},
+                "body": {}
+            },
+            "response": {
+                "type": "object",
+                "validations": [
+                    {
+                        "key": "investment",
+                        "value": "3550.00"
+                    },
+                    {
+                        "key": "current_value",
+                        "value": "3600.00"
+                    },
+                    {
+                        "key": "stocks_possessed.$[0].$name",
+                        "value": "Google"
+                    },
+                    {
+                        "key": "stocks_possessed.$[0].$avg_bid_price",
+                        "value": "1183.33"
+                    },
+                    {
+                        "key": "stocks_possessed.$[0].$total_volume",
+                        "value": 3
+                    }
+                ]
+            },
+            "store": [],
+            "status_code": 200,
+            "points": 2
+        },
+        {
+            "name": "Holdings 8 - Check",
+            "request": {
+                "method": "get",
+                "path": "users/profile/",
+                "headers": {"Authorization": "$kushal_token"},
+                "body": {}
+            },
+            "response": {
+                "type": "object",
+                "validations": [
+                    {
+                        "key": "available_funds",
+                        "value": "396550.00"
+                    },
+                    {
+                        "key": "blocked_funds",
+                        "value": "0.00"
+                    },
+                    {
+                        "key": "email",
+                        "value": "kushal@gmail.com"
+                    }
+                ]
+            },
+            "store": [],
+            "status_code": 200,
+            "points": 2
+        }
+    ]
+}

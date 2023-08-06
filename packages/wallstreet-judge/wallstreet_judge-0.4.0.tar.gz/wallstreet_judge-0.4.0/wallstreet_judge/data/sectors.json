@@ -1,0 +1,203 @@
+{
+    "name": "Sector Layer",
+    "total_points": 7,
+    "tests": [
+        {
+            "name": "Sector 1 - Create",
+            "request": {
+                "method": "post",
+                "path": "sectors/",
+                "headers": {
+                    "Authorization": "$sirjan_token"
+                },
+                "body": {
+                    "name": "Tech",
+                    "description": "Tehk"
+                }
+            },
+            "response": {
+                "type": "object",
+                "validations": [
+                    {
+                        "key": "id"
+                    },
+                    {
+                        "key": "name"
+                    }
+                ]
+            },
+            "store": [
+                {
+                    "key": "id",
+                    "alias": "tech_id"
+                }
+            ],
+            "status_code": 201,
+            "points": 1
+        },
+        {
+            "name": "Sector 2 - List",
+            "request": {
+                "method": "get",
+                "path": "sectors/",
+                "headers": {
+                    "Authorization": "$sirjan_token"
+                },
+                "body": {}
+            },
+            "response": {
+                "type": "array",
+                "validations": [
+                    {
+                        "key": "id"
+                    },
+                    {
+                        "key": "name"
+                    }
+                ]
+            },
+            "store": [],
+            "status_code": 200,
+            "points": 1
+        },
+        {
+            "name": "Sector 3 - Get",
+            "request": {
+                "method": "get",
+                "path": "sectors/$tech_id",
+                "headers": {
+                    "Authorization": "$kushal_token"
+                },
+                "body": {}
+            },
+            "response": {
+                "type": "object",
+                "validations": [
+                    {
+                        "key": "name",
+                        "value": "Tech"
+                    }
+                ]
+            },
+            "store": [],
+            "status_code": 200,
+            "points": 1
+        },
+        {
+            "name": "Sector 4 - Create",
+            "request": {
+                "method": "post",
+                "path": "sectors/",
+                "headers": {},
+                "body": {
+                    "name": "Tech",
+                    "description": "Tehk"
+                }
+            },
+            "response": {
+                "type": "object",
+                "validations": []
+            },
+            "store": [],
+            "status_code": 401,
+            "points": 1
+        },
+        {
+            "name": "Sector 5 - Create",
+            "request": {
+                "method": "post",
+                "path": "sectors/",
+                "headers": {
+                    "Authorization": "$kushal_token"
+                },
+                "body": {
+                    "dname": "Banks",
+                    "description": "Banking sector"
+                }
+            },
+            "response": {
+                "type": "object",
+                "validations": []
+            },
+            "store": [],
+            "status_code": 400,
+            "points": 1
+        },
+        {
+            "name": "Sector 6 - Update",
+            "request": {
+                "method": "post",
+                "path": "sectors/",
+                "headers": {
+                    "Authorization": "$kushal_token"
+                },
+                "body": {
+                    "name": "Tech",
+                    "description": "Tehk"
+                }
+            },
+            "response": {
+                "type": "object",
+                "validations": []
+            },
+            "store": [],
+            "status_code": 400,
+            "points": 1
+        },
+        {
+            "name": "Sector 7 - Update",
+            "request": {
+                "method": "patch",
+                "path": "sectors/$tech_id/",
+                "headers": {
+                    "Authorization": "$kushal_token"
+                },
+                "body": {
+                    "name": "Technology",
+                    "description": "Thek"
+                }
+            },
+            "response": {
+                "type": "object",
+                "validations": [
+                    {
+                        "key": "id"
+                    },
+                    {
+                        "key": "name"
+                    }
+                ]
+            },
+            "store": [],
+            "status_code": 200,
+            "points": 0
+        },
+        {
+            "name": "Sector 8",
+            "request": {
+                "method": "get",
+                "path": "sectors/$tech_id/",
+                "headers": {
+                    "Authorization": "$kushal_token"
+                },
+                "body": {}
+            },
+            "response": {
+                "type": "object",
+                "validations": [
+                    {
+                        "key": "id",
+                        "value": 1
+                    },
+                    {
+                        "key": "name",
+                        "value": "Technology"
+                    }
+                ]
+            },
+            "store": [],
+            "status_code": 200,
+            "points": 1
+        }
+    ]
+}

@@ -1,0 +1,619 @@
+{
+    "name": "Order Layer",
+    "total_points": 12,
+    "tests": [
+        {
+            "name": "Order 1 - Create",
+            "request": {
+                "method": "post",
+                "path": "orders/",
+                "headers": {"Authorization": "$kushal_token"},
+                "body": {
+                    "type": "BUY", 
+                    "stock": "$google_id", 
+                    "bid_price": "1000.00", 
+                    "bid_volume": 500
+                }
+            },
+            "response": {
+                "type": "object",
+                "validations": []
+            },
+            "store": [],
+            "status_code": 400,
+            "points": 2
+        },
+        {
+            "name": "Order 2 - Create",
+            "request": {
+                "method": "post",
+                "path": "orders/",
+                "headers": {},
+                "body": {
+                    "type": "BUY", 
+                    "stock": "$google_id", 
+                    "bid_price": "1000.00", 
+                    "bid_volume": 500
+                }
+            },
+            "response": {
+                "type": "object",
+                "validations": []
+            },
+            "store": [],
+            "status_code": 401,
+            "points": 2
+        },
+        {
+            "name": "Order 3 - Create",
+            "request": {
+                "method": "post",
+                "path": "orders/",
+                "headers": {"Authorization": "$kushal_token"},
+                "body": {
+                    "type": "BUY", 
+                    "stock": "$google_id",
+                    "bid_price": "1000.00", 
+                    "bid_volume": 5
+                }
+            },
+            "response": {
+                "type": "object",
+                "validations": [
+                    {
+                        "key": "stock",
+                        "value": "$google_id"
+                    },
+                    {
+                        "key": "user",
+                        "value": "$kushal_id"
+                    },
+                    {
+                        "key": "type",
+                        "value": "BUY"
+                    },
+                    {
+                        "key": "bid_volume",
+                        "value": 5
+                    }
+                ]
+            },
+            "store": [
+                {
+                    "key": "id",
+                    "alias": "kushal_buy_order1_id"
+                }
+            ],
+            "status_code": 201,
+            "points": 2
+        },
+        {
+            "name": "Order 4 - Create",
+            "request": {
+                "method": "post",
+                "path": "orders/",
+                "headers": {"Authorization": "$sirjan_token"},
+                "body": {
+                    "type": "BUY", 
+                    "stock": "$google_id", 
+                    "bid_price": "1100.00", 
+                    "bid_volume": 5
+                }
+            },
+            "response": {
+                "type": "object",
+                "validations": [
+                    {
+                        "key": "stock",
+                        "value": "$google_id"
+                    },
+                    {
+                        "key": "user",
+                        "value": "$sirjan_id"
+                    },
+                    {
+                        "key": "type",
+                        "value": "BUY"
+                    },
+                    {
+                        "key": "bid_volume",
+                        "value": 5
+                    }
+                ]
+            },
+            "store": [
+                {
+                    "key": "id",
+                    "alias": "sirjan_buy_order1_id"
+                }
+            ],
+            "status_code": 201,
+            "points": 0
+        },
+        {
+            "name": "Order 5 - Create",
+            "request": {
+                "method": "post",
+                "path": "orders/",
+                "headers": {"Authorization": "$sirjan_token"},
+                "body": {
+                    "type": "SELL", 
+                    "stock": "$google_id", 
+                    "bid_price": "1100.00", 
+                    "bid_volume": 5
+                }
+            },
+            "response": {
+                "type": "object",
+                "validations": []
+            },
+            "store": [],
+            "status_code": 400,
+            "points": 2
+        },
+        {
+            "name": "Order 6 - Match",
+            "request": {
+                "method": "post",
+                "path": "orders/match/",
+                "headers": {"Authorization": "$sirjan_token"},
+                "body": {}
+            },
+            "response": {
+                "type": "object",
+                "validations": []
+            },
+            "store": [],
+            "status_code": 200,
+            "points": 0
+        },
+        {
+            "name": "Order 7 - Check",
+            "request": {
+                "method": "get",
+                "path": "users/profile/",
+                "headers": {"Authorization": "$sirjan_token"},
+                "body": {}
+            },
+            "response": {
+                "type": "object",
+                "validations": [
+                    {
+                        "key": "blocked_funds",
+                        
+                        "value": "0.00"
+                    },
+                    {
+                        "key": "available_funds",
+                        
+                        "value": "394500.00"
+                    }
+                ]
+            },
+            "store": [],
+            "status_code": 200,
+            "points": 2
+        },
+        {
+            "name": "Order 7 - Check",
+            "request": {
+                "method": "get",
+                "path": "users/profile/",
+                "headers": {"Authorization": "$kushal_token"},
+                "body": {}
+            },
+            "response": {
+                "type": "object",
+                "validations": [
+                    {
+                        "key": "blocked_funds",
+                        
+                        "value": "5000.00"
+                    },
+                    {
+                        "key": "available_funds",
+                        
+                        "value": "395000.00"
+                    }
+                ]
+            },
+            "store": [],
+            "status_code": 200,
+            "points": 2
+        },
+        {
+            "name": "Order 8 - Get",
+            "request": {
+                "method": "get",
+                "path": "orders/$sirjan_buy_order1_id",
+                "headers": {"Authorization": "$sirjan_token"},
+                "body": {}
+            },
+            "response": {
+                "type": "object",
+                "validations": [
+                    {
+                        "key": "status",
+                        
+                        "value": "COMPLETED"
+                    },
+                    {
+                        "key": "executed_volume",
+                        
+                        "value": "5"
+                    }
+                ]
+            },
+            "store": [],
+            "status_code": 200,
+            "points": 2
+        },
+        {
+            "name": "Order 9 - Cancel",
+            "request": {
+                "method": "delete",
+                "path": "orders/$sirjan_buy_order1_id/cancel",
+                "headers": {"Authorization": "$sirjan_token"},
+                "body": {}
+            },
+            "response": {
+                "type": "object",
+                "validations": []
+            },
+            "store": [],
+            "status_code": 403,
+            "points": 2
+        },
+        {
+            "name": "Order 10 - Cancel",
+            "request": {
+                "method": "delete",
+                "path": "orders/$kushal_buy_order1_id/cancel",
+                "headers": {"Authorization": "$kushal_token"},
+                "body": {}
+            },
+            "response": {
+                "type": "object",
+                "validations": []
+            },
+            "store": [],
+            "status_code": 204,
+            "points": 2
+        },
+        {
+            "name": "Order 11 - Check",
+            "request": {
+                "method": "get",
+                "path": "users/profile/",
+                "headers": {"Authorization": "$kushal_token"},
+                "body": {}
+            },
+            "response": {
+                "type": "object",
+                "validations": [
+                    {
+                        "key": "blocked_funds",
+                        
+                        "value": "0.00"
+                    },
+                    {
+                        "key": "available_funds",
+                        
+                        "value": "400000.00"
+                    }
+                ]
+            },
+            "store": [],
+            "status_code": 200,
+            "points": 2
+        },
+        {
+            "name": "Order 12 - Create",
+            "request": {
+                "method": "post",
+                "path": "orders/",
+                "headers": {"Authorization": "$kushal_token"},
+                "body": {
+                    "stock": 1,
+                    "type": "BUY",
+                    "bid_price": "1200.00",
+                    "bid_volume": 5
+                }
+            },
+            "response": {
+                "type": "object",
+                "validations": []
+            },
+            "store": [],
+            "status_code": 201,
+            "points": 2 
+        },
+        {
+            "name": "Order 13 - Create",
+            "request": {
+                "method": "post",
+                "path": "orders/",
+                "headers": {"Authorization": "$sirjan_token"},
+                "body": {
+                    "stock": 1,
+                    "type": "SELL",
+                    "bid_price": "1150.00",
+                    "bid_volume": 3
+                }
+            },
+            "response": {
+                "type": "object",
+                "validations": []
+            },
+            "store": [],
+            "status_code": 201,
+            "points": 2
+        },
+        {
+            "name": "Order 14 - Match",
+            "request": {
+                "method": "post",
+                "path": "orders/match/",
+                "headers": {"Authorization": "$sirjan_token"},
+                "body": {}
+            },
+            "response": {
+                "type": "object",
+                "validations": []
+            },
+            "store": [],
+            "status_code": 200,
+            "points": 0   
+        },
+        {
+            "name": "Order 15 - Check",
+            "request": {
+                "method": "get",
+                "path": "users/profile/",
+                "headers": {"Authorization": "$kushal_token"},
+                "body": {}
+            },
+            "response": {
+                "type": "object",
+                "validations": [
+                    {
+                        "key": "blocked_funds",
+                        
+                        "value": "0.00"
+                    },
+                    {
+                        "key": "available_funds",
+                        
+                        "value": "394150.00"
+                    }
+                ]
+            },
+            "store": [],
+            "status_code": 200,
+            "points": 2
+        },
+        {
+            "name": "Order 16 - Check",
+            "request": {
+                "method": "get",
+                "path": "users/profile/",
+                "headers": {"Authorization": "$sirjan_token"},
+                "body": {}
+            },
+            "response": {
+                "type": "object",
+                "validations": [
+                    {
+                        "key": "blocked_funds",
+                        "value": "0.00"
+                    },
+                    {
+                        "key": "available_funds",
+                        "value": "397950.00"
+                    }
+                ]
+            },
+            "store": [],
+            "status_code": 200,
+            "points": 2
+        },
+        {
+            "name": "Order 17 - Check",
+            "request": {
+                "method": "get",
+                "path": "stocks/$google_id/",
+                "headers": {"Authorization": "$sirjan_token"},
+                "body": {}
+            },
+            "response": {
+                "type": "object",
+                "validations": [
+                    {
+                        "key": "price",
+                        
+                        "value": "1200.00"
+                    },
+                    {
+                        "key": "unallocated",
+                        
+                        "value": 9993
+                    }
+                ]
+            },
+            "store": [],
+            "status_code": 200,
+            "points": 2
+        },
+        {
+            "name": "Order 18 - Create",
+            "request": {
+                "method": "post",
+                "path": "orders/",
+                "headers": {"Authorization": "$kushal_token"},
+                "body": {
+                    "type": "SELL",
+                    "stock": "$google_id",
+                    "bid_price": "1200.00",
+                    "bid_volume": "2"
+                }
+            },
+            "response": {
+                "type": "object",
+                "validations": [
+                ]
+            },
+            "store": [
+                {
+                    "key": "id",
+                    "alias": "kushal_cancellable_order_id"
+                }
+            ],
+            "status_code": 201,
+            "points": 0
+        },
+        {
+            "name": "Order 19 - Create",
+            "request": {
+                "method": "post",
+                "path": "orders/",
+                "headers": {"Authorization": "$sirjan_token"},
+                "body": {
+                    "type": "BUY",
+                    "stock": "$google_id",
+                    "bid_price": "1200.00",
+                    "bid_volume": "1"
+                }
+            },
+            "response": {
+                "type": "object",
+                "validations": [
+                ]
+            },
+            "store": [],
+            "status_code": 201,
+            "points": 0
+        },
+        {
+            "name": "Order 20 - Match",
+            "request": {
+                "method": "post",
+                "path": "orders/match/",
+                "headers": {"Authorization": "$sirjan_token"},
+                "body": {}
+            },
+            "response": {
+                "type": "object",
+                "validations": [
+                ]
+            },
+            "store": [],
+            "status_code": 200,
+            "points": 0
+        },
+        {
+            "name": "Order 21 - Cancel",
+            "request": {
+                "method": "delete",
+                "path": "orders/$kushal_cancellable_order_id/cancel/",
+                "headers": {"Authorization": "$kushal_token"},
+                "body": {}
+            },
+            "response": {
+                "type": "object",
+                "validations": [
+                ]
+            },
+            "store": [],
+            "status_code": 204,
+            "points": 1
+        },
+        {
+            "name": "Order 22 - Check",
+            "request": {
+                "method": "get",
+                "path": "users/profile/",
+                "headers": {"Authorization": "$kushal_token"},
+                "body": {}
+            },
+            "response": {
+                "type": "object",
+                "validations": [
+                    {
+                        "key": "blocked_funds",
+                        
+                        "value": "0.00"
+                    },
+                    {
+                        "key": "available_funds",
+                        
+                        "value": "395350.00"
+                    }
+                ]
+            },
+            "store": [],
+            "status_code": 200,
+            "points": 2
+        },
+        {
+            "name": "Order 23 - Create",
+            "request": {
+                "method": "post",
+                "path": "orders/",
+                "headers": {"Authorization": "$kushal_token"},
+                "body": {
+                    "type": "BUY",
+                    "stock": "$google_id",
+                    "bid_price": "1200.00",
+                    "bid_volume": "1"
+                }
+            },
+            "response": {
+                "type": "object",
+                "validations": [
+                ]
+            },
+            "store": [],
+            "status_code": 201,
+            "points": 0
+        },
+        {
+            "name": "Order 23 - Create",
+            "request": {
+                "method": "post",
+                "path": "orders/",
+                "headers": {"Authorization": "$sirjan_token"},
+                "body": {
+                    "type": "SELL",
+                    "stock": "$google_id",
+                    "bid_price": "1200.00",
+                    "bid_volume": "1"
+                }
+            },
+            "response": {
+                "type": "object",
+                "validations": [
+                ]
+            },
+            "store": [],
+            "status_code": 201,
+            "points": 0
+        },
+        {
+            "name": "Order 24 - Match",
+            "request": {
+                "method": "post",
+                "path": "orders/match/",
+                "headers": {"Authorization": "$sirjan_token"},
+                "body": {}
+            },
+            "response": {
+                "type": "object",
+                "validations": [
+                ]
+            },
+            "store": [],
+            "status_code": 200,
+            "points": 0
+        }
+    ]
+}
