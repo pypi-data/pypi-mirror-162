@@ -1,0 +1,85 @@
+Metadata-Version: 2.1
+Name: certbot-dns-bunny
+Version: 0.0.2
+Summary: Bunny.net DNS Authenticator plugin for Certbot
+Home-page: https://github.com/mwt/certbot-dns-bunny
+Author: Matthew W. Thomas
+Author-email: certbot-dns-bunny@mwt.me
+License: BSD-2-Clause
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Environment :: Plugins
+Classifier: Intended Audience :: System Administrators
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Operating System :: POSIX :: Linux
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Topic :: Internet :: WWW/HTTP
+Classifier: Topic :: Security
+Classifier: Topic :: System :: Installation/Setup
+Classifier: Topic :: System :: Networking
+Classifier: Topic :: System :: Systems Administration
+Classifier: Topic :: Utilities
+Requires-Python: >=3.7
+Provides-Extra: docs
+License-File: LICENSE
+
+Bunny.net DNS Authenticator Plugin for Certbot
+==============================================
+
+Full documentation is on `Read the Docs
+<https://certbot-dns-bunny.readthedocs.io/en/latest/>`_.
+
+
+Installation
+------------
+
+This package can be installed with pip
+
+.. code:: bash
+
+    pip install certbot-dns-bunny
+
+and can be upgraded using the ``--upgrade`` flag
+
+.. code:: bash
+
+    pip install --upgrade certbot-dns-bunny
+
+Credentials
+-----------
+
+.. code:: ini
+   :name: certbot_bunny_token.ini
+
+   # Bunny API token used by Certbot
+   dns_bunny_api_key = a65e8ebd-45ab-44d2-a542-40d4d009e3bf
+
+Examples
+--------
+
+.. code:: bash
+
+   certbot certonly \\
+     --authenticator dns-bunny \\
+     --dns-bunny-credentials ~/.secrets/certbot/bunny.ini \\
+     -d example.com
+
+.. code:: bash
+
+   certbot certonly \\
+     --authenticator dns-bunny \\
+     --dns-bunny-credentials ~/.secrets/certbot/bunny.ini \\
+     -d example.com \\
+     -d www.example.com
+
+.. code:: bash
+
+   certbot certonly \\
+     --authenticator dns-bunny \\
+     --dns-bunny-credentials ~/.secrets/certbot/bunny.ini \\
+     --dns-bunny-propagation-seconds 60 \\
+     -d example.com
