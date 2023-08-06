@@ -1,0 +1,59 @@
+Metadata-Version: 2.1
+Name: duckstruct
+Version: 0.0.1
+Summary: Extracting data structures from runtime duck typing.
+Home-page: https://github.com/maniospas/duckstruct
+Author: Emmanouil Krasanakis
+Author-email: maniospas@hotmail.com
+License: Apache 2.0
+Keywords: duck typing,data types
+Platform: UNKNOWN
+Classifier: Development Status :: 1 - Planning
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Operating System :: OS Independent
+Description-Content-Type: text/markdown
+
+git init# duckstruct
+
+**Dependencies:** None<br/>
+**Developer:** Emmanouil (Manios) Krasanakis<br/>
+**Contant:** maniospas@hotmail.com
+
+# Quickstart
+```python
+from duckstruct import TypeListener
+import numpy as np
+
+x = np.array([1, 2, 3])
+y = np.array([5, 6])
+z = np.array([7.])
+x = TypeListener(x)
+y = TypeListener(y)
+z = TypeListener(z)
+print(x)
+print(x+1+y.sum()+z.sum())
+```
+After running the code, you can show the structure a new variable 
+should have to replace all others in *yaml* format.
+
+```python
+print(x.type() & y.type() & z.type())
+```
+
+This yields the minimum necessary structure for the code to run:
+
+```
+object:
+  __str__: 
+    returns:
+      class: str
+  __add__: 
+    returns:
+      class: ndarray
+  sum: 
+    returns:
+      -  class: int32
+      -  class: float64
+```
+
