@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', path='/style.css') }}">
+
+
+    <title>Couch Remote</title>
+</head>
+<body>
+<div class="keys">
+    {% for btn in buttons %}
+        <button class="key" value="{{ btn.value }}">{{ btn.label }}</button>
+    {% endfor %}
+</div>
+<script src="{{ url_for('static', path='/buttons.js') }}"></script>
+</body>
+</html>
