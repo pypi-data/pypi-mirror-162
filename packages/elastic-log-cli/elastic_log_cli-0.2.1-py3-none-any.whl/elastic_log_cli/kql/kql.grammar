@@ -1,0 +1,78 @@
+start: _WHITESPACE* query _WHITESPACE*
+
+query           : or_query
+
+?or_query       : and_query (_OR and_query)+
+                | and_query
+
+?and_query      : not_query (_AND not_query)+
+                | not_query
+
+?not_query      : NOT sub_query
+                | sub_query
+
+?sub_query      : "(" _WHITESPACE* or_query _WHITESPACE* ")"
+                | nested_query
+
+?nested_query   : field _WHITESPACE* ":" _WHITESPACE* "{" _WHITESPACE* or_query _WHITESPACE* "}"
+                | expression
+
+?expression             : field_range_expression
+                        | field_value_expression
+                        | value_expression
+
+field_range_expression  : field _WHITESPACE* RANGE_OPERATOR _WHITESPACE* value
+field_value_expression  : field _WHITESPACE* ":" _WHITESPACE* list_of_values
+value_expression        : field
+
+
+field               : _literal
+value               : _literal
+?list_of_values     : "(" _WHITESPACE* or_list_of_values _WHITESPACE* ")"
+                    | value
+?or_list_of_values  : and_list_of_values (_OR and_list_of_values)+
+                    | and_list_of_values
+?and_list_of_values : not_list_of_values (_AND not_list_of_values)+
+                    | not_list_of_values
+?not_list_of_values : NOT list_of_values
+                    | list_of_values
+
+_literal            : quoted_string | unquoted_literal
+quoted_string       : ESCAPED_STRING
+unquoted_literal    : unquoted_character+
+unquoted_character  : ESCAPED_WHITESPACE
+                    | ESCAPED_SPECIAL_CHARACTER
+                    | ESCAPED_UNICODE_SEQUENCE
+                    | ESCAPED_KEYWORD
+                    | WILDCARD
+                    | /(?!([\\:\(\)<>"*{}]|( +or +)|( +and +)|( +not _+)))./i
+
+ESCAPED_WHITESPACE          : "\\t"
+                            | "\\r"
+                            | "\\n"
+ESCAPED_SPECIAL_CHARACTER   : "\\" SPECIAL_CHARACTER
+ESCAPED_UNICODE_SEQUENCE    : "\\" UNICODE_SEQUENCE
+ESCAPED_KEYWORD             : "\\" ("or"i | "and"i | "not"i)
+SPECIAL_CHARACTER           : /[\\)():<>"*{}"]/
+UNICODE_SEQUENCE            : "u" HEX_DIGIT~4
+HEX_DIGIT                   : /[0-9a-f]/i
+WILDCARD                    : "*"
+
+RANGE_OPERATOR  : "<="
+                | ">="
+                | "<"
+                | ">"
+
+KEYWORD.1   : _OR
+            | _AND
+            | NOT
+
+_OR.1    : / +or +/i
+_AND.1   : / +and +/i
+NOT.1    : /not +/i
+
+_WHITESPACE : WS
+
+%import common.WS
+%import common.ESCAPED_STRING
+%import common.LETTER
