@@ -1,0 +1,74 @@
+{% extends "core/base.html" %}
+{% load msg_box static i18n %}
+
+{% block page_title %}
+  {% trans "Approve Exemption Requests" %}
+{% endblock %}
+
+{% block browser_title %}
+  {% trans "Approve Exemption Requests" %}
+{% endblock %}
+
+{% block content %}
+  <ul class="collection">
+    {% for exemption_request in exemption_requests %}
+      <li class="collection-item">
+        <div class="row">
+          <div class="col s12 m4">
+            <p>
+              <i class="material-icons left iconify" data-icon="mdi:account-outline"></i>
+              {{ exemption_request.submitter }}
+            </p>
+            <p>
+              <i class="material-icons left iconify" data-icon="mdi:clock-outline"></i>
+              {{ exemption_request.from_date }}, {{ exemption_request.from_time }}
+              &mdash; {{ exemption_request.to_date }}, {{ exemption_request.to_time }}
+            </p>
+            <p>
+              <i class="material-icons left iconify" data-icon="mdi:clipboard-text-outline"></i>
+              {{ exemption_request.description }}
+            </p>
+          </div>
+
+          <div class="col s12 m4">
+            <p>
+              <span class="badge new {{ exemption_request.get_status.style_class }} hide-on-small-only">
+                {{ exemption_request.get_status.name }}
+              </span>
+               <span class="badge new no-float {{ exemption_request.get_status.style_class }} hide-on-med-and-up">
+                {{ exemption_request.get_status.name }}
+              </span>
+            </p>
+          </div>
+          <div class="col s12 m4">
+            <form action="" method="POST">
+              {% csrf_token %}
+              <input type="hidden" value="{{ exemption_request.id }}" name="id">
+
+              {% if exemption_request.status.id != 2 %}
+                <button type="submit" name="approve"
+                        class="waves-effect waves-light btn-flat btn-flat-large" title="{% trans "Accept" %}">
+                  <i class="material-icons center green-text">check_circle</i>
+                </button>
+              {% endif %}
+
+              {% if exemption_request.status.id != 3 %}
+                <button type="submit" name="reject"
+                        class="waves-effect waves-light btn-flat btn-flat-large" title="{% trans "Reject" %}">
+                  <i class="material-icons center red-text">not_interested</i>
+                </button>
+              {% endif %}
+            </form>
+          </div>
+        </div>
+      </li>
+    {% endfor %}
+
+    {% if not exemption_requests %}
+      <li class="collection-item">
+        <p class="flow-text">{% trans "No requests available." %}</p>
+      </li>
+    {% endif %}
+  </ul>
+
+{% endblock %}

@@ -1,0 +1,40 @@
+[tool.poetry]
+name = "AlekSIS-App-Fritak"
+version = "2.0.1"
+packages = [
+    { include = "aleksis" }
+]
+readme = "README.rst"
+include = ["CHANGELOG.rst", "LICENCE.rst", "aleksis/**/*.mo"]
+
+description = "AlekSIS (School Information System) — App Fritak (application management)"
+authors = ["Julian Leucker <leuckeju@katharineum.de>", "Frank Poetzsch-Heffter <p-h@katharineum.de>", "Jonathan Weth <dev@jonathanweth.de>", "Hangzhi Yu <yuha@katharineum.de>"]
+maintainers = ["Frank Poetzsch-Heffter <p-h@katharineum.de>", "Jonathan Weth <dev@jonathanweth.de>"]
+license = "EUPL-1.2"
+homepage = "https://aleksis.org/"
+repository = "https://edugit.org/katharineum/AlekSIS-App-Fritak"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Web Environment",
+    "Intended Audience :: Education",
+    "Topic :: Education"
+]
+
+[[tool.poetry.source]]
+name = "gitlab"
+url = "https://edugit.org/api/v4/projects/461/packages/pypi/simple"
+secondary = true
+
+[tool.poetry.dependencies]
+python = "^3.9"
+aleksis-core = "^2.8"
+
+[tool.poetry.dev-dependencies]
+aleksis-builddeps = "*"
+
+[tool.poetry.plugins."aleksis.app"]
+fritak = "aleksis.apps.fritak.apps:FritakConfig"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"

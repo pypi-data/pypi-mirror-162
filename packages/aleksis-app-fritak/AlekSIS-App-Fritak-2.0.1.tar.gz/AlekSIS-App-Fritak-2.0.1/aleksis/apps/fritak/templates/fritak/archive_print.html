@@ -1,0 +1,60 @@
+{# -*- engine:django -*- #}
+
+{% extends 'core/base_print.html' %}
+
+{% load i18n static %}
+
+{% block browser_title %}{% blocktrans %}Print: Exemption Requests{% endblocktrans %}{% endblock %}
+{% block page_title %}{% blocktrans %}Archive of Exemption Requests{% endblocktrans %}{% endblock %}
+
+{% block extra_head %}
+  <style>
+    span.badge {
+      min-width: 26px;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <table>
+    <thead>
+    <tr>
+      <th rowspan="2" style="width: 10mm;"></th>
+      <th rowspan="2" style="min-width: 45mm;">
+        {% trans "Person" %}
+      </th>
+      <th colspan="2">
+        {% trans "Start" %}
+      </th>
+      <th colspan="2">
+        {% trans "End" %}
+      </th>
+    </tr>
+    <tr>
+      <th>{% trans "Date" %}</th>
+      <th>{% trans "Time" %}</th>
+      <th>{% trans "Date" %}</th>
+      <th>{% trans "Time" %}</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for exemption_request in exemption_list %}
+      <tr>
+        <td rowspan="2">
+          <span class="badge new {{ exemption_request.get_status.style_class }}"></span>
+        </td>
+        <td rowspan="2"> {{ exemption_request.submitter }}</td>
+        <td>{{ exemption_request.from_date }}</td>
+        <td>{{ exemption_request.from_time }}</td>
+        <td>{{ exemption_request.to_date }}</td>
+        <td>{{ exemption_request.to_time }}</td>
+      </tr>
+      <tr>
+        <td colspan="5" class="small-print">{{ exemption_request.description }}</td>
+      </tr>
+    {% endfor %}
+
+    </tbody>
+  </table>
+
+{% endblock %}

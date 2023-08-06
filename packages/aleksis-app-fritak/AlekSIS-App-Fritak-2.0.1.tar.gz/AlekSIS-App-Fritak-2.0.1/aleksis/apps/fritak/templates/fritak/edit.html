@@ -1,0 +1,14 @@
+{% extends "core/base.html" %}
+{% load msg_box i18n material_form %}
+
+{% block content %}
+  <h4>{% trans "Edit request for exemption from teaching" %}</h4>
+
+  <form method="POST">
+    {% csrf_token %}
+
+    {% form form=form %}{% endform %}
+
+    {% include "core/partials/save_button.html" with caption=_("Change") %}
+  </form>
+{% endblock %}
