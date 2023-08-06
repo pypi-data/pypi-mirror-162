@@ -1,0 +1,494 @@
+//------------------------------------------------------------------------------
+// Token.cpp
+// Contains Token class and related helpers
+//
+// File is under the MIT license; see LICENSE for details
+//------------------------------------------------------------------------------
+#include "slang/parsing/Token.h"
+
+#include "slang/diagnostics/ParserDiags.h"
+#include "slang/diagnostics/PreprocessorDiags.h"
+#include "slang/parsing/LexerFacts.h"
+#include "slang/syntax/SyntaxPrinter.h"
+#include "slang/util/BumpAllocator.h"
+
+namespace slang {
+
+// Heap-allocated info block. This structure is variably sized based on the
+// actual type of token. Type-specific data is stored at the end, followed
+// by any trivia if the token has it.
+struct Token::Info {
+    // Pointer to the raw text for the token; the size is stored in the token itself.
+    const char* rawTextPtr;
+
+    // The original location in the source text (or a macro location
+    // if the token was generated during macro expansion).
+    SourceLocation location;
+
+    byte* extra() { return reinterpret_cast<byte*>(this + 1); }
+
+    logic_t& bit() { return *reinterpret_cast<logic_t*>(extra()); }
+    double& real() { return *reinterpret_cast<double*>(extra()); }
+    SVIntStorage& integer() { return *reinterpret_cast<SVIntStorage*>(extra()); }
+    string_view& stringText() { return *reinterpret_cast<string_view*>(extra()); }
+    SyntaxKind& directiveKind() { return *reinterpret_cast<SyntaxKind*>(extra()); }
+};
+
+static constexpr size_t getExtraSize(TokenKind kind) {
+    size_t size = 0;
+    switch (kind) {
+        case TokenKind::StringLiteral:
+        case TokenKind::IncludeFileName:
+            size = sizeof(string_view);
+            break;
+        case TokenKind::RealLiteral:
+        case TokenKind::TimeLiteral:
+            size = sizeof(double);
+            break;
+        case TokenKind::IntegerLiteral:
+            size = sizeof(SVIntStorage);
+            break;
+        case TokenKind::UnbasedUnsizedLiteral:
+            size = sizeof(logic_t);
+            break;
+        case TokenKind::Directive:
+        case TokenKind::MacroUsage:
+            size = sizeof(SyntaxKind);
+            break;
+        default:
+            return 0;
+    }
+
+    size_t align = alignof(void*);
+    return (size + align - 1) & ~(align - 1);
+}
+
+void NumericTokenFlags::set(LiteralBase base_, bool isSigned_) {
+    raw |= uint8_t(base_);
+    raw |= uint8_t(isSigned_) << 2;
+}
+
+void NumericTokenFlags::set(TimeUnit unit_) {
+    raw |= uint8_t(unit_) << 3;
+}
+
+void NumericTokenFlags::setOutOfRange(bool value) {
+    raw |= uint8_t(value) << 6;
+}
+
+Trivia::Trivia() : rawText{ "", 0 }, kind(TriviaKind::Unknown) {
+}
+
+Trivia::Trivia(TriviaKind kind, string_view rawText) :
+    rawText{ rawText.data(), (uint32_t)rawText.size() }, kind(kind) {
+}
+
+Trivia::Trivia(TriviaKind kind, span<Token const> tokens) :
+    tokens{ tokens.data(), (uint32_t)tokens.size() }, kind(kind) {
+}
+
+Trivia::Trivia(TriviaKind kind, SyntaxNode* syntax) : syntaxNode(syntax), kind(kind) {
+}
+
+Trivia Trivia::withLocation(BumpAllocator& alloc, SourceLocation location) const {
+    switch (kind) {
+        case TriviaKind::Directive:
+        case TriviaKind::SkippedSyntax:
+        case TriviaKind::SkippedTokens:
+            return *this;
+        default:
+            break;
+    }
+
+    Trivia result;
+    result.kind = kind;
+    result.hasFullLocation = true;
+    result.fullLocation = alloc.emplace<FullLocation>();
+    result.fullLocation->text = getRawText();
+    result.fullLocation->location = location;
+    return result;
+}
+
+optional<SourceLocation> Trivia::getExplicitLocation() const {
+    switch (kind) {
+        case TriviaKind::Directive:
+        case TriviaKind::SkippedSyntax:
+            return syntaxNode->getFirstToken().location();
+        case TriviaKind::SkippedTokens:
+            ASSERT(tokens.len);
+            return tokens.ptr[0].location();
+        default:
+            if (hasFullLocation)
+                return fullLocation->location;
+
+            return std::nullopt;
+    }
+}
+
+SyntaxNode* Trivia::syntax() const {
+    if (kind == TriviaKind::Directive || kind == TriviaKind::SkippedSyntax)
+        return syntaxNode;
+    return nullptr;
+}
+
+string_view Trivia::getRawText() const {
+    switch (kind) {
+        case TriviaKind::Directive:
+        case TriviaKind::SkippedSyntax:
+        case TriviaKind::SkippedTokens:
+            return "";
+        default:
+            if (hasFullLocation)
+                return fullLocation->text;
+            return { rawText.ptr, rawText.len };
+    }
+}
+
+span<Token const> Trivia::getSkippedTokens() const {
+    if (kind != TriviaKind::SkippedTokens)
+        return {};
+    return { tokens.ptr, tokens.len };
+}
+
+Token::Token() :
+    kind(TokenKind::Unknown), missing(false), triviaCountSmall(0), reserved(0), numFlags() {
+}
+
+Token::Token(BumpAllocator& alloc, TokenKind kind, span<Trivia const> trivia, string_view rawText,
+             SourceLocation location) {
+    init(alloc, kind, trivia, rawText, location);
+}
+
+Token::Token(BumpAllocator& alloc, TokenKind kind, span<Trivia const> trivia, string_view rawText,
+             SourceLocation location, string_view strText) {
+    ASSERT(kind == TokenKind::StringLiteral || kind == TokenKind::IncludeFileName);
+    init(alloc, kind, trivia, rawText, location);
+    info->stringText() = strText;
+}
+
+Token::Token(BumpAllocator& alloc, TokenKind kind, span<Trivia const> trivia, string_view rawText,
+             SourceLocation location, SyntaxKind directive) {
+    ASSERT(kind == TokenKind::Directive || kind == TokenKind::MacroUsage);
+    init(alloc, kind, trivia, rawText, location);
+    info->directiveKind() = directive;
+}
+
+Token::Token(BumpAllocator& alloc, TokenKind kind, span<Trivia const> trivia, string_view rawText,
+             SourceLocation location, logic_t bit) {
+    ASSERT(kind == TokenKind::UnbasedUnsizedLiteral);
+    init(alloc, kind, trivia, rawText, location);
+    info->bit() = bit;
+}
+
+Token::Token(BumpAllocator& alloc, TokenKind kind, span<Trivia const> trivia, string_view rawText,
+             SourceLocation location, const SVInt& value) {
+    ASSERT(kind == TokenKind::IntegerLiteral);
+    init(alloc, kind, trivia, rawText, location);
+
+    SVIntStorage storage(value.getBitWidth(), value.isSigned(), value.hasUnknown());
+    if (value.isSingleWord())
+        storage.val = *value.getRawPtr();
+    else {
+        storage.pVal =
+            (uint64_t*)alloc.allocate(sizeof(uint64_t) * value.getNumWords(), alignof(uint64_t));
+        memcpy(storage.pVal, value.getRawPtr(), sizeof(uint64_t) * value.getNumWords());
+    }
+
+    info->integer() = storage;
+}
+
+Token::Token(BumpAllocator& alloc, TokenKind kind, span<Trivia const> trivia, string_view rawText,
+             SourceLocation location, double value, bool outOfRange, optional<TimeUnit> timeUnit) {
+    ASSERT(kind == TokenKind::RealLiteral || kind == TokenKind::TimeLiteral);
+    init(alloc, kind, trivia, rawText, location);
+    info->real() = value;
+
+    numFlags.setOutOfRange(outOfRange);
+    if (timeUnit)
+        numFlags.set(*timeUnit);
+}
+
+Token::Token(BumpAllocator& alloc, TokenKind kind, span<Trivia const> trivia, string_view rawText,
+             SourceLocation location, LiteralBase base, bool isSigned) {
+    init(alloc, kind, trivia, rawText, location);
+    numFlags.set(base, isSigned);
+}
+
+string_view Token::valueText() const {
+    switch (kind) {
+        case TokenKind::StringLiteral:
+            return info->stringText();
+        case TokenKind::Identifier: {
+            string_view result = rawText();
+            if (!result.empty() && result[0] == '\\')
+                result = result.substr(1);
+            return result;
+        }
+        default:
+            return rawText();
+    }
+}
+
+string_view Token::rawText() const {
+    string_view text = LexerFacts::getTokenKindText(kind);
+    if (!text.empty())
+        return text;
+
+    // not a simple token, so extract info from our data pointer
+    switch (kind) {
+        case TokenKind::Unknown:
+        case TokenKind::Identifier:
+        case TokenKind::SystemIdentifier:
+        case TokenKind::IncludeFileName:
+        case TokenKind::StringLiteral:
+        case TokenKind::IntegerLiteral:
+        case TokenKind::IntegerBase:
+        case TokenKind::UnbasedUnsizedLiteral:
+        case TokenKind::RealLiteral:
+        case TokenKind::TimeLiteral:
+        case TokenKind::Directive:
+        case TokenKind::MacroUsage:
+        case TokenKind::EmptyMacroArgument:
+        case TokenKind::LineContinuation:
+            return string_view(info->rawTextPtr, rawLen);
+        case TokenKind::Placeholder:
+        case TokenKind::EndOfFile:
+            return "";
+        default:
+            THROW_UNREACHABLE;
+    }
+}
+
+SourceRange Token::range() const {
+    return SourceRange(location(), location() + rawText().length());
+}
+
+SourceLocation Token::location() const {
+    return info->location;
+}
+
+span<Trivia const> Token::trivia() const {
+    if (triviaCountSmall == 0)
+        return {};
+
+    const Trivia* trivia;
+    byte* ptr = info->extra() + getExtraSize(kind);
+    memcpy(&trivia, ptr, sizeof(trivia));
+
+    if (triviaCountSmall == MaxTriviaSmallCount + 1) {
+        size_t size;
+        memcpy(&size, ptr + sizeof(trivia), sizeof(size_t));
+        return { trivia, size };
+    }
+
+    return { trivia, triviaCountSmall };
+}
+
+std::string Token::toString() const {
+    return SyntaxPrinter().print(*this).str();
+}
+
+SVInt Token::intValue() const {
+    ASSERT(kind == TokenKind::IntegerLiteral);
+    return info->integer();
+}
+
+double Token::realValue() const {
+    ASSERT(kind == TokenKind::RealLiteral || kind == TokenKind::TimeLiteral);
+    return info->real();
+}
+
+logic_t Token::bitValue() const {
+    ASSERT(kind == TokenKind::UnbasedUnsizedLiteral);
+    return info->bit();
+}
+
+NumericTokenFlags Token::numericFlags() const {
+    ASSERT(kind == TokenKind::IntegerBase || kind == TokenKind::TimeLiteral ||
+           kind == TokenKind::RealLiteral);
+    return numFlags;
+}
+
+SyntaxKind Token::directiveKind() const {
+    ASSERT(kind == TokenKind::Directive || kind == TokenKind::MacroUsage);
+    return info->directiveKind();
+}
+
+bool Token::isOnSameLine() const {
+    for (auto& t : trivia()) {
+        switch (t.kind) {
+            case TriviaKind::LineComment:
+            case TriviaKind::EndOfLine:
+            case TriviaKind::SkippedSyntax:
+            case TriviaKind::SkippedTokens:
+            case TriviaKind::DisabledText:
+                return false;
+            case TriviaKind::Directive:
+                if (t.syntax()->kind != SyntaxKind::MacroUsage)
+                    return false;
+                break;
+            case TriviaKind::BlockComment:
+                if (size_t offset = t.getRawText().find_first_of("\r\n");
+                    offset != std::string_view::npos) {
+                    return false;
+                }
+                break;
+            default:
+                break;
+        }
+    }
+    return true;
+}
+
+Token Token::withTrivia(BumpAllocator& alloc, span<Trivia const> trivia) const {
+    return clone(alloc, trivia, rawText(), location());
+}
+
+Token Token::withLocation(BumpAllocator& alloc, SourceLocation location) const {
+    return clone(alloc, trivia(), rawText(), location);
+}
+
+Token Token::withRawText(BumpAllocator& alloc, string_view rawText) const {
+    return clone(alloc, trivia(), rawText, location());
+}
+
+Token Token::clone(BumpAllocator& alloc, span<Trivia const> trivia, string_view rawText,
+                   SourceLocation location) const {
+    Token result(alloc, kind, trivia, rawText, location);
+    result.missing = missing;
+
+    memcpy(result.info->extra(), info->extra(), getExtraSize(kind));
+    memcpy(&result.numFlags, &numFlags, 1);
+
+    return result;
+}
+
+void Token::init(BumpAllocator& alloc, TokenKind kind_, span<Trivia const> trivia,
+                 string_view rawText, SourceLocation location) {
+    kind = kind_;
+    missing = false;
+    triviaCountSmall = 0;
+    reserved = 0;
+    numFlags.raw = 0;
+    rawLen = uint32_t(rawText.size());
+
+    size_t extra = getExtraSize(kind);
+    ASSERT(extra % alignof(void*) == 0);
+
+    size_t size = sizeof(Info) + extra;
+    if (!trivia.empty()) {
+        size += sizeof(Trivia*);
+        if (trivia.size() > MaxTriviaSmallCount) {
+            size += sizeof(size_t);
+            triviaCountSmall = MaxTriviaSmallCount + 1;
+        }
+        else {
+            triviaCountSmall = uint8_t(trivia.size());
+        }
+    }
+
+    info = (Info*)alloc.allocate(size, alignof(Info));
+    info->location = location;
+    info->rawTextPtr = rawText.data();
+
+    if (!trivia.empty()) {
+        const Trivia* triviaPtr = trivia.data();
+        byte* dest = info->extra() + extra;
+        memcpy(dest, &triviaPtr, sizeof(triviaPtr));
+
+        if (trivia.size() > MaxTriviaSmallCount) {
+            size = trivia.size();
+            memcpy(dest + sizeof(triviaPtr), &size, sizeof(size_t));
+        }
+    }
+}
+
+Token Token::createMissing(BumpAllocator& alloc, TokenKind kind, SourceLocation location) {
+    Token result;
+    switch (kind) {
+        case TokenKind::IncludeFileName:
+        case TokenKind::StringLiteral:
+            result = Token(alloc, kind, {}, "", location, "");
+            break;
+        case TokenKind::Directive:
+        case TokenKind::MacroUsage:
+            result = Token(alloc, kind, {}, "", location, SyntaxKind::Unknown);
+            break;
+        case TokenKind::IntegerLiteral:
+            result = Token(alloc, kind, {}, "", location, SVInt::Zero);
+            break;
+        case TokenKind::IntegerBase:
+            result = Token(alloc, kind, {}, "", location, LiteralBase::Decimal, false);
+            break;
+        case TokenKind::UnbasedUnsizedLiteral:
+            result = Token(alloc, kind, {}, "", location, logic_t::x);
+            break;
+        case TokenKind::RealLiteral:
+            result = Token(alloc, kind, {}, "", location, 0.0, false, std::nullopt);
+            break;
+        case TokenKind::TimeLiteral:
+            result = Token(alloc, kind, {}, "", location, 0.0, false, TimeUnit::Seconds);
+            break;
+        default:
+            result = Token(alloc, kind, {}, "", location);
+            break;
+    }
+
+    result.missing = true;
+    return result;
+}
+
+Token Token::createExpected(BumpAllocator& alloc, Diagnostics& diagnostics, Token actual,
+                            TokenKind expected, Token lastConsumed, Token matchingDelim) {
+    // Figure out the best place to report this error based on the current
+    // token as well as the last real token we consumed.
+    SourceLocation location;
+    if (!lastConsumed)
+        location = actual.location();
+    else {
+        location = lastConsumed.location();
+        location = location + lastConsumed.rawText().length();
+    }
+
+    // If there is already a diagnostic issued for this location, don't report this
+    // one as well since it will just lead to lots of spam and the first error is
+    // probably the thing that actually caused the issue.
+    bool report = true;
+    if (!diagnostics.empty()) {
+        const Diagnostic& diag = diagnostics.back();
+        if (diag.isError() && (diag.location == location || diag.location == actual.location()))
+            report = false;
+    }
+
+    if (report) {
+        switch (expected) {
+            case TokenKind::Identifier:
+                diagnostics.add(diag::ExpectedIdentifier, location);
+                break;
+            case TokenKind::StringLiteral:
+                diagnostics.add(diag::ExpectedStringLiteral, location);
+                break;
+            case TokenKind::IntegerLiteral:
+                diagnostics.add(diag::ExpectedIntegerLiteral, location);
+                break;
+            case TokenKind::TimeLiteral:
+                diagnostics.add(diag::ExpectedTimeLiteral, location);
+                break;
+            case TokenKind::IncludeFileName:
+                diagnostics.add(diag::ExpectedIncludeFileName, location);
+                break;
+            default: {
+                auto& diag = diagnostics.add(diag::ExpectedToken, location);
+                diag << LexerFacts::getTokenKindText(expected);
+                if (matchingDelim) {
+                    diag.addNote(diag::NoteToMatchThis, matchingDelim.location())
+                        << LexerFacts::getTokenKindText(matchingDelim.kind);
+                }
+                break;
+            }
+        }
+    }
+    return Token::createMissing(alloc, expected, location);
+}
+
+} // namespace slang
