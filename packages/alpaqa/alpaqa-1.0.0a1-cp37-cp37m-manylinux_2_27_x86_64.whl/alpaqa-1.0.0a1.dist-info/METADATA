@@ -1,0 +1,76 @@
+Metadata-Version: 2.1
+Name: alpaqa
+Version: 1.0.0a1
+Summary: Augmented Lagrangian and PANOC solvers for nonconvex numerical optimization.
+Keywords: addition,subtraction,pybind11
+Author-email: Pieter P <pieter.p.dev@outlook.com>
+Requires-Python: >=3.7
+Description-Content-Type: text/x-rst
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Science/Research
+Classifier: License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Operating System :: POSIX :: Linux
+Classifier: Operating System :: Microsoft :: Windows
+Requires-Dist: numpy
+Requires-Dist: casadi
+Requires-Dist: sphinx~=5.1 ; extra == "docs"
+Requires-Dist: matplotlib ; extra == "docs"
+Requires-Dist: breathe ; extra == "docs"
+Requires-Dist: furo ; extra == "docs"
+Project-URL: Bug Tracker, https://github.com/kul-optec/alpaqa/issues
+Project-URL: Documentation, https://kul-optec.github.io/alpaqa
+Project-URL: Source, https://github.com/kul-optec/alpaqa
+Provides-Extra: docs
+
+alpaqa
+======
+
+``alpaqa`` is an efficient implementation of an augmented Lagrangian method for
+general nonlinear programming problems, which uses the first-order, matrix-free
+PANOC algorithm as an inner solver.
+The numerical algorithms themselves are implemented in C++ for optimal
+performance, and they are exposed as an easy-to-use Python package.
+
+The solvers in this library solve minimization problems of the following form:
+
+.. math::
+
+    \begin{aligned}
+        & \underset{x}{\textbf{minimize}}
+        & & f(x) &&&& f : {{\rm I\mathchoice{\hspace{-2pt}}{\hspace{-2pt}}{\hspace{-1.75pt}}{\hspace{-1.7pt}}R}}^n \rightarrow {{\rm I\mathchoice{\hspace{-2pt}}{\hspace{-2pt}}{\hspace{-1.75pt}}{\hspace{-1.7pt}}R}} \\
+        & \textbf{subject to}
+        & & \underline{x} \le x \le \overline{x} \\
+        &&& \underline{z} \le g(x) \le \overline{z} &&&& g : {{\rm I\mathchoice{\hspace{-2pt}}{\hspace{-2pt}}{\hspace{-1.75pt}}{\hspace{-1.7pt}}R}}^n \rightarrow {{\rm I\mathchoice{\hspace{-2pt}}{\hspace{-2pt}}{\hspace{-1.75pt}}{\hspace{-1.7pt}}R}}^m
+    \end{aligned}
+
+Documentation
+-------------
+
+- `Sphinx documentation <https://kul-optec.github.io/alpaqa/develop/Sphinx/index.html>`_
+- `Python examples <https://kul-optec.github.io/alpaqa/develop/Sphinx/examples/examples_landing_page.html>`_
+- `Doxygen documentation <https://kul-optec.github.io/alpaqa/develop/Doxygen/index.html>`_
+- `C++ examples <https://kul-optec.github.io/alpaqa/develop/Doxygen/examples.html>`_
+
+Installation
+------------
+
+The Python interface can be installed directly from PyPI:
+
+.. code-block:: sh
+
+    python3 -m pip install alpaqa
+
+For more information, please see the full
+`installation instructions <https://kul-optec.github.io/alpaqa/develop/Sphinx/install/installation.html>`_.
+
+Publications
+------------
+
+- `P. Pas, M. Schuurmans, and P. Patrinos, “Alpaqa: A matrix-free solver for nonlinear MPC and large-scale nonconvex optimization,” 20th European Control Conference (ECC), Jul. 2022 (arXiv) <https://arxiv.org/abs/2112.02370>`_
+
