@@ -1,0 +1,42 @@
+graphs:
+
+  - nodes:
+    - id: data1
+      module: timeflux.nodes.random
+      class: Random
+      params:
+        columns: 8
+        rows_min: 10
+        rows_max: 10
+        value_min: -100
+        value_max: 100
+        seed: 1
+    - id: data2
+      module: timeflux.nodes.random
+      class: Random
+      params:
+        columns: 2
+        rows_min: 1
+        rows_max: 1
+        value_min: -100
+        value_max: 100
+        seed: 1
+    - id: ui
+      module: timeflux_ui.nodes.ui
+      class: UI
+    - id: events
+      module: timeflux.nodes.debug
+      class: Display
+    - id: test
+      module: timeflux.nodes.debug
+      class: Display
+    edges:
+    - source: data1
+      target: ui:test1
+    - source: data2
+      target: ui:test2
+    - source: ui:events
+      target: events
+    - source: data1
+      target: test
+    rate: 5
