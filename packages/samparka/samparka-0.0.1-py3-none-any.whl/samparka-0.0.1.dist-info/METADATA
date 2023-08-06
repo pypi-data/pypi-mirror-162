@@ -1,0 +1,68 @@
+Metadata-Version: 2.1
+Name: samparka
+Version: 0.0.1
+Summary: Extracting contact-info from the website homepage
+Author: Ujjawal Shah, Mahesh Dahal
+Author-email: ujjawalshah360@gmail.com, maheshdahal@live.com
+License: UNKNOWN
+Keywords: email,phone number,telephone,website,homepage,python
+Platform: UNKNOWN
+Classifier: Development Status :: 1 - Planning
+Classifier: Intended Audience :: Developers
+Classifier: Programming Language :: Python :: 3
+Classifier: Operating System :: Unix
+Classifier: Operating System :: MacOS :: MacOS X
+Classifier: Operating System :: Microsoft :: Windows
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: requests
+Requires-Dist: bs4
+
+
+# samparka
+
+A package that allows to get contact-info (emails & phonenumbers) from the website homepage
+Phone number is available for Nepal & USA as of now
+
+Developed by Ujjawal Shah (c) 2022
+
+## Examples of How To Use Package
+
+### Get contact email from the website homepage
+
+```python
+import samparka
+
+homepage = samparka.Scrollhomepage('https://www.setopati.com/')
+email_adresses = homepage.emails()
+print(f'emails: {email_adresses}')
+```
+**Output**:
+
+***emails: ['ketaketi.setopati@gmail.com', 'info@setopati.com', 'setopati@gmail.com']***
+
+### Get phonenumbers from the homepage
+
+```python
+import samparka
+
+#to see which countries are available for the phone numbers
+print(samparka.__availablecountries__)
+```
+**Output**:
+
+***['Nepal', 'USA']***
+
+
+```python
+import samparka
+
+homepage = samparka.Scrollhomepage('https://www.setopati.com/')
+phone_numbers = homepage.phonenumbers('Nepal')
+print(f'phone_numbers: {phone_numbers}')
+```
+**Output**:
+
+***['+977-1-5429319', '9741857838', '9772067662', '9771494820', '9703857991', '9823847051', '9839993648', '9644041575', '9801123339', '9872264189', '9873538472', '9860830966', '9830826490', '+977-1-5428194', '9731283648', '9652935037', '9702006458', '9851123339']***
+
+
