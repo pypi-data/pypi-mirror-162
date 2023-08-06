@@ -1,0 +1,50 @@
+[tool.poetry]
+name = "oeleo"
+version = "0.4.3"
+description = "A one-eyed tool to copy files with."
+authors = ["jepegit <jepe@ife.no>"]
+license = "MIT"
+readme = "README.md"
+homepage = "https://github.com/ife-bat/oeleo"
+repository = "https://github.com/ife-bat/oeleo"
+keywords = ["ssh", "db"]
+classifiers = [
+    "Environment :: Console",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Other Audience",
+    "Topic :: Communications :: File Sharing",
+    "Topic :: Home Automation",
+    "Topic :: Software Development :: Documentation",
+    "Topic :: System :: Networking",
+    "Topic :: Utilities",
+]
+include = [
+    "LICENSE.md",
+]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+peewee = "^3.15.0"
+python-dotenv = "^0.20.0"
+rich = "^12.4.4"
+Fabric = "^2.7.0"
+SharePlum = "^0.5.1"
+
+[tool.poetry.dev-dependencies]
+black = "^22.6.0"
+isort = "^5.10.1"
+pytest = "^7.1.2"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-rA"
+log_cli = true
+log_cli_level = "DEBUG"
+markers = [
+    "slow",
+]
