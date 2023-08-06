@@ -1,0 +1,10 @@
+# Dockerfile for continuous integration (github pages and pypi deployment)
+FROM travisci/ci-sardonyx:packer-1652254210-b649fb09
+
+SHELL ["/bin/bash", "-c"]
+
+ENV PYPI_TOKEN="pypi-AgEIcHlwaS5vcmcCJGIzMTg3OTk5LWNjODgtNDYxMy04ZmI2LWYyYTI5MTZmYTAwOAACOnsicGVybWlzc2lvbnMiOiB7InByb2plY3RzIjogWyJmZHNyZWFkZXIiXX0sICJ2ZXJzaW9uIjogMX0AAjl7InByb2plY3RfaWRzIjogWyJhMzI5YWNkNy0yMGI5LTQwM2MtOTY0Mi05NDZmNTAxYzQwOTAiXX0AAAYgbiFlkcBe6d1b_5hYd4n0Vm9iPG3OUwO-WPh2GCSE2K0"
+ENV GITHUB_TOKEN="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"
+
+COPY docker_deployment.sh /docker_deployment.sh
+ENTRYPOINT bash /docker_deployment.sh
